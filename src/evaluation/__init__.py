@@ -1,0 +1,1 @@
+"""Evaluation layer — ground-truth alignment and metrics computation."""

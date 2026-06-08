@@ -1,0 +1,1 @@
+"""Reporting layer — metrics export and markdown summary generation."""

@@ -1,0 +1,1 @@
+"""Orchestrator layer — pipeline coordination and verifier routing."""

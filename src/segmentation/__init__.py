@@ -1,0 +1,1 @@
+"""Segmentation layer — split papers into verification snippets."""
