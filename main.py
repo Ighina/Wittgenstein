@@ -156,6 +156,12 @@ def verify(
              "Only predictions and ground-truth entries in this category are counted. "
              "Omit to evaluate all categories.",
     ),
+    parser_mode: str = typer.Option(
+        "regex",
+        "--parser-mode",
+        help="Parser mode: 'regex' (default, regex-based) or 'llm' (LLM-based "
+             "with context assembly and verifier attribution).",
+    ),
 ) -> None:
     """Run full verification pipeline on all papers."""
     setup_logging("INFO")
@@ -191,13 +197,18 @@ def verify(
     if llm_only is not None and llm_only not in ("same-prompt", "separate-prompts"):
         console.print(f"[red]Invalid --llm-only: {llm_only!r} (use 'same-prompt' or 'separate-prompts')[/red]")
         raise typer.Exit(code=1)
+    if parser_mode not in ("regex", "llm"):
+        console.print(f"[red]Invalid --parser-mode: {parser_mode!r} (use 'regex' or 'llm')[/red]")
+        raise typer.Exit(code=1)
     config.llm_only_mode = llm_only
     config.eval_category_filter = eval_category
+    config.parser_mode = parser_mode
     llm_tag = f" | LLM-only: [bold]{llm_only}[/bold]" if llm_only else ""
+    parser_tag = f" | Parser: [bold]{parser_mode}[/bold]"
     cat_tag = f" | Category filter: [bold]{eval_category}[/bold]" if eval_category else ""
     console.print(
         f"Strictness: [bold]{strictness}[/bold] | Workers: [bold]{workers}[/bold] | "
-        f"Mode: [bold]{mode}[/bold]{llm_tag}{cat_tag}\n"
+        f"Mode: [bold]{mode}[/bold]{llm_tag}{parser_tag}{cat_tag}\n"
     )
     registry = create_default_registry()
     orchestrator = build_orchestrator(config, registry=registry)
@@ -225,15 +236,27 @@ def verify(
             progress.update(task, description=f"[cyan]Verifying {paper_id}...")
 
             try:
-                # Parse paper
-                paper = parse_paper_content(
-                    paper_id=paper_id,
-                    title=title,
-                    paper_category=paper_category,
-                    paper_content=paper_content,
-                    decode_images=decode_images,
-                    image_output_dir=image_dir if decode_images else None,
-                )
+                # Parse paper (parser mode selects the path)
+                if config.parser_mode == "llm":
+                    from src.parser.llm_content_parser import llm_parse_paper
+                    paper = llm_parse_paper(
+                        paper_id=paper_id,
+                        title=title,
+                        paper_category=paper_category,
+                        paper_content=paper_content,
+                        config=config,
+                        decode_images=decode_images,
+                        image_output_dir=str(image_dir) if decode_images else None,
+                    )
+                else:
+                    paper = parse_paper_content(
+                        paper_id=paper_id,
+                        title=title,
+                        paper_category=paper_category,
+                        paper_content=paper_content,
+                        decode_images=decode_images,
+                        image_output_dir=image_dir if decode_images else None,
+                    )
 
                 # Verify
                 prediction = orchestrator.run(paper)
@@ -319,6 +342,11 @@ def verify_one(
              "'separate-prompts' uses different prompts per type. "
              "Omit to use normal specialist verifiers.",
     ),
+    parser_mode: str = typer.Option(
+        "regex",
+        "--parser-mode",
+        help="Parser mode: 'regex' (default) or 'llm' (LLM-based with context).",
+    ),
 ) -> None:
     """Verify a single paper by ID."""
     setup_logging("DEBUG")
@@ -336,21 +364,51 @@ def verify_one(
     row = row.iloc[0]
     paper_content = row["paper_content"]
 
-    with console.status("[cyan]Parsing paper...[/cyan]"):
-        paper = parse_paper_content(
-            paper_id=paper_id,
-            title=row["title"],
-            paper_category=row["paper_category"],
-            paper_content=paper_content,
-            decode_images=decode_images,
-            image_output_dir=Path("outputs/images") if decode_images else None,
-        )
+    # Validate parser mode early
+    if parser_mode not in ("regex", "llm"):
+        console.print(f"[red]Invalid --parser-mode: {parser_mode!r} (use 'regex' or 'llm')[/red]")
+        raise typer.Exit(code=1)
 
-    console.print(f"  Sections: {len(paper.sections)}")
-    console.print(f"  Equations: {len(paper.equations)}")
-    console.print(f"  Images: {len(paper.images)}")
-    console.print(f"  Tables: {len(paper.tables)}")
-    console.print(f"  Theorems: {len(paper.theorems)}")
+    with console.status("[cyan]Parsing paper...[/cyan]"):
+        if parser_mode == "llm":
+            from src.parser.llm_content_parser import llm_parse_paper
+            paper = llm_parse_paper(
+                paper_id=paper_id,
+                title=row["title"],
+                paper_category=row["paper_category"],
+                paper_content=paper_content,
+                decode_images=decode_images,
+                image_output_dir=str(Path("outputs/images")) if decode_images else None,
+            )
+        else:
+            paper = parse_paper_content(
+                paper_id=paper_id,
+                title=row["title"],
+                paper_category=row["paper_category"],
+                paper_content=paper_content,
+                decode_images=decode_images,
+                image_output_dir=Path("outputs/images") if decode_images else None,
+            )
+
+    if parser_mode == "llm":
+        n_verifiable = sum(1 for u in paper.verifiable_units if u.is_verifiable)  # type: ignore[union-attr]
+        n_unverifiable = sum(1 for u in paper.verifiable_units if not u.is_verifiable)  # type: ignore[union-attr]
+        console.print(f"  LLM Verifiable Units: {n_verifiable} (skipped {n_unverifiable} unverifiable)")
+        console.print(f"  LLM Symbol Registry: {len(paper.symbol_registry)} symbols")  # type: ignore[union-attr]
+        console.print(f"  Images: {len(paper.images)}")
+        # Show verifier route distribution
+        routes: dict[str, int] = {}
+        for u in paper.verifiable_units:  # type: ignore[union-attr]
+            if u.is_verifiable and u.verifier_route:
+                routes[u.verifier_route] = routes.get(u.verifier_route, 0) + 1
+        if routes:
+            console.print(f"  Verifier Routes: {dict(sorted(routes.items()))}")
+    else:
+        console.print(f"  Sections: {len(paper.sections)}")
+        console.print(f"  Equations: {len(paper.equations)}")
+        console.print(f"  Images: {len(paper.images)}")
+        console.print(f"  Tables: {len(paper.tables)}")
+        console.print(f"  Theorems: {len(paper.theorems)}")
 
     # Verify
     if strictness not in ("strict", "lenient"):
@@ -363,12 +421,14 @@ def verify_one(
     config.llm.num_workers = workers
     config.orchestration_mode = mode
     config.uncertainty_threshold = uncertainty_threshold
+    config.parser_mode = parser_mode
     if llm_only is not None and llm_only not in ("same-prompt", "separate-prompts"):
         console.print(f"[red]Invalid --llm-only: {llm_only!r} (use 'same-prompt' or 'separate-prompts')[/red]")
         raise typer.Exit(code=1)
     config.llm_only_mode = llm_only
+    parser_tag = f" | Parser: {parser_mode}" if parser_mode != "regex" else ""
     llm_tag = f" | LLM-only: {llm_only}" if llm_only else ""
-    console.print(f"[dim]Mode: {mode}{llm_tag}[/dim]")
+    console.print(f"[dim]Mode: {mode}{llm_tag}{parser_tag}[/dim]")
     orchestrator = build_orchestrator(config)
     prediction = orchestrator.run(paper)
 

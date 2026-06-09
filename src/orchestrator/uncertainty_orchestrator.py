@@ -44,6 +44,7 @@ from rich.progress import Progress
 from src.config import PipelineConfig
 from src.models import (
     BaseVerificationResult,
+    EnrichedPaper,
     NormalizedPaper,
     PaperPrediction,
     TriageResult,
@@ -52,6 +53,7 @@ from src.models import (
 )
 from src.orchestrator.orchestrator import VerificationOrchestrator
 from src.orchestrator.router import resolve_route_to_verifier, select_verifier_name
+from src.parser.enriched_segmenter import segment_enriched_paper
 from src.segmentation.segmenter import segment_paper
 from src.verifiers.registry import VerifierRegistry
 from src.verifiers.triage_verifier import TriageVerifier
@@ -77,14 +79,17 @@ class UncertaintyOrchestrator(VerificationOrchestrator):
     # ------------------------------------------------------------------
     def run(
         self,
-        paper: NormalizedPaper,
+        paper: NormalizedPaper | EnrichedPaper,
         progress: Optional[Progress] = None,
     ) -> PaperPrediction:
         logger.info(f"[uncertainty] Starting verification of paper: {paper.paper_id}")
         t0 = time.monotonic()
 
-        # Step 1: Segment
-        snippets = segment_paper(paper, config=self.config.segmentation)
+        # Step 1: Segment (parser mode chooses the path)
+        if self.config.parser_mode == "llm" and isinstance(paper, EnrichedPaper):
+            snippets = segment_enriched_paper(paper, config=self.config)
+        else:
+            snippets = segment_paper(paper, config=self.config.segmentation)  # type: ignore[arg-type]
         logger.info(f"[uncertainty] Paper segmented into {len(snippets)} snippets")
 
         # Step 2: Triage pass → uncertainty map

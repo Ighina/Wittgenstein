@@ -20,13 +20,17 @@ from src.models import (
     PaperPrediction,
     PredictedError,
     VerificationSnippet,
+    EnrichedPaper,
 )
 from src.segmentation.segmenter import segment_paper
+from src.parser.enriched_segmenter import segment_enriched_paper
+from src.parser.llm_content_parser import llm_parse_paper
 from src.verifiers.base import BaseVerifier
 from src.verifiers.registry import VerifierRegistry
 from src.orchestrator.router import (
     create_default_registry,
     select_verifier_name,
+    resolve_route_to_verifier,
 )
 
 
@@ -54,13 +58,19 @@ class VerificationOrchestrator:
 
     def run(
         self,
-        paper: NormalizedPaper,
+        paper: NormalizedPaper | EnrichedPaper,
         progress: Optional[Progress] = None,
     ) -> PaperPrediction:
         """Run the full verification pipeline on a single paper.
 
+        When config.parser_mode == "regex" (default), ``paper`` should be a
+        NormalizedPaper; the internal segmenter is used.
+
+        When config.parser_mode == "llm", ``paper`` should be an EnrichedPaper
+        (already parsed by llm_parse_paper); the enriched segmenter is used.
+
         Args:
-            paper: The parsed NormalizedPaper to verify.
+            paper: The parsed paper (NormalizedPaper or EnrichedPaper).
             progress: Optional Rich progress bar.
 
         Returns:
@@ -69,11 +79,57 @@ class VerificationOrchestrator:
         logger.info(f"Starting verification of paper: {paper.paper_id}")
         t0 = time.monotonic()
 
-        # Step 1: Segment the paper
-        snippets = segment_paper(paper, config=self.config.segmentation)
+        # Step 1: Segment the paper (parser mode chooses the path)
+        if self.config.parser_mode == "llm" and isinstance(paper, EnrichedPaper):
+            snippets = segment_enriched_paper(paper, config=self.config)
+        else:
+            snippets = segment_paper(paper, config=self.config.segmentation)  # type: ignore[arg-type]
         logger.info(f"Paper segmented into {len(snippets)} snippets")
 
-        # Step 2: Verify each snippet (concurrently — LLM calls are I/O bound)
+        return self._verify_snippets(snippets, paper, t0, progress)
+
+    def run_from_snippets(
+        self,
+        snippets: list[VerificationSnippet],
+        paper_id: str,
+        title: str = "",
+        paper_category: str = "",
+        progress: Optional[Progress] = None,
+    ) -> PaperPrediction:
+        """Run verification on pre-made snippets (bypasses parsing + segmentation).
+
+        Useful when the caller has already produced snippets from the LLM parser
+        or another custom source.
+
+        Args:
+            snippets: Pre-made VerificationSnippets.
+            paper_id: Paper identifier.
+            title: Paper title (for prediction metadata).
+            paper_category: Paper category (for prediction metadata).
+            progress: Optional Rich progress bar.
+
+        Returns:
+            PaperPrediction with all findings aggregated.
+        """
+        logger.info(f"Verifying {len(snippets)} pre-made snippets for {paper_id}")
+        t0 = time.monotonic()
+
+        # Build a lightweight NormalizedPaper for prediction metadata
+        paper = NormalizedPaper(
+            paper_id=paper_id,
+            title=title,
+            paper_category=paper_category,
+        )
+        return self._verify_snippets(snippets, paper, t0, progress)
+
+    def _verify_snippets(
+        self,
+        snippets: list[VerificationSnippet],
+        paper: NormalizedPaper | EnrichedPaper,
+        t0: float,
+        progress: Optional[Progress] = None,
+    ) -> PaperPrediction:
+        """Run verification on a list of snippets (shared by all paths)."""
         # Pre-instantiate every verifier we'll need on this (single) thread so
         # the verifier cache is read-only during fan-out.
         for snippet in snippets:
@@ -162,14 +218,26 @@ class VerificationOrchestrator:
             )
 
     def _route_snippet(self, snippet: VerificationSnippet) -> str:
-        """Resolve the verifier name for a snippet, honouring llm_only_mode.
+        """Resolve the verifier name for a snippet, honouring llm_only_mode
+        and LLM-parser-assigned routes.
 
-        When ``config.llm_only_mode`` is set, ALL snippets go to the
-        ``llm_only`` verifier regardless of type. Otherwise the normal
-        type-based routing table is used.
+        Priority:
+        1. ``config.llm_only_mode`` — ALL snippets go to ``llm_only``.
+        2. ``snippet.verifier_route`` — set by the LLM parser; resolved through
+           the triage route map (e.g., "math" → "math_equation").
+        3. Type-based routing via ``select_verifier_name`` (the default).
         """
         if self.config.llm_only_mode is not None:
             return "llm_only"
+
+        # LLM parser assigned an explicit route (e.g., "math", "text", "statistical")
+        if snippet.verifier_route:
+            resolved = resolve_route_to_verifier(
+                snippet.verifier_route, snippet, self.config
+            )
+            if resolved:
+                return resolved
+
         return select_verifier_name(snippet, self.config)
 
     def _get_verifier(self, name: str) -> BaseVerifier:

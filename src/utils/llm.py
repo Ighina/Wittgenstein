@@ -661,7 +661,7 @@ def _deepseek_call(
     response = client.chat.completions.create(
         model=model,
         messages=messages,
-        max_tokens=max_tokens,
+        # max_tokens=max_tokens,
         temperature=temperature,
     )
 

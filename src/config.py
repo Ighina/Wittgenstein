@@ -39,7 +39,7 @@ class LLMConfig:
     # Output-token budget. Set high enough that reasoning-style models can emit
     # the final answer after their chain-of-thought; a too-small value yields
     # empty `message.content`. Verifiers/baseline inherit this via llm_call.
-    max_tokens: int = 8192
+    max_tokens: int = 64000
     temperature: float = 0.0
     timeout_seconds: int = 120
 
@@ -107,6 +107,30 @@ class PipelineConfig:
 
     # Snippets with triage uncertainty >= this are escalated to a specialist.
     uncertainty_threshold: float = 0.30
+
+    # ------------------------------------------------------------------
+    # Parser mode
+    # ------------------------------------------------------------------
+    # "regex" (default): use the existing regex-based content_parser.py +
+    #   segmenter.py to produce VerificationSnippets.
+    # "llm": use the new llm_content_parser.py + enriched_segmenter.py to
+    #   produce context-enriched VerificationSnippets with LLM-assigned
+    #   verifier routing and unverifiable-unit filtering.
+    parser_mode: str = "regex"  # "regex" | "llm"
+
+    # Characters per LLM parse chunk (fed to the parser LLM in each call).
+    llm_parser_chunk_size: int = 8000
+
+    # Optional model override for the LLM parser (defaults to llm.model).
+    llm_parser_model: Optional[str] = None
+
+    # Number of concurrent workers for LLM parser chunk processing.
+    # Chunks are network-bound LLM calls, so threads are used (same as llm.num_workers).
+    # Defaults to llm.num_workers when 0.
+    llm_parser_num_workers: int = 0
+
+    # Maximum characters of dependency context assembled per verifiable unit.
+    llm_parser_max_context_chars: int = 8000
 
     # ------------------------------------------------------------------
     # LLM-only verification (bypasses specialist verifiers)
@@ -251,6 +275,7 @@ class PipelineConfig:
             uncertainty_threshold=data.get("uncertainty_threshold", 0.30),
             uncertainty_budget=data.get("uncertainty_budget"),
             llm_only_mode=data.get("llm_only_mode"),
+            llm_parser_num_workers=data.get("llm_parser_num_workers", 0),
             verify_chunk_chars=data.get("verify_chunk_chars", 2000),
             verify_chunk_overlap=data.get("verify_chunk_overlap", 200),
             use_progressive_math=data.get("use_progressive_math", False),

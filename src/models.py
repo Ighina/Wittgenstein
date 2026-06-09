@@ -159,6 +159,86 @@ class NormalizedPaper(BaseModel):
 
 
 # ---------------------------------------------------------------------------
+# Phase 2b – LLM-based content parsing (EnrichedPaper pathway)
+# ---------------------------------------------------------------------------
+
+
+class VerifiableUnit(BaseModel):
+    """A single verifiable claim/equation/theorem/table/figure identified by the LLM parser.
+
+    Each unit carries its core content, a list of dependencies on other units
+    or symbol definitions, and a verifier route assigned by the LLM.
+    """
+
+    unit_id: str
+    unit_type: str  # equation, theorem, lemma, proposition, definition, claim, etc.
+    content: str  # Core content to verify (latex for equations, statement for theorems, etc.)
+    location: str = ""  # Human-readable location descriptor
+    dependencies: list[str] = Field(default_factory=list)  # IDs of prerequisite units
+    required_context: str = ""  # Assembled context from dependencies (populated at segment time)
+    verifier_route: str = ""  # Which verifier should handle this (assigned by LLM)
+    is_verifiable: bool = True  # False for boilerplate / standard definitions
+    confidence: float = 1.0  # LLM's confidence in its classification [0, 1]
+    metadata: dict[str, Any] = Field(default_factory=dict)
+    source_chunk_index: int = 0  # Which LLM parse chunk this came from
+
+
+class SymbolDefinition(BaseModel):
+    """A tracked symbol/term definition extracted by the LLM parser."""
+
+    symbol_name: str  # e.g., "X", "f", "\\mathcal{H}"
+    domain: str = ""  # e.g., "real", "integer", "Banach space"
+    latex: str = ""  # Original LaTeX representation
+    natural_language: str = ""  # "Let X be a real Banach space"
+    defining_unit_id: str = ""  # The VerifiableUnit that introduces this symbol
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class EnrichedPaper(BaseModel):
+    """Paper representation produced by the LLM-based parser.
+
+    Extends the concept of NormalizedPaper with a graph of verifiable units,
+    symbol definitions, and context tracking.
+    """
+
+    paper_id: str
+    title: str
+    paper_category: str
+
+    # Verifiable units identified by the LLM
+    verifiable_units: list[VerifiableUnit] = Field(default_factory=list)
+
+    # Symbol/term registry across the paper
+    symbol_registry: list[SymbolDefinition] = Field(default_factory=list)
+
+    # Dependency graph: unit_id → list of prerequisite unit_ids
+    context_graph: dict[str, list[str]] = Field(default_factory=dict)
+
+    # Full text of unverifiable sections (preserved for reference context)
+    unverifiable_context: str = ""
+
+    # The original NormalizedPaper is still built for backward compatibility
+    sections: list[PaperSection] = Field(default_factory=list)
+    equations: list[EquationBlock] = Field(default_factory=list)
+    images: list[ImageBlock] = Field(default_factory=list)
+    tables: list[TableBlock] = Field(default_factory=list)
+    theorems: list[TheoremBlock] = Field(default_factory=list)
+    tagged_full_text: str = ""
+    raw_items: list[RawContentItem] = Field(default_factory=list)
+    parse_timestamp: str = Field(default_factory=lambda: datetime.now().isoformat())
+
+
+class LLMParseChunkResult(BaseModel):
+    """Structured output from a single LLM parser call over one text chunk."""
+
+    chunk_index: int
+    units: list[VerifiableUnit] = Field(default_factory=list)
+    symbols: list[SymbolDefinition] = Field(default_factory=list)
+    unverifiable_text: str = ""
+    section_headers: list[str] = Field(default_factory=list)
+
+
+# ---------------------------------------------------------------------------
 # Phase 3 – Error location parsing
 # ---------------------------------------------------------------------------
 
@@ -237,6 +317,12 @@ class VerificationSnippet(BaseModel):
 
     # Structured reference for alignment
     location_ref: Optional[LocationReference] = None
+
+    # Explicit verifier assignment from LLM parser (overrides type-based routing)
+    verifier_route: Optional[str] = None
+
+    # Context assembled from dependency graph (LLM parser mode only)
+    dependency_context: str = ""
 
     # Additional context
     metadata: dict[str, Any] = Field(default_factory=dict)
