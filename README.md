@@ -37,6 +37,15 @@ cd Wittgenstein
 pip install -e ".[dev]"
 ```
 
+### Download Dataset (Optional, just if using SPOT)
+
+```bash
+# download the paper verification dataset SPOT inside the data folder
+wget -O data/train-00000-of-00001.parquet \
+  "https://huggingface.co/datasets/amphora/SPOT/resolve/main/data/train-00000-of-00001.parquet?download=true"
+
+```
+
 ### First Run
 
 ```bash
@@ -286,6 +295,8 @@ The pipeline expects a parquet file with the following schema:
 | `error_annotation` | `str` | Detailed description of the error |
 | `paper_content` | `List[Dict]` | Content items (see below) |
 | `error_local_content` | `List[Dict]` or `None` | Local context around the error (25/68 rows) |
+
+This is the format of the SPOT dataset, which is the default and advised dataset from which to start. To do so, just download the parquet file for SPOT [here](https://huggingface.co/datasets/amphora/SPOT/tree/main/data) and include it in the newly create "data" folder, as described in quick-start.
 
 ### `paper_content` Structure
 
