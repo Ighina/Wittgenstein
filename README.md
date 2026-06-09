@@ -1,4 +1,4 @@
-# Paperena Verification — Automated Scientific Paper Verification Pipeline
+# Wittgenstein — Automated Scientific Paper Verification Pipeline
 
 A production-quality, modular Python pipeline that automatically verifies scientific papers against a ground-truth dataset of human-annotated errors. Designed for extensibility: new verifiers, parsers, and evaluation strategies can be added without modifying the orchestrator.
 
@@ -31,7 +31,7 @@ A production-quality, modular Python pipeline that automatically verifies scient
 
 ```bash
 # Clone and enter the project
-cd PaperenaVerification
+cd Wittgenstein
 
 # Install the package and dependencies
 pip install -e ".[dev]"
