@@ -29,6 +29,7 @@ from src.evaluation.alignment import match_predictions_to_ground_truth
 from src.evaluation.metrics import evaluate_predictions
 from src.orchestrator.orchestrator import VerificationOrchestrator
 from src.orchestrator.uncertainty_orchestrator import UncertaintyOrchestrator
+from src.orchestrator.global_read_orchestrator import GlobalReadOrchestrator
 from src.parser.content_parser import parse_paper_content
 from src.utils.logging import setup_logging
 
@@ -38,6 +39,8 @@ PARQUET = "data/train-00000-of-00001.parquet"
 def _build_orchestrator(config: PipelineConfig):
     if config.orchestration_mode == "uncertainty":
         return UncertaintyOrchestrator(config=config)
+    if config.orchestration_mode == "global_read":
+        return GlobalReadOrchestrator(config=config)
     return VerificationOrchestrator(config=config)
 
 
@@ -64,7 +67,7 @@ def main() -> None:
     ap = argparse.ArgumentParser(description="Baseline vs orchestrated pipeline.")
     ap.add_argument("paper_ids", nargs="*", help="Paper IDs to compare.")
     ap.add_argument("--n", type=int, default=None, help="Use the first N papers instead.")
-    ap.add_argument("--mode", default="uncertainty", choices=["uncertainty", "exhaustive"])
+    ap.add_argument("--mode", default="uncertainty", choices=["uncertainty", "exhaustive", "global_read"])
     ap.add_argument("--workers", "-w", type=int, default=4)
     ap.add_argument("--no-judge", action="store_true", help="Use fuzzy matching, not the LLM judge.")
     ap.add_argument("--max-input-chars", type=int, default=60000)

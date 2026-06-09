@@ -34,6 +34,27 @@ def _mock_llm_call(
     prompt_lower = prompt.lower()
     system_lower = system_prompt.lower()
 
+    # Cross-consistency mock (global_read orchestrator stage 5).
+    if "cross-consistency check" in system_lower or "CROSS-CONSISTENCY" in system_prompt:
+        # Only flag a cross-error when the prompt already contains contradictory-seeming
+        # content from different verifiers or the claims map shows tension.
+        if "contradict" in prompt_lower or "inconsist" in prompt_lower:
+            return json.dumps({
+                "cross_errors": [{
+                    "error_category": "Data Inconsistency (text-text)",
+                    "error_location": "Section 2 vs Section 3",
+                    "confidence": 0.82,
+                    "supporting_evidence": "Mock: cross-consistency detected contradictory claims between sections."
+                }],
+                "synthesis_notes": "Mock: findings from text verifier and statistical verifier point to a common underlying issue.",
+                "unverified_concerns": []
+            })
+        return json.dumps({
+            "cross_errors": [],
+            "synthesis_notes": "Mock: no cross-cutting contradictions found.",
+            "unverified_concerns": []
+        })
+
     # Triage mock — produces a deterministic uncertainty map. Equations and
     # anything mentioning suspicious keywords get higher uncertainty.
     if "triage" in system_lower:
@@ -56,6 +77,39 @@ def _mock_llm_call(
             {"uncertainty": 0.08, "route": "none",
              "reason": "Mock: routine prose."}
         )
+
+    # Global-read whole-paper analysis mock. Returns structured claims + suspicious
+    # regions so the GlobalReadOrchestrator can exercise its full pipeline.
+    if "global-read whole-paper analysis" in system_lower:
+        claims = [
+            {"claim_text": "The proposed method achieves 95% accuracy", "location": "Section 3",
+             "claim_type": "statistic", "confidence": 0.9},
+            {"claim_text": "We use algorithm X with parameter Y=5", "location": "Section 2",
+             "claim_type": "methodology", "confidence": 0.8},
+            {"claim_text": "The error is that the beamforming gain is incorrectly calculated",
+             "location": "Section 2", "claim_type": "assertion", "confidence": 0.7},
+        ]
+        regions = [
+            {"location": "Section 2", "reason": "Parameter value seems arbitrary; verify derivation.",
+             "suggested_verifier": "text", "uncertainty": 0.45},
+            {"location": "Section 3", "reason": "The 95% accuracy claim may not account for class imbalance.",
+             "suggested_verifier": "statistical", "uncertainty": 0.55},
+        ]
+        errors_list = []
+        if any(k in prompt_lower for k in ("incorrect", "wrong", "contradict", "flawed", "error")):
+            errors_list = [
+                {"error_category": "Equation / proof",
+                 "error_location": "Section 2",
+                 "confidence": 0.8,
+                 "supporting_evidence": "Mock: global-read flagged a likely error in the derivation."}
+            ]
+        assessment = "Mock: paper appears mostly sound but Section 3 results warrant closer statistical scrutiny."
+        return json.dumps({
+            "errors": errors_list,
+            "paper_claims": claims,
+            "suspicious_regions": regions,
+            "overall_assessment": assessment,
+        })
 
     # Single-call whole-paper baseline mock. Key off content-specific words only
     # ("error" appears in the prompt's own instruction line, so it is excluded).

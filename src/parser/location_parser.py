@@ -131,6 +131,14 @@ LOCATION_PATTERNS: list[tuple[re.Pattern[str], LocationType]] = [
         ),
         LocationType.ALGORITHM,
     ),
+    # Example references: Example 2, Example 3.2, Example 4a
+    (
+        re.compile(
+            r"(?:Example)\s+(\d+(?:\.\d+)?(?:[a-zA-Z])?)",
+            re.IGNORECASE,
+        ),
+        LocationType.EXAMPLE,
+    ),
 ]
 
 
@@ -140,11 +148,13 @@ def parse_error_location(raw: str) -> LocationReference:
     Handles the wide variety of location formats found in the dataset:
     - "Equation 6", "Eq. 1", "Eq. (12)"
     - "Fig 5", "Fig. 4", "Figure 5", "Fig 2d", "Fig1, Fig2"
-    - "Lemma 3,4", "Lemma 1", "Lemma 4.2"
-    - "Theorem 1.1", "Theorems 1.2, 1.3", "Theorem 7"
+    - "Lemma 3,4", "Lemma 1", "Lemma 4.2", "Lemma 3.5 proof"
+    - "Theorem 1.1", "Theorems 1.2, 1.3", "Theorem 7", "Theorem 3.3 statement"
     - "Section 4.2.3", "Sec 3", "§3.1"
     - "Table 2", "Table. 1"
+    - "Example 2", "Example 3.2"
     - "Page 4", "Page 5"
+    - "Remark 3", "Definition 2.1" (via generic word+number fallback)
 
     Args:
         raw: The raw error_location string from the dataset.
@@ -222,6 +232,37 @@ def parse_error_location(raw: str) -> LocationReference:
             identifiers=[raw],
             is_range=False,
             normalized=f"section {raw.lower().replace(' ', '_')}",
+        )
+
+    # Generic "Word Number(s)" pattern — e.g. "Remark 3", "Definition 2.1", "Note 5"
+    # (specific named types are caught by the regex table above; this handles
+    # free-form labels the LLM may invent)
+    word_num_match = re.match(
+        r"^([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(\d+(?:\.\d+)?(?:[a-zA-Z])?)$", raw
+    )
+    if word_num_match:
+        word = word_num_match.group(1).lower()
+        num = word_num_match.group(2)
+        # Map known words to their location type
+        word_type_map: dict[str, LocationType] = {
+            "remark": LocationType.CLAIM,
+            "note": LocationType.CLAIM,
+            "definition": LocationType.CLAIM,
+            "observation": LocationType.CLAIM,
+            "conjecture": LocationType.CLAIM,
+            "assumption": LocationType.CLAIM,
+            "exercise": LocationType.CLAIM,
+            "problem": LocationType.CLAIM,
+            "step": LocationType.CLAIM,
+        }
+        loc_type = word_type_map.get(word, LocationType.SECTION)
+        return LocationReference(
+            raw=raw,
+            location_type=loc_type,
+            identifier=num,
+            identifiers=[num],
+            is_range=False,
+            normalized=f"{loc_type.value} {num}",
         )
 
     # Default: unknown

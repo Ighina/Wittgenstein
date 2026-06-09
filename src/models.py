@@ -257,6 +257,7 @@ class LocationType(str, Enum):
     CLAIM = "claim"
     ALGORITHM = "algorithm"
     APPENDIX = "appendix"
+    EXAMPLE = "example"
     PAGE = "page"
     OVERALL = "overall"
     UNKNOWN = "unknown"

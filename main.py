@@ -29,6 +29,7 @@ from src.parser.location_parser import parse_error_location
 from src.parser.schema_analyzer import analyze_dataset_schema
 from src.orchestrator.orchestrator import VerificationOrchestrator
 from src.orchestrator.uncertainty_orchestrator import UncertaintyOrchestrator
+from src.orchestrator.global_read_orchestrator import GlobalReadOrchestrator
 from src.orchestrator.router import create_default_registry
 
 
@@ -36,6 +37,8 @@ def build_orchestrator(config, registry=None):
     """Pick the orchestrator implementation for the configured mode."""
     if config.orchestration_mode == "uncertainty":
         return UncertaintyOrchestrator(config=config, registry=registry)
+    if config.orchestration_mode == "global_read":
+        return GlobalReadOrchestrator(config=config, registry=registry)
     return VerificationOrchestrator(config=config, registry=registry)
 from src.evaluation.alignment import match_predictions_to_ground_truth
 from src.evaluation.metrics import evaluate_predictions
@@ -133,8 +136,9 @@ def verify(
     mode: str = typer.Option(
         "exhaustive",
         "--mode",
-        help="Orchestration: 'exhaustive' (route every snippet by type) or "
-             "'uncertainty' (triage first, route specialists by error density).",
+        help="Orchestration: 'exhaustive' (route every snippet by type), "
+             "'uncertainty' (triage first, route specialists by error density), or "
+             "'global_read' (whole-paper baseline as triage with context-enriched specialists).",
     ),
     uncertainty_threshold: float = typer.Option(
         0.30,
@@ -187,8 +191,8 @@ def verify(
     if strictness not in ("strict", "lenient"):
         console.print(f"[red]Invalid --strictness: {strictness!r} (use 'strict' or 'lenient')[/red]")
         raise typer.Exit(code=1)
-    if mode not in ("exhaustive", "uncertainty"):
-        console.print(f"[red]Invalid --mode: {mode!r} (use 'exhaustive' or 'uncertainty')[/red]")
+    if mode not in ("exhaustive", "uncertainty", "global_read"):
+        console.print(f"[red]Invalid --mode: {mode!r} (use 'exhaustive', 'uncertainty', or 'global_read')[/red]")
         raise typer.Exit(code=1)
     config = PipelineConfig(strictness=strictness)
     config.llm.num_workers = workers
@@ -327,12 +331,12 @@ def verify_one(
     mode: str = typer.Option(
         "exhaustive",
         "--mode",
-        help="Orchestration: 'exhaustive' or 'uncertainty'.",
+        help="Orchestration: 'exhaustive', 'uncertainty', or 'global_read'.",
     ),
     uncertainty_threshold: float = typer.Option(
         0.30,
         "--uncertainty-threshold",
-        help="In --mode uncertainty: escalate snippets at/above this score.",
+        help="In --mode uncertainty or global_read: escalate snippets at/above this score.",
     ),
     llm_only: Optional[str] = typer.Option(
         None,
@@ -414,8 +418,8 @@ def verify_one(
     if strictness not in ("strict", "lenient"):
         console.print(f"[red]Invalid --strictness: {strictness!r} (use 'strict' or 'lenient')[/red]")
         raise typer.Exit(code=1)
-    if mode not in ("exhaustive", "uncertainty"):
-        console.print(f"[red]Invalid --mode: {mode!r} (use 'exhaustive' or 'uncertainty')[/red]")
+    if mode not in ("exhaustive", "uncertainty", "global_read"):
+        console.print(f"[red]Invalid --mode: {mode!r} (use 'exhaustive', 'uncertainty', or 'global_read')[/red]")
         raise typer.Exit(code=1)
     config = PipelineConfig(strictness=strictness)
     config.llm.num_workers = workers
