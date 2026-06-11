@@ -1,0 +1,1 @@
+"""Paperena MCP Server — deterministic verification tools for Claude Code."""
