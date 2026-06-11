@@ -479,3 +479,72 @@ print(f"Routing: {c.verifier_routing}")
 for name, vc in c.verifiers.items():
     print(f"  {name}: enabled={vc.enabled}, threshold={vc.confidence_threshold}")
 ```
+
+---
+
+## Claude Code Configuration (`.claude/settings.json`)
+
+When driving the pipeline through Claude Code skills, configuration lives in `.claude/settings.json` rather than Python dataclasses. This file tells Claude Code about the MCP server and skill locations.
+
+### MCP Server Registration
+
+```json
+{
+  "mcpServers": {
+    "paperena": {
+      "command": "python3",
+      "args": ["server.py"],
+      "cwd": "mcp-server",
+      "env": {
+        "PYTHONPATH": ".."
+      }
+    }
+  }
+}
+```
+
+This registers the Paperena MCP server, making all 9 tools (`parse_paper`, `segment_paper`, `run_sympy_sandbox_exec`, `safe_arithmetic_eval`, `check_numeric_claim`, `get_paper_from_dataset`, `list_papers_in_dataset`, `analyze_dataset_schema`) available to Claude Code skills.
+
+### Skills Directory
+
+```json
+{
+  "skillsDirectory": ".claude/skills"
+}
+```
+
+Points Claude Code to the directory containing the 7 verification skills. Each skill is a subdirectory with a `SKILL.md` file.
+
+### Permissions
+
+The settings file also controls which tool calls are allowed without prompting:
+
+```json
+{
+  "permissions": {
+    "allow": [
+      "mcp__paperena__*",
+      "Bash(python3:*)",
+      "Skill(verify-*)"
+    ]
+  }
+}
+```
+
+- `mcp__paperena__*` — Allow all Paperena MCP tools without prompting
+- `Skill(verify-*)` — Allow invoking any verification skill
+
+### Scenario 8: Batch Verification via Claude Code
+
+```bash
+# Verify 5 papers with Claude Code skills
+python scripts/batch_verify.py --papers 5 --mode uncertainty
+
+# Evaluate results after batch run
+python scripts/batch_verify.py --papers 5 --mode exhaustive --evaluate
+
+# List available papers
+python scripts/batch_verify.py --list
+```
+
+The batch scripts use Claude Code CLI under the hood, so they inherit the MCP server and skill configuration from `.claude/settings.json`. The Python wrapper (`batch_verify.py`) adds progress bars and optional post-batch evaluation against ground truth.

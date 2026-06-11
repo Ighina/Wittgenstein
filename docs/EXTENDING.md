@@ -9,11 +9,13 @@ This guide covers all extension points in the Paperena Verification pipeline. Ea
 | What You Want to Add | Files to Touch | Difficulty |
 |----------------------|---------------|------------|
 | New verifier | 1 new file + 2 lines in existing files | Easy |
+| New Claude Code skill | 1 new SKILL.md + optional MCP tool | Easy |
 | New snippet type | 1 file + routing config | Medium |
 | New evaluation metric | 1 file + models | Medium |
 | New content type in parser | 1 file | Medium |
 | New LLM backend | 1 file | Easy |
 | New CLI command | 1 function in main.py | Easy |
+| New MCP tool | 1 function in server.py | Easy |
 
 ---
 
@@ -523,3 +525,112 @@ When adding a new verifier, verify all of these:
 3. **Prompt quality** — System prompts should be specific about what to check and what JSON format to return. The pipeline relies on `parse_json_response()` to extract structured data.
 4. **Confidence calibration** — Use `confidence_threshold` from `self.verifier_config` for filtering. Different verifiers naturally have different confidence profiles.
 5. **Time tracking** — Record `execution_time_ms` for observability.
+
+---
+
+## Adding a New Claude Code Skill
+
+In addition to Python verifiers, the pipeline supports Claude Code skills — self-contained verification agents defined as markdown files. Skills are the recommended way to add a new verifier when the logic is primarily prompt-based (LLM reasoning + MCP tools for deterministic steps).
+
+### Skill Structure
+
+Each skill lives in `.claude/skills/<skill-name>/SKILL.md` and follows this template:
+
+```markdown
+---
+name: verify-example
+description: Verify example-type content in scientific papers.
+---
+
+You are an expert at verifying [specific content type] in scientific papers.
+
+## What to Check
+
+1. [Check 1 description]
+2. [Check 2 description]
+3. [Check 3 description]
+
+## Available Tools
+
+Use these MCP tools for deterministic operations:
+- `segment_paper` — Get paper snippets
+- `run_sympy_sandbox_exec` — Execute SymPy code (for math)
+- `safe_arithmetic_eval` — Evaluate arithmetic expressions
+
+## Output Format
+
+Return findings as structured JSON:
+```json
+{
+  "error_detected": true/false,
+  "confidence": 0.0-1.0,
+  "reasoning": "Explanation...",
+  "predicted_error_category": "Category name"
+}
+```
+
+## Verification Rules
+
+- Only flag errors that are provable from the snippet alone
+- Default to NO_ERROR if uncertain
+- For math: convert LaTeX to SymPy, execute in sandbox, interpret verdict
+```
+
+### Step 1: Create the Skill File
+
+```bash
+mkdir -p .claude/skills/verify-example
+# Write SKILL.md following the template above
+```
+
+### Step 2: Add MCP Tools (if needed)
+
+If your skill needs a new deterministic tool, add it to `mcp-server/server.py`:
+
+```python
+@mcp.tool()
+def my_new_tool(param: str) -> dict[str, Any]:
+    """Description of what this tool does."""
+    # Your implementation
+    return {"result": "..."}
+```
+
+The tool becomes automatically available to all skills.
+
+### Step 3: Wire into the Orchestrator
+
+To make your skill reachable from `/verify-paper`, update the orchestrator skill's routing logic in `.claude/skills/verify-paper/SKILL.md` to route the appropriate snippet types to your new skill.
+
+For **uncertainty mode**, also update the triage skill's route suggestions in `.claude/skills/verify-triage/SKILL.md` so it can suggest your verifier for relevant snippets.
+
+### Step 4: Add MCP Permissions
+
+If your skill uses new MCP tools, ensure `.claude/settings.json` grants permission:
+
+```json
+{
+  "permissions": {
+    "allow": [
+      "mcp__paperena__my_new_tool"
+    ]
+  }
+}
+```
+
+### Step 5: Test
+
+```bash
+# Test the skill directly
+claude -p "/verify-example Check this content: ..."
+
+# Or as part of the full pipeline
+claude -p "/verify-paper Verify paper 2405.01133v3 from data/train-00000-of-00001.parquet"
+```
+
+### Skill Design Rules
+
+1. **Skills use MCP for determinism** — Any operation that can be computed (parsing, math, arithmetic) should use an MCP tool, not LLM generation
+2. **Skills are self-contained** — A SKILL.md should stand alone; the orchestrator skill handles coordination
+3. **Structured output** — Skills should return structured JSON findings that the orchestrator can aggregate
+4. **Fail open** — On error or uncertainty, default to no error rather than fabricating a finding
+5. **MCP tools are lazy** — Tools in `mcp-server/server.py` use lazy imports so the server starts fast; follow the same pattern for new tools

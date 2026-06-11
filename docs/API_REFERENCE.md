@@ -604,3 +604,53 @@ verifier so a malformed expression can never fabricate a contradiction.
 ### `setup_logging(log_level="INFO", log_file=None, serialize=False)`
 
 Configures Loguru with Rich-compatible console formatting and optional file output.
+
+---
+
+## `mcp-server` — MCP Server Tools
+
+The MCP server (`mcp-server/server.py`) exposes 9 tools via the Model Context Protocol (JSON-RPC over stdio). These are the deterministic building blocks that Claude Code skills invoke. All tools are configured in `.claude/settings.json`.
+
+### `parse_paper(paper_id, title, paper_category, paper_content, decode_images=False) → dict`
+
+Parse raw `paper_content` (list of dicts with `type`/`text`/`image_url`) into a structured paper. Returns sections, equations, images, tables, theorems, and summary counts. Each section/equation/table/theorem includes an ID, label, and content preview (truncated to 500 chars).
+
+### `segment_paper(paper_id, title, paper_category, paper_content) → dict`
+
+Parse + segment a paper in one call. Returns the paper ID, title, total snippet count, and a list of snippets — each with `snippet_id`, `snippet_type` (SECTION, EQUATION, FIGURE, TABLE, THEOREM, LEMMA, etc.), `location`, `content` (truncated to 3000 chars), `content_length`, and `metadata`. This is the primary tool used by `/verify-paper` to get verifiable units.
+
+### `run_sympy_check(latex, equation_context="") → dict`
+
+Verify a LaTeX equation via the SymPy sandbox. Returns a note directing the caller to generate SymPy code first (using the math-verifier conventions), then call `run_sympy_sandbox_exec`. The LLM→code generation step happens in the `/verify-math` skill.
+
+### `run_sympy_sandbox_exec(sympy_code, harness="", timeout_seconds=10) → dict`
+
+Execute SymPy code in a sandboxed subprocess. Prepends the standard Paperena verdict harness (unless a custom one is provided). Returns `stdout`, `stderr`, `returncode`, and a parsed `verdict` object extracted from the `VERDICT:` line in stdout.
+
+| Return field | Type | Description |
+|-------------|------|-------------|
+| `stdout` | `str` | Sandbox stdout (truncated to 2000 chars) |
+| `stderr` | `str` | Sandbox stderr (truncated to 1000 chars) |
+| `returncode` | `int` | Process exit code (-1 on error) |
+| `verdict` | `dict` or `None` | Parsed verdict: `{verdict, residual?, reason?}` |
+| `success` | `bool` | True if returncode == 0 and verdict was parsed |
+
+### `safe_arithmetic_eval(expression: str) → dict`
+
+Safely evaluate a closed arithmetic expression. Supports `+`, `-`, `*`, `/`, `**`, `%`, `sqrt`, `log`, `ln`, `log10`, `log2`, `exp`, `abs`, `round`, `min`, `max`, `sum`, `mean`, `floor`, `ceil`, `pow`, `pi`, `e`. Returns `{expression, computed, success}` or `{expression, computed: null, success: false, error}` on failure. Used by the statistical verifier to recompute reported numbers.
+
+### `check_numeric_claim(expression, expected, tolerance=0.01) → dict`
+
+Evaluate an arithmetic expression and compare to an expected value within a relative tolerance. Returns `{expression, expected, tolerance, computed, relative_error, passed}`.
+
+### `get_paper_from_dataset(paper_id, parquet_path="data/train-00000-of-00001.parquet") → dict`
+
+Fetch a single paper by DOI/arXiv ID. Returns metadata (`paper_id`, `title`, `paper_category`, `error_category`, `error_location`, `error_severity`), `paper_content` (with large text/images truncated), and a `has_ground_truth` flag. Content items over 3000 chars are truncated to keep MCP responses manageable.
+
+### `list_papers_in_dataset(parquet_path="data/train-00000-of-00001.parquet", max_papers=50, offset=0) → dict`
+
+List paper IDs and metadata from the dataset. Returns `{total_papers, offset, returned, papers: [{paper_id, title, paper_category, error_category, error_severity}]}`.
+
+### `analyze_dataset_schema(parquet_path="data/train-00000-of-00001.parquet", sample_rows=5) → dict`
+
+Analyze the dataset schema and return a full `PaperContentSchemaReport` as a dict. Includes column info, content types, error categories, paper categories, and sample content items.

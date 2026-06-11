@@ -161,6 +161,17 @@ python main.py verify --mode uncertainty --uncertainty-threshold 0.30
 `build_orchestrator(config)` in `main.py` selects the implementation from
 `config.orchestration_mode`, so both `verify` and `verify-one` support `--mode`.
 
+### Via Claude Code Skills
+
+```bash
+# Single paper with uncertainty mode
+claude -p "/verify-paper Verify paper 2405.01133v3 from data/train-00000-of-00001.parquet --mode uncertainty"
+
+# Batch verify with uncertainty mode
+./scripts/batch-verify.sh --papers 10 --mode uncertainty --threshold 0.30
+python scripts/batch_verify.py --papers 10 --mode uncertainty --threshold 0.30
+```
+
 ---
 
 ## 6. Specialized verifiers added for this mode
@@ -345,4 +356,11 @@ healthy.)
 | `src/baseline/single_call_baseline.py` | one-call whole-paper baseline |
 | `scripts/threshold_sweep.py` | recall/cost sweep |
 | `scripts/baseline_comparison.py` | baseline vs pipeline comparison |
+| `scripts/batch-verify.sh` | shell script for Claude Code batch verification |
+| `scripts/batch_verify.py` | Python script for Claude Code batch verification + evaluation |
+| `.claude/skills/verify-triage/SKILL.md` | triage skill (Claude Code) |
+| `.claude/skills/verify-paper/SKILL.md` | orchestrator skill (Claude Code) |
+| `.claude/skills/verify-math/SKILL.md` | math verifier skill (Claude Code) |
+| `.claude/skills/verify-statistical/SKILL.md` | statistical verifier skill (Claude Code) |
+| `.claude/skills/verify-citation/SKILL.md` | citation verifier skill (Claude Code) |
 | `tests/test_uncertainty.py`, `tests/test_statistical.py`, `tests/test_chunking.py`, `tests/test_baseline.py` | tests |

@@ -46,7 +46,18 @@ wget -O data/train-00000-of-00001.parquet \
 
 ```
 
-### First Run
+### Two Ways to Verify
+
+The pipeline can be driven in two ways:
+
+| Approach | Entry Point | Best For |
+|----------|------------|----------|
+| **Python CLI** | `python main.py` | Programmatic use, evaluation, sweeps |
+| **Claude Code Skills** | `claude -p "/verify-paper ..."` | Interactive verification, single papers, batch via CLI |
+
+Both share the same MCP server, verifiers, and output format.
+
+### First Run (Python CLI)
 
 ```bash
 # 1. Inspect the dataset
@@ -60,6 +71,19 @@ python main.py verify --max-papers 5
 
 # 4. Evaluate saved predictions
 python main.py evaluate
+```
+
+### First Run (Claude Code Skills)
+
+```bash
+# Verify a single paper interactively
+claude -p "/verify-paper Verify paper 2405.01133v3 from data/train-00000-of-00001.parquet"
+
+# Batch-verify N papers via the shell script
+./scripts/batch-verify.sh --papers 5
+
+# Or via the Python script (with progress bars and --evaluate)
+python scripts/batch_verify.py --papers 5 --evaluate
 ```
 
 ### Running with a Real LLM
@@ -193,6 +217,68 @@ All layers communicate through Pydantic models defined in `src/models.py`. No la
 
 ---
 
+## Claude Code Skills
+
+The pipeline can also be driven through **Claude Code skills** — self-contained verification agents that use an MCP server bridge for deterministic operations (parsing, segmentation, SymPy sandbox, etc.). Each skill is a markdown file in `.claude/skills/` defining a specialist verifier's system prompt and workflow.
+
+### Skill → MCP Server Bridge
+
+```
+┌────────────────────────────────────────────────────────────┐
+│  Claude Code                                                │
+│                                                             │
+│  /verify-paper  (orchestrator skill)                        │
+│       │                                                     │
+│       │ invokes                                             │
+│       ▼                                                     │
+│  ┌─────────────┐  ┌──────────┐  ┌──────────┐              │
+│  │ /verify-math │  │/verify-  │  │/verify-  │  …           │
+│  │             │  │ text     │  │ vision   │              │
+│  └──────┬──────┘  └────┬─────┘  └────┬─────┘              │
+│         │              │             │                      │
+└─────────┼──────────────┼─────────────┼──────────────────────┘
+          │              │             │
+          │     MCP Protocol (JSON-RPC over stdio)             │
+          │              │             │
+┌─────────▼──────────────▼─────────────▼──────────────────────┐
+│  MCP Server (mcp-server/server.py)                           │
+│                                                              │
+│  Tools: parse_paper  segment_paper  run_sympy_sandbox        │
+│         safe_eval  get_paper_from_dataset  analyze_schema    │
+│         get_error_annotations  fuzzy_match_locations         │
+│         chunk_text                                           │
+└──────────────────────────────────────────────────────────────┘
+```
+
+Skills call MCP tools for deterministic work (parsing, math execution, data access) and use Claude's built-in LLM for reasoning and judgment. This separation keeps the LLM focused on what it does best — reasoning about errors — while offloading mechanical computation to verified Python code.
+
+### Available Skills
+
+| Skill | Role | Snippet Types |
+|-------|------|---------------|
+| `/verify-paper` | **Orchestrator** — parse, segment, route, aggregate | All |
+| `/verify-triage` | **First pass** — estimate error likelihood, suggest specialist route | All (uncertainty mode) |
+| `/verify-math` | LaTeX → SymPy symbolic verification | `EQUATION` |
+| `/verify-text` | Logical contradictions, unsupported claims | `SECTION`, `THEOREM`, `LEMMA`, … |
+| `/verify-vision` | Figure/table data integrity | `FIGURE`, `TABLE` |
+| `/verify-statistical` | Numeric claim recomputation | Statistical snippets |
+| `/verify-citation` | Attribution, novelty claims | Citation/reference sections |
+
+### Running via Skills
+
+```bash
+# Interactive single-paper verification
+claude -p "/verify-paper Verify paper 2405.01133v3 from data/train-00000-of-00001.parquet"
+
+# Batch verification across N papers
+./scripts/batch-verify.sh --papers 10 --mode uncertainty
+
+# Or use the Python wrapper (with progress bars)
+python scripts/batch_verify.py --papers 10 --mode uncertainty --evaluate
+```
+
+---
+
 ## CLI Commands
 
 ### `python main.py analyze`
@@ -276,6 +362,70 @@ python scripts/threshold_sweep.py 2405.01133v3 2402.10307v2
 # with the same alignment + metrics. Writes outputs_new/baseline_comparison.json.
 python scripts/baseline_comparison.py 2405.01133v3 2402.10307v2 --mode uncertainty
 python scripts/baseline_comparison.py --provider mock          # offline dry run
+```
+
+### Batch verification via Claude Code
+
+Two scripts drive Claude Code CLI with the `/verify-paper` skill across multiple papers:
+
+#### `./scripts/batch-verify.sh` (shell)
+
+```bash
+# Verify first 5 papers
+./scripts/batch-verify.sh --papers 5
+
+# Verify a specific paper
+./scripts/batch-verify.sh --paper-id 10.1038/s41586-020-2649-2
+
+# List available papers
+./scripts/batch-verify.sh --list
+
+# Dry run — see what would be verified
+./scripts/batch-verify.sh --papers 3 --dry-run
+
+# Uncertainty mode with custom threshold
+./scripts/batch-verify.sh --papers 10 --mode uncertainty --threshold 0.40
+```
+
+```
+Options:
+  --papers N        Number of papers to verify (default: all)
+  --offset N        Skip first N papers (default: 0)
+  --output DIR      Output directory (default: outputs/claude-batch)
+  --mode MODE       Orchestration: exhaustive|uncertainty (default: exhaustive)
+  --threshold FLOAT Uncertainty threshold (default: 0.30)
+  --dry-run         Print what would be done without verifying
+  --paper-id ID     Verify a single paper by DOI/arXiv ID
+  --list            List available papers in the dataset
+```
+
+#### `python scripts/batch_verify.py` (Python)
+
+Same features as the shell script, plus Rich progress bars, JSON result parsing, and optional post-batch evaluation:
+
+```bash
+# Verify 5 papers with progress bars
+python scripts/batch_verify.py --papers 5
+
+# Verify and then evaluate against ground truth
+python scripts/batch_verify.py --papers 5 --evaluate
+
+# Single paper with structured JSON output
+python scripts/batch_verify.py --paper-id 2405.01133v3
+```
+
+```
+Options:
+  --papers, -n      Number of papers to verify
+  --offset           Skip first N papers
+  --output, -o       Output directory (default: outputs/claude-batch)
+  --mode             exhaustive|uncertainty (default: exhaustive)
+  --threshold        Uncertainty threshold (default: 0.30)
+  --dry-run          List papers without verifying
+  --paper-id         Verify a single paper by ID
+  --list             List available papers
+  --evaluate         Run evaluation after batch verification
+  --parquet, -p      Path to parquet file
 ```
 
 ---
@@ -516,17 +666,33 @@ No changes to the orchestrator, router logic, or CLI are needed.
 ## Project Structure
 
 ```
-PaperenaVerification/
+Wittgenstein/
 │
 ├── data/                              # Input parquet dataset
 │   └── train-00000-of-00001.parquet
+│
+├── .claude/                           # Claude Code configuration
+│   ├── settings.json                  # MCP server + skills config
+│   └── skills/                        # 7 verification skills
+│       ├── verify-paper/SKILL.md      #   orchestrator (parse → segment → route → aggregate)
+│       ├── verify-triage/SKILL.md     #   first-pass uncertainty scoring
+│       ├── verify-math/SKILL.md       #   LaTeX → SymPy symbolic verification
+│       ├── verify-text/SKILL.md       #   logical contradiction detection
+│       ├── verify-vision/SKILL.md     #   figure/table integrity check
+│       ├── verify-statistical/SKILL.md #  numeric claim recomputation
+│       └── verify-citation/SKILL.md   #   attribution/novelty check
+│
+├── mcp-server/                        # MCP bridge — deterministic tools for skills
+│   ├── server.py                      #   9-tool MCP server (parse, segment, sandbox, …)
+│   └── requirements.txt
 │
 ├── outputs/                           # Generated reports (gitignored)
 │   ├── metrics.json                   # All computed metrics
 │   ├── predictions.json               # Predictions + alignments
 │   ├── confusion_matrix.csv           # sklearn confusion matrix
 │   ├── raw_predictions.json           # Pre-alignment predictions
-│   └── run_summary.md                 # Comprehensive markdown report
+│   ├── run_summary.md                 # Comprehensive markdown report
+│   └── claude-batch/                  # Claude Code batch verification outputs
 │
 ├── docs/                              # Extended documentation
 │   ├── ARCHITECTURE.md
@@ -535,9 +701,11 @@ PaperenaVerification/
 │   ├── EXTENDING.md
 │   └── UNCERTAINTY_ORCHESTRATION.md   # Uncertainty mode, new verifiers, chunking, baseline
 │
-├── scripts/                          # Analysis tooling
-│   ├── threshold_sweep.py            #   recall/cost sweep for uncertainty mode
-│   └── baseline_comparison.py        #   single-call baseline vs orchestrated pipeline
+├── scripts/                           # Analysis & batch tooling
+│   ├── threshold_sweep.py             #   recall/cost sweep for uncertainty mode
+│   ├── baseline_comparison.py         #   single-call baseline vs orchestrated pipeline
+│   ├── batch-verify.sh                #   shell script for Claude Code batch verification
+│   └── batch_verify.py                #   Python script for Claude Code batch verification
 │
 ├── src/                               # Source code (5,200+ lines)
 │   ├── __init__.py                    # Package version
@@ -552,10 +720,6 @@ PaperenaVerification/
 │   ├── segmentation/                  # Phase 3: paper → snippets
 │   │   └── segmenter.py               #   segment_paper()
 │   │
-│   ├── orchestrator/                  # Phase 4–5: coordination & routing
-│   │   ├── orchestrator.py            #   VerificationOrchestrator
-│   │   └── router.py                  #   select_verifier(), create_default_registry()
-│   │
 │   ├── verifiers/                     # Phase 6–8: verification modules
 │   │   ├── base.py                    #   Abstract BaseVerifier (+ chunk aggregation)
 │   │   ├── registry.py                #   VerifierRegistry (plugin system)
@@ -564,10 +728,13 @@ PaperenaVerification/
 │   │   ├── text_verifier.py           #   TextVerifier (chunked)
 │   │   ├── statistical_verifier.py    #   StatisticalVerifier (deterministic numeric)
 │   │   ├── citation_verifier.py       #   CitationVerifier (attribution/novelty)
-│   │   └── triage_verifier.py         #   TriageVerifier (uncertainty scoring)
+│   │   ├── triage_verifier.py         #   TriageVerifier (uncertainty scoring)
+│   │   └── llm_only_verifier.py       #   LLM-only fallback verifier
 │   │
-│   ├── orchestrator/                  #   …also uncertainty_orchestrator.py
-│   │   └── uncertainty_orchestrator.py #   UncertaintyOrchestrator
+│   ├── orchestrator/                  # Phase 4–5: coordination & routing
+│   │   ├── orchestrator.py            #   VerificationOrchestrator (exhaustive mode)
+│   │   ├── uncertainty_orchestrator.py #  UncertaintyOrchestrator (triage-first)
+│   │   └── router.py                  #   select_verifier(), registry, route resolution
 │   │
 │   ├── baseline/                      # Comparison baselines
 │   │   └── single_call_baseline.py    #   SingleCallBaseline (whole paper, one call)
@@ -653,6 +820,7 @@ pytest tests/test_integration.py -v
 | `scipy` | ≥1.10 | Numerical support for the statistical verifier |
 | `typer` | ≥0.9 | CLI framework |
 | `openai` | (runtime) | OpenAI-compatible client for the OpenAI/DeepSeek backends |
+| `mcp` | ≥1.0 | MCP server framework for Claude Code skill bridge |
 
 Optional extras (`pip install '.[units]'`):
 
@@ -666,6 +834,6 @@ Optional extras (`pip install '.[units]'`):
 
 - [ARCHITECTURE.md](docs/ARCHITECTURE.md) — Deep dive into the design, data flow, and patterns
 - [UNCERTAINTY_ORCHESTRATION.md](docs/UNCERTAINTY_ORCHESTRATION.md) — Uncertainty-driven orchestration, triage, statistical/citation verifiers, chunking, threshold sweep, and baseline comparison
-- [API_REFERENCE.md](docs/API_REFERENCE.md) — Complete API reference for all modules
-- [CONFIGURATION.md](docs/CONFIGURATION.md) — Detailed configuration guide with examples
-- [EXTENDING.md](docs/EXTENDING.md) — Step-by-step guide to adding verifiers, parsers, and metrics
+- [API_REFERENCE.md](docs/API_REFERENCE.md) — Complete API reference for all modules and MCP server tools
+- [CONFIGURATION.md](docs/CONFIGURATION.md) — Detailed configuration guide (Python config + `.claude/settings.json`)
+- [EXTENDING.md](docs/EXTENDING.md) — Step-by-step guide to adding verifiers, parsers, metrics, and Claude Code skills
