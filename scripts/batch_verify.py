@@ -65,14 +65,16 @@ def get_paper_list(
 
     papers = []
     for _, row in df.iterrows():
-        papers.append({
-            "paper_id": str(row["doi/arxiv_id"]),
-            "title": str(row.get("title", ""))[:200],
-            "paper_category": str(row.get("paper_category", "")),
-            "error_category": str(row.get("error_category", "")),
-            "error_location": str(row.get("error_location", "")),
-            "error_severity": str(row.get("error_severity", "")),
-        })
+        papers.append(
+            {
+                "paper_id": str(row["doi/arxiv_id"]),
+                "title": str(row.get("title", ""))[:200],
+                "paper_category": str(row.get("paper_category", "")),
+                "error_category": str(row.get("error_category", "")),
+                "error_location": str(row.get("error_location", "")),
+                "error_severity": str(row.get("error_severity", "")),
+            }
+        )
     return papers
 
 
@@ -92,16 +94,18 @@ def build_verify_prompt(
     if mode == "uncertainty":
         parts.append(f"Use uncertainty threshold: {threshold}.")
 
-    parts.extend([
-        "",
-        "Steps:",
-        "1. Use the get_paper_from_dataset MCP tool to fetch the paper.",
-        "2. Use the segment_paper MCP tool to parse and segment the paper.",
-        "3. For each snippet, route to the appropriate specialist verifier skill using the Skill tool.",
-        "4. Aggregate all findings into a verification report.",
-        "5. Include comparison with the ground truth annotation from the dataset.",
-        "6. Output the final report as structured JSON.",
-    ])
+    parts.extend(
+        [
+            "",
+            "Steps:",
+            "1. Use the get_paper_from_dataset MCP tool to fetch the paper.",
+            "2. Use the segment_paper MCP tool to parse and segment the paper.",
+            "3. For each snippet, route to the appropriate specialist verifier skill using the Skill tool.",
+            "4. Aggregate all findings into a verification report.",
+            "5. Include comparison with the ground truth annotation from the dataset.",
+            "6. Output the final report as structured JSON.",
+        ]
+    )
 
     return "\n".join(parts)
 
@@ -144,8 +148,19 @@ def run_claude_verify(prompt: str, output_file: Path) -> tuple[bool, str]:
         return False, msg
 
 
-def parse_verification_result(output_text: str, paper_id: str) -> dict:
-    """Try to extract structured verification result from Claude's output."""
+def parse_verification_result(
+    output_text: str, paper_id: str, output_md_file: Optional[Path] = None
+) -> dict:
+    """Try to extract structured verification result from Claude's output.
+
+    First attempts to parse JSON embedded in the markdown output text.
+    If that fails, looks for companion JSON report files saved alongside
+    the markdown output by the /verify-paper skill
+    (e.g., ``verification_report_<paper_id>.json`` or
+    ``verification_<paper_id>.json``).
+    """
+    import re
+
     result = {
         "paper_id": paper_id,
         "verification_timestamp": datetime.now().isoformat(),
@@ -155,10 +170,8 @@ def parse_verification_result(output_text: str, paper_id: str) -> dict:
         "raw_output_length": len(output_text),
     }
 
-    # Try to find a JSON block with verification results
-    # Look for ```json ... ``` blocks
-    import re
-    json_blocks = re.findall(r'```json\s*\n(.*?)\n```', output_text, re.DOTALL)
+    # -- 1. Try to find a JSON block embedded in the markdown output --
+    json_blocks = re.findall(r"```json\s*\n(.*?)\n```", output_text, re.DOTALL)
     for block in json_blocks:
         try:
             parsed = json.loads(block)
@@ -181,22 +194,68 @@ def parse_verification_result(output_text: str, paper_id: str) -> dict:
             except json.JSONDecodeError:
                 continue
 
+    # -- 2. Fall back to companion JSON report files saved by /verify-paper --
+    if not result["success"] and output_md_file is not None:
+        output_dir = output_md_file.parent
+
+        # The skill produces JSON reports with naming variations:
+        #   verification_report_<id>.json
+        #   verification_<id>.json
+        #   <id>_verification_report.json
+        # Additionally, the ID may have / and . replaced with _ (e.g. DOIs).
+        # Strategy: glob for all *report*.json / verification*.json files and
+        # match by looking inside each file for the correct paper_id.
+        json_candidates = sorted(
+            set(output_dir.glob("*report*.json"))
+            | set(output_dir.glob("verification*.json"))
+        )
+
+        # Exclude known non-per-paper files
+        skip_names = {"batch_results.json", "metrics.json", "predictions.json",
+                       "confusion_matrix.json"}
+        json_candidates = [
+            p for p in json_candidates if p.name not in skip_names
+        ]
+
+        for json_path in json_candidates:
+            try:
+                parsed = json.loads(json_path.read_text())
+            except (json.JSONDecodeError, OSError):
+                continue
+            # Match by paper_id inside the JSON
+            if parsed.get("paper_id") != paper_id:
+                continue
+            predicted_errors = parsed.get("predicted_errors", [])
+            if predicted_errors:
+                result["predicted_errors"] = predicted_errors
+                result["verdict"] = parsed.get("verdict", result["verdict"])
+                result["title"] = parsed.get("title", "")
+                result["paper_category"] = parsed.get("paper_category", "")
+                if "statistics" in parsed:
+                    result["statistics"] = parsed["statistics"]
+                result["success"] = True
+                break
+
     return result
 
 
 @app.command()
 def main(
     papers: Optional[int] = typer.Option(
-        None, "--papers", "-n",
+        None,
+        "--papers",
+        "-n",
         help="Number of papers to verify (default: all).",
     ),
     offset: int = typer.Option(
-        0, "--offset",
+        0,
+        "--offset",
         help="Skip first N papers.",
     ),
     output_dir: str = typer.Option(
         "outputs/claude-batch",
-        "--output", "-o",
+        "--output",
+        "-o",
         help="Output directory for results.",
     ),
     mode: str = typer.Option(
@@ -210,30 +269,77 @@ def main(
         help="Uncertainty threshold for uncertainty mode.",
     ),
     dry_run: bool = typer.Option(
-        False, "--dry-run",
+        False,
+        "--dry-run",
         help="List papers without verifying.",
     ),
     paper_id: Optional[str] = typer.Option(
-        None, "--paper-id",
+        None,
+        "--paper-id",
         help="Verify a single paper by DOI/arXiv ID.",
     ),
     list_papers: bool = typer.Option(
-        False, "--list",
+        False,
+        "--list",
         help="List available papers in the dataset.",
     ),
     evaluate: bool = typer.Option(
-        False, "--evaluate",
+        False,
+        "--evaluate",
         help="Run evaluation after batch verification.",
     ),
     parquet_path: str = typer.Option(
         "data/train-00000-of-00001.parquet",
-        "--parquet", "-p",
+        "--parquet",
+        "-p",
         help="Path to the parquet dataset file.",
+    ),
+    eval_dir: Optional[str] = typer.Option(
+        None,
+        "--eval-dir",
+        help="Run evaluation only on an existing output directory (skips verification).",
+    ),
+    llm_judge: bool = typer.Option(
+        False,
+        "--llm-judge",
+        "-j",
+        help="Use an LLM judge for semantic error matching instead of fuzzy location matching.",
+    ),
+    judge_model: Optional[str] = typer.Option(
+        None,
+        "--judge-model",
+        help="Model to use for the LLM judge (default: auto-detected from provider).",
+    ),
+    judge_provider: Optional[str] = typer.Option(
+        None,
+        "--judge-provider",
+        help="LLM provider for the judge: anthropic, openai, or deepseek (default: auto-detect).",
     ),
 ) -> None:
     """Batch-verify papers from the parquet dataset using Claude Code."""
-    parquet_full = PROJECT_ROOT / parquet_path
-    output_full = PROJECT_ROOT / output_dir
+    # Resolve paths here, after typer has parsed the actual string values
+    parquet_full = (
+        Path(parquet_path)
+        if Path(parquet_path).is_absolute()
+        else PROJECT_ROOT / parquet_path
+    )
+    output_full = (
+        Path(output_dir)
+        if Path(output_dir).is_absolute()
+        else PROJECT_ROOT / output_dir
+    )
+
+    # --eval-dir mode: rebuild batch_results.json from existing outputs and evaluate
+    if eval_dir:
+        eval_full = (
+            Path(eval_dir)
+            if Path(eval_dir).is_absolute()
+            else PROJECT_ROOT / eval_dir
+        )
+        _eval_existing_directory(
+            eval_full, parquet_full, llm_judge, judge_model, judge_provider,
+        )
+        return
 
     # --list mode
     if list_papers:
@@ -261,7 +367,9 @@ def main(
     # --dry-run mode
     if dry_run:
         paper_list = get_paper_list(parquet_full, max_papers=papers, offset=offset)
-        console.print(f"\n[bold]🔍 DRY RUN — Would verify {len(paper_list)} papers[/bold]\n")
+        console.print(
+            f"\n[bold]🔍 DRY RUN — Would verify {len(paper_list)} papers[/bold]\n"
+        )
         for i, p in enumerate(paper_list, 1):
             console.print(f"  {i}. [{p['paper_category']}] {p['paper_id']}")
             console.print(f"     {p['title'][:100]}")
@@ -291,7 +399,7 @@ def main(
 
         if success:
             console.print(f"[green]✅ Verification complete → {output_file}[/green]")
-            result = parse_verification_result(output, paper_id)
+            result = parse_verification_result(output, paper_id, output_file)
             summary_file = output_full / f"{paper_id.replace('/', '_')}_result.json"
             summary_file.write_text(json.dumps(result, indent=2))
         else:
@@ -320,16 +428,11 @@ def main(
         TextColumn("[progress.description]{task.description}"),
         console=console,
     ) as progress:
-        task = progress.add_task(
-            f"[cyan]Verifying {total} papers...", total=total
-        )
+        task = progress.add_task(f"[cyan]Verifying {total} papers...", total=total)
 
         for i, paper in enumerate(paper_list, 1):
             pid = paper["paper_id"]
-            progress.update(
-                task,
-                description=f"[cyan][{i}/{total}] Verifying {pid}..."
-            )
+            progress.update(task, description=f"[cyan][{i}/{total}] Verifying {pid}...")
 
             prompt = build_verify_prompt(pid, mode, threshold)
             output_file = output_full / f"{pid.replace('/', '_')}.md"
@@ -338,7 +441,7 @@ def main(
 
             if success:
                 verified += 1
-                result = parse_verification_result(output, pid)
+                result = parse_verification_result(output, pid, output_file)
                 result["ground_truth"] = {
                     "error_category": paper["error_category"],
                     "error_location": paper["error_location"],
@@ -362,35 +465,178 @@ def main(
 
     # Save aggregate results
     results_file = output_full / "batch_results.json"
-    results_file.write_text(json.dumps({
-        "batch_timestamp": datetime.now().isoformat(),
-        "total_papers": total,
-        "verified": verified,
-        "failed": failed,
-        "mode": mode,
-        "threshold": threshold,
-        "duration_seconds": elapsed,
-        "results": all_results,
-    }, indent=2))
+    results_file.write_text(
+        json.dumps(
+            {
+                "batch_timestamp": datetime.now().isoformat(),
+                "total_papers": total,
+                "verified": verified,
+                "failed": failed,
+                "mode": mode,
+                "threshold": threshold,
+                "duration_seconds": elapsed,
+                "results": all_results,
+            },
+            indent=2,
+        )
+    )
 
     # Summary
-    console.print(f"\n[bold green]═══════════════════════════════════════════[/bold green]")
+    console.print(
+        f"\n[bold green]═══════════════════════════════════════════[/bold green]"
+    )
     console.print(f"[bold green]Batch verification complete![/bold green]")
     console.print(f"  Total:   {total}")
     console.print(f"  ✅ Done: {verified}")
     console.print(f"  ❌ Failed: {failed}")
     console.print(f"  ⏱️  Time:  {elapsed:.0f}s ({elapsed/60:.1f}m)")
     console.print(f"  📁 Saved: {results_file}")
-    console.print(f"[bold green]═══════════════════════════════════════════[/bold green]")
+    console.print(
+        f"[bold green]═══════════════════════════════════════════[/bold green]"
+    )
 
     # Optionally evaluate
     if evaluate and verified > 0:
         console.print(f"\n[bold]Running evaluation against ground truth...[/bold]")
-        _run_evaluation(results_file, parquet_full, output_full)
+        _run_evaluation(
+            results_file, parquet_full, output_full,
+            llm_judge, judge_model, judge_provider,
+        )
 
 
-def _run_evaluation(results_file: Path, parquet_path: Path, output_dir: Path) -> None:
-    """Run evaluation comparing batch results to ground truth."""
+def _eval_existing_directory(
+    eval_dir: Path, parquet_path: Path,
+    llm_judge: bool = False,
+    judge_model: Optional[str] = None,
+    judge_provider: Optional[str] = None,
+) -> None:
+    """Rebuild batch_results.json from existing .md + companion JSON files, then evaluate.
+
+    This is useful when you have already run verification and want to re-evaluate
+    without re-running Claude Code (e.g. after a fix to the result parser).
+    """
+    # Index companion JSON files by paper_id
+    json_by_paper: dict[str, Path] = {}
+    for json_path in sorted(
+        set(eval_dir.glob("*report*.json"))
+        | set(eval_dir.glob("verification*.json"))
+    ):
+        skip_names = {
+            "batch_results.json", "metrics.json", "predictions.json",
+            "confusion_matrix.json",
+        }
+        if json_path.name in skip_names:
+            continue
+        try:
+            parsed = json.loads(json_path.read_text())
+            pid = parsed.get("paper_id", "")
+            if pid:
+                json_by_paper[pid] = json_path
+        except (json.JSONDecodeError, OSError):
+            continue
+
+    if not json_by_paper:
+        console.print(f"[red]No companion JSON reports found in {eval_dir}[/red]")
+        raise typer.Exit(code=1)
+
+    console.print(
+        f"\n[bold cyan]🔍 Rebuilding results from {len(json_by_paper)} companion JSON(s) "
+        f"in {eval_dir}[/bold cyan]\n"
+    )
+
+    paper_list = get_paper_list(parquet_path)
+    gt_by_paper = {
+        p["paper_id"]: {
+            "error_category": p["error_category"],
+            "error_location": p["error_location"],
+            "error_severity": p["error_severity"],
+        }
+        for p in paper_list
+    }
+
+    all_results = []
+    verified = 0
+    failed = 0
+
+    for paper_id, json_path in sorted(json_by_paper.items()):
+        # Find the matching .md file using the sanitized paper_id
+        sanitized = paper_id.replace("/", "_")
+        md_file = eval_dir / f"{sanitized}.md"
+
+        if not md_file.exists():
+            # Try with dots also replaced (some DOI naming)
+            sanitized2 = sanitized.replace(".", "_")
+            md_file = eval_dir / f"{sanitized2}.md"
+
+        if not md_file.exists():
+            failed += 1
+            console.print(f"  [red]✗[/red] {paper_id}: companion JSON exists but no .md file found")
+            continue
+
+        text = md_file.read_text()
+        result = parse_verification_result(text, paper_id, md_file)
+
+        if not result["success"]:
+            failed += 1
+            console.print(f"  [red]✗[/red] {paper_id}: failed to parse verification result")
+            continue
+
+        verified += 1
+        num_errors = len(result.get("predicted_errors", []))
+        console.print(
+            f"  [green]✓[/green] {paper_id}: "
+            f"{num_errors} predicted error(s), verdict={result.get('verdict', '?')}"
+        )
+
+        gt = gt_by_paper.get(paper_id)
+        if gt:
+            result["ground_truth"] = gt
+        all_results.append(result)
+
+    # Write the corrected batch_results.json
+    results_file = eval_dir / "batch_results.json"
+    results_file.write_text(
+        json.dumps(
+            {
+                "batch_timestamp": datetime.now().isoformat(),
+                "total_papers": len(json_by_paper),
+                "verified": verified,
+                "failed": failed,
+                "mode": "eval-dir (reconstructed)",
+                "threshold": 0.0,
+                "duration_seconds": 0,
+                "results": all_results,
+            },
+            indent=2,
+        )
+    )
+
+    console.print(
+        f"\n[bold green]Rebuilt {results_file}[/bold green] "
+        f"({verified} ok, {failed} failed)"
+    )
+
+    if verified > 0:
+        console.print(f"\n[bold]Running evaluation against ground truth...[/bold]")
+        _run_evaluation(
+            results_file, parquet_path, eval_dir,
+            llm_judge, judge_model, judge_provider,
+        )
+
+
+def _run_evaluation(
+    results_file: Path, parquet_path: Path, output_dir: Path,
+    llm_judge: bool = False,
+    judge_model: Optional[str] = None,
+    judge_provider: Optional[str] = None,
+) -> None:
+    """Run evaluation comparing batch results to ground truth.
+
+    When ``llm_judge`` is True, uses an LLM to semantically compare predicted
+    errors against ground-truth annotations, which handles paraphrased error
+    descriptions and differing location references.  Otherwise falls back to
+    fuzzy location-string matching.
+    """
     try:
         # Load predictions from the batch results
         batch_data = json.loads(results_file.read_text())
@@ -399,7 +645,6 @@ def _run_evaluation(results_file: Path, parquet_path: Path, output_dir: Path) ->
         for r in batch_data["results"]:
             if not r.get("success"):
                 continue
-            # Convert to the format expected by the evaluation module
             from src.models import PaperPrediction, PredictedError
 
             paper_pred = PaperPrediction(
@@ -418,6 +663,55 @@ def _run_evaluation(results_file: Path, parquet_path: Path, output_dir: Path) ->
             )
             predictions.append(paper_pred)
 
+        # Build config for LLM judge if requested
+        config = None
+        if llm_judge:
+            from src.config import PipelineConfig, LLMConfig
+            import os as _os
+
+            # Auto-detect provider and model from available API keys
+            if not judge_provider:
+                if _os.environ.get("ANTHROPIC_API_KEY"):
+                    judge_provider = "anthropic"
+                elif _os.environ.get("DEEPSEEK_API_KEY"):
+                    judge_provider = "deepseek"
+                elif _os.environ.get("OPENAI_API_KEY"):
+                    judge_provider = "openai"
+                else:
+                    judge_provider = "deepseek"  # will fail with a clear message
+
+            # Sensible model defaults per provider
+            if not judge_model:
+                defaults = {
+                    "anthropic": "claude-sonnet-4-6",
+                    "deepseek": "deepseek-v4-pro",
+                    "openai": "gpt-4o",
+                }
+                judge_model = defaults.get(judge_provider, "deepseek-v4-pro")
+
+            api_key_env = {
+                "anthropic": "ANTHROPIC_API_KEY",
+                "deepseek": "DEEPSEEK_API_KEY",
+                "openai": "OPENAI_API_KEY",
+            }.get(judge_provider, "DEEPSEEK_API_KEY")
+
+            llm_cfg = LLMConfig(
+                provider=judge_provider,
+                model=judge_model,
+                api_key_env=api_key_env,
+            )
+            config = PipelineConfig(llm=llm_cfg, use_llm_judge=True)
+            config.judge_model = judge_model
+            console.print(
+                f"\n[bold cyan]🧠 Using LLM judge ({judge_provider}/{judge_model}) "
+                f"for semantic error matching[/bold cyan]"
+            )
+        else:
+            console.print(
+                f"\n[dim]Using fuzzy location matching "
+                f"(pass --llm-judge for semantic matching)[/dim]"
+            )
+
         # Run the standard evaluation
         df = pd.read_parquet(parquet_path)
         from src.evaluation.alignment import match_predictions_to_ground_truth
@@ -426,7 +720,7 @@ def _run_evaluation(results_file: Path, parquet_path: Path, output_dir: Path) ->
         from src.parser.schema_analyzer import analyze_dataset_schema
 
         schema_report = analyze_dataset_schema(parquet_path)
-        aligned = match_predictions_to_ground_truth(predictions, df)
+        aligned = match_predictions_to_ground_truth(predictions, df, config=config)
         metrics = evaluate_predictions(aligned, df)
 
         console.print(f"\n[bold]Evaluation Results:[/bold]")
@@ -434,6 +728,9 @@ def _run_evaluation(results_file: Path, parquet_path: Path, output_dir: Path) ->
         console.print(f"  Precision: {metrics.precision:.4f}")
         console.print(f"  Recall:    {metrics.recall:.4f}")
         console.print(f"  F1 Score:  {metrics.f1_score:.4f}")
+
+        # ── Per-paper breakdown of TP / FP / FN ──
+        _print_per_paper_breakdown(aligned, predictions)
 
         report_dir = generate_report(
             metrics=metrics,
@@ -447,7 +744,71 @@ def _run_evaluation(results_file: Path, parquet_path: Path, output_dir: Path) ->
 
     except Exception as exc:
         console.print(f"[red]Evaluation failed: {exc}[/red]")
+        import traceback
+        console.print(f"[red]{traceback.format_exc()}[/red]")
+
+
+def _print_per_paper_breakdown(
+    aligned: list, predictions: list,
+) -> None:
+    """Print a per-paper breakdown of true positives, false positives, and false negatives."""
+    from collections import defaultdict
+
+    # Group aligned predictions by paper
+    by_paper: dict[str, dict] = defaultdict(lambda: {"tp": [], "fp": [], "fn": []})
+    for a in aligned:
+        if a.is_true_positive:
+            by_paper[a.paper_id]["tp"].append(a)
+        elif a.is_false_positive:
+            by_paper[a.paper_id]["fp"].append(a)
+        else:
+            by_paper[a.paper_id]["fn"].append(a)
+
+    # Only show papers that have predictions or matched ground truth
+    predicted_paper_ids = {p.paper_id for p in predictions}
+    relevant = {pid for pid in by_paper if pid in predicted_paper_ids or by_paper[pid]["fn"]}
+
+    if not relevant:
+        return
+
+    console.print(f"\n[bold]Per-Paper Breakdown:[/bold]")
+
+    for paper_id in sorted(relevant):
+        info = by_paper[paper_id]
+        tp_count = len(info["tp"])
+        fp_count = len(info["fp"])
+        fn_count = len(info["fn"])
+
+        parts = []
+        if tp_count:
+            parts.append(f"[green]{tp_count} TP[/green]")
+        if fp_count:
+            parts.append(f"[yellow]{fp_count} FP[/yellow]")
+        if fn_count:
+            parts.append(f"[red]{fn_count} FN[/red]")
+
+        console.print(f"  [cyan]{paper_id}[/cyan]: {', '.join(parts)}")
+
+        # Show FP details — predictions with no matching ground truth
+        for fp in info["fp"]:
+            console.print(
+                f"    [yellow]FP:[/yellow] [{fp.predicted.error_category}] "
+                f"{fp.predicted.error_location[:80]}"
+            )
+        # Show FN details — ground truth errors that were missed
+        for fn in info["fn"]:
+            console.print(
+                f"    [red]FN:[/red] [{fn.ground_truth_category}] "
+                f"{fn.ground_truth_location[:80]}"
+            )
+
+    total_fp = sum(len(info["fp"]) for info in by_paper.values() if info["fp"])
+    if total_fp:
+        console.print(
+            f"\n[yellow]⚠ {total_fp} prediction(s) did not match any ground-truth "
+            f"error — potential false alarms.[/yellow]"
+        )
 
 
 if __name__ == "__main__":
-    main()
+    app()
