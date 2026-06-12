@@ -19,6 +19,15 @@ from src.models import LocationReference, LocationType
 # ---------------------------------------------------------------------------
 
 LOCATION_PATTERNS: list[tuple[re.Pattern[str], LocationType]] = [
+    # Section / Sec / § — must come BEFORE theorem/proposition/lemma so that
+    # "Section 4.2.3 (proof of Proposition X)" parses as SECTION, not PROPOSITION.
+    (
+        re.compile(
+            r"(?:Section|Sec|§)\.?\s*(\d+(?:\.\d+)*(?:\s*[,&]\s*\d+(?:\.\d+)*)*)",
+            re.IGNORECASE,
+        ),
+        LocationType.SECTION,
+    ),
     # Equation references
     (
         re.compile(
@@ -55,7 +64,7 @@ LOCATION_PATTERNS: list[tuple[re.Pattern[str], LocationType]] = [
     # Lemma references: Lemma 3,4, Lemma 1, Lemma 4.2
     (
         re.compile(
-            r"(?:Lemma)\s*(\d+(?:\.\d+)?(?:\s*[,&]\s*\d+(?:\.\d+)?)*)",
+            r"(?:Lemma)\s*(\d+(?:\.\d+)*(?:\s*[,&]\s*\d+(?:\.\d+)*)*)",
             re.IGNORECASE,
         ),
         LocationType.LEMMA,
@@ -63,7 +72,7 @@ LOCATION_PATTERNS: list[tuple[re.Pattern[str], LocationType]] = [
     # Theorem references: Theorem 1.1, Theorem 2.3, Theorems 1.2, 1.3, Theorem 7
     (
         re.compile(
-            r"(?:Theorem)s?\s*(\d+(?:\.\d+)?(?:\s*[,&]\s*\d+(?:\.\d+)?)*)",
+            r"(?:Theorem)s?\s*(\d+(?:\.\d+)*(?:\s*[,&]\s*\d+(?:\.\d+)*)*)",
             re.IGNORECASE,
         ),
         LocationType.THEOREM,
@@ -71,7 +80,7 @@ LOCATION_PATTERNS: list[tuple[re.Pattern[str], LocationType]] = [
     # Proposition references: Proposition 2, Proposition 3.9, Proposition 4.6
     (
         re.compile(
-            r"(?:Proposition)\s*(\d+(?:\.\d+)?(?:\s*[,&]\s*\d+(?:\.\d+)?)*)",
+            r"(?:Proposition)\s*(\d+(?:\.\d+)*(?:\s*[,&]\s*\d+(?:\.\d+)*)*)",
             re.IGNORECASE,
         ),
         LocationType.PROPOSITION,
@@ -86,7 +95,7 @@ LOCATION_PATTERNS: list[tuple[re.Pattern[str], LocationType]] = [
     ),
     (
         re.compile(
-            r"(?:Corollary)\s*(\d+(?:\.\d+)?)",
+            r"(?:Corollary)\s*(\d+(?:\.\d+)*)",
             re.IGNORECASE,
         ),
         LocationType.COROLLARY,
@@ -94,18 +103,10 @@ LOCATION_PATTERNS: list[tuple[re.Pattern[str], LocationType]] = [
     # Claim references: Claim 3, Claim 7
     (
         re.compile(
-            r"(?:Claim)\s*(\d+(?:\.\d+)?)",
+            r"(?:Claim)\s*(\d+(?:\.\d+)*)",
             re.IGNORECASE,
         ),
         LocationType.CLAIM,
-    ),
-    # Section references: Section 4.2.3, Sec 3.1, §3.1, Sec 3, Sec4, Section. 3.1.2
-    (
-        re.compile(
-            r"(?:Section|Sec|§)\.?\s*(\d+(?:\.\d+)*(?:\s*[,&]\s*\d+(?:\.\d+)*)*)",
-            re.IGNORECASE,
-        ),
-        LocationType.SECTION,
     ),
     # Appendix references: Appendix B
     (
@@ -285,11 +286,23 @@ def fuzzy_match_locations(
     ref_a = loc_a if isinstance(loc_a, LocationReference) else parse_error_location(loc_a)
     ref_b = loc_b if isinstance(loc_b, LocationReference) else parse_error_location(loc_b)
 
-    # If types differ, no match
+    # If types differ, try string-similarity fallback (with a penalty).
+    # This handles cases like "Equation 3" vs "Section 3.1.2" where different
+    # granularity levels are used to reference the same error location.
     if ref_a.location_type != ref_b.location_type:
-        # Special case: both are "unknown" → partial match possible
+        # Special case: either is "unknown" → partial match
         if ref_a.location_type == LocationType.UNKNOWN or ref_b.location_type == LocationType.UNKNOWN:
             return _string_similarity(ref_a.normalized, ref_b.normalized) * 0.5
+        # Cross-type: use string similarity on the raw/normalized strings with
+        # a penalty.  Even when types differ, the same error may be referenced
+        # at different granularity (e.g. "Equation 3" vs "Section 3.1.2").
+        raw_a = ref_a.raw.lower() if hasattr(ref_a, 'raw') else ref_a.normalized
+        raw_b = ref_b.raw.lower() if hasattr(ref_b, 'raw') else ref_b.normalized
+        raw_sim = _string_similarity(raw_a, raw_b)
+        norm_sim = _string_similarity(ref_a.normalized, ref_b.normalized)
+        best = max(raw_sim, norm_sim)
+        if best > 0:
+            return best * 0.80  # cross-type penalty
         return 0.0
 
     # Compare identifiers

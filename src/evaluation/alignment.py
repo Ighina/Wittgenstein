@@ -358,9 +358,9 @@ def _find_best_match(
             gt_entry["error_location"],
         )
 
-        # Bonus for matching error categories
+        # Bonus for matching error categories (strong signal)
         if pred_error.error_category == gt_entry["error_category"]:
-            score = min(1.0, score + 0.15)
+            score = min(1.0, score + 0.25)
 
         if score > best_score:
             best_score = score
