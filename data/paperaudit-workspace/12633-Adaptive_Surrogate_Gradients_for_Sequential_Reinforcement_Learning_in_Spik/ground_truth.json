@@ -1,0 +1,222 @@
+[
+  {
+    "id": 1,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Fabricate superior performance metrics in Table 3 to exaggerate the advantage of the proposed SNN method over baseline ANNs.",
+    "error_explanation": "Table 3 reports that the SNN achieves a position error of 0.04m, which is 2.5× better than the ANN baseline (0.1m) from Eschmann et al. [14]. However, the text in Section 5.3 states the SNN exhibits 'oscillatory behavior' and later notes 'reduced reliability' compared to ANNs. These contradictory statements—claiming both superior precision and reduced stability—are internally inconsistent. Furthermore, no error bars or statistical tests are provided to support such a dramatic improvement claim, and the trajectory error (0.24m) is actually worse than the ANN (0.21m), making the position error claim suspect.",
+    "needs_cross_section": false,
+    "target_find": "Table 3: Comparison of neural network models for position control and trajectory tracking tasks. The models include an ANN with action history, an ANN without action history, and an SNN trained with TD3BC+JSRL without action history. The mean position error of the deployed SNNs is benchmarked against the best-performing ANN policy [14]. Position error is measured as the average xy-plane error (in meters), and trajectory tracking error is evaluated as the average error across figure-eight and square-following tasks. The ANN without action history did not manage to stabilize the quadrotor.\n\n|                       | ANN action history [14] | ANN no action history [14] | SNN no action history [Ours] |\n| --------------------- | ----------------------- | -------------------------- | ---------------------------- |\n| Position Error [m]    | 0.1                     | 0.25                       | 0.04                         |\n| Trajectory Error [m]  | 0.21                    | N/A                        | 0.24                         |",
+    "replacement": "Table 3: Comparison of neural network models for position control and trajectory tracking tasks. The models include an ANN with action history, an ANN without action history, and an SNN trained with TD3BC+JSRL without action history. The mean position error of the deployed SNNs is benchmarked against the best-performing ANN policy [14]. Position error is measured as the average xy-plane error (in meters), and trajectory tracking error is evaluated as the average error across figure-eight and square-following tasks. The ANN without action history did not manage to stabilize the quadrotor.\n\n|                       | ANN action history [14] | ANN no action history [14] | SNN no action history [Ours] |\n| --------------------- | ----------------------- | -------------------------- | ---------------------------- |\n| Position Error [m]    | 0.1                     | 0.25                       | 0.02                         |\n| Trajectory Error [m]  | 0.21                    | N/A                        | 0.15                         |"
+  },
+  {
+    "id": 2,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "hard",
+    "location": "Method",
+    "rationale": "Introduce an inconsistency in the objective function formulation where the BC term weight and the indicator function contradict each other.",
+    "error_explanation": "Equation 1 defines the objective function with an indicator 𝟙_{i ≥ n_{warm-up}} that zeros out gradients during the warm-up period. However, the BC term −λ||π_θ(s_{τ,i} | h_{τ,i}) − a_{τ,i}||² is inside this indicator, meaning no BC loss is applied during warm-up. This contradicts the stated purpose in the text that 'the BC term serves two purposes: avoiding large changes in policy behavior to improve training stability, and leveraging the demonstration data efficiently.' If the BC term is zeroed during warm-up when the guiding policy is most active, the method cannot leverage demonstrations during the critical early phase, creating a logical inconsistency in the algorithm design.",
+    "needs_cross_section": false,
+    "target_find": "J_π = 𝔼_{τ ∼ 𝔇} [ ∑_{i=0}^{n_{seq}−1} 𝟙_{i ≥ n_{warm-up}} ( Q_{φ1}( s_{τ,i}, π_θ(s_{τ,i} | h_{τ,i}) ) − λ || π_θ(s_{τ,i} | h_{τ,i}) − a_{τ,i} ||^2 ) ].",
+    "replacement": "J_π = 𝔼_{τ ∼ 𝔇} [ ∑_{i=0}^{n_{seq}−1} ( 𝟙_{i ≥ n_{warm-up}} Q_{φ1}( s_{τ,i}, π_θ(s_{τ,i} | h_{τ,i}) ) − λ || π_θ(s_{τ,i} | h_{τ,i}) − a_{τ,i} ||^2 ) ]."
+  },
+  {
+    "id": 3,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Obscure critical training details by removing information about the number of seeds and evaluation runs, making reproducibility difficult.",
+    "error_explanation": "Figure 4 caption states 'All experiments were run with 5 different seeds' and 'During testing, we average the results from 20 runs,' but Table 4 in the ablation study provides results with error bars (e.g., '412 ± 6.72') without specifying how many seeds were used or whether the same evaluation protocol was followed. This asymmetry in reporting makes it impossible to assess whether the ablation study results are statistically comparable to the main results, potentially hiding high variance or cherry-picked configurations.",
+    "needs_cross_section": false,
+    "target_find": "Table 4: Ablation study analyzing the impact of the BC-term and jump-start period on training performance. Reported values show the average final reward and the number of environment steps required to reach a reward of 100.\n\n| BC-term | Jump-start | Reward      | Steps to 100 |\n| ------- | ---------- | ----------- | ------------ |\n| Yes     | Yes        | 412 ± 6.72  | 2200 ± 124   |\n| No      | Yes        | 334 ± 25.59 | 33030 ± 1600 |\n| Yes     | No         | 32 ± 1.2    | NA           |\n| No      | No         | 36 ± 4.1    | NA           |",
+    "replacement": "Table 4: Ablation study analyzing the impact of the BC-term and jump-start period on training performance. Reported values show the average final reward and the number of environment steps required to reach a reward of 100.\n\n| BC-term | Jump-start | Reward | Steps to 100 |\n| ------- | ---------- | ------ | ------------ |\n| Yes     | Yes        | 412    | 2200         |\n| No      | Yes        | 334    | 33030        |\n| Yes     | No         | 32     | NA           |\n| No      | No         | 36     | NA           |"
+  },
+  {
+    "id": 4,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "easy",
+    "location": "Abstract",
+    "rationale": "Overstate the performance improvement by claiming a specific multiplicative factor without proper statistical support.",
+    "error_explanation": "The abstract claims 'shallower slopes or scheduled slopes lead to a 2.1× improvement in both training and final deployed performance.' However, this precise multiplicative factor is not supported by the experimental results. Figure 3 shows that different slope settings achieve varying performance levels, but no single comparison yields exactly 2.1× improvement in both metrics simultaneously. The claim conflates training speed improvements with final performance gains, which are distinct metrics, and presents an overly specific number that suggests false precision.",
+    "needs_cross_section": false,
+    "target_find": "The effect is much more pronounced in RL settings, where shallower slopes or scheduled slopes lead to a 2.1× improvement in both training and final deployed performance.",
+    "replacement": "The effect is much more pronounced in RL settings, where shallower slopes or scheduled slopes lead to substantial improvements in both training efficiency and final deployed performance, with up to 4.5× faster convergence and consistently higher asymptotic rewards."
+  },
+  {
+    "id": 5,
+    "corruption_type": "reference_background_fabrication",
+    "difficulty": "medium",
+    "location": "Method",
+    "rationale": "Cite a non-existent paper to support the fast sigmoid surrogate gradient approximation.",
+    "error_explanation": "The text states 'For computational efficiency, the gradient of this parametrized sigmoid is approximated by the gradient of the fast sigmoid (f_s(k · x) = (k · x)/(1 + k · |x|)) [27].' Reference [27] is cited as 'Friedemann Zenke and Surya Ganguli. SuperSpike: Supervised learning in multilayer spiking neural networks. Neural Computation, 30(6):1514–1541, 2018.' However, the SuperSpike paper primarily discusses the SuperSpike surrogate gradient, not the fast sigmoid approximation. The fast sigmoid is a different surrogate function, and attributing it to this reference is a misattribution that could mislead readers about the origin of this technique.",
+    "needs_cross_section": false,
+    "target_find": "For computational efficiency, the gradient of this parametrized sigmoid is approximated by the gradient of the fast sigmoid (f_s(k · x) = (k · x)/(1 + k · |x|)) [27].",
+    "replacement": "For computational efficiency, the gradient of this parametrized sigmoid is approximated by the gradient of the fast sigmoid (f_s(k · x) = (k · x)/(1 + k · |x|)), a commonly used surrogate in the neuromorphic computing literature."
+  },
+  {
+    "id": 6,
+    "corruption_type": "ethical_integrity_omission",
+    "difficulty": "easy",
+    "location": "Experiments",
+    "rationale": "Remove any mention of safety protocols or risk mitigation during real-world drone experiments.",
+    "error_explanation": "Section 5.3 describes deploying the trained SNN controller on a real Crazyflie drone and mentions that 'early training policies crash within 100 steps,' yet there is no discussion of safety measures, protective enclosures, or ethical considerations for conducting experiments where crashes are expected. Given that the method explicitly involves a learning phase with frequent failures, the paper should address how physical safety was ensured during real-world testing, especially since the drone operates in shared spaces. The omission of any safety protocol or risk assessment is an ethical integrity issue.",
+    "needs_cross_section": false,
+    "target_find": "When deployed on the Crazyflie, the SNN controller exhibits slightly oscillatory behavior. However, the SNN is still able to execute complex maneuvers like circles (see Figure 5), figure-eight, and square trajectories without failure.",
+    "replacement": "When deployed on the Crazyflie in a controlled testing environment with safety netting and protective barriers, the SNN controller exhibits slightly oscillatory behavior. However, the SNN is still able to execute complex maneuvers like circles (see Figure 5), figure-eight, and square trajectories without failure. All real-world experiments were conducted following institutional safety protocols for autonomous systems testing."
+  },
+  {
+    "id": 7,
+    "corruption_type": "rhetorical_presentation_manipulation",
+    "difficulty": "easy",
+    "location": "Abstract",
+    "rationale": "Use promotional language to exaggerate the revolutionary nature of the contribution.",
+    "error_explanation": "The abstract opens with 'Neuromorphic computing systems are set to revolutionize energy-constrained robotics by achieving orders-of-magnitude efficiency gains.' This language is overly promotional and presents speculative future benefits as established facts. The phrase 'set to revolutionize' implies certainty about future impact that is not scientifically justified, and 'orders-of-magnitude efficiency gains' is stated without immediate supporting evidence in the abstract. This rhetorical style is more appropriate for marketing materials than academic writing and artificially inflates the perceived significance of the work.",
+    "needs_cross_section": false,
+    "target_find": "Neuromorphic computing systems are set to revolutionize energy-constrained robotics by achieving orders-of-magnitude efficiency gains, while enabling native temporal processing.",
+    "replacement": "Neuromorphic computing systems offer potential advantages for energy-constrained robotics through improved efficiency and native temporal processing capabilities."
+  },
+  {
+    "id": 8,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "hard",
+    "location": "Method and Experiments",
+    "rationale": "Create a contradiction between the method description and experimental setup regarding the use of action history.",
+    "error_explanation": "Section 3.1 states that 'Both the guiding policy and the non-spiking critic receive privileged information in the form of action histories,' and Section 3.4 confirms 'the critic is a feedforward ANN, which receives all observed states and an action history of 32 timesteps.' However, Table 1 in Section 4.1 lists 'Uses Demos' as a binary feature and does not mention that the critic architecture itself differs between methods. More critically, the method claims the SNN does not require action history, yet the training infrastructure depends on a critic that does use action history. This creates a logical inconsistency: if action history is necessary for stable training (as evidenced by the critic design), the claim that SNNs eliminate this requirement is undermined.",
+    "needs_cross_section": true,
+    "target_find": "While the actor is spiking, the critic is a feedforward ANN, which receives all observed states and an action history of 32 timesteps.",
+    "replacement": "While the actor is spiking, the critic is a feedforward ANN, which receives all observed states without any action history, maintaining architectural symmetry with the deployed actor."
+  },
+  {
+    "id": 9,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Manipulate the reward values in Figure 4 to show a larger performance gap between methods.",
+    "error_explanation": "The text claims 'TD3BC+JSRL achieves 400-point average reward under curriculum learning, while BC, TD3BC, and vanilla TD3 fail to exceed -200 points (Figure 4a). This 600-point gap validates both components of our approach.' However, examining Figure 4a carefully, the actual final rewards for BC and TD3BC appear to stabilize around -100 to -150 points, not -200. Exaggerating the baseline performance deficit by 50-100 points artificially inflates the perceived superiority of the proposed method and misrepresents the experimental evidence.",
+    "needs_cross_section": false,
+    "target_find": "TD3BC+JSRL achieves 400-point average reward under curriculum learning, while BC, TD3BC, and vanilla TD3 fail to exceed -200 points (Figure 4a). This 600-point gap validates both components of our approach: leveraging demonstrations (vs. TD3's from-scratch learning) and online adaptation (vs. BC/TD3BC's static datasets).",
+    "replacement": "TD3BC+JSRL achieves 400-point average reward under curriculum learning, while BC and TD3BC plateau around -150 points and vanilla TD3 fails to exceed -50 points (Figure 4a). This substantial performance gap validates both components of our approach: leveraging demonstrations (vs. TD3's from-scratch learning) and online adaptation (vs. BC/TD3BC's static datasets)."
+  },
+  {
+    "id": 10,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "medium",
+    "location": "Method",
+    "rationale": "Introduce an undefined variable in the adaptive slope scheduler equation.",
+    "error_explanation": "Equation 7 defines the adaptive slope scheduler as k_t = (1/10) ∑_{i=0}^{9} [0.5 r_{t−i} + 0.5 r′_{t−i}], where r′_{t−i} is described as 'the first-order derivative of the reward score at time t − i.' However, the method never specifies how this derivative is computed. Is it a finite difference? A running average? The temporal resolution is unclear—does t refer to training steps, episodes, or epochs? Without defining the computation of r′_{t−i}, the equation is not reproducible, and the adaptive scheduling mechanism remains ambiguous.",
+    "needs_cross_section": false,
+    "target_find": "k_t = (1/10) ∑_{i=0}^{9} [0.5 r_{t−i} + 0.5 r′_{t−i}],\n\nwhere k_t is the slope at time t, r_{t−i} is the reward score at time t − i, and r′_{t−i} is the first-order derivative of the reward score at time t − i.",
+    "replacement": "k_t = (1/10) ∑_{i=0}^{9} [0.5 r_{t−i} + 0.5 Δr_{t−i}],\n\nwhere k_t is the slope at epoch t, r_{t−i} is the average reward at epoch t − i, and Δr_{t−i} = r_{t−i} − r_{t−i−1} is the finite difference approximation of the reward derivative."
+  },
+  {
+    "id": 11,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "hard",
+    "location": "Experiments",
+    "rationale": "Introduce asymmetric training budgets between compared methods without disclosure.",
+    "error_explanation": "Table 6 reveals that TD3BC+JSRL is trained for 1000 epochs with 2M steps per epoch (total: 2B steps), while BC and TD3BC are trained for only 300 epochs with unspecified steps per epoch. This represents a 3.3× difference in training duration, yet the performance comparison in Figure 4 and Table 4 does not acknowledge this disparity. Comparing methods with vastly different computational budgets is misleading—the superior performance of TD3BC+JSRL may simply result from longer training rather than algorithmic superiority. This asymmetry should be either equalized or explicitly discussed as a confounding factor.",
+    "needs_cross_section": false,
+    "target_find": "| Training epochs                | 300         | 300         | 1000               | 1000        |\n| Steps per epoch                | –           | –           | 2M                 | 1M          |",
+    "replacement": "| Training epochs                | 1000        | 1000        | 1000               | 1000        |\n| Steps per epoch                | 2M          | 2M          | 2M                 | 1M          |"
+  },
+  {
+    "id": 12,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Misinterpret the cosine similarity results to claim that shallow slopes are always beneficial.",
+    "error_explanation": "Figure 1c shows that cosine similarity decreases to near zero for shallow slopes in deeper layers, and the text correctly notes 'the weight updates in deeper networks become essentially random.' However, Section 5.1 then claims 'online RL strongly prefers shallower slopes whose induced gradient noise enhances exploration, similar to parameter noise.' This interpretation conflates random gradient directions (which could harm learning) with beneficial exploration noise. The claim that randomness is universally helpful contradicts the supervised learning results in Figure 3a, where shallow slopes show no advantage. The interpretation selectively emphasizes RL benefits while downplaying the potential negative effects of gradient misalignment.",
+    "needs_cross_section": false,
+    "target_find": "While slope choice barely affects supervised learning, online RL strongly prefers shallower slopes whose induced gradient noise enhances exploration, similar to parameter noise [29], albeit with higher variability across runs.",
+    "replacement": "While slope choice barely affects supervised learning, online RL shows mixed results with shallower slopes: the induced gradient noise can enhance exploration similar to parameter noise [29], but also introduces higher variability across runs and risks of training instability due to gradient misalignment in deeper layers."
+  },
+  {
+    "id": 13,
+    "corruption_type": "reference_background_fabrication",
+    "difficulty": "easy",
+    "location": "Related Work",
+    "rationale": "Fabricate a claim about energy savings that is not supported by the cited reference.",
+    "error_explanation": "The text states 'Although DSQN achieves robust performance and demonstrates significant energy savings on neuromorphic hardware [18].' Reference [18] is 'Mahmoud Akl, Yulia Sandamirskaya, Florian Walter, and Alois Knoll. Porting deep spiking Q-networks to the neuromorphic chip Loihi. In International Conference on Neuromorphic Systems 2021, pages 1–7, 2021.' While this paper discusses porting DSQN to Loihi, it does not provide quantitative energy measurements or comparisons. The claim of 'significant energy savings' is an unsupported extrapolation that misrepresents what the cited work actually demonstrates.",
+    "needs_cross_section": false,
+    "target_find": "Although DSQN achieves robust performance and demonstrates significant energy savings on neuromorphic hardware [18], it is trained on single transitions and resets the network state at every step.",
+    "replacement": "Although DSQN achieves robust performance and has been successfully ported to neuromorphic hardware [18], it is trained on single transitions and resets the network state at every step."
+  },
+  {
+    "id": 14,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "hard",
+    "location": "Experiments",
+    "rationale": "Cherry-pick the best-performing configuration for the energy analysis while hiding the architectural differences.",
+    "error_explanation": "Table 2 compares an ANN with [64-64] architecture to an SNN with [256-128] architecture, claiming comparable rewards (447 vs 446). However, the SNN has 4× more parameters in the first layer and 2× in the second, giving it substantially more capacity. The comparison is unfair because the ANN baseline is artificially constrained to a smaller architecture. Furthermore, Table 6 shows that the main TD3BC+JSRL experiments use [256-128] for the SNN but [256-256] for TD3BC, indicating that architectural choices were varied across experiments. Presenting the [64-64] ANN as the comparison baseline in the energy analysis appears to be cherry-picking a weak baseline to make the SNN look more favorable.",
+    "needs_cross_section": false,
+    "target_find": "Table 2: NeuroBench performance comparison between ANN (64-64 architecture) and temporally-trained SNN (256-128 architecture) using TD3BC+JSRL.",
+    "replacement": "Table 2: NeuroBench performance comparison between ANN (256-128 architecture) and temporally-trained SNN (256-128 architecture) using TD3BC+JSRL."
+  },
+  {
+    "id": 15,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "medium",
+    "location": "Abstract and Conclusion",
+    "rationale": "Create inconsistency between abstract claims and conclusion regarding the need for a guiding policy.",
+    "error_explanation": "The abstract presents the method as a general solution, stating 'we propose a novel training approach that leverages a privileged guiding policy to bootstrap the learning process' without mentioning limitations. However, the conclusion acknowledges 'Our method depends on the availability of a guiding policy. Although this policy can be any function, even one leveraging privileged observations and does not need to be deployable at inference, it must still produce stable behavior early in training, which might not always be trivial to obtain.' This is a significant limitation that contradicts the abstract's framing of the method as broadly applicable. The abstract should mention this dependency to accurately represent the method's scope.",
+    "needs_cross_section": true,
+    "target_find": "Next, we propose a novel training approach that leverages a privileged guiding policy to bootstrap the learning process, while still exploiting online environment interactions with the spiking policy.",
+    "replacement": "Next, we propose a novel training approach that leverages a privileged guiding policy to bootstrap the learning process, while still exploiting online environment interactions with the spiking policy. This approach requires access to a guiding policy capable of stable early-stage behavior, which may limit applicability in some domains."
+  },
+  {
+    "id": 16,
+    "corruption_type": "rhetorical_presentation_manipulation",
+    "difficulty": "easy",
+    "location": "Conclusion",
+    "rationale": "Use absolute language to overstate the contribution's impact on the field.",
+    "error_explanation": "The conclusion states 'This work advances both the theoretical understanding of surrogate gradient learning in SNNs and practical training methodologies for neuromorphic controllers demonstrated in real-world robotic systems.' The phrase 'advances both the theoretical understanding' is too absolute and promotional. The paper provides empirical observations about surrogate gradient slopes but does not offer formal theoretical proofs or frameworks. The claim of advancing theoretical understanding overstates the contribution, which is primarily empirical and methodological rather than theoretical.",
+    "needs_cross_section": false,
+    "target_find": "This work advances both the theoretical understanding of surrogate gradient learning in SNNs and practical training methodologies for neuromorphic controllers demonstrated in real-world robotic systems.",
+    "replacement": "This work provides empirical insights into surrogate gradient learning in SNNs and introduces practical training methodologies for neuromorphic controllers, demonstrated through real-world robotic experiments."
+  },
+  {
+    "id": 17,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "medium",
+    "location": "Method",
+    "rationale": "Introduce inconsistency in the soft-reset mechanism description.",
+    "error_explanation": "Equation 4 defines the soft-reset mechanism as U[t + 1] = β U[t] + I_{in}[t + 1] − s · U_{thr}, where the reset subtracts the threshold. However, the text describes this as a 'soft-reset spiking mechanism' without explaining how this differs from a hard reset (which would set U = 0). The equation shows that after spiking, the membrane potential becomes β U[t] + I_{in}[t + 1] − U_{thr}, which could be negative if U[t] was just above threshold. This is physically implausible for a membrane potential and suggests either the equation is wrong or the description is incomplete. The inconsistency between the mathematical formulation and the biological interpretation is not addressed.",
+    "needs_cross_section": false,
+    "target_find": "We employ a soft-reset spiking mechanism, which is described by:\nU[t + 1] = β U[t] + I_{in}[t + 1] − s · U_{thr}, where s = { 1, if U[t] > U_{thr}; 0, otherwise }",
+    "replacement": "We employ a soft-reset spiking mechanism, which is described by:\nU[t + 1] = β (U[t] − s · U_{thr}) + I_{in}[t + 1], where s = { 1, if U[t] > U_{thr}; 0, otherwise }"
+  },
+  {
+    "id": 18,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Obscure the curriculum learning schedule details to prevent reproducibility.",
+    "error_explanation": "Table 5 provides start and end values for reward parameters and states 'Penalties increase linearly across epochs, updated in six steps.' However, critical details are missing: Over how many total epochs does the curriculum span? Are the six steps evenly distributed? What triggers the transitions between curriculum stages—epoch count, performance threshold, or fixed schedule? Section 4.2 mentions 'linear curriculum learning' but doesn't specify the interpolation schedule. Without these details, the curriculum cannot be reproduced, and it's unclear whether performance gains are due to the algorithm or the specific curriculum tuning.",
+    "needs_cross_section": false,
+    "target_find": "Table 5: Reward parameters used during training. Penalties increase linearly across epochs, updated in six steps.",
+    "replacement": "Table 5: Reward parameters used during training. Penalties increase linearly from start to end values over 1000 epochs, with updates applied every 167 epochs (6 discrete steps)."
+  },
+  {
+    "id": 19,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "hard",
+    "location": "Experiments",
+    "rationale": "Overstate the generalization capability by claiming sim-to-real transfer without domain randomization or adaptation.",
+    "error_explanation": "Section 5.3 states 'The controller is trained entirely in simulation and successfully transfers to the real-world platform, bridging the reality gap without the need for observation or action history augmentation.' This claim implies robust sim-to-real transfer, but the paper provides no evidence of domain randomization, system identification, or adaptation techniques typically required for successful transfer. The cited dynamics model [14] may have sim-to-real capabilities, but simply using the same simulator does not guarantee transfer. The claim conflates using a validated simulator with achieving robust generalization, and the observed 'oscillatory behavior' in deployment suggests the transfer is not as seamless as claimed.",
+    "needs_cross_section": false,
+    "target_find": "The controller is trained entirely in simulation and successfully transfers to the real-world platform, bridging the reality gap without the need for observation or action history augmentation.",
+    "replacement": "The controller is trained entirely in simulation using a dynamics model with demonstrated sim-to-real transfer capabilities [14] and is then deployed on the real-world platform. While the controller successfully executes trajectories, some oscillatory behavior is observed, suggesting partial but not complete bridging of the reality gap."
+  },
+  {
+    "id": 20,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Misreport the variance in ablation study results to hide instability.",
+    "error_explanation": "Table 4 reports very small error bars for some configurations (e.g., 'Yes/No: 32 ± 1.2' and 'No/No: 36 ± 4.1'), suggesting these failed configurations have low variance. However, these are cases where the method completely fails to learn (reward ~30-36 vs. successful ~400). Failed learning typically exhibits high variance across seeds as random initialization dominates. The suspiciously low variance suggests either (1) very few seeds were used, (2) the error bars are fabricated, or (3) results were cherry-picked. The inconsistency between high variance for partially successful methods (No/Yes: 334 ± 25.59) and low variance for complete failures is statistically implausible.",
+    "needs_cross_section": false,
+    "target_find": "| Yes     | No         | 32 ± 1.2    | NA           |\n| No      | No         | 36 ± 4.1    | NA           |",
+    "replacement": "| Yes     | No         | 32 ± 18.3   | NA           |\n| No      | No         | 36 ± 22.7   | NA           |"
+  }
+]

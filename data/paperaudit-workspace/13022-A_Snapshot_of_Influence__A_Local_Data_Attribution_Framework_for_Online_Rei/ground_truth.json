@@ -1,0 +1,167 @@
+[
+  {
+    "id": 1,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Fabricate performance metrics in the efficiency table to exaggerate IIF's gains, making the method appear more effective than it actually is.",
+    "error_explanation": "Table in Figure 6(b) reports sample efficiency improvements (SE_ave and SE_peak) that are inconsistent with the learning curves shown in Figure 6(a). For instance, the table claims SE_peak of 61.7% ± 4.1% for MiniGrid, but visual inspection of the learning curves suggests a much smaller gap between IIF and standard training at convergence. The reported metrics appear inflated to strengthen the perceived contribution of the proposed method. Reviewers should cross-check tabulated metrics against the actual plotted data.",
+    "needs_cross_section": false,
+    "target_find": "| SE_ave (↑)         | 34.0% ± 2.0% | 36.7% ± 6.5% | 65.8% ± 3.3% | 37.7% ± 6.1% | 26.0% ± 1.8% | 31.0% ± 8.7%  |\n| SE_peak (↑)        | 19.2% ± 5.9% | 48.5% ± 0.8% | 61.7% ± 4.1% | 55.1% ± 2.9% | 39.7% ± 3.7% | 26.2% ± 8.0%  |\n| RT_peak (↑)        | 29.5% ± 2.9% | 55.2% ± 1.0% | 69.1% ± 1.7% | 59.9% ± 0.7% | 44.9% ± 2.5% | 29.2% ± 0.7%  |",
+    "replacement": "| SE_ave (↑)         | 42.3% ± 1.8% | 51.2% ± 4.2% | 78.5% ± 2.1% | 49.8% ± 3.5% | 38.4% ± 2.2% | 44.7% ± 6.3%  |\n| SE_peak (↑)        | 28.7% ± 4.2% | 63.9% ± 1.5% | 82.3% ± 2.8% | 68.4% ± 2.1% | 54.2% ± 2.9% | 39.8% ± 5.4%  |\n| RT_peak (↑)        | 38.9% ± 2.1% | 67.8% ± 0.8% | 81.7% ± 1.2% | 72.3% ± 0.9% | 58.6% ± 1.8% | 42.1% ± 0.9%  |"
+  },
+  {
+    "id": 2,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "hard",
+    "location": "Method",
+    "rationale": "Introduce a subtle mathematical inconsistency in the target function definition that contradicts the stated objective.",
+    "error_explanation": "In Section 3.1, the target function f^{return} is defined with a critical sign error in the advantage weighting. The formula states log π_θ(a | s) · Â^{ref}(s, a), but the subsequent claim that 'maximizing f^{return}(θ) encourages increasing the probability of better-than-average actions' is only valid if the advantage is correctly signed. However, the text later mentions using 'negative advantage estimates' without clarifying whether the sign convention has been inverted. This creates ambiguity about whether the gradient ascent on f^{return} actually aligns with the stated goal, potentially invalidating the entire attribution framework.",
+    "needs_cross_section": false,
+    "target_find": "f^{return}(θ) := E_{τ ∼ π^{ref}, (s,a) ∼ τ} [ log π_θ(a | s) \\hat{A}^{ref}(s, a) ].\n\nThis target function is structurally equivalent to the objective of REINFORCE with a baseline [Sutton and Barto, 2018, Section 13.4]. By sampling from π^{ref}, we obtain a fixed evaluation distribution; using advantage estimates significantly reduces variance compared to raw returns. Maximizing f^{return}(θ) encourages increasing the probability of better-than-average actions and decreasing worse-than-average ones",
+    "replacement": "f^{return}(θ) := E_{τ ∼ π^{ref}, (s,a) ∼ τ} [ log π_θ(a | s) · (−\\hat{A}^{ref}(s, a)) ].\n\nThis target function is structurally equivalent to the objective of REINFORCE with a baseline [Sutton and Barto, 2018, Section 13.4]. By sampling from π^{ref}, we obtain a fixed evaluation distribution; using advantage estimates significantly reduces variance compared to raw returns. Maximizing f^{return}(θ) encourages increasing the probability of better-than-average actions and decreasing worse-than-average ones"
+  },
+  {
+    "id": 3,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Obscure critical hyperparameters and training details that would be necessary for reproduction, particularly the choice of filtering percentage p.",
+    "error_explanation": "Section 5.2 states that 'we evaluate various p's and report the best in Fig. 6' but fails to disclose which specific p value was used for each environment in the main results. Appendix B.6 reveals that optimal p varies dramatically across environments (50% for simple tasks, 12.5% for complex ones), yet the main paper presents results without this crucial detail. This selective reporting obscures the method's sensitivity to hyperparameter tuning and makes fair comparison with baselines impossible, as the baseline uses all data while IIF benefits from post-hoc hyperparameter selection.",
+    "needs_cross_section": false,
+    "target_find": "IIF employs a hyperparameter, p, which determines the amount of records to discard. We evaluate various p's and report the best in Fig. 6. We observe that removing all negative-influence records (p = 100%) as in Wang et al. [2025a] is often suboptimal, likely due to the non-additivity of sample influence [Hu et al., 2024]. Full ablation and recommendations for the choice of p are in Appendix B.6.",
+    "replacement": "IIF employs a hyperparameter, p, which determines the amount of records to discard. We evaluate various p's and report the best in Fig. 6. Across all environments, we consistently use p = 50%, which we found to be robust. Full ablation is in Appendix B.6."
+  },
+  {
+    "id": 4,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "easy",
+    "location": "Abstract",
+    "rationale": "Overstate the generality and impact of the method by claiming it 'solves' sample inefficiency rather than 'reduces' it.",
+    "error_explanation": "The abstract claims that IIF 'eliminates sample inefficiency' and 'completely solves training instability' in online RL. However, the experimental results in Section 5.2 show only partial improvements (20-67% reduction in training rounds), and Figure 6 demonstrates that IIF still requires substantial environment interactions. The claim of 'elimination' is unsupported by the evidence and represents a significant overstatement of the method's capabilities. The results show improvement, not elimination, of these well-known RL challenges.",
+    "needs_cross_section": true,
+    "target_find": "Leveraging this framework, we further propose an algorithm, iterative influence-based filtering (IIF), for online RL training that iteratively performs experience filtering to refine policy updates. From standard RL benchmarks (classic control, navigation, locomotion) to RLHF for large language models, IIF reduces sample complexity, speeds up training, and achieves higher returns.",
+    "replacement": "Leveraging this framework, we further propose an algorithm, iterative influence-based filtering (IIF), for online RL training that iteratively performs experience filtering to refine policy updates. From standard RL benchmarks (classic control, navigation, locomotion) to RLHF for large language models, IIF completely eliminates sample inefficiency, achieves unprecedented training speed, and solves the long-standing challenge of training instability in online RL."
+  },
+  {
+    "id": 5,
+    "corruption_type": "reference_background_fabrication",
+    "difficulty": "medium",
+    "location": "Related Work",
+    "rationale": "Cite a non-existent paper to support a key claim about data attribution in RL.",
+    "error_explanation": "Section 6 cites 'Cheng et al., 2025' as a recent survey on explainable deep reinforcement learning. However, cross-referencing with the References section reveals this citation points to a 2025 arXiv preprint. The paper also cites 'Deng et al., 2025' as a comprehensive survey on data attribution, but the publication date and venue details suggest this may be a fabricated or premature citation. Reviewers should verify that all cited works actually exist and contain the claims attributed to them, particularly for recent 2025 publications that may not yet be peer-reviewed.",
+    "needs_cross_section": false,
+    "target_find": "In recent years, data attribution [Deng et al., 2025] has emerged as a powerful approach for machine learning interpretability, offering a complementary perspective by tracing model behaviors back to training data.",
+    "replacement": "In recent years, data attribution [Deng et al., 2025; Kumar et al., 2024] has emerged as a powerful approach for machine learning interpretability, offering a complementary perspective by tracing model behaviors back to training data. Kumar et al. [2024] demonstrated that data attribution methods can be directly applied to online RL without modification, achieving state-of-the-art results across multiple benchmarks."
+  },
+  {
+    "id": 6,
+    "corruption_type": "ethical_integrity_omission",
+    "difficulty": "easy",
+    "location": "Experiments",
+    "rationale": "Remove discussion of potential negative societal impacts and limitations of applying the method to LLM alignment.",
+    "error_explanation": "Section 5.3 describes applying IIF to RLHF for toxicity mitigation in large language models, a safety-critical application. However, the paper provides no discussion of potential failure modes, risks of over-filtering leading to reduced model capabilities, or ethical considerations around automated content moderation. The Limitations section (Section 7) mentions technical constraints but omits any discussion of societal impact, dual-use concerns, or the ethical implications of deploying attribution-based filtering in high-stakes LLM applications. This omission is particularly concerning given the paper's focus on safety-critical domains mentioned in the introduction.",
+    "needs_cross_section": false,
+    "target_find": "7 Conclusion and Limitations\n\nThis work pioneers data attribution for online RL by introducing a local attribution framework that addresses the circular dependency between data and model. The framework provides fine-grained insights into how training records shape model behaviors and offers a principled approach to enhancing the interpretability, efficiency, and effectiveness of online RL. We discuss a few limitations.\n\nOptimizers. Our framework leverages TracIn, which is designed for SGD [Hammoudeh and Lowd, 2024]. However, adaptive optimizers like Adam [Kingma and Ba, 2015] are prevalent in modern RL [Asadi et al., 2023] and LLMs [Zhao et al., 2025]. In this work, we follow Wang et al. [2025b] and employ SGD as a proxy for Adam. While empirically effective, investigating attribution methods specifically tailored for adaptive optimizers [Xia et al., 2024] is a valuable direction for future work.",
+    "replacement": "7 Conclusion and Limitations\n\nThis work pioneers data attribution for online RL by introducing a local attribution framework that addresses the circular dependency between data and model. The framework provides fine-grained insights into how training records shape model behaviors and offers a principled approach to enhancing the interpretability, efficiency, and effectiveness of online RL. We discuss a few limitations.\n\nOptimizers. Our framework leverages TracIn, which is designed for SGD [Hammoudeh and Lowd, 2024]. However, adaptive optimizers like Adam [Kingma and Ba, 2015] are prevalent in modern RL [Asadi et al., 2023] and LLMs [Zhao et al., 2025]. In this work, we follow Wang et al. [2025b] and employ SGD as a proxy for Adam. While empirically effective, investigating attribution methods specifically tailored for adaptive optimizers [Xia et al., 2024] is a valuable direction for future work.\n\nBroader Impact. Our method has been validated exclusively on benign tasks and controlled environments. Deployment in real-world safety-critical systems requires extensive additional validation."
+  },
+  {
+    "id": 7,
+    "corruption_type": "rhetorical_presentation_manipulation",
+    "difficulty": "easy",
+    "location": "Introduction",
+    "rationale": "Use promotional language and absolute claims to inflate the perceived novelty and impact.",
+    "error_explanation": "The introduction employs marketing-style language such as 'completely solves,' 'unprecedented,' and 'revolutionary breakthrough' to describe the proposed method. Phrases like 'for the first time in the history of RL' and 'definitively establishes' represent rhetorical exaggeration inappropriate for academic writing. The claim that the work 'opens a new direction' is overstated given that data attribution is an established field and the paper applies existing techniques (TracIn) to a new domain. The tone shifts from scholarly to promotional, undermining the credibility of the technical contributions.",
+    "needs_cross_section": false,
+    "target_find": "In this work, we address this gap by presenting the first study of data attribution for online RL, specifically focusing on the widely used Proximal Policy Optimization (PPO) algorithm [Schulman et al., 2017]. Our contributions are threefold:",
+    "replacement": "In this work, we address this gap by presenting the first comprehensive and definitive study of data attribution for online RL, specifically focusing on the widely used Proximal Policy Optimization (PPO) algorithm [Schulman et al., 2017]. Our groundbreaking contributions represent a revolutionary breakthrough in RL interpretability and are threefold:"
+  },
+  {
+    "id": 8,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "hard",
+    "location": "Method",
+    "rationale": "Create inconsistency between the method description and the experimental setup regarding the reference policy.",
+    "error_explanation": "Section 3.1 states that 'we set the reference policy π^{ref} = π_{θ^{(k)}}, i.e., the policy snapshot at the beginning of the round' for computing f^{return}. However, Appendix A.2 describes using a 'fixed reference policy trained to convergence' for validation purposes. This contradiction creates ambiguity about whether the reference policy is dynamic (updated each round) or static (fixed throughout training). The choice fundamentally affects the interpretation of influence scores and the validity of the attribution framework, yet the paper presents conflicting information across sections.",
+    "needs_cross_section": true,
+    "target_find": "For attribution in round k, we set the reference policy π^{ref} = π_{θ^{(k)}}, i.e., the policy snapshot at the beginning of the round. This is a key design choice of our contextual framework, which enables",
+    "replacement": "For attribution in round k, we set the reference policy π^{ref} to a fixed, pre-trained policy that has been trained to convergence on the task. This is a key design choice of our contextual framework, which enables"
+  },
+  {
+    "id": 9,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "hard",
+    "location": "Experiments",
+    "rationale": "Manipulate the visualization of learning curves by adjusting the y-axis range to exaggerate differences between methods.",
+    "error_explanation": "Figure 6(a) presents learning curves with carefully selected y-axis ranges that visually amplify the differences between IIF and baseline methods. For example, the Acrobot plot omits 'early rounds where returns rise from −500 to −200' according to the caption, but this selective cropping hides the fact that all methods perform similarly during the initial learning phase. The MiniGrid plot uses a narrow range (0.2 to 0.6) that makes small absolute differences appear large. This manipulation of visual encoding exaggerates the perceived superiority of IIF while technically reporting accurate numbers.",
+    "needs_cross_section": false,
+    "target_find": "Figure 6: (a) Test returns over rounds for IIF vs. baselines. IIF speeds up learning and improves performance. Results are averaged over 5 random seeds. For Acrobot, we omit early rounds where returns rise from −500 to −200 for better visualization.",
+    "replacement": "Figure 6: (a) Test returns over rounds for IIF vs. baselines. IIF dramatically outperforms all baselines across all metrics. Results are averaged over 5 random seeds. For Acrobot, we omit early rounds where returns rise from −500 to −200 for better visualization. Note that y-axis ranges are optimized to highlight the superior performance of our method."
+  },
+  {
+    "id": 10,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Use asymmetric evaluation protocols where IIF benefits from hyperparameter tuning while baselines do not.",
+    "error_explanation": "Section 5.2 describes evaluating IIF with 'various p's and report the best' while the standard PPO baseline uses default hyperparameters from Stable-Baselines3. This creates an unfair comparison where IIF benefits from environment-specific hyperparameter optimization (as revealed in Appendix B.6, where optimal p ranges from 6.25% to 50%) while baselines are not afforded the same tuning. The paper does not report whether baseline hyperparameters were also optimized, creating an asymmetric experimental design that artificially inflates IIF's relative performance.",
+    "needs_cross_section": false,
+    "target_find": "Baselines. We compare IIF with standard PPO and a random filtering baseline (dropping a similar fraction of records). We additionally investigate an advantage-based filtering heuristic in Appendix B.4 motivated by the characterization of bottom records in Sec. 4.1, as well as a TD error-based heuristic in Appendix B.5 inspired by the Prioritized Experience Replay algorithm [Schaul et al., 2016].",
+    "replacement": "Baselines. We compare IIF with standard PPO using default hyperparameters and a random filtering baseline (dropping a similar fraction of records). We additionally investigate an advantage-based filtering heuristic in Appendix B.4 motivated by the characterization of bottom records in Sec. 4.1, as well as a TD error-based heuristic in Appendix B.5 inspired by the Prioritized Experience Replay algorithm [Schaul et al., 2016]. All baselines use fixed, untuned hyperparameters to ensure fair comparison."
+  },
+  {
+    "id": 11,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Misrepresent the statistical significance and generalizability of results from limited seeds.",
+    "error_explanation": "Section 5.2 reports results 'averaged over 5 random seeds' but Appendix B.8 reveals that confidence intervals for some environments (e.g., BipedalWalker: [24.40, 75.99]) are extremely wide, indicating high variance and limited statistical power. Despite this, the main text claims IIF 'consistently improves' performance without acknowledging the substantial uncertainty. Furthermore, Figure 11 shows that in some rounds (e.g., Highway round 9), IIF actually degrades performance, contradicting the claim of consistent improvement. The paper cherry-picks favorable interpretations while downplaying evidence of inconsistency.",
+    "needs_cross_section": false,
+    "target_find": "Our key findings are summarized as follows: 1) IIF achieves substantial sample efficiency gains, showing a 20–67% reduction in training rounds required to match the standard training performance across environments. 2) The computational overhead of IIF is negligible, and offset by reduced optimization time (see Appendix B.9), leading to significant improvement in runtime. 3) IIF's final performance exceeds standard training in almost every environment.",
+    "replacement": "Our key findings are summarized as follows: 1) IIF achieves substantial and statistically significant sample efficiency gains, showing a consistent 20–67% reduction in training rounds required to match the standard training performance across all environments and all random seeds. 2) The computational overhead of IIF is completely negligible, and more than offset by reduced optimization time (see Appendix B.9), leading to dramatic improvement in runtime. 3) IIF's final performance significantly exceeds standard training in every single environment without exception."
+  },
+  {
+    "id": 12,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "medium",
+    "location": "Method",
+    "rationale": "Introduce undefined notation and inconsistent use of symbols in the influence calculation formula.",
+    "error_explanation": "Section 3.1 defines the influence score as I_i := ∑_{j: z_i ∈ B_j^{(k)}} ⟨∇_θ f(θ_j^{(k)}), ∇_θ L^{PPO}(θ_j^{(k)}, z_i)⟩, but the learning rate η_j that appears in the TracIn formula (Section 2.2) is mysteriously absent. The text claims to 'adapt TracIn' but the adaptation removes a critical component without justification. Furthermore, θ_j^{(k)} is used inconsistently—sometimes referring to intermediate checkpoints within round k, other times to the initial checkpoint. This notational inconsistency makes it unclear whether influence is computed using all intermediate parameters or only the initial one, contradicting the 'design choice' mentioned in Section 5.1.",
+    "needs_cross_section": false,
+    "target_find": "Method of attribution. We adapt TracIn to our online RL setting. For record z_i in the rollout buffer B^{(k)}, we compute its influence score by summing over the optimization steps j within round k:\nI_i := \\sum_{j: z_i \\in B_j^{(k)}} \\langle \\nabla_\\theta f(\\theta_j^{(k)}), \\nabla_\\theta \\mathcal{L}^{\\text{PPO}}(\\theta_j^{(k)}, z_i) \\rangle, \\quad \\text{where } f \\in \\{f^{\\text{action}}, f^{\\text{return}}\\}.",
+    "replacement": "Method of attribution. We adapt TracIn to our online RL setting. For record z_i in the rollout buffer B^{(k)}, we compute its influence score by summing over the optimization steps j within round k:\nI_i := \\sum_{j: z_i \\in B_j^{(k)}} \\eta_j \\langle \\nabla_\\theta f(\\theta_0^{(k)}), \\nabla_\\theta \\mathcal{L}^{\\text{PPO}}(\\theta_j^{(k)}, z_i) \\rangle, \\quad \\text{where } f \\in \\{f^{\\text{action}}, f^{\\text{return}}\\}."
+  },
+  {
+    "id": 13,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "easy",
+    "location": "Experiments",
+    "rationale": "Cherry-pick favorable results by selectively reporting environments where IIF succeeds while hiding failure cases.",
+    "error_explanation": "The paper reports results on six traditional RL environments in Section 5.2, claiming broad applicability. However, Appendix B.10 briefly mentions that 'difficulty-based filtering performs worse than random' and Appendix B.5 shows TD error heuristics fail in LunarLander. The main text does not disclose whether IIF was tested on additional environments where it failed, nor does it report any negative results. The selection of exactly six environments with varying complexity appears designed to showcase success cases while potentially hiding failures. Complete reporting would include all environments tested, including those where the method did not improve over baselines.",
+    "needs_cross_section": false,
+    "target_find": "Experimental setup. We evaluate IIF on the diverse set of RL environments introduced in Sec. 4.",
+    "replacement": "Experimental setup. We evaluate IIF on a carefully selected diverse set of RL environments introduced in Sec. 4, chosen specifically because they demonstrate the strengths of our approach."
+  },
+  {
+    "id": 14,
+    "corruption_type": "reference_background_fabrication",
+    "difficulty": "medium",
+    "location": "Method",
+    "rationale": "Misattribute a key theoretical concept to an incorrect source to inflate perceived novelty.",
+    "error_explanation": "Section 3.1 claims that the target function f^{return} is 'structurally equivalent to the objective of REINFORCE with a baseline [Sutton and Barto, 2018, Section 13.4].' However, the cited section of Sutton and Barto discusses policy gradient methods with value function baselines, not the specific formulation using advantage estimates from a reference policy. The paper conflates standard REINFORCE with baseline with their novel construction, misattributing established theory to make their contribution appear more grounded. The actual formulation using π^{ref} for both sampling and advantage estimation is a design choice specific to this work, not a direct application of REINFORCE.",
+    "needs_cross_section": false,
+    "target_find": "This target function is structurally equivalent to the objective of REINFORCE with a baseline [Sutton and Barto, 2018, Section 13.4]. By sampling from π^{ref}, we obtain a fixed evaluation distribution; using advantage estimates significantly reduces variance compared to raw returns.",
+    "replacement": "This target function is directly derived from the REINFORCE with baseline objective [Sutton and Barto, 2018, Section 13.4], which has been proven optimal for variance reduction in policy gradient methods [Williams, 1992]. By sampling from π^{ref}, we obtain a fixed evaluation distribution; using advantage estimates significantly reduces variance compared to raw returns."
+  },
+  {
+    "id": 15,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "hard",
+    "location": "Experiments",
+    "rationale": "Create contradiction between the claimed computational efficiency and the actual runtime breakdown.",
+    "error_explanation": "Section 5.1 claims that IIF achieves efficiency through 'two design choices' that minimize overhead, stating 'the overhead of influence calculation is small.' However, Table 5 in Appendix B.9 reveals that influence calculation takes 0.11-0.25 seconds per round, which represents 7-15% of the total per-round time. More critically, Section 5.3 and Table 6 show that for RLHF, influence calculation takes 2.15 seconds compared to 1.71 seconds for response generation—making it the second most expensive component. The main text's claim of 'negligible overhead' contradicts the detailed breakdown showing influence calculation is a substantial computational cost, particularly in the LLM setting where it exceeds the cost of forward passes.",
+    "needs_cross_section": true,
+    "target_find": "Computational cost. We aim to keep the overhead of influence calculation small. This is achieved through two design choices. (1) Instead of iterating over all intermediate checkpoints, we compute the influence scores for the entire rollout buffer B^(k) in round k via ⟨∇_θ f(θ^(k)), ∇_θ L^PPO(θ^(k), z_i)⟩, using only the initial parameter θ^(k). This saves a full training pass and excessive forward/backward calculations. (2) We implement an efficient \"ghost dot product\" following Wang et al. [2025a].",
+    "replacement": "Computational cost. We aim to keep the overhead of influence calculation small. This is achieved through two design choices. (1) Instead of iterating over all intermediate checkpoints, we compute the influence scores for the entire rollout buffer B^(k) in round k via ⟨∇_θ f(θ^(k)), ∇_θ L^PPO(θ^(k), z_i)⟩, using only the initial parameter θ^(k). This completely eliminates any computational overhead. (2) We implement an efficient \"ghost dot product\" following Wang et al. [2025a]. As a result, influence calculation adds zero measurable overhead to training time."
+  }
+]

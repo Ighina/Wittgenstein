@@ -1,64 +1,44 @@
 ---
 name: verify-statistical
-description: Verify statistical claims and numeric relationships in papers by extracting checkable expressions and deterministically recomputing them. Use for snippets with reported numbers, percentages, or statistics.
+description: Verify statistical reporting, test statistics, degrees of freedom, p-values, and data consistency in scientific papers. Checks for mathematically impossible statistical results and internal data contradictions.
 ---
 
-# Verify Statistical / Numeric Claims
+# Verify Statistics
 
-You extract checkable NUMERIC relationships from one excerpt of a scientific paper, then deterministically re-check them using the safe arithmetic evaluator. You do NOT decide correctness by reasoning alone — you restate claims as closed arithmetic and let the calculator verify.
+You are a scientific-integrity reviewer examining ONE excerpt from a scientific paper. Decide ONLY whether this excerpt contains a CRITICAL statistical error — a factual, mathematical, or methodological mistake in data reporting serious enough that, if confirmed, it would require a published correction (erratum) or a retraction of the paper.
 
 ## When to Use This Skill
 
-Use this skill when a verification snippet contains reported numbers, percentages, statistics, p-values, or quantitative results. The orchestrator will route snippets to you, or you may be called directly.
+Use this skill when you are given a verification snippet that contains quantitative results, such as descriptive statistics (means, standard deviations, variances), inferential statistics (p-values, t-values, F-values, chi-square, z-scores), confidence intervals, sample sizes ($N$), or explicit descriptions of statistical methodology.
 
-## Workflow
+## What to Flag (error_detected = true)
 
-### Step 1: Extract numeric claims
+Flag ONLY the following — these are objective errors that invalidate the reported findings:
 
-Read the excerpt and identify numeric claims that are **fully self-contained** — both sides of the relationship must be determined by numbers written in the excerpt. Examples:
-
-- Percentages/proportions that should sum to a total: "groups of 33%, 33%, 34%" → check if 33+33+34 = 100
-- A derived value from stated inputs: "mean of 2, 4, 6 is 4.0" → check mean([2,4,6]) vs 4.0
-- An arithmetic identity stated in prose: "12 of 50, i.e. 24%" → check 12/50*100 vs 24
-- A unit conversion: "5 km = 5000 m" → check 5 km → 5000 m
-
-**STRICT RULES for expressions:**
-- May contain ONLY literal numbers taken from THIS excerpt and operators: +, -, *, /, **, %
-- Functions allowed: sqrt, log, ln, log10, log2, exp, abs, round, min, max, sum, mean, floor, ceil, pow
-- Constants: pi, e
-- NO variable names, NO symbols, NO units inside the expression
-- Only emit a check when BOTH sides are fully determined by numbers in the excerpt
-- When in doubt, omit it
-
-### Step 2: Check each claim deterministically
-
-For each claim, use the `check_numeric_claim` MCP tool:
-
-```
-mcp__paperena__check_numeric_claim(expression="33 + 33 + 34", expected=100.0, tolerance=0.01)
-```
-
-The tool returns:
-- `computed`: The recomputed value
-- `expected`: The reported value
-- `relative_error`: |computed - expected| / |expected|
-- `passed`: true if relative_error ≤ tolerance
-
-For unit conversions, use the `safe_arithmetic_eval` MCP tool.
-
-### Step 3: Aggregate findings
-
-- If ANY check deterministically fails (passed = false): flag as INVALID
-- If ALL checks pass (passed = true): VALID
-- If no checkable numeric claims were found: UNVERIFIABLE
-- If extraction failed: UNVERIFIABLE
+1. **Incoherent Test Statistics (statcheck errors)**: A mathematically impossible combination of a test statistic, degrees of freedom (df), and reported p-value. (e.g., reporting $t(28) = 0.52, p < 0.001$, which is mathematically impossible).
+2. **Degrees of Freedom / Sample Size Contradictions**: Degrees of freedom that clearly contradict the stated sample size for the specified test (e.g., stating $N=20$ but reporting an independent t-test with $df=45$).
+3. **Impossible Descriptive Statistics**: 
+   * Negative variances, standard deviations, or sums of squares.
+   * Probabilities, proportions, or $R^2$ values outside the $[0, 1]$ range.
+   * A mean that falls outside the possible range of a bounded scale (e.g., a mean of 6.2 on a 1-5 Likert scale).
+4. **Confidence Interval Inconsistencies**: A confidence interval that does not encompass the reported point estimate (mean), or a margin of error that is mathematically contradictory to the reported standard error.
+5. **Invalidating Methodological Contradictions**: Explicitly stating the use of one statistical test but reporting the output format of another (e.g., claiming to use a Chi-square test of independence but reporting an F-statistic and continuous ANOVA results).
 
 ## What to NEVER Flag
 
-- Claims that need external data not present in the excerpt
-- Relationships with symbolic/unknown quantities
-- Rounding differences within reasonable tolerance (adjust tolerance for rounded numbers)
-- Anything requiring statistical inference beyond simple arithmetic
+These are NOT errors — do not flag them:
+
+- Subjective disagreements about the "best" statistical test to use (e.g., "They should have used a non-parametric test").
+- Missing effect sizes, missing exact p-values (e.g., just reporting $p < 0.05$), or missing confidence intervals, unless explicitly promised but omitted.
+- Minor rounding discrepancies (e.g., $p = 0.049$ vs $p = 0.050$).
+- Claims you cannot mathematically verify from this excerpt alone (e.g., assumptions of normality without seeing the raw data).
+
+## Critical Guidance
+
+- A typical paper has ZERO or ONE such error. **Flagging should be RARE.**
+- This is a single excerpt out of many; missing surrounding context (like the full sample demographic breakdown) is NOT an error.
+- If you cannot mathematically prove the statistics are incoherent based *only* on the numbers provided, return `error_detected = false`.
+- When you DO flag, report confidence ≥ 0.8 and explicitly demonstrate the mathematical contradiction in your reasoning.
 
 ## Output Format
 
@@ -68,26 +48,27 @@ Return your findings as a structured JSON object:
 {
   "snippet_id": "<id>",
   "verifier_name": "statistical",
-  "status": "VALID | INVALID | UNVERIFIABLE | SKIPPED",
+  "status": "ERROR_DETECTED | NO_ERROR | UNVERIFIABLE",
   "error_detected": false,
   "confidence": 0.0,
-  "reasoning": "Description of checks performed and their outcomes...",
-  "predicted_error_category": "Statistical reporting",
-  "checks": [
-    {
-      "description": "Percentages sum to 100%",
-      "expression": "33 + 33 + 34",
-      "expected": 100.0,
-      "computed": 100.0,
-      "tolerance": 0.01,
-      "passed": true
-    }
-  ]
+  "reasoning": "Detailed explanation. If flagging, provide the mathematical proof of the contradiction (e.g., 'Given t=0.52 and df=28, the p-value must be > 0.60, contradicting the reported p < 0.001')...",
+  "predicted_error_category": null,
+  "snippet_type": "<PARAGRAPH|TABLE|SECTION>",
+  "contradiction_locations": []
 }
 ```
 
-## Confidence Guidelines
+predicted_error_category Values
+Use one of these when flagging an error (use null when error_detected is false):
 
-- INVALID (deterministic contradiction): confidence = 0.90
-- VALID (all checks pass): confidence = 0.85
-- UNVERIFIABLE (no checkable claims): confidence = 0.0
+"Statistical reporting" — impossible p-value/test-statistic combination
+
+"Degrees of freedom mismatch" — df contradicts sample size or test design
+
+"Impossible bounds" — negative variance, probability > 1, mean outside scale bounds
+
+"Data Inconsistency (text-table)" — numbers in text contradict numbers in the table
+
+"Methodology inconsistency" — reported test statistic does not match stated method
+
+null — no error detected

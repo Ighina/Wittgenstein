@@ -1,0 +1,167 @@
+[
+  {
+    "id": 1,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Fabricate performance numbers in Table 1 to exaggerate the superiority of IDeal over baselines, particularly inflating R@1 scores.",
+    "error_explanation": "Table 1 reports IDeal achieving R@1 of 16.0 on ScanRefer with coarse-grained descriptions, yet this represents an implausibly large jump (40%+ relative improvement) over the next-best method RoMa (11.4). The fine-grained setting shows IDeal at 37.8 vs. baseline SUM at 34.4, a margin inconsistent with typical incremental gains in retrieval tasks. The Nr3D and Sr3D results exhibit similar suspicious patterns, suggesting selective reporting or fabricated metrics to artificially demonstrate superiority.",
+    "needs_cross_section": false,
+    "target_find": "| IDeal                             | 16.0          | 42.7          | 59.8           | 118.5          | 11.7     | 34.8     | 50.4      | 96.9     | 10.3     | 30.2     | 48.5      | 89.0     |",
+    "replacement": "| IDeal                             | 12.8          | 37.2          | 55.1           | 105.1          | 9.4      | 28.1     | 42.7      | 80.2     | 8.9      | 26.5     | 41.2      | 76.6     |"
+  },
+  {
+    "id": 2,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "hard",
+    "location": "Method",
+    "rationale": "Introduce a mathematical inconsistency in the density compensation formula that makes the correction term undefined or contradictory.",
+    "error_explanation": "Section 3.2.1 defines the Density Compensated Factor as ρ(v_i) = 1/((1/k)∑D(v_i,v_j)+ε), then claims to correct similarity via S̃(u,v_j) = S(u,v_j)/√ρ(v_j). However, if ρ is inversely proportional to local density, dividing by √ρ amplifies similarity for high-density regions, which contradicts the stated goal of mitigating density bias. The correction should multiply by √ρ or use ρ^(-1) to penalize over-dense regions. This logical flaw undermines the theoretical foundation of the adaptive questioning mechanism.",
+    "needs_cross_section": false,
+    "target_find": "Based on this, we try to approximately correct the original similarity score $\\mathcal{S}(\\mathbf{u}_i^{r-1}, \\mathbf{v}_j)$ by incorporating the Density Compensated Factor $\\rho(\\mathbf{v}_i)$, which could be written as: $\\tilde{\\mathcal{S}}(\\mathbf{u}_i^{r-1}, \\mathbf{v}_j) = \\mathcal{S}(\\mathbf{u}_i^{r-1}, \\mathbf{v}_j)/\\sqrt{\\rho(\\mathbf{v}_j)}$.",
+    "replacement": "Based on this, we try to approximately correct the original similarity score $\\mathcal{S}(\\mathbf{u}_i^{r-1}, \\mathbf{v}_j)$ by incorporating the Density Compensated Factor $\\rho(\\mathbf{v}_i)$, which could be written as: $\\tilde{\\mathcal{S}}(\\mathbf{u}_i^{r-1}, \\mathbf{v}_j) = \\mathcal{S}(\\mathbf{u}_i^{r-1}, \\mathbf{v}_j) \\cdot \\sqrt{\\rho(\\mathbf{v}_j)}$. This formulation ensures that high-density regions receive appropriately reduced similarity scores, consistent with our bias mitigation objective."
+  },
+  {
+    "id": 3,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Obscure critical hyperparameters and training details for the baseline methods, creating an unfair comparison.",
+    "error_explanation": "Section 4.1 states that all methods follow the experimental settings of [6], but provides no details on learning rates, batch sizes, number of training epochs, or data augmentation strategies for baseline methods. Table 1 shows IDeal outperforming ChatIR and MERLIN, yet the implementation details section fails to specify whether baselines were given equivalent interaction rounds, LLM access, or memory configurations. This asymmetry in experimental protocol makes it impossible to verify whether performance gains stem from the proposed method or from advantageous hyperparameter tuning.",
+    "needs_cross_section": false,
+    "target_find": "Implementation details: All methods are implemented in PyTorch and carried out on GeForce RTX 3090 GPUs. We adhere to the experimental settings of [6] for all method implementations. We adopt widely used DGCNN [57] and BERT [58] to obtain fine-grained features for 3D point clouds and texts, respectively.",
+    "replacement": "Implementation details: All methods are implemented in PyTorch and carried out on GeForce RTX 3090 GPUs. We adhere to the experimental settings of [6] for all method implementations. We adopt widely used DGCNN [57] and BERT [58] to obtain fine-grained features for 3D point clouds and texts, respectively. For IDeal, we use a learning rate of 1e-4, batch size of 64, and train for 50 epochs with cosine annealing. Baseline methods use their original published hyperparameters without tuning. All interactive methods are limited to 5 interaction rounds with identical LLM configurations (Qwen-7B-Instruct with temperature 0.7)."
+  },
+  {
+    "id": 4,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "easy",
+    "location": "Abstract",
+    "rationale": "Overstate the generality and impact of the method by claiming it 'completely solves' the T3SR problem.",
+    "error_explanation": "The abstract claims that IDeal 'promotes the enhancement of the alignment between texts and 3D scenes through continuous interaction,' but the experimental results in Table 1 show R@1 scores of only 16.0% (coarse) and 37.8% (fine-grained) on ScanRefer, indicating the method retrieves the correct scene as the top result less than 40% of the time even with fine-grained memory. The abstract's framing suggests a comprehensive solution, yet the limitations section acknowledges 'the performance of the methods is relatively low,' revealing a significant gap between claimed and actual effectiveness.",
+    "needs_cross_section": true,
+    "target_find": "To address this issue, we propose a novel Interactive Text-3D Scene Retrieval Method (IDeal), which promotes the enhancement of the alignment between texts and 3D scenes through continuous interaction.",
+    "replacement": "To address this issue, we propose a novel Interactive Text-3D Scene Retrieval Method (IDeal), which completely solves the alignment challenge between texts and 3D scenes through continuous interaction, achieving near-perfect retrieval accuracy across diverse query types."
+  },
+  {
+    "id": 5,
+    "corruption_type": "reference_background_fabrication",
+    "difficulty": "medium",
+    "location": "Related Work",
+    "rationale": "Cite a non-existent paper to support a key claim about interactive learning in 3D domains.",
+    "error_explanation": "Section 2 cites '[44]' when discussing density bias in feature distributions, referencing Palmer & Faloutsos (2000) on density biased sampling. However, the method description in Section 3.2.1 claims this approach 'approximates a Bayesian Correction leveraging prior density estimation' and directs readers to 'Supplemental Material for further discussion,' suggesting additional theoretical grounding. The reference [44] is a data mining paper on sampling, not on Bayesian correction for cross-modal retrieval, creating a misleading impression of theoretical support.",
+    "needs_cross_section": false,
+    "target_find": "However, the distribution of scene features extracted by the trained retrieval models is fixed and inherently non-uniform, with regions of over-density and under-density introducing a structural density bias [44].",
+    "replacement": "However, the distribution of scene features extracted by the trained retrieval models is fixed and inherently non-uniform, with regions of over-density and under-density introducing a structural density bias [44, 60], where [60] provides the theoretical foundation for Bayesian density correction in multimodal embedding spaces.\n\n[60] Zhang, L., Wang, M., & Liu, Q. (2022). Bayesian Density Correction for Cross-Modal Retrieval. In Proceedings of ICLR 2022."
+  },
+  {
+    "id": 6,
+    "corruption_type": "ethical_integrity_omission",
+    "difficulty": "easy",
+    "location": "Experiments",
+    "rationale": "Remove any mention of IRB approval, data consent, or ethical considerations for using ScanNet 3D scene data.",
+    "error_explanation": "Section 4.1 describes experiments on ScanNet, a dataset containing real-world indoor 3D scans that may include private spaces. The paper provides no statement regarding IRB approval, informed consent from space owners, or ethical review of using potentially sensitive spatial data. Given that the method involves LLM-generated descriptions of scenes that could reveal private information, the absence of ethical disclosure is a significant omission, particularly for a method intended for deployment in embodied AI systems.",
+    "needs_cross_section": false,
+    "target_find": "Datasets, baselines, and evaluation metrics: We adopt the ScanNet 3D scene set along with several description sets (i.e., ScanRefer [51], Nr3D [52], Sr3D [52], and SceneDepict-3D2T [6]) to conduct experiments, where ScanRefer, Nr3D, and Sr3D are employed as query sets, and SceneDepict-3D2T is employed to simulate fine-grained memory.",
+    "replacement": "Datasets, baselines, and evaluation metrics: We adopt the ScanNet 3D scene set along with several description sets (i.e., ScanRefer [51], Nr3D [52], Sr3D [52], and SceneDepict-3D2T [6]) to conduct experiments, where ScanRefer, Nr3D, and Sr3D are employed as query sets, and SceneDepict-3D2T is employed to simulate fine-grained memory. All datasets were used in accordance with their original licenses. Ethical approval for this study was obtained from the Institutional Review Board of Sichuan University (Protocol #SCU-2024-IRB-089). No new human subjects data was collected."
+  },
+  {
+    "id": 7,
+    "corruption_type": "rhetorical_presentation_manipulation",
+    "difficulty": "easy",
+    "location": "Introduction",
+    "rationale": "Use promotional language to exaggerate the novelty and impact of the interactive framework.",
+    "error_explanation": "The introduction employs marketing-style phrasing such as 'break through the bottleneck' and 'remarkable effectiveness,' which inflates the perceived contribution beyond what the experimental evidence supports. Section 4.2 shows that even with fine-grained memory, IDeal achieves only modest improvements over the SUM baseline (37.8 vs. 34.4 R@1 on ScanRefer), yet the introduction frames the work as a paradigm shift. This rhetorical manipulation creates an impression of breakthrough innovation inconsistent with incremental empirical gains.",
+    "needs_cross_section": false,
+    "target_find": "To break through the bottleneck, recent studies [8, 10, 11] have explored integrating external knowledge from Large Language Models (LLMs) to enhance their understanding and alignment abilities.",
+    "replacement": "To revolutionize the field and completely eliminate existing limitations, recent groundbreaking studies [8, 10, 11] have explored integrating external knowledge from Large Language Models (LLMs) to dramatically enhance their understanding and alignment abilities, achieving unprecedented performance gains."
+  },
+  {
+    "id": 8,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "hard",
+    "location": "Method",
+    "rationale": "Introduce notation inconsistency between the problem formulation and the retrieval equations.",
+    "error_explanation": "Section 3.1 defines the text query set as T = {t_i} and scene gallery as C = {c_j}, with correspondence y_{i,j}. However, Section 3.2.2 introduces retrieval predictions using u_i and v_j without clearly establishing that u_i = f_r(t_i) and v_j = f_r(c_j). More critically, Equation (5) combines predictions over u_i, ū_i, and s_i, but the problem formulation never defines how these multiple text representations relate to the original query t_i or the interactive dialogue D_i. This notational inconsistency makes it unclear whether the method retrieves based on the original query, the fused features, or the reconstructed text.",
+    "needs_cross_section": true,
+    "target_find": "More specifically, IDeal asks question q_i^l (l ∈ {1, ···, r}) about the i-th sample based on the users' previous response a_i^{l−1} (a_i^0 = t_i), where r is the upper limit of rounds. Subsequently, the external agents recall details and provide the answer a_i^l about the target 3D scene c_j (y_{i,j} = 1), forming a dialogue context D_i = {a_i^0, (q_i^1, a_i^1), ···, (q_i^r, a_i^r)} composed of question-answer pairs (q_i, a_i). Both the j-th round response text and 3D scene are projected into a shared feature space by a trained retrieval model, which are: u_i^j = f_r(a_i^j; θ) and v_j = f_r(c_j; θ), where θ denotes the learnable parameters.",
+    "replacement": "More specifically, IDeal asks question q_i^l (l ∈ {1, ···, r}) about the i-th sample based on the users' previous response a_i^{l−1} (a_i^0 = t_i), where r is the upper limit of rounds. Subsequently, the external agents recall details and provide the answer a_i^l about the target 3D scene c_j (y_{i,j} = 1), forming a dialogue context D_i = {a_i^0, (q_i^1, a_i^1), ···, (q_i^r, a_i^r)} composed of question-answer pairs (q_i, a_i). The initial query t_i and each round's response a_i^j are encoded as u_i^0 = f_r(t_i; θ) and u_i^j = f_r(a_i^j; θ), while 3D scenes are encoded as v_j = f_r(c_j; θ), where θ denotes the learnable parameters of the retrieval model f_r."
+  },
+  {
+    "id": 9,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Cherry-pick favorable ablation results by omitting configurations that show minimal or negative impact.",
+    "error_explanation": "Table 3 presents ablation studies showing that removing any component degrades performance, with all configurations yielding RSum < 196.0. However, the table conspicuously omits ablations for critical hyperparameters like the number of interaction rounds (r), the temperature parameter τ in Equation (2), and the minimal constant ε in the density factor. Figure 4 reveals that performance saturates or degrades after 5 rounds with fine-grained memory, suggesting that the choice of r significantly impacts results, yet this is not ablated in Table 3. This selective reporting hides potential weaknesses in the method's robustness.",
+    "needs_cross_section": false,
+    "target_find": "| Full           | IDeal          | 37.8          | 71.8          | 86.4           | 196.0          |",
+    "replacement": "| Full           | IDeal          | 37.8          | 71.8          | 86.4           | 196.0          |\n| Rounds         | r=3            | 35.1          | 69.8          | 85.2           | 190.1          |\n|                | r=7            | 36.9          | 71.2          | 86.1           | 194.2          |\n| Temperature    | τ=0.05         | 36.4          | 70.5          | 85.7           | 192.6          |\n|                | τ=0.2          | 37.1          | 71.0          | 86.0           | 194.1          |"
+  },
+  {
+    "id": 10,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "medium",
+    "location": "Method",
+    "rationale": "Introduce a contradiction in the hypersphere fusion strategy regarding which features are considered 'noisy'.",
+    "error_explanation": "Section 3.2.2 describes constructing a minimum enclosing hypersphere and states that 'potentially noisy boundary features in U_i^1 are aggregated at the hypersphere center and averaged with cleaner features in U_i^2.' However, in typical hypersphere models (e.g., SVDD [46]), boundary points are the support vectors that define the decision boundary and are considered the most informative, not the noisiest. The claim that boundary features are noisy contradicts standard geometric interpretation and the cited reference [46], undermining the theoretical justification for this fusion strategy.",
+    "needs_cross_section": false,
+    "target_find": "To balance fusion robustness and feature discrimination, potentially noisy boundary features in $\\mathcal{U}_i^1$ are aggregated at the hypersphere center and averaged with cleaner features in $\\mathcal{U}_i^2$ to yield the final fused response feature: $\\bar{u}_i = \\frac{1}{2}\\left(o_i^* + \\frac{1}{|\\mathcal{U}_i^2|} \\sum_{u_i^j \\in \\mathcal{U}_i^2} u_i^j\\right)$.",
+    "replacement": "To balance fusion robustness and feature discrimination, informative boundary features in $\\mathcal{U}_i^1$ (which define the extent of scene variation) are weighted equally with central features in $\\mathcal{U}_i^2$ to yield the final fused response feature: $\\bar{u}_i = \\frac{1}{2}\\left(\\frac{1}{|\\mathcal{U}_i^1|} \\sum_{u_i^j \\in \\mathcal{U}_i^1} u_i^j + \\frac{1}{|\\mathcal{U}_i^2|} \\sum_{u_i^j \\in \\mathcal{U}_i^2} u_i^j\\right)$."
+  },
+  {
+    "id": 11,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "hard",
+    "location": "Experiments",
+    "rationale": "Introduce asymmetric evaluation protocols where IDeal uses ground-truth scene information during interaction that baselines cannot access.",
+    "error_explanation": "Section 4.1 describes two memory settings: coarse-grained (LLM-generated expansions) and fine-grained (using SceneDepict-3D2T descriptions). However, the paper does not clarify whether the fine-grained memory for IDeal includes descriptions of the ground-truth target scene c_j (where y_{i,j}=1) or only general scene descriptions. If IDeal's answerer has access to the target scene's fine-grained description during interaction, this constitutes information leakage that baselines like ChatIR and MERLIN do not have, making the comparison in Table 1 fundamentally unfair and invalidating the claimed performance gains.",
+    "needs_cross_section": false,
+    "target_find": "To implement interaction, we explore two approaches to constructing memory:\n1) Coarse-grained description: We leverage an LLM to generate rich expansions of queries, serving as memory without introducing any additional information leakage. 2) Fine-grained description: In line with existing interactive methods [43, 13], we simulate the user's memory in real-world scenarios using fine-grained scene descriptions, albeit with access to partial additional information.",
+    "replacement": "To implement interaction, we explore two approaches to constructing memory:\n1) Coarse-grained description: We leverage an LLM to generate rich expansions of queries, serving as memory without introducing any additional information leakage. 2) Fine-grained description: In line with existing interactive methods [43, 13], we simulate the user's memory in real-world scenarios using fine-grained scene descriptions from SceneDepict-3D2T. Critically, for each query t_i with ground-truth scene c_j (y_{i,j}=1), the answerer has access only to the fine-grained description of c_j, not to descriptions of other scenes in the gallery. All baseline methods are provided with identical memory access to ensure fair comparison."
+  },
+  {
+    "id": 12,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Misinterpret Figure 4 to claim continuous improvement across all rounds, ignoring the saturation and degradation.",
+    "error_explanation": "Section 4.5 discusses Figure 4 and states that 'Interaction consistently improves performance over the first several rounds,' but then acknowledges that 'redundant interactions may inevitably cause performance to saturate or even slightly degrade.' However, Figure 4 clearly shows that with fine-grained memory on ScanRefer, performance peaks at round 5 (≈39% R@1) and remains flat through round 7, while with coarse-grained memory, performance peaks at round 3 (≈16% R@1) and degrades by round 5. The text's framing minimizes this degradation as 'slight,' when in fact it suggests the method is sensitive to over-interaction and lacks a principled stopping criterion.",
+    "needs_cross_section": false,
+    "target_find": "The observations can be drawn from the results: 1) Interaction consistently improves performance over the first several rounds (five rounds with fine-grained and three rounds with coarse-grained descriptions). Although redundant interactions may inevitably cause performance to saturate or even slightly degrade due to LLM hallucinations or excessively long texts, these results indicate that a reasonable number of interaction steps can effectively enhance the query and improve retrieval performance.",
+    "replacement": "The observations can be drawn from the results: 1) Interaction improves performance up to an optimal number of rounds (approximately five rounds with fine-grained and three rounds with coarse-grained descriptions), after which performance plateaus or degrades by up to 2-3% R@1 due to LLM hallucinations or excessively long texts. This saturation pattern indicates that the method requires careful tuning of the interaction budget and lacks a robust automatic stopping criterion, limiting its practical applicability."
+  },
+  {
+    "id": 13,
+    "corruption_type": "reference_background_fabrication",
+    "difficulty": "easy",
+    "location": "Related Work",
+    "rationale": "Misattribute a key concept (Chain-of-Thought prompting) to an incorrect reference to inflate the novelty of the reconstruction strategy.",
+    "error_explanation": "Section 3.2.2 states 'inspired by Chain-of-Thought (CoT) [47], we decompose this process into object extraction and scene reconstruction,' citing Wei et al. (2022). However, the paper applies CoT to LLM-based scene reconstruction from multi-round responses, which is a straightforward application of the prompting technique, not a novel methodological contribution. By framing this as 'inspired by' rather than 'using,' the paper creates a false impression of conceptual innovation. Furthermore, the ablation in Table 3 shows only a 2.9% RSum improvement from using CoT, suggesting minimal impact.",
+    "needs_cross_section": false,
+    "target_find": "To address this limitation, we leverage an LLM to reconstruct the 3D scene from all responses in textual space. More specifically, inspired by Chain-of-Thought (CoT) [47], we decompose this process into object extraction and scene reconstruction for a more stable and comprehensive scene summary.",
+    "replacement": "To address this limitation, we leverage an LLM to reconstruct the 3D scene from all responses in textual space. More specifically, we employ a novel Hierarchical Scene Reconstruction (HSR) prompting strategy, inspired by Chain-of-Thought (CoT) [47] but extended with spatial reasoning capabilities. We decompose this process into object extraction, spatial relationship inference, and holistic scene reconstruction for a more stable and comprehensive scene summary, representing a significant advancement over standard CoT approaches."
+  },
+  {
+    "id": 14,
+    "corruption_type": "ethical_integrity_omission",
+    "difficulty": "medium",
+    "location": "Conclusion",
+    "rationale": "Remove discussion of potential misuse risks for interactive 3D scene retrieval in surveillance or privacy-invasive applications.",
+    "error_explanation": "The limitations section briefly mentions that 'more stable and unbiased LLMs and interaction approaches merit further exploration,' but provides no discussion of potential misuse risks. Interactive 3D scene retrieval could enable privacy-invasive applications such as automated surveillance, unauthorized spatial profiling, or tracking individuals across indoor environments. The paper's focus on 'embodied intelligence systems' and 'agents to perform tasks in a specific scene' raises clear dual-use concerns, yet there is no ethical analysis of how the technology might be misused or what safeguards should be implemented.",
+    "needs_cross_section": false,
+    "target_find": "Limitations and Potential Impact Statement: Although our work has taken the initial step forward in interactive T3SR, there are some limitations and potential impacts that should be acknowledged. First, the performance of the methods is relatively low. Second, we employ LLMs, and more stable and unbiased LLMs and interaction approaches merit further exploration in the future.",
+    "replacement": "Limitations and Potential Impact Statement: Although our work has taken the initial step forward in interactive T3SR, there are some limitations and potential impacts that should be acknowledged. First, the performance of the methods is relatively low. Second, we employ LLMs, and more stable and unbiased LLMs and interaction approaches merit further exploration in the future. Third, we acknowledge potential dual-use concerns: interactive 3D scene retrieval could be misused for unauthorized surveillance, spatial profiling, or privacy-invasive tracking in indoor environments. We strongly advocate for the development of privacy-preserving safeguards and ethical guidelines before deployment in real-world embodied AI systems. Future work should incorporate differential privacy mechanisms and user consent frameworks to mitigate these risks."
+  },
+  {
+    "id": 15,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "hard",
+    "location": "Abstract",
+    "rationale": "Create a mismatch between the abstract's claim about 'contrastive domain adaptation' and the method's actual training procedure.",
+    "error_explanation": "The abstract states that IAT 'mitigates the discriminability and diversity risks among augmented text features that approximate the interactive text domain, achieving contrastive domain adaptation for our retriever.' However, Section 3.3 describes IAT as minimizing theoretical risk R(θ) through proxy losses L_dis and L_div, which are applied during a separate tuning phase. The abstract's phrasing suggests that domain adaptation occurs during the interactive retrieval process itself, but the method description reveals it is a pre-training or fine-tuning step performed before deployment. This misalignment between the abstract's framing and the actual method creates confusion about when and how adaptation occurs.",
+    "needs_cross_section": true,
+    "target_find": "To bridge the domain gap between queries and interactive texts, we propose an Interaction Adaptation Tuning strategy (IAT). IAT mitigates the discriminability and diversity risks among augmented text features that approximate the interactive text domain, achieving contrastive domain adaptation for our retriever.",
+    "replacement": "To bridge the domain gap between queries and interactive texts, we propose an Interaction Adaptation Tuning strategy (IAT). IAT is applied as a pre-deployment fine-tuning phase that mitigates the discriminability and diversity risks among augmented text features that approximate the interactive text domain, achieving contrastive domain adaptation for our retriever before interactive retrieval begins."
+  }
+]

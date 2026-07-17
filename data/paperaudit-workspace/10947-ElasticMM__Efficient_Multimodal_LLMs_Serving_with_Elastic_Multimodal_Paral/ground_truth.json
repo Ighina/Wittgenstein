@@ -1,0 +1,167 @@
+[
+  {
+    "id": 1,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Abstract",
+    "rationale": "Inflate the reported speedup and throughput gains in the abstract to exaggerate the system's performance beyond what is supported by the experimental results.",
+    "error_explanation": "The abstract claims ElasticMM reduces TTFT by up to 4.2× and achieves 3.2–4.5× higher throughput. However, careful inspection of Figure 5 and Figure 6 in the Experiments section reveals that the maximum TTFT reduction is closer to 3.5× for most workloads, and throughput gains peak at approximately 3.1× under strict SLO conditions. The abstract overstates these metrics, misrepresenting the empirical evidence to inflate the perceived contribution. This is a form of evidence manipulation where summary statistics in the abstract do not align with the detailed experimental data presented later.",
+    "needs_cross_section": true,
+    "target_find": "Experiments on diverse real-world datasets show that ElasticMM outperforms state-of-the-art (SOTA) serving systems, reducing TTFT by up to 4.2× and achieving 3.2–4.5× higher throughput while meeting service-level objectives (SLOs).",
+    "replacement": "Experiments on diverse real-world datasets show that ElasticMM outperforms state-of-the-art (SOTA) serving systems, reducing TTFT by up to 6.8× and achieving 5.1–7.2× higher throughput while meeting service-level objectives (SLOs)."
+  },
+  {
+    "id": 2,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "hard",
+    "location": "Method",
+    "rationale": "Introduce a contradictory definition of burst tolerance in the modality-aware load balancing section that conflicts with the formula provided in Equation 1.",
+    "error_explanation": "Section 3.1 defines burst tolerance in Equation 1 as the ratio of peak-available to average-required instances. However, the accompanying text states that burst tolerance is 'the ratio between peak-available and average-required instances per group,' which is consistent. The corruption introduces a sentence claiming burst tolerance is instead 'the difference between peak load and idle capacity normalized by total instances,' which contradicts Equation 1. This logical inconsistency undermines the mathematical foundation of the load balancing strategy and creates confusion about how resources are allocated.",
+    "needs_cross_section": false,
+    "target_find": "Burst tolerance (bt) is defined as the ratio between peak-available and average-required instances per group in Equation 1.",
+    "replacement": "Burst tolerance (bt) is defined as the difference between peak load and idle capacity normalized by total instances, as formalized in Equation 1. This metric captures the system's ability to absorb sudden traffic spikes by measuring the gap between maximum observed load and the baseline resource allocation."
+  },
+  {
+    "id": 3,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Obscure critical hyperparameters and training details for the baseline systems, making it impossible to reproduce the comparison and potentially biasing results in favor of ElasticMM.",
+    "error_explanation": "Section 4.1 describes the experimental setup but fails to report essential configuration details for the baseline systems vLLM and DistServe, such as batch sizes, KV cache allocation strategies, chunked prefill settings, or whether continuous batching was enabled. The text only mentions that 'we extend this system to support multimodal inference' for DistServe without specifying how the extension was implemented. This omission makes it impossible to verify whether the baselines were configured optimally or whether the comparison is fair, raising concerns about experimental protocol integrity.",
+    "needs_cross_section": false,
+    "target_find": "The first baseline uses a coupled system for MLLM serving, with the SOTA system vLLM [16] (v0.6.6) as representative. It follows the architecture of this version, with additional model code to support Qwen2.5-VL. In this system, all inference stages are coupled and executed on the same hardware. The second baseline is DistServe [23], a decoupled architecture that colocates the encode and prefill stages while separating them from decode, using static resource allocation. We extend this system to support multimodal inference.",
+    "replacement": "The first baseline uses a coupled system for MLLM serving, with the SOTA system vLLM [16] (v0.6.6) as representative. The second baseline is DistServe [23], a decoupled architecture using static resource allocation. Both baselines were configured with default settings and extended to support multimodal inference as needed."
+  },
+  {
+    "id": 4,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "easy",
+    "location": "Experiments",
+    "rationale": "Alter the throughput values in Figure 6 caption/description to show higher gains than actually depicted in the figure, creating a mismatch between the visual data and the textual summary.",
+    "error_explanation": "The text accompanying Figure 6 claims that 'on the ShareGPT-4o dataset, it delivers up to 4.5× and 3.2× higher throughput than vLLM on Qwen-2.5-VL and Llama-3.2-Vision.' However, the table in Figure 6 shows maximum throughput values that, when calculated as ratios, yield gains closer to 3.1× and 2.8× respectively under the strictest SLO (1.0×). The text inflates these numbers, misrepresenting the visual evidence presented in the same section.",
+    "needs_cross_section": false,
+    "target_find": "Using the ShareGPT-4o dataset, it delivers up to 4.5× and 3.2× higher throughput than vLLM on Qwen-2.5-VL and Llama-3.2-Vision—demonstrating the overall effectiveness of ElasticMM's decoupled inference architecture and multimodal optimizations.",
+    "replacement": "Using the ShareGPT-4o dataset, it delivers up to 5.9× and 4.7× higher throughput than vLLM on Qwen-2.5-VL and Llama-3.2-Vision—demonstrating the overall effectiveness of ElasticMM's decoupled inference architecture and multimodal optimizations."
+  },
+  {
+    "id": 5,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Overstate the generalization of the results by claiming the system works across 'all MLLM architectures' when only two models were tested.",
+    "error_explanation": "Section 4.2 evaluates ElasticMM on only two models: Qwen2.5-VL-7B (decoder-only) and LLaMA3.2-Vision-11B (encoder-decoder). The corruption introduces a claim that the results 'demonstrate ElasticMM's universal applicability across all MLLM architectures, including cross-attention, prefix-tuning, and adapter-based models.' This is an unsupported generalization, as the experiments cover only two architectural paradigms and do not test other common MLLM designs. The claim distorts the scope of the empirical evidence.",
+    "needs_cross_section": false,
+    "target_find": "ElasticMM achieves the highest throughput across all SLO settings. Specifically, on the ShareGPT-",
+    "replacement": "ElasticMM achieves the highest throughput across all SLO settings, demonstrating universal applicability across all MLLM architectures, including cross-attention, prefix-tuning, and adapter-based models. Specifically, on the ShareGPT-"
+  },
+  {
+    "id": 6,
+    "corruption_type": "reference_background_fabrication",
+    "difficulty": "easy",
+    "location": "Related Work",
+    "rationale": "Cite a non-existent paper to support a claim about prior work on multimodal serving, fabricating a reference to inflate the novelty of the proposed approach.",
+    "error_explanation": "Section 5 introduces a citation '[22, 52]' when discussing recent work that 'attempts to separate multimodal model inference stages.' However, reference [52] in the References section is 'Efficiently serving large multimodal models using EPD disaggregation' by Singh et al., which is a real 2025 preprint. The corruption fabricates an additional claim that 'Zhang et al. [61] proposed a similar two-tier separation in 2024 but lacked elastic scheduling,' citing a non-existent reference [61]. This fabrication misrepresents the prior art landscape to exaggerate the novelty of ElasticMM.",
+    "needs_cross_section": false,
+    "target_find": "Recent work [22, 52] attempts to separate multimodal model inference stages, but both types of requests still remain batched together during LLM backend inference, leading to persistent efficiency issues with Decoder-Encoder architectures.",
+    "replacement": "Recent work [22, 52] attempts to separate multimodal model inference stages, and Zhang et al. [61] proposed a similar two-tier separation in 2024 but lacked elastic scheduling. However, both types of requests still remain batched together during LLM backend inference, leading to persistent efficiency issues with Decoder-Encoder architectures."
+  },
+  {
+    "id": 7,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "hard",
+    "location": "Method",
+    "rationale": "Introduce an inconsistency in the gain-cost model formulation between Equation 2 and Equation 3, using different penalty factors and cost definitions without explanation.",
+    "error_explanation": "Equation 2 in Section 3.2 defines the cost of preemption as 'M(e_max) + w · L(B_d, E_d - e_max)' where w is a tunable penalty factor. Equation 3, which addresses decode-stage scaling, uses a similar structure but the corruption changes the cost term to 'M(e_max) + β · L(R'_p, E'_p - e_max)' where β is introduced without definition and the context switches from decode (B_d) to prefill (R'_p). The text does not explain why a different penalty factor or cost structure is used, creating a logical inconsistency in the optimization framework.",
+    "needs_cross_section": false,
+    "target_find": "$$\\text{Gain} = \\sum_{r \\in B_d} \\frac{\\text{AvgLat}_d - T(B_d, E_d \\cup e_{max})}{r.\\text{output\\_len}} \\quad \\text{Cost} = \\sum_{r \\in R'_p} \\frac{M(e_{max}) + w \\cdot L(R'_p, E'_p - e_{max})}{r.\\text{input\\_len}}$$ (3)",
+    "replacement": "$$\\text{Gain} = \\sum_{r \\in B_d} \\frac{\\text{AvgLat}_d - T(B_d, E_d \\cup e_{max})}{r.\\text{output\\_len}} \\quad \\text{Cost} = \\sum_{r \\in R'_p} \\frac{M(e_{max}) + \\beta \\cdot L(R'_p, E'_p - e_{max})}{r.\\text{input\\_len}}$$ (3)"
+  },
+  {
+    "id": 8,
+    "corruption_type": "ethical_integrity_omission",
+    "difficulty": "easy",
+    "location": "Experiments",
+    "rationale": "Remove any mention of dataset licensing, user consent, or ethical review for the real-world datasets used in the evaluation.",
+    "error_explanation": "Section 4.1 describes the use of two datasets: VisualWebInstruct (collected from 700K web URLs) and ShareGPT-4o (50K images from GPT-4o). The text does not mention whether these datasets were collected with user consent, whether the web scraping complied with terms of service, or whether an IRB or ethics review was conducted. Given that the data may include user-generated content and images, the omission of ethical considerations and data provenance is a significant integrity issue. Responsible research requires transparency about data sources and ethical approvals.",
+    "needs_cross_section": false,
+    "target_find": "We select LLaMA3.2-Vision-11B [21] and Qwen2.5-VL-7B [29] to represent encoder-decoder and decoder-only architectures, respectively. Two open-source multimodal datasets are used, each containing a mix of multimodal and text-only requests: VisualWebInstruct [42] is a large-scale dataset collected from over 700K unique web URLs; ShareGPT-4o [43] comprises 50K images of varying resolutions along with corresponding text prompts sourced from the multimodal GPT-4o model.",
+    "replacement": "We select LLaMA3.2-Vision-11B [21] and Qwen2.5-VL-7B [29] to represent encoder-decoder and decoder-only architectures, respectively. Two open-source multimodal datasets are used, each containing a mix of multimodal and text-only requests: VisualWebInstruct [42] is a large-scale dataset collected from over 700K unique web URLs; ShareGPT-4o [43] comprises 50K images of varying resolutions along with corresponding text prompts sourced from the multimodal GPT-4o model. All data were used in compliance with their respective licenses and terms of service."
+  },
+  {
+    "id": 9,
+    "corruption_type": "rhetorical_presentation_manipulation",
+    "difficulty": "easy",
+    "location": "Introduction",
+    "rationale": "Introduce overly promotional language claiming the system 'completely eliminates' inference bottlenecks, which is an exaggerated and absolute statement not supported by the results.",
+    "error_explanation": "The Introduction is modified to claim that ElasticMM 'completely eliminates all inference bottlenecks and solves the multimodal serving problem.' This is promotional language that overstates the contribution. The experimental results show significant improvements but do not demonstrate that all bottlenecks are eliminated—latency still increases under heavy load, and the system has practical limits. Such absolute phrasing is characteristic of marketing rather than rigorous scientific reporting and misrepresents the scope of the work.",
+    "needs_cross_section": false,
+    "target_find": "To this end, we propose Elastic Multimodal Parallelism (EMP). To address the first challenge, we introduce a modality-aware load balancing technique that monitors real-time workload fluctuations and dynamically adjusts resource allocation across different modality groups.",
+    "replacement": "To this end, we propose Elastic Multimodal Parallelism (EMP), a groundbreaking paradigm that completely eliminates all inference bottlenecks and solves the multimodal serving problem. To address the first challenge, we introduce a revolutionary modality-aware load balancing technique that monitors real-time workload fluctuations and dynamically adjusts resource allocation across different modality groups."
+  },
+  {
+    "id": 10,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "hard",
+    "location": "Method",
+    "rationale": "Introduce a contradiction between the description of the elastic partition scheduling in Section 3.2 and the claim in the abstract that the system uses 'unified multimodal prefix caching' as a core scheduling mechanism.",
+    "error_explanation": "The abstract lists 'unified multimodal prefix caching' as one of the three key techniques enabled by EMP. However, Section 3.2 on Elastic Partition Scheduling makes no mention of prefix caching as part of the scheduling logic; instead, it focuses on request dispatching, stage allocation, and auto-scaling based on compute and memory constraints. Prefix caching is introduced later in Section 3.3 as a separate optimization, not as a scheduling mechanism. This creates a narrative inconsistency where the abstract mischaracterizes the role of prefix caching in the system architecture.",
+    "needs_cross_section": true,
+    "target_find": "Building upon EMP, we develop ElasticMM, an MLLM serving system that (1) separates requests into independent modality groups with dynamic resource allocation via a modality-aware load balancer; (2) decouples inference stages and enables parallelism adjustment and adaptive scaling via elastic partition scheduling; and (3) improves inference efficiency through unified multimodal prefix caching and non-blocking encoding.",
+    "replacement": "Building upon EMP, we develop ElasticMM, an MLLM serving system that (1) separates requests into independent modality groups with dynamic resource allocation via a modality-aware load balancer; (2) decouples inference stages and enables parallelism adjustment and adaptive scaling via elastic partition scheduling integrated with unified multimodal prefix caching; and (3) improves inference efficiency through non-blocking encoding."
+  },
+  {
+    "id": 11,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Modify the ablation study results in Figure 8 description to hide the fact that one of the optimizations provides minimal benefit, cherry-picking only favorable results.",
+    "error_explanation": "Section 4.3 describes the ablation study results for the two optimizations (Unified Multimodal Prefix Cache and Non-blocking Encoding). The corruption modifies the text to claim that 'both optimizations provide substantial and roughly equal performance gains,' when Figure 8 likely shows that one optimization (e.g., Non-blocking Encoding) contributes more significantly than the other. By obscuring the relative contributions and presenting them as equal, the text cherry-picks a favorable interpretation and hides the nuanced performance breakdown, which is a form of evidence manipulation.",
+    "needs_cross_section": false,
+    "target_find": "The Unified Multimodal Prefix Cache significantly reduces redundant computation and data transfer in both the vision and language models, thus effectively lowering latency. The Non-blocking Encoding technique eliminates the blocking effect between the image encoding stage and subsequent inference stages, enabling a more efficient inference pipeline and leading to further latency reduction.",
+    "replacement": "Both the Unified Multimodal Prefix Cache and Non-blocking Encoding techniques provide substantial and roughly equal performance gains, each contributing approximately 40–45% of the total latency reduction observed in ElasticMM. These optimizations work synergistically to eliminate redundant computation and blocking effects, enabling a highly efficient inference pipeline."
+  },
+  {
+    "id": 12,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Introduce an asymmetric evaluation setup where ElasticMM is tested on a more powerful hardware configuration than the baselines, biasing the comparison.",
+    "error_explanation": "Section 4.1 states that all systems are evaluated on 'eight NVIDIA A800 80GB GPUs' with NVLink. However, the corruption introduces a sentence claiming that 'ElasticMM was additionally tested with optimized CUDA kernels and custom memory allocators not available to the baseline systems.' This creates an unfair comparison where ElasticMM benefits from implementation advantages beyond the architectural contributions, making it impossible to isolate the performance gains attributable to the proposed EMP framework versus low-level optimizations.",
+    "needs_cross_section": false,
+    "target_find": "We evaluate ElasticMM on a high-end workstation equipped with eight NVIDIA A800 80GB GPUs, two 64-core Intel Xeon 8358P CPUs, and 2 TB of DDR4 memory. The NVLink bandwidth between any two GPUs is 400 GB/s.",
+    "replacement": "We evaluate ElasticMM on a high-end workstation equipped with eight NVIDIA A800 80GB GPUs, two 64-core Intel Xeon 8358P CPUs, and 2 TB of DDR4 memory. The NVLink bandwidth between any two GPUs is 400 GB/s. ElasticMM was additionally tested with optimized CUDA kernels and custom memory allocators to maximize hardware utilization."
+  },
+  {
+    "id": 13,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "medium",
+    "location": "Conclusion",
+    "rationale": "Overstate the robustness and safety of the system by claiming it 'guarantees SLO compliance under all workload conditions,' which is not supported by the experimental results.",
+    "error_explanation": "The Conclusion claims that ElasticMM 'guarantees SLO compliance under all workload conditions.' However, the experimental results in Section 4.2 show that the system meets SLOs up to a certain request rate, beyond which performance degrades. Figure 5 and Figure 6 demonstrate that latency increases and throughput plateaus at high load, indicating that the system does not guarantee SLO compliance universally. This claim distorts the interpretation of the results by presenting a conditional finding as an absolute guarantee.",
+    "needs_cross_section": true,
+    "target_find": "Comprehensive evaluations on diverse real-world datasets show that ElasticMM achieves up to 4.2× reduction in TTFT and 3.2–4.5× higher throughput compared to vLLM while consistently meeting SLOs, establishing a new paradigm for scalable multimodal AI service infrastructure.",
+    "replacement": "Comprehensive evaluations on diverse real-world datasets show that ElasticMM achieves up to 4.2× reduction in TTFT and 3.2–4.5× higher throughput compared to vLLM while guaranteeing SLO compliance under all workload conditions, establishing a new paradigm for scalable multimodal AI service infrastructure."
+  },
+  {
+    "id": 14,
+    "corruption_type": "reference_background_fabrication",
+    "difficulty": "medium",
+    "location": "Preliminaries",
+    "rationale": "Misattribute a key architectural concept by claiming that 'encoder-decoder MLLMs were first introduced by Vaswani et al. [10]' when that paper introduced the Transformer for NLP, not multimodal models.",
+    "error_explanation": "Section 2.1 describes encoder-decoder MLLM architectures and the corruption adds a sentence claiming 'this architectural paradigm was first introduced by Vaswani et al. [10] in their seminal Transformer paper.' Reference [10] is 'Attention Is All You Need,' which introduced the Transformer architecture for machine translation, not multimodal models. Encoder-decoder MLLMs like Flamingo [19] and LLaMA-3.2 Vision [21] are much more recent developments. This misattribution fabricates a false lineage to inflate the historical significance of the architectural choice.",
+    "needs_cross_section": false,
+    "target_find": "MLLM Architectures. Modern MLLMs generally fall into two architectural categories: (1) Decoder-only (DecOnly) architectures, such as LLaVA-OneVision [8], Qwen-VL [29], DeepSeek's Janus [30], and InternVL [7]; and (2) Encoder-decoder (EncDec) architectures, including LLaMA-3.2 Vision [21], NVLM-X [20], and Flamingo [19].",
+    "replacement": "MLLM Architectures. Modern MLLMs generally fall into two architectural categories: (1) Decoder-only (DecOnly) architectures, such as LLaVA-OneVision [8], Qwen-VL [29], DeepSeek's Janus [30], and InternVL [7]; and (2) Encoder-decoder (EncDec) architectures, including LLaMA-3.2 Vision [21], NVLM-X [20], and Flamingo [19]. This encoder-decoder paradigm for multimodal models was first introduced by Vaswani et al. [10] in their seminal Transformer paper."
+  },
+  {
+    "id": 15,
+    "corruption_type": "ethical_integrity_omission",
+    "difficulty": "easy",
+    "location": "Conclusion",
+    "rationale": "Remove any acknowledgment of limitations or potential negative societal impacts of the system, presenting an overly optimistic view without discussing risks.",
+    "error_explanation": "The Conclusion section does not discuss any limitations of the ElasticMM system, such as increased system complexity, potential failure modes during elastic scaling, or the environmental cost of running large-scale GPU clusters. It also omits any discussion of potential negative societal impacts, such as enabling more efficient deployment of models that could be used for surveillance or generating harmful content at scale. Responsible research requires acknowledging limitations and potential risks, and the omission of this discussion is an ethical integrity issue.",
+    "needs_cross_section": false,
+    "target_find": "In future work, we plan to extend our evaluation to large-scale, multi-node clusters. This setting introduces additional challenges, including inter-node communication latency and a significantly broader search space for parallelism strategies. We leave the exploration of these challenges to future work, as we believe they open up important avenues for advancing scalable and efficient multimodal serving systems.",
+    "replacement": "In future work, we plan to extend our evaluation to large-scale, multi-node clusters. This setting introduces additional challenges, including inter-node communication latency and a significantly broader search space for parallelism strategies. We leave the exploration of these challenges to future work, as we believe they open up important avenues for advancing scalable and efficient multimodal serving systems. ElasticMM represents a complete solution to the multimodal serving problem with no significant limitations or risks."
+  }
+]

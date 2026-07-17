@@ -1,0 +1,167 @@
+[
+  {
+    "id": 1,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "hard",
+    "location": "Abstract",
+    "rationale": "Numbers about dataset size are doubled without mention, exaggerating experimental scale.",
+    "error_explanation": "The abstract claims a data foundation supporting realistic degradations but inflates the size of the synthetic dataset by roughly doubling the number of image pairs without acknowledging it. This misrepresentation artificially boosts the apparent experimental rigor and generalizability.",
+    "needs_cross_section": false,
+    "target_find": "a physics-driven imaging model is employed to synthesize degraded images with 12 types and 4 levels of degradation. Finally, the DDL-12 dataset contains approximately 48,000 training image pairs and 4,800 test image pairs.",
+    "replacement": "a physics-driven imaging model is employed to synthesize degraded images with 12 types and 4 levels of degradation. Without further justification, we artificially expand the DDL-12 dataset to contain approximately 96,000 training image pairs and 9,600 test image pairs, duplicating many samples to improve training stability."
+  },
+  {
+    "id": 2,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "medium",
+    "location": "Method",
+    "rationale": "The description of cross-attention swaps queries, but the logic contradicts expected modality interaction and the formulas lack clarity.",
+    "error_explanation": "Section 4.3.1 swaps query matrices between modalities when computing cross-attention, which contradicts common transformer practice that queries match their own keys for meaningful attention. This swap introduces a conceptual inconsistency in the cross-modal fusion mechanism, and no justification or explanation is provided.",
+    "needs_cross_section": false,
+    "target_find": "Specifically, the linear transformation functions 𝔉^{qkv}_{ir} and 𝔉^{qkv}_{vi} project F_{ir} and F_{vi} into their corresponding Q, K, and V, expressed as:\n{Q_{ir}, K_{ir}, V_{ir}} = 𝔉^{qkv}_{ir}(F_{ir}), {Q_{vi}, K_{vi}, V_{vi}} = 𝔉^{qkv}_{vi}(F_{vi}).\nSubsequently, we swap the queries Q of complementary modalities to promote spatial interaction:\nF^{ir}_f = softmax((Q_{vi} K_{ir})/√d_k) V_{ir}, F^{vi}_f = softmax((Q_{ir} K_{vi})/√d_k) V_{vi},",
+    "replacement": "Specifically, the linear transformation functions 𝔉^{qkv}_{ir} and 𝔉^{qkv}_{vi} project F_{ir} and F_{vi} into their corresponding Q, K, and V, expressed as:\n{Q_{ir}, K_{ir}, V_{ir}} = 𝔉^{qkv}_{ir}(F_{ir}), {Q_{vi}, K_{vi}, V_{vi}} = 𝔉^{qkv}_{vi}(F_{vi}).\nWe then perform cross-attention where queries attend the keys and values of the opposite modality, but inadvertently swap queries, leading to: \nF^{ir}_f = softmax((Q_{vi} K_{ir})/√d_k) V_{ir}, F^{vi}_f = softmax((Q_{ir} K_{vi})/√d_k) V_{vi},\nwhich potentially misaligns spatial focus and reduces fusion effectiveness."
+  },
+  {
+    "id": 3,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "hard",
+    "location": "Experiments",
+    "rationale": "Use of pre-enhancement by multiple restoration methods bias upstream degradation removal, not uniformly applied.",
+    "error_explanation": "Table 2 uses multiple state-of-the-art restoration methods as preprocessing steps for input images before fusion, but other fusion methods are evaluated without these pre-enhancements. This asymmetric protocol unfairly benefits the proposed model by removing degradations in advance, compromising direct comparison validity.",
+    "needs_cross_section": true,
+    "target_find": "Meanwhile, we employ several SOTA image restoration algorithms as preprocessing steps to address specific degradations. Specifically, OneRestore [6] is used for weather-related degradations, Instruct-IR [2] for illumination-related degradations, and DA-CLIP [18] and WDNN [4] for sensor-related degradations. For composite degradations, we select the best-performing method from these algorithms.",
+    "replacement": "While we evaluate fusion methods, our approach uniquely includes pre-enhancement by several SOTA image restoration algorithms tailored to each degradation type. Competing fusion methods are evaluated on raw degraded inputs without pre-enhancement steps, introducing an imbalance that favors our results. A unified baseline applying pre-enhancement across all methods is not provided."
+  },
+  {
+    "id": 4,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "medium",
+    "location": "Introduction",
+    "rationale": "Overstates the adaptability and versatility of the method in handling degradations and user customization without sufficient qualification.",
+    "error_explanation": "The introduction claims the proposed ControlFusion method \"excels in handling both real-world and composite degradation scenarios\" and \"can flexibly respond to user needs\" without acknowledging scenarios where performance may degrade or limitations in user prompt dependency. This exaggerates robustness and user-friendliness beyond demonstrated evidence.",
+    "needs_cross_section": false,
+    "target_find": "As shown in Fig. 1, benefiting from the aforementioned designs, our method excels in handling both real-world and composite degradation scenarios and can flexibly respond to user needs.",
+    "replacement": "As shown in Fig. 1, our method shows promising performance in handling certain real-world and composite degradation scenarios, although performance may vary depending on the complexity of degradations and prompt accuracy. It offers some degree of flexibility to adapt fusion outcomes based on user inputs, albeit with potential manual tuning."
+  },
+  {
+    "id": 5,
+    "corruption_type": "reference_background_fabrication",
+    "difficulty": "hard",
+    "location": "Related Work",
+    "rationale": "Cites a nonexistent paper that purportedly supports a key technical approach.",
+    "error_explanation": "Reference [8] describes AutoDIR, claimed as an automatic all-in-one restoration framework, but no such paper exists at the cited venue. This fabricates credibility and falsely suggests the existence of a baseline method supporting text-driven restoration domain, misleading readers.",
+    "needs_cross_section": false,
+    "target_find": "Recent studies integrate CLIP encoders with textual user instructions, proposing generalized restoration frameworks including PromptIR [23], AutoDIR [8], and InstructIR [2], which effectively handle diverse degradation types.",
+    "replacement": "Recent studies integrate CLIP encoders with textual user instructions, proposing generalized restoration frameworks including PromptIR [23] and InstructIR [2], which effectively handle diverse degradation types. Although promising, fully automatic all-in-one restoration frameworks remain an open research topic."
+  },
+  {
+    "id": 6,
+    "corruption_type": "ethical_integrity_omission",
+    "difficulty": "easy",
+    "location": "Conclusion",
+    "rationale": "No mention of ethical concerns, data biases, or limitations regarding real-world deployment.",
+    "error_explanation": "The conclusion lacks any discussion of ethical or transparency concerns such as potential bias in the synthetic training data, risks of overfitting to specific degradation types, or implications for real-world safety and fairness. This omission obscures important considerations for practical application.",
+    "needs_cross_section": false,
+    "target_find": "This work was supported by NSFC (62276192).",
+    "replacement": "This work was supported by NSFC (62276192). We acknowledge that despite improvements, our method's reliance on synthetic degradation models may introduce biases limiting its fairness and safety in real-world deployments. Future work should address transparency, ethical implications, and robust validation on diverse datasets."
+  },
+  {
+    "id": 7,
+    "corruption_type": "rhetorical_presentation_manipulation",
+    "difficulty": "easy",
+    "location": "Abstract",
+    "rationale": "Promotional language overstates novelty and robustness without caution.",
+    "error_explanation": "The abstract uses phrases like 'extensive experiments demonstrate that ControlFusion outperforms SOTA fusion methods' and 'particularly under real-world and compound degradations,' which exaggerate contributions in a promotional tone. It neglects caveats about limitations or comparative weaknesses.",
+    "needs_cross_section": false,
+    "target_find": "Extensive experiments demonstrate that ControlFusion outperforms SOTA fusion methods in fusion quality and degradation handling, particularly under real-world and compound degradations.",
+    "replacement": "Extensive experiments demonstrate promising results for ControlFusion compared to recent fusion methods in several metrics, with improved handling of some real-world and compound degradations. However, challenges remain for certain complex scenarios, requiring future study."
+  },
+  {
+    "id": 8,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "medium",
+    "location": "Abstract",
+    "rationale": "Claims of public source code availability contradict lack of code details and appendix references.",
+    "error_explanation": "The abstract claims that the source code is publicly available at a GitHub URL, but subsequent text and appendix provide no code access details or usage guidelines. This inconsistency may confuse readers about reproducibility and transparency of the work.",
+    "needs_cross_section": true,
+    "target_find": "The source code is publicly available at https://github.com/Linfeng-Tang/ControlFusion.",
+    "replacement": "The source code is currently under preparation for release and will be made publicly available upon final publication, aiming to facilitate reproducibility and external validation."
+  },
+  {
+    "id": 9,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "medium",
+    "location": "Method",
+    "rationale": "Loss functions are introduced without explanation of how losses for degraded modalities and fusion interact, risking optimization conflicts.",
+    "error_explanation": "The loss functions described for Stage II do not clarify whether the intensity, structural similarity, gradient, and color losses are applied symmetrically to infrared and visible modalities or only on the fused output. Without explicit handling, the multi-objective optimization may be inconsistent or suboptimal.",
+    "needs_cross_section": false,
+    "target_find": "Following the typical fusion paradigm [20], we introduce the intensity loss, structural similarity (SSIM) loss, maximum gradient loss, and color consistency loss to constrain the training of Stage II.",
+    "replacement": "Following the typical fusion paradigm [20], we introduce weighted combinations of intensity loss, structural similarity (SSIM) loss, maximum gradient loss, and color consistency loss, carefully balancing contributions from the fused image and individual modality restorations to jointly optimize restoration and fusion quality."
+  },
+  {
+    "id": 10,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Batch size and patch size are small given model complexity, potentially under-representing training adequacy.",
+    "error_explanation": "The experiment configuration reports a batch size of 12 and input patches of size 224×224. Given the complex model with multiple transformer layers and large datasets, such small batch sizes and patch areas may limit training robustness and unbiased performance evaluation, but this is not discussed.",
+    "needs_cross_section": false,
+    "target_find": "The model is trained on the proposed DDL-12 dataset. During training, 224 × 224 patches are randomly cropped as inputs, with a batch size of 12 over 100 epochs.",
+    "replacement": "The model is trained on the proposed DDL-12 dataset. For hardware limitations, we use smaller batch sizes of 12 with 224 × 224 patches, which may slightly limit model convergence. Potential improvements with larger batches or full-image training are reserved for future work."
+  },
+  {
+    "id": 11,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Strong claims on universal superiority on all metrics overlook cases where other methods are very competitive or better.",
+    "error_explanation": "Several results tables report that ControlFusion achieves the best average scores overall, but some metrics like EN or MUSIQ are surpassed or closely matched by other methods. The text frames the method as dominant without acknowledging mixed or marginal comparative outcomes, creating an overstated impression of superiority.",
+    "needs_cross_section": false,
+    "target_find": "Our method attains SOTA performance in SD, VIF, and Qabf metrics, showcasing its exceptional ability to maintain structural integrity and edge details. The EN metric remains competitive, indicating that our fusion results encapsulate abundant information.",
+    "replacement": "Our method achieves leading results mostly on SD, VIF, and Qabf metrics, highlighting good structural and edge preservation. While EN scores are competitive, other methods perform similarly or better on some metrics, indicating room for improvement in information content representation."
+  },
+  {
+    "id": 12,
+    "corruption_type": "rhetorical_presentation_manipulation",
+    "difficulty": "easy",
+    "location": "Discussion",
+    "rationale": "Conclusions sound overly optimistic about generalization, omitting limitations on modality generality or scenarios.",
+    "error_explanation": "The conclusion frames the degradation model as a solid foundation for composite degradation handling, neglecting known issues such as difficulty extending beyond infrared-visible images or real complex scenes. This overly optimistic style may mislead readers regarding broader transferability.",
+    "needs_cross_section": false,
+    "target_find": "An alternative strategy is test-time adaptation, in which part of the model is fine-tuned on the test set to better accommodate new data distributions.",
+    "replacement": "While alternative approaches like test-time adaptation may address domain gaps, our model's specific degradation imaging design constrains generalization. Broader applicability to other fusion types or severely heterogeneous conditions remains challenging and warrants future study."
+  },
+  {
+    "id": 13,
+    "corruption_type": "reference_background_fabrication",
+    "difficulty": "hard",
+    "location": "References",
+    "rationale": "References [38], [43] are to publications dated after the paper's knowledge cutoff, suggesting fabricated or premature references.",
+    "error_explanation": "References [38] and [43] claim to be recent publications in 2025 journals or conferences, which is beyond the paper's stated knowledge cutoff and does not align with verifiable bibliographic data. This undermines the authenticity and temporal validity of the cited literature.",
+    "needs_cross_section": false,
+    "target_find": "[38] Han Xu, Xunpeng Yi, Chen Lu, Guangcan Liu, and Jiayi Ma. URFusion: Unsupervised unified degradation-robust image fusion network. IEEE Transactions on Image Processing, 34:5803–5818, 2025.\n[43] Hao Zhang, Lei Cao, Xuhui Zuo, Zhenfeng Shao, and Jiayi Ma. OmniFuse: Composite degradation-robust image fusion with language-driven semantics. IEEE Transactions on Pattern Analysis and Machine Intelligence, 47(9):7577–7595, 2025.",
+    "replacement": "[38] Han Xu, Xunpeng Yi, Chen Lu, Guangcan Liu, and Jiayi Ma. URFusion: Unsupervised unified degradation-robust image fusion network. IEEE Transactions on Image Processing, 34:5803–5818, 2023.\n[43] Hao Zhang, Lei Cao, Xuhui Zuo, Zhenfeng Shao, and Jiayi Ma. OmniFuse: Composite degradation-robust image fusion with language-driven semantics. IEEE Transactions on Pattern Analysis and Machine Intelligence, 45(9):7577–7595, 2023."
+  },
+  {
+    "id": 14,
+    "corruption_type": "ethical_integrity_omission",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "No disclosures about dataset biases, privacy, or potential harms from fusion outputs.",
+    "error_explanation": "The paper lacks any mention of ethical considerations about the datasets used, such as privacy concerns in surveillance or security data, or the risks of inaccurate fusion results in safety-critical applications. This omission reduces transparency about responsible AI practices.",
+    "needs_cross_section": false,
+    "target_find": "All experiments are conducted on NVIDIA RTX 4090 GPUs with an Intel(R) Xeon(R) Platinum 8180 CPU (2.50 GHz) using the PyTorch framework.",
+    "replacement": "All experiments are conducted on NVIDIA RTX 4090 GPUs with an Intel(R) Xeon(R) Platinum 8180 CPU (2.50 GHz) using the PyTorch framework. Ethical considerations regarding data privacy, model bias, and safe use of fusion outputs in surveillance and military contexts are acknowledged but not exhaustively analyzed."
+  },
+  {
+    "id": 15,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Claims about model's universal superiority on real-world datasets contradict instances where another method outperforms ours on some metrics.",
+    "error_explanation": "In Section 5.3, the paper asserts that ControlFusion 'achieves the best performance on CLIP-IQA, TReS, and SD,' however, Table 3 shows Text-DiFuse outperforming it on MUSIQ metric for nighttime scenes. This inconsistency suggests selective interpretation of results.",
+    "needs_cross_section": false,
+    "target_find": "Our method achieves the best performance on CLIP-IQA, TReS, and SD, while slightly trailing Text-DiFuse on MUSIQ.",
+    "replacement": "Our method achieves leading performance on CLIP-IQA, TReS, and SD metrics, though it slightly trails Text-DiFuse on the MUSIQ metric, indicating complementary strengths depending on evaluation criteria."
+  }
+]

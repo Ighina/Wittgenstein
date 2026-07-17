@@ -14,6 +14,7 @@
 #   --threshold FLOAT Uncertainty threshold for uncertainty mode (default: 0.30)
 #   --dry-run         Print what would be done without actually verifying
 #   --paper-id ID     Verify a single paper by DOI/arXiv ID
+#   --paperaudit      Use PaperAudit_Dataset from HuggingFace hub instead of SPOT parquet
 #   --list            List available papers in the dataset
 #   --help            Show this help message
 #
@@ -51,6 +52,7 @@ THRESHOLD="0.30"
 DRY_RUN=false
 PAPER_ID=""
 LIST_ONLY=false
+USE_PAPERAUDIT=false
 PARQUET_PATH="$PROJECT_ROOT/data/train-00000-of-00001.parquet"
 
 # ---- Parse arguments ----
@@ -88,6 +90,10 @@ while [[ $# -gt 0 ]]; do
             LIST_ONLY=true
             shift
             ;;
+        --paperaudit)
+            USE_PAPERAUDIT=true
+            shift
+            ;;
         --help)
             head -40 "$0" | grep '^#' | sed 's/^# \?//'
             exit 0
@@ -107,14 +113,26 @@ if ! command -v claude &> /dev/null; then
     exit 1
 fi
 
-if [ ! -f "$PARQUET_PATH" ]; then
+if ! $USE_PAPERAUDIT && [ ! -f "$PARQUET_PATH" ]; then
     echo "ERROR: Parquet file not found: $PARQUET_PATH"
     echo "Download the dataset first. See README.md for instructions."
     exit 1
 fi
 
+if $USE_PAPERAUDIT; then
+    if ! python3 -c "import datasets" 2>/dev/null; then
+        echo "ERROR: The 'datasets' library is required for --paperaudit."
+        echo "Install with: pip install datasets"
+        exit 1
+    fi
+fi
+
 # ---- List papers mode ----
 if $LIST_ONLY; then
+    if $USE_PAPERAUDIT; then
+        # Delegate to Python for PaperAudit dataset listing
+        exec python3 "$SCRIPT_DIR/batch_verify.py" --list --paperaudit
+    fi
     echo "📚 Papers in dataset:"
     echo "====================="
     python3 -c "
@@ -154,6 +172,17 @@ for _, row in subset.iterrows():
 
 # ---- Dry-run mode ----
 if $DRY_RUN; then
+    if $USE_PAPERAUDIT; then
+        # Delegate to Python for PaperAudit dataset
+        exec python3 "$SCRIPT_DIR/batch_verify.py" \
+            --dry-run \
+            --paperaudit \
+            ${MAX_PAPERS:+--papers "$MAX_PAPERS"} \
+            ${OFFSET:+--offset "$OFFSET"} \
+            --output "$OUTPUT_DIR" \
+            --mode "$MODE" \
+            --threshold "$THRESHOLD"
+    fi
     echo "🔍 DRY RUN — would verify the following papers:"
     echo "==============================================="
     count=0
@@ -171,6 +200,15 @@ fi
 
 # ---- Single paper mode ----
 if [ -n "$PAPER_ID" ]; then
+    if $USE_PAPERAUDIT; then
+        # Delegate to Python for PaperAudit dataset
+        exec python3 "$SCRIPT_DIR/batch_verify.py" \
+            --paper-id "$PAPER_ID" \
+            --paperaudit \
+            --output "$OUTPUT_DIR" \
+            --mode "$MODE" \
+            --threshold "$THRESHOLD"
+    fi
     echo "🔬 Verifying single paper: $PAPER_ID"
     echo "==============================================="
 
@@ -224,6 +262,17 @@ Include comparison with the ground truth annotation."
 fi
 
 # ---- Batch mode ----
+if $USE_PAPERAUDIT; then
+    # Delegate entire batch verification to Python for PaperAudit dataset
+    exec python3 "$SCRIPT_DIR/batch_verify.py" \
+        --paperaudit \
+        ${MAX_PAPERS:+--papers "$MAX_PAPERS"} \
+        --offset "$OFFSET" \
+        --output "$OUTPUT_DIR" \
+        --mode "$MODE" \
+        --threshold "$THRESHOLD"
+fi
+
 echo "🚀 Batch Paper Verification"
 echo "============================"
 echo "  Dataset:    $PARQUET_PATH"

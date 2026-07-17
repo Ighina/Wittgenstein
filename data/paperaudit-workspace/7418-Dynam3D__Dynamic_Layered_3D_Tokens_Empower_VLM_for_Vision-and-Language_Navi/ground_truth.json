@@ -1,0 +1,134 @@
+[
+  {
+    "id": 1,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Reported success rates on benchmarks are increased beyond realistic margins compared to prior methods.",
+    "error_explanation": "In Section 4.1 (Tables 1 and 2), the reported navigation success rates (SR) improvements of nearly 5% on R2R-CE and over 13% on REVERIE-CE by Dynam3D relative to strong baselines are unrealistically large given the method complexity. Benchmark results are suspiciously consistent across different datasets without corresponding trade-offs in other metrics such as NE or SPL. Such large gains without detailed variability or ablation impair confidence in the data integrity.",
+    "needs_cross_section": false,
+    "target_find": "As shown in Tables 1 and 2, we evaluate the navigation performance of our Dynam3D across three distinct continuous-environment VLN benchmarks. Specifically, the R2R-CE dataset (Table 1) provides step-by-step and following instructions. Compared to prior state-of-the-art methods, e.g., g3D-LF and Uni-NaVid, our Dynam3D achieves an improvement of nearly 5% in navigation success rate (SR). Furthermore, despite the utilization of a large model, our Dynam3D maintains a smaller parameter footprint (3.8B vs. 7B) relative to the video-based Uni-NaVid. This highlights the superior efficiency of our model.\n\nTo ensure a fair comparison on the more challenging and realistic benchmarks such as REVERIE-CE which use coarse-grained and high-level destination description, and NavRAG-CE which requires understanding complex user demands, we retrain NaVid and g3D-LF on our training dataset and evaluate on these two benchmarks (Table 2). Our Dynam3D still demonstrates substantial improvements, outperforming NaVid by over 13% in Success Rate (SR) on REVERIE-CE and by over 5% on NavRAG-CE. The detailed experimental setup can be found in the supplementary materials.",
+    "replacement": "As shown in Tables 1 and 2, we evaluate the navigation performance of our Dynam3D across three distinct continuous-environment VLN benchmarks. Specifically, the R2R-CE dataset (Table 1) provides step-by-step and following instructions. Compared to prior state-of-the-art methods, e.g., g3D-LF and Uni-NaVid, our Dynam3D achieves modest improvements of approximately 1-2% in navigation success rate (SR), aligning with expected margins given the task difficulty. Although Dynam3D uses a large model, it maintains a smaller parameter footprint (3.8B vs. 7B) relative to the video-based Uni-NaVid.\n\nTo provide fair comparison on the more challenging and realistic benchmarks such as REVERIE-CE with coarse-grained instructions and NavRAG-CE requiring complex user demand understanding, we retrained NaVid and g3D-LF on our training dataset for evaluation (Table 2). Our Dynam3D demonstrates incremental improvements, outperforming NaVid by approximately 3-5% in Success Rate (SR) on REVERIE-CE and NavRAG-CE. The detailed experimental setup is described in the supplementary materials."
+  },
+  {
+    "id": 2,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "hard",
+    "location": "Method",
+    "rationale": "The process for updating 3D instance features contradicts itself regarding how feature patches are merged or removed.",
+    "error_explanation": "In Section 3.1, the description of the Merging Discriminator updating 3D instance representations is inconsistent with the Frustum Culling strategy for removing outdated patches. The text states that 2D instances merge into 3D instances by concatenating patch features, but also that outdated patches are removed and 3D instances discarded if all patches are removed. Yet it remains unclear how patches are consistently tracked across views to avoid stale patches lingering. This introduces ambiguity and logical flaws in maintaining multi-view consistent 3D instance representations.",
+    "needs_cross_section": false,
+    "target_find": "The 3D representation is updated with the remaining relevant patches when the outdated patches are removed via Frustum Culling. We discard the 3D instance in the case where all patches are removed.\n\nWe train the Merging Discriminator using over 5K rooms with 3D instance segmentation data: ScanNet [47], HM3D [48], Matterport3D [22] and 3RScan [49], where the annotations of instances in point clouds are provided for each point with world coordinates and instance IDs. Ground-truth instance IDs are assigned to patches by searching the nearest matching instance point from annotated instance point clouds. For each 2D or 3D instance, the majority ID of its patches determines the ground-truth instance ID. The Merging Discriminator is trained with a binary classification loss, where the label is positive (𝒢 = 1) if the 2D and 3D instances share the same ground-truth instance ID, or negative (𝒢 = 0) otherwise:",
+    "replacement": "The 3D instance representation is updated incrementally by integrating new patch features only if they are verified to match existing instance semantics and spatial locations. However, outdated patches are removed if they fail the Frustum Culling criteria, potentially causing partial feature loss. Notably, when multiple 2D instances merge into a 3D instance, care is taken to avoid redundant patch aggregation to prevent feature inflation. We discard the entire 3D instance representation only when all associated patches are removed due to occlusion or scene changes.\n\nThe Merging Discriminator is trained on a dataset exceeding 5K rooms with annotated 3D instance segmentation data from ScanNet [47], HM3D [48], Matterport3D [22], and 3RScan [49]. Each patch is assigned a ground-truth instance ID by nearest neighbor matching to annotated points. For training, the discriminator outputs a binary classification indicating whether a 2D-3D instance pair corresponds to the same object instance. This training encourages robust multi-view instance feature consistency despite partial feature updates."
+  },
+  {
+    "id": 3,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "medium",
+    "location": "Introduction",
+    "rationale": "The introduction overstates the novelty and advantage of the proposed method relative to prior video-based VLN approaches.",
+    "error_explanation": "In Section 1, the authors claim that Dynam3D 'effectively addresses the limitations inherent in previous video-based models by using a 3D-VLM' and that previous methods 'primarily focus on mask accuracy' rather than semantic alignment. These statements exaggerate the novelty and understate existing approaches that also consider dynamic scene updates and semantic alignment in 3D representations. This biases reader perception about the originality and impact of Dynam3D.",
+    "needs_cross_section": true,
+    "target_find": "Unlike previous online [13] or language-guided [14] 3D segmentation methods that focus on mask accuracy, our Dynam3D mainly aligns instance representations with the semantic space of CLIP through large-scale 3D-language pretraining to improve 3D representation quality and scene understanding.",
+    "replacement": "While previous methods including online [13] and language-guided [14] 3D segmentation approaches have primarily focused on accurate mask generation and incremental updates, recent advances have also begun exploring semantic alignment in instance representations. Our Dynam3D builds upon these efforts by additionally leveraging large-scale 3D-language pretraining and hierarchical 3D patch-instance-zone representations to enhance scene understanding. However, comprehensive evaluation against prior semantic alignment techniques is needed to quantify the improvements."
+  },
+  {
+    "id": 4,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "hard",
+    "location": "Experiments",
+    "rationale": "The pre-exploration and lifelong memory experiments are potentially biased due to undisclosed differences in training or environment familiarity.",
+    "error_explanation": "Section 4.2 describes pre-exploration and lifelong memory experiments where agent performance improves significantly after scanning environments or retaining episode memories. However, important details about whether agent access to training data overlaps with these environments or if separate validation environments are used are omitted. Without controlling for environment familiarity or dataset leakage, the reported large gains (e.g., over 20% SR increase relative to NaVid) may reflect memorization or experimental bias rather than true generalization and dynamic adaptation.",
+    "needs_cross_section": true,
+    "target_find": "Table 3 shows that the pre-exploration strategy enables our Dynam3D to achieve over a 5% improvement in Success Rate (SR) on R2R-CE and an 8% improvement on REVERIE-CE. Under the lifelong memory setting, our Dynam3D also achieves performance gains, with a 2.7% SR improvement on R2R-CE and a 4.9% SR improvement on REVERIE-CE. Compared to NaVid [5], which uses a video-based large model, our Dynam3D employing both pre-exploration and lifelong memory achieves over a 20% increase in navigation success rate (SR).",
+    "replacement": "Table 3 shows improvements in Success Rate (SR) on R2R-CE and REVERIE-CE under pre-exploration and lifelong memory settings. However, experimental details regarding agent familiarity with the test scenes and overlap with training data are limited, raising concerns about potential overfitting. Further controls are required to verify that gains reflect genuine lifelong memory effects and not environment memorization or data leakage. Without stricter evaluation protocols, the reported substantial performance increases relative to NaVid [5] may be inflated."
+  },
+  {
+    "id": 5,
+    "corruption_type": "ethical_integrity_omission",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Real-world robot experiment details omit ethical, safety, or operational transparency considerations.",
+    "error_explanation": "The description of real-world experiments in Section 4.3, including robot navigation in dynamic environments, omits any mention of ethical approvals, consent, safety protocols, or risk assessments. The system operates in a constructed home environment but no statement about human involvement, data privacy, or safety measures for dynamic target movement is included. This omission conflicts with best practices in robotics research transparency and ethics.",
+    "needs_cross_section": false,
+    "target_find": "As shown in Tables 4, 5 and Figure 4, we evaluate our Dynam3D on both real-world static and dynamic environments using the Hello Robot Stretch 3. Each setting includes 20 test cases, and navigation is deemed successful if the robot stops within 1 meter of the target. In the static environment (Table 4), Dynam3D achieves a 20% higher success rate than baselines, reaching 70% after pre-exploration. In the dynamic setting (Figure 4 and Table 5), the target is manually moved to another location once the robot reaches within two meters of the original target. Our Dynam3D consistently outperforms all baselines, demonstrating strong robustness to environmental changes. The detailed experimental setup can be found in the supplementary materials.",
+    "replacement": "As shown in Tables 4, 5 and Figure 4, we evaluate our Dynam3D on real-world static and dynamic environments using the Hello Robot Stretch 3. Each setting includes 20 test cases, and navigation is considered successful if the robot stops within 1 meter of the target. In the static environment (Table 4), Dynam3D achieves higher success rates than baselines, reaching 70% after pre-exploration. In the dynamic setting (Figure 4 and Table 5), the target is moved manually once the robot approaches, simulating environmental changes. However, ethical approval, participant consent, and safety protocols for these manipulations are not discussed, limiting transparency on real-world deployment risks. Details on experimental controls and safety measures are provided in the supplementary materials."
+  },
+  {
+    "id": 6,
+    "corruption_type": "rhetorical_presentation_manipulation",
+    "difficulty": "easy",
+    "location": "Abstract",
+    "rationale": "The abstract uses promotional and overly absolute language to strengthen contribution perception.",
+    "error_explanation": "The abstract claims that Dynam3D “sets new state-of-the-art performance” and “validates the effectiveness of practical deployment” with strong confidence. This phrasing inflates the empirical contributions and practical significance, potentially biasing readers. More moderate language would be appropriate to balance claims with common limitations in embodied navigation research.",
+    "needs_cross_section": false,
+    "target_find": "By leveraging large-scale 3D-language pretraining and task-specific adaptation, our Dynam3D sets new state-of-the-art performance on VLN benchmarks including R2R-CE, REVERIE-CE, and NavRAG-CE under monocular settings. Furthermore, experiments for pre-exploration, lifelong memory, and real-world robot experiments validate the effectiveness of practical deployment.",
+    "replacement": "By leveraging large-scale 3D-language pretraining and task-specific adaptation, our Dynam3D achieves competitive performance on VLN benchmarks including R2R-CE, REVERIE-CE, and NavRAG-CE under monocular settings. Furthermore, experiments on pre-exploration, lifelong memory, and preliminary real-world robot tests demonstrate the potential applicability of our approach."
+  },
+  {
+    "id": 7,
+    "corruption_type": "reference_background_fabrication",
+    "difficulty": "medium",
+    "location": "Related Work",
+    "rationale": "Reference to recent works selectively misattributes novelty, and some citations are overly optimistic about comparative prior methods.",
+    "error_explanation": "In Section 2, the paper cites recent video-based VLM works [5–7, 29, 30] as having fundamental limitations in spatial comprehension and scene dynamics. However, it does not acknowledge concurrent work that addresses these problems with similar hierarchical spatial representations or instance reasoning. The narrative exaggerates the uniqueness of Dynam3D and minimizes contributions of prior work, constituting subtle reference misuse that misleads on the true novelty landscape.",
+    "needs_cross_section": false,
+    "target_find": "To leverage the language understanding and commonsense reasoning capabilities of large models, some recent works [31–35, 29] have adapted 2D-VLMs to VLN tasks, leading to notable performance improvements. Extensions such as NaVid [5], Uni-NaVid [6], and NaVILA [7] further exploit video-based large models to build high-performance monocular VLN systems with strong real-world applicability. However, video-based representations still have inherent limitations. For example, they struggle to capture fine-grained geometry semantics and comprehend large-scale spatial layouts, which in turn limits their capabilities in object localization and path planning. To the best of our knowledge, our Dynam3D is the first approach that effectively addresses the limitations inherent in previous video-based models by using a 3D-VLM to perform monocular VLN tasks in unseen and dynamic environments.",
+    "replacement": "Recent works [31–35, 29] have adapted 2D-VLMs to VLN tasks, demonstrating notable performance improvements. Extensions like NaVid [5], Uni-NaVid [6], and NaVILA [7] exploit video-based large models for monocular VLN with real-world relevance. While these methods contribute significantly, some still face challenges in fine-grained geometry and large-scale spatial layout comprehension, affecting object localization and planning. Several concurrent approaches also explore 3D-VLMs for dynamic environment navigation. Our Dynam3D introduces a hierarchical multi-level 3D representation with dynamic updates, further advancing these directions, though comparative assessment with similar recent models remains ongoing."
+  },
+  {
+    "id": 8,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "medium",
+    "location": "Conclusion",
+    "rationale": "The conclusion claims strong generalization and state-of-the-art results inconsistent with the conservative tone and performance limitations seen in experiments.",
+    "error_explanation": "Section 5 concludes that Dynam3D achieves state-of-the-art results and demonstrates strong generalization in real-world deployment. However, given the only modest improvements in navigation metrics and the lack of thorough evaluation on environment generalization or robustness beyond preliminary real-world tests, these claims overreach and contradict the cautious experimental claims in Sections 4 and the limitations discussed in Section 4.2. Such inconsistencies risk misleading readers about the true scope of contributions.",
+    "needs_cross_section": true,
+    "target_find": "We introduce Dynam3D, a dynamic hierarchical 3D representation framework for monocular vision-and-language navigation. By aligning patch-instance-zone features with language semantics and enabling real-time scene updates, our Dynam3D enhances spatial understanding, long-term memory, and adaptability in dynamic environments. Our model achieves state-of-the-art results on multiple VLN benchmarks and demonstrates strong generalization in real-world deployment. These results highlight the value of structured and dynamically updated 3D representations for embodied navigation.",
+    "replacement": "We present Dynam3D, a dynamic hierarchical 3D representation framework designed for monocular vision-and-language navigation. By aligning patch-instance-zone features with language semantics and enabling incremental scene updates, Dynam3D aims to improve spatial understanding, memory retention, and adaptability in dynamic environments. While our experimental results indicate competitive performance across VLN benchmarks and initial real-world tests, further work is needed to fully assess generalization capabilities. Overall, Dynam3D contributes to ongoing efforts in incorporating structured 3D representations in embodied navigation."
+  },
+  {
+    "id": 9,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Robustness analysis with noise simulates depth and localization errors but does not include ablation with systematically degraded 3D representations.",
+    "error_explanation": "In Section 4.6 and Table 7, noise robustness is tested by adding simulated SLAM and depth noise. However, the experiments do not explore how different levels or types of degradation in the 3D patch-instance-zone representations affect navigation. Without such targeted ablations, the robustness claim is incomplete and limits understanding of failure modes, especially since the model depends heavily on the 3D representation quality.",
+    "needs_cross_section": false,
+    "target_find": "To simulate SLAM noise, we introduce localization noise, uniformly sampled from −5 cm to +5 cm, and orientation noise, uniformly sampled from −3 degrees to +3 degrees, to the agent’s position at each simulation step. To simulate depth camera noise, we add random noise to the depth maps acquired from the simulator. For depths within 2 meters, noise is sampled between −4 cm and +4 cm; for depths from 2 to 3 meters, noise is sampled between −6 cm and +6 cm; for depths over 3 meters, noise is sampled between −10 cm and +10 cm.\n\nAs shown in Table 7, even with the simultaneous addition of simulated SLAM and depth noise, the navigation success rate (SR) only decreased by approximately 2% (comparing the last row to the first row), demonstrating Dynam3D’s robustness to noise.",
+    "replacement": "To simulate SLAM noise, we introduce localization noise uniformly sampled from −5 cm to +5 cm and orientation noise from −3° to +3° at each step. Depth camera noise is added with a magnitude proportional to distance.\n\nIn addition to these, we perform ablation by degrading the quality of 3D instance and zone embeddings through feature dropout and spatial jitter to evaluate sensitivity. Table 7 shows that while navigation success rate (SR) decreases with noise addition, it degrades significantly more when 3D representation quality is compromised. This indicates the navigation performance heavily depends on the fidelity of the hierarchical 3D representations, exposing potential failure modes."
+  },
+  {
+    "id": 10,
+    "corruption_type": "ethical_integrity_omission",
+    "difficulty": "easy",
+    "location": "Appendix",
+    "rationale": "The appendix omits any discussion of ethical compliance or data privacy for the datasets used.",
+    "error_explanation": "Details in the appendix (Section A.1) about datasets and training lack any statement regarding ethical use, consent, or data privacy compliance particularly for real-world 3D scans or language annotation data. This represents an omission of critical transparency for sensitive embodied AI data and annotation sources, conflicting with accepted research norms.",
+    "needs_cross_section": false,
+    "target_find": "To train the Dynam3D representation model, we follow SceneVerse [50] and g3D-LF [15] in collecting over 5K scenes with 2M language annotations from ScanNet [47], HM3D [48], Matterport3D [22], 3RScan [49], ARKitScenes [58], and Structured3D [59].",
+    "replacement": "To train the Dynam3D representation model, we follow SceneVerse [50] and g3D-LF [15] in collecting over 5K scenes with 2M language annotations from ScanNet [47], HM3D [48], Matterport3D [22], 3RScan [49], ARKitScenes [58], and Structured3D [59]. All datasets were used in compliance with relevant ethics guidelines and data privacy requirements where applicable, including consent for data collection and usage for research purposes."
+  },
+  {
+    "id": 11,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "The analysis in Section 4.4 exaggerates the balance between real-time adaptation and lifelong memory without presenting quantitative trade-offs or limitations.",
+    "error_explanation": "The authors claim that their method 'balances real-time adaptability in dynamic environments with the effective use of long-term memory,' yet no quantitative metrics or failure modes regarding memory saturation, update latency, or catastrophic forgetting are provided. Without such analysis, this interpretation overstates the system's robustness and memory balance capabilities.",
+    "needs_cross_section": false,
+    "target_find": "Features corresponding to regions outside the robot’s current view are still preserved and not updated, and serve as long-term memory to support navigation. This is due to the limited field of view of the monocular camera, where the majority of the scene is preserved since it lies outside the current view of the robot. These features are retained until new observations covering those regions are available to update them. This highlights the ability of our Dynam3D to balance real-time adaptability in dynamic environments with the effective use of long-term memory.",
+    "replacement": "Features corresponding to regions outside the robot’s current view are preserved and not updated, serving as long-term memory. While this approach retains previously seen scene information, no explicit mechanisms prevent memory saturation or handle outdated long-term features, potentially limiting scalability. This design allows some adaptability in dynamic environments but may introduce trade-offs between update fidelity and memory usage, warranting further quantitative analysis."
+  },
+  {
+    "id": 12,
+    "corruption_type": "rhetorical_presentation_manipulation",
+    "difficulty": "easy",
+    "location": "Introduction",
+    "rationale": "Conclusion bullet points overly emphasize capabilities as 'state-of-the-art' without nuance or acknowledgment of potential limitations.",
+    "error_explanation": "In the Introduction summary (Section 1), the contributions are stated with strong definitive language, e.g., 'Our monocular VLN system achieves state-of-the-art performance on benchmarks.' Such absolute phrasing ignores any caveats or contextual factors such as dataset or environmental constraints, potentially misleading readers toward an inflated view of achievement.",
+    "needs_cross_section": false,
+    "target_find": "• Our monocular VLN system achieves state-of-the-art performance on benchmarks including R2R-CE, REVERIE-CE, and NavRAG-CE. The results also demonstrate our strong capabilities in pre-exploration, lifelong memory, and real-world experiments.",
+    "replacement": "• Our monocular VLN system achieves competitive performance on benchmarks including R2R-CE, REVERIE-CE, and NavRAG-CE. The results indicate promising potential for pre-exploration, lifelong memory, and preliminary real-world application, although further validation is necessary."
+  }
+]

@@ -1,0 +1,167 @@
+[
+  {
+    "id": 1,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "hard",
+    "location": "Method",
+    "rationale": "Misdefined mathematical transformations in the encryption step break the logic of feature aggregation.",
+    "error_explanation": "Equation (1) in Section 4.1 applies an inverse singular value decomposition (ISVD) by multiplying the local feature matrix by client-specific random orthogonal matrices P_k^{(i)} and Q^{(i)}; however, the operation is incorrectly ordered and these matrices are not properly defined as orthogonal or invertible in context. This flawed step breaks the logic that the server can reconstruct pseudo global features from encrypted matrices, as matrix multiplication orders and properties are critical. Therefore, downstream leverage score computations and global aggregation are invalid, undermining the Method's core mechanism.",
+    "needs_cross_section": false,
+    "target_find": "Inspired by Singular Value Decomposition (SVD) [48, 49], we first generate a set of random orthogonal matrices: a client-specific matrix P_k^{(i)} \\in \\mathbb{R}^{|D_k^{(i)}| \\times |D_k^{(i)}|} for each client k and task i, and a globally shared matrix Q^{(i)} \\in \\mathbb{R}^{d \\times d}, where d denotes the dimension of the feature. Each client encrypts its local feature matrix X_k^{(i)} = M_g(D_k^{(i)}) via Inverse Singular Value Decomposition (ISVD):\n\nX_k^{(i)'} = P_k^{(i)} X_k^{(i)} Q^{(i)}, (1)",
+    "replacement": "Inspired by Singular Value Decomposition (SVD) [48, 49], we first define orthonormal matrices U_k^{(i)} \\in \\mathbb{R}^{|D_k^{(i)}| \\times r} and V^{(i)} \\in \\mathbb{R}^{d \\times r} obtained from local truncated SVD on X_k^{(i)}, where r \\leq \\min(|D_k^{(i)}|, d) is a feature rank. The encrypted pseudo features are then constructed as X_k^{(i)'} = U_k^{(i)} \\Sigma_k^{(i)} (V^{(i)})^T, where \\Sigma_k^{(i)} contains singular values. This ensures proper orthogonality and invertibility properties allowing aggregation and decomposition at server side. The random matrices P_k^{(i)} and Q^{(i)} are replaced with these explicit decompositions to maintain logical consistency and meaningful feature encryption."
+  },
+  {
+    "id": 2,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "medium",
+    "location": "Method",
+    "rationale": "Leverage score formula uses an undefined vector and erroneous norm computations.",
+    "error_explanation": "Equation (5) defines leverage scores \\tau_k^{i,j} as the squared norm of e_{i,j}^\\top U_k^{(i)}, where e_{i,j} is a standard basis vector. However, multiplying a row vector e_{i,j}^T by U_k^{(i)} (a matrix) on the left is ill-formed unless e_{i,j} is a vector in the appropriate dimension. Moreover, the notation is ambiguous and does not clarify the indexing of samples. This breaks the logic of importance score computation and casts doubt on the interpretability of the sampling weights.",
+    "needs_cross_section": false,
+    "target_find": "To quantify the importance of local samples within the global latent space, client k computes a leverage score [50, 51, 52] for the j-th sample of task i as:\n\n\\tau_k^{i,j} = ||e_{i,j}^\\top U_k^{(i)}||_2^2, (5)\n\nwhere e_{i,j} denotes the j-th standard basis vector in task i.",
+    "replacement": "To quantify the importance of local samples within the global latent space, client k computes a leverage score [50, 51, 52] for the j-th sample of task i as:\n\n\\tau_k^{i,j} = ||(U_k^{(i)})_{j,:}||_2^2, (5)\n\nwhere (U_k^{(i)})_{j,:} denotes the j-th row vector of U_k^{(i)}. This norm directly measures the influence of the sample's latent representation in the low-dimensional space, capturing its representativeness."
+  },
+  {
+    "id": 3,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Incomplete reporting of replay buffer size and sample allocation hinders reproducibility and comparability.",
+    "error_explanation": "Section 5.1 and Table 1 specify the total number of samples stored per task and local epochs but do not clarify if the replay buffer budget M is uniformly enforced across all clients or how samples are allocated when data is highly heterogeneous. Further, the exact number of replay samples used by baselines in Table 2 and 3 is not clearly described, leading to possible unfair experiment comparisons. Without clearly specifying client-level memory constraints or data partitioning details, the evaluation lacks methodological transparency.",
+    "needs_cross_section": false,
+    "target_find": "Implementation Details. In the experiments, the number of clients is fixed at K = 5, with each client running local epochs E = 2 per round, using a batch size B = 128. For all datasets, we adopt ResNet-18 as the backbone, with the classifier’s output dimension dynamically updated as tasks progress and conduct T = 100 communication rounds per task. The SGD optimizer is employed with a learning rate of 0.01 and a weight decay of 1 \\times 10^{-5}. The number of stored samples per task varies by dataset and split setting: for CIFAR10, 450 samples are stored under 3-task splits and 300 under 5-task splits; for CIFAR100, 1,000 samples are used for 5-task splits and 500 for 10-task splits; for TinyImageNet, 2,000 samples are stored for 10-task splits and 1,000 for 20-task splits.",
+    "replacement": "Implementation Details. In the experiments, the number of clients is fixed at K = 5, each client runs local epochs E = 2 per round, and batch size B = 128 is used. The replay buffer budget M per client is strictly enforced, with equal allocation across clients and tasks to maintain fairness. Specifically, for CIFAR10, each client stores 90 samples per task under 3-task splits and 60 under 5-task splits, totaling 450 and 300 samples respectively; for CIFAR100, 200 samples per task for 5-task splits and 50 per task for 10-task splits; for TinyImageNet, 200 samples per task for 10-task splits and 50 per task for 20-task splits. Baseline methods are adjusted accordingly to match these memory constraints ensuring comparable settings."
+  },
+  {
+    "id": 4,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Missing standard deviation for some reported performance metrics impairs statistical reliability of results.",
+    "error_explanation": "In Table 2 and Table 3, performance results for some dataset settings, specifically on TinyImageNet, list mean accuracy values without accompanying standard deviation or variance measures. Omitting variance metrics limits the assessment of result stability and statistical significance, which is crucial in federated incremental learning due to inherent stochasticity. This data integrity issue hinders trustworthiness and objective comparison with baselines.",
+    "needs_cross_section": false,
+    "target_find": "| FedCBDR  | **64.11±1.2**     | **65.20±1.9**     | **46.40±1.6**     | **49.76±2.7**      | 52.06±1.5          | **18.37±1.1**      | **18.86±0.9**          | **18.78±0.9**          |                       |",
+    "replacement": "| FedCBDR  | **64.11±1.2**     | **65.20±1.9**     | **46.40±1.6**     | **49.76±2.7**      | 52.06±1.5          | **18.37±1.1**      | **18.86±0.9**          | **18.78±0.9**          | 18.35±1.0              |"
+  },
+  {
+    "id": 5,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Overstated generalizations based on narrow accuracy improvements and inadequate failure analysis.",
+    "error_explanation": "In Section 5.2, the claim that FedCBDR demonstrates 'adaptability and robustness across complex settings' based on occasional 2%–15% improvements in Top-1 accuracy over baselines is an exaggerated interpretation. Performance gains are uneven and in some cases marginal or suboptimal (e.g., CIFAR100 with β=1.0). The paper also downplays the computational overhead of other methods but does not quantify that of FedCBDR, nor analyze failure cases or scenarios where improvements are limited. This leads to an inflated perception of efficacy beyond what the evidence fully supports.",
+    "needs_cross_section": true,
+    "target_find": "- FedCBDR achieves the highest Top-1 accuracy in most cases across the three datasets under varying levels of heterogeneity and task splits. The only suboptimal result occurs on CIFAR100 with 5 tasks and β = 1.0, where FedCBDR (52.06%) performs slightly worse than LANDER (52.77%). This demonstrates the adaptability and robustness of the proposed FedCBDR across complex settings.",
+    "replacement": "- FedCBDR achieves the highest Top-1 accuracy in many but not all cases across three datasets under varying heterogeneity and task splits. Notably, on CIFAR100 with 5 tasks and β = 1.0, FedCBDR (52.06%) underperforms LANDER (52.77%). These mixed results suggest that while FedCBDR can improve performance in several scenarios, its adaptability and robustness are limited by task complexity and data heterogeneity. Further analysis of failure modes and computational costs is necessary to fully characterize its practical advantages."
+  },
+  {
+    "id": 6,
+    "corruption_type": "reference_background_fabrication",
+    "difficulty": "medium",
+    "location": "Related Work",
+    "rationale": "Citation [5], [6], [8], [12], [13] are either from future venues or misrepresented, indicating background fabrication.",
+    "error_explanation": "Several references cited in Related Work and elsewhere ([5], [6], [8], [12], [13]) refer to conferences or journals scheduled in the future beyond the knowledge cutoff, or mention authors and papers that cannot be verified. Their inclusion without clear justification constitutes fabrication of background information that may mislead readers about prior art and the state of the field. This undermines the scholarly reliability of the paper's literature review.",
+    "needs_cross_section": false,
+    "target_find": "5] Lele Fu, Bowen Deng, Sheng Huang, Tianchi Liao, Shirui Pan, and Chuan Chen. Less is more: Federated graph learning with alleviating topology heterogeneity from a causal perspective. In Proceedings of the Forty-Second International Conference on Machine Learning (ICML), 2025.\n\n[6] Tianchi Liao, Lele Fu, Lei Zhang, Lei Yang, Chuan Chen, Michael K. Ng, Huawei Huang, and Zibin Zheng. Privacy-preserving vertical federated learning with tensor decomposition for data with missing features. IEEE Transactions on Information Forensics and Security, 2025.\n\n[8] Lele Fu, Sheng Huang, Yuecheng Li, Chuan Chen, Chuanfu Zhang, and Zibin Zheng. Learn the global prompt in the low-rank tensor space for heterogeneous federated learning. Neural Networks, 187:107319, 2025.\n\n[12] Haoyuan Liang, Xinyu Zhang, Shilei Cao, Guowen Li, and Juepeng Zheng. TTA-FedDG: Leveraging test-time adaptation to address federated domain generalization. In Proceedings of the AAAI Conference on Artificial Intelligence, volume 39, pages 18658–18666, 2025.\n\n[13] Wei Feng, Danting Liu, Qianqian Wang, Wenqi Liang, and Zheng Yan. Scalable federated one-step multi-view clustering with tensorized regularization. In Proceedings of the AAAI Conference on Artificial Intelligence, volume 39, pages 16586–16594, 2025.",
+    "replacement": "5] Lele Fu, Bowen Deng, Sheng Huang, Tianchi Liao, Shirui Pan, and Chuan Chen. Federated graph learning with alleviating topology heterogeneity from a causal perspective. In Proceedings of the 38th International Conference on Machine Learning (ICML), 2023.\n\n6] Tianchi Liao, Lele Fu, Lei Zhang, Lei Yang, Chuan Chen, Michael K. Ng, Huawei Huang, and Zibin Zheng. Privacy-preserving vertical federated learning with tensor decomposition for incomplete data. IEEE Transactions on Information Forensics and Security, 18(3):1800–1812, 2023.\n\n8] Lele Fu, Sheng Huang, Yuecheng Li, Chuan Chen, Chuanfu Zhang, and Zibin Zheng. Learning the global prompt in low-rank tensor space for heterogeneous federated learning. Neural Networks, 144:123–135, 2022.\n\n12] Haoyuan Liang, Xinyu Zhang, Shilei Cao, Guowen Li, and Juepeng Zheng. Test-time adaptation in federated domain generalization. In Proceedings of the AAAI Conference on Artificial Intelligence, volume 36, pages 12123–12130, 2022.\n\n13] Wei Feng, Danting Liu, Qianqian Wang, Wenqi Liang, and Zheng Yan. Scalable federated one-step multi-view clustering with tensorized regularization. In Proceedings of the AAAI Conference on Artificial Intelligence, volume 36, pages 11500–11508, 2022."
+  },
+  {
+    "id": 7,
+    "corruption_type": "ethical_integrity_omission",
+    "difficulty": "easy",
+    "location": "Experiments",
+    "rationale": "No mention of ethical considerations regarding dataset use or federated privacy constraints.",
+    "error_explanation": "Throughout the Experiments section, the authors do not include any statements about obtaining ethical approval, consent for data use, or risks related to privacy in federated learning settings. Given that privacy preservation is a major motivation here, omitting discussion of such ethical safeguards or compliance (e.g., IRB approval, anonymization, data consent) is an omission that weakens ethical integrity and transparency.",
+    "needs_cross_section": false,
+    "target_find": "Experimental results verified that FedCBDR achieves balanced class-wise sampling under heterogeneous data distributions and improves generalization under task imbalance between earlier and recent tasks, yielding a 2%-15% Top-1 accuracy improvement over six state-of-the-art methods.",
+    "replacement": "Experimental results verified that FedCBDR achieves balanced class-wise sampling under heterogeneous data distributions and improves generalization under task imbalance between earlier and recent tasks, yielding a 2%-15% Top-1 accuracy improvement over six state-of-the-art methods. All datasets used have been publicly released and preprocessed in accordance with standard ethical guidelines. The experimental protocol follows federated privacy constraints, ensuring no raw client data leaves local devices, and all procedures comply with institutional data use and human subject research regulations."
+  },
+  {
+    "id": 8,
+    "corruption_type": "rhetorical_presentation_manipulation",
+    "difficulty": "easy",
+    "location": "Abstract",
+    "rationale": "Abstract uses overpromising language suggesting near-complete solution.",
+    "error_explanation": "The Abstract states FedCBDR 'achieves balanced class-wise sampling under heterogeneous data distributions and improves generalization', implying a near-complete or universal solution without qualifier language about limitations. This overpromising rhetorical style inflates contributions beyond evidence presented, which is disproportionately modest accuracy gains. Such language can mislead readers regarding the scope and impact of the work, reducing critical scrutiny.",
+    "needs_cross_section": false,
+    "target_find": "Experimental results verified that FedCBDR achieves balanced class-wise sampling under heterogeneous data distributions and improves generalization under task imbalance between earlier and recent tasks, yielding a 2%-15% Top-1 accuracy improvement over six state-of-the-art methods.",
+    "replacement": "Experimental results verified that FedCBDR improves balanced class-wise sampling under heterogeneous data distributions and somewhat enhances generalization under task imbalance between earlier and recent tasks, yielding a 2%-15% Top-1 accuracy improvement compared to several state-of-the-art methods under evaluated settings."
+  },
+  {
+    "id": 9,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "hard",
+    "location": "Conclusion",
+    "rationale": "Claims in Conclusion do not align with discussed limitations or experimental uncertainty.",
+    "error_explanation": "The Conclusion asserts that FedCBDR 'effectively reduces inter-class sampling imbalance and significantly improves final performance' without acknowledging the specific limitations, marginal improvements in some cases, or parameter sensitivity highlighted in the Experiments and Ablation sections. This misalignment creates an overly positive global narrative inconsistent with midway results and sensitivity analyses. Such inconsistencies reduce the paper's internal coherence and may mislead interpretation of the method's robustness.",
+    "needs_cross_section": true,
+    "target_find": "Experimental results show that FedCBDR effectively reduces inter-class sampling imbalance and significantly improves final performance.",
+    "replacement": "Experimental results indicate that FedCBDR reduces certain inter-class sampling imbalances and achieves modest improvements in final performance under specific scenarios; however, limitations related to sensitivity to hyperparameters and dataset heterogeneity remain significant challenges that merit future investigation for more robust generalization."
+  },
+  {
+    "id": 10,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "hard",
+    "location": "Experiments",
+    "rationale": "Edited tables selectively omit failure cases and result variance, skewing data integrity.",
+    "error_explanation": "Tables 2, 3, and 5 present performance metrics with selective omission of some methods in specific tasks—for example, lack of TinyImageNet results variance for some baselines. Some numerical values appear rounded or truncated inconsistently across tables. Additionally, performance of competing methods like LANDER or Re-Fed is underreported for challenging heterogeneity cases, hiding failure points or variance. Such selective reporting harms data integrity and prevents comprehensive assessment of method efficacy and reliability.",
+    "needs_cross_section": false,
+    "target_find": "| Method   | CIFAR10<br/>β=0.5 | CIFAR10<br/>β=1.0 | CIFAR10<br/>β=0.1 | CIFAR100<br/>β=0.5 | CIFAR100<br/>β=1.0 | CIFAR100<br/>β=0.1 | TinyImageNet<br/>β=0.5 | TinyImageNet<br/>β=1.0 | TinyImageNet<br/>β=0.1 |\n| -------- | ----------------- | ----------------- | ----------------- | ------------------ | ------------------ | ------------------ | ---------------------- | ---------------------- | --------------------- |\n| Finetune | 38.71±3.7         | 40.49±3.0         | 15.17±2.2         | 16.75±2.6          | 17.15±1.3          | 6.06±0.9           | 6.00±0.8               | 6.40±0.5               |                       |\n| FedEWC   | 39.93±1.1         | 42.70±2.5         | 18.30±2.4         | 20.70±5.3          | 21.22±3.4          | 6.30±0.8           | 6.94±0.7               | 7.36±0.6               |                       |\n| FedLwF   | 56.03±1.6         | 58.29±3.6         | 33.97±2.6         | 37.09±3.1          | 41.91±2.5          | 11.81±0.9          | 11.47±1.0              | 14.87±1.2              |                       |\n| TARGET   | 44.17±4.4         | 54.49±4.5         | 30.15±3.6         | 33.47±4.3          | 35.25±2.0          | 10.71±1.4          | 10.18±0.9              | 12.49±1.1              |                       |\n| LANDER   | 53.90±3.2         | 60.79±1.4         | 44.07±3.3         | 47.63±3.7          | 52.77±1.4          | 13.80±0.8          | 15.02±1.9              | 16.36±1.0              |                       |\n| Re-Fed   | 53.46±3.5         | 60.73±4.3         | 32.67±3.7         | 38.42±2.9          | 45.28±2.6          | 15.73±1.7          | 15.93±1.3              | 16.05±1.1              |                       |\n| FedCBDR  | **64.11±1.2**     | **65.20±1.9**     | **46.40±1.6**     | **49.76±2.7**      | 52.06±1.5          | **18.37±1.1**      | **18.86±0.9**          | **18.78±0.9**          |                       |",
+    "replacement": "| Method   | CIFAR10 β=0.5     | CIFAR10 β=1.0     | CIFAR10 β=0.1     | CIFAR100 β=0.5     | CIFAR100 β=1.0     | CIFAR100 β=0.1     | TinyImageNet β=0.5   | TinyImageNet β=1.0   | TinyImageNet β=0.1   |\n| -------- | ----------------- | ----------------- | ----------------- | ----------------- | ----------------- | ----------------- | -------------------- | -------------------- | -------------------- |\n| Finetune | 38.7±3.7          | 40.5±3.0          | 15.2±2.2          | 16.8±2.6          | 17.2±1.3          | 6.1±0.9           | 6.0±0.8               | 6.4±0.5               | 6.2±0.6              |\n| FedEWC   | 40.0±1.1          | 42.7±2.5          | 18.3±2.4          | 20.7±5.3          | 21.2±3.4          | 6.3±0.8           | 6.9±0.7               | 7.4±0.6               | 7.1±0.6              |\n| FedLwF   | 56.0±1.6          | 58.3±3.6          | 34.0±2.6          | 37.1±3.1          | 41.9±2.5          | 11.8±0.9          | 11.5±1.0              | 14.9±1.2              | 14.6±1.0             |\n| TARGET   | 44.2±4.4          | 54.5±4.5          | 30.2±3.6          | 33.5±4.3          | 35.3±2.0          | 10.7±1.4          | 10.2±0.9              | 12.5±1.1              | 12.3±1.0             |\n| LANDER   | 53.9±3.2          | 60.8±1.4          | 44.1±3.3          | 47.6±3.7          | 52.8±1.4          | 13.8±0.8          | 15.0±1.9              | 16.4±1.0              | 16.0±1.1             |\n| Re-Fed   | 53.5±3.5          | 60.7±4.3          | 32.7±3.7          | 38.4±2.9          | 45.3±2.6          | 15.7±1.7          | 15.9±1.3              | 16.1±1.1              | 15.9±1.3             |\n| FedCBDR  | 64.1±1.2          | 65.2±1.9          | 46.4±1.6          | 49.8±2.7          | 52.1±1.5          | 18.4±1.1          | 18.9±0.9              | 18.8±0.9              | 18.7±0.8             |"
+  },
+  {
+    "id": 11,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "hard",
+    "location": "Method",
+    "rationale": "Contradictory logistic temperature scaling definitions between equations and narrative reduce logical coherence.",
+    "error_explanation": "In Section 4.2 and equations (7) and (9), temperature scaling factors τ_old and τ_new are inconsistently applied: equation (7) combines logits from old and new classes without clarifying their shape, while the loss definition in equation (9) duplicates similar formulae with inconsistent notation (f_{θ_k}^{old}(x)/τ_old, f_{θ_k}^{new}(x)/τ_new) and unclear concatenations. This confusion extends to how these temperatures relate to sample weighting parameters ω_old and ω_new. Such inconsistencies hinder methodological clarity and reproducibility of the temperature scaling strategy.",
+    "needs_cross_section": false,
+    "target_find": "ℒ_TTS = (1/N_old) ∑_{i=1}^{N_old} ω_old · CE(y_i, Softmax(Concat(z_i^{old}/τ_old, z_i^{new}/τ_new))) + (1/N_new) ∑_{j=1}^{N_new} ω_new · CE(y_j, Softmax(Concat(z_j^{old}/τ_old, z_j^{new}/τ_new))) (7)\n\nwhere N_old and N_new denote the number of samples from the previous and newly arrived task, respectively; y_i and y_j are the ground-truth labels; z^{old} and z^{new} denote the logits corresponding to old classes and new classes, respectively; τ_old and τ_new are the temperature scaling factors for previous and newly arrived task samples; ω_old and ω_new are the corresponding sample weights; CE(·) denotes the cross-entropy loss.",
+    "replacement": "ℒ_TTS = (1/(N_old + N_new)) × \\Big( ω_{old} ∑_{i=1}^{N_{old}} CE(y_i, Softmax(z_i^{old} / τ_{old})) + ω_{new} ∑_{j=1}^{N_{new}} CE(y_j, Softmax(z_j^{new} / τ_{new})) \\Big) (7)\n\nHere, N_{old} and N_{new} are the number of old and new task samples; y_i and y_j are their labels; z_i^{old} and z_j^{new} are logits corresponding to old and new classes; τ_{old} and τ_{new} are temperature parameters applied separately to old and new class logits; ω_{old} and ω_{new} are sample weighting coefficients. This separate normalization clarifies temperature scaling within each task's logits before loss aggregation."
+  },
+  {
+    "id": 12,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "medium",
+    "location": "Discussion",
+    "rationale": "Overstating temperature scaling module's effect without full experimental evidence.",
+    "error_explanation": "Section 5.3 ablation claims that the Task-aware Temperature Scaling (TTS) module alone 'leads to consistent improvements over Finetune' but the data in Table 4 shows marginal gains, sometimes within standard deviations. The claim overemphasizes the effect of TTS without thoroughly accounting for variance or negative results. This distorts the interpretation of the module's significance and may mislead readers about its standalone utility.",
+    "needs_cross_section": false,
+    "target_find": "• Using the TTS module alone leads to consistent improvements over Finetune, highlighting its effectiveness in addressing intra-client class imbalance through temperature scaling. This contribution to better generalization is particularly evident under the more challenging \"5/10/20\" task splitting scenario.",
+    "replacement": "• Using the TTS module alone yields mixed results with slight improvements over Finetune in some settings but limited gains in others. This suggests that while TTS may help address intra-client class imbalance, its standalone effect is limited and sensitive to hyperparameter selection, warranting combined use with other modules for robust performance."
+  },
+  {
+    "id": 13,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "hard",
+    "location": "Experiments",
+    "rationale": "Compute resource and hyperparameter tuning specifics for baselines are inadequately reported, risking unfairness.",
+    "error_explanation": "Section 5.1 briefly notes hyperparameters of baselines were tuned based on original papers, but details on computational budgets, training duration, or tuning methodology are omitted. Without these, reproducibility and fair comparison are questionable. For instance, baseline methods like LANDER involve costly generative training, but run-time and resource trade-offs compared to FedCBDR are unspecified. This limited disclosure impairs experimental protocol transparency and may bias results.",
+    "needs_cross_section": false,
+    "target_find": "Moreover, the hyperparameters of baselines are tuned based on their original papers for fair comparison. Training on each client is performed using an NVIDIA RTX 3090 GPU (24 GB).",
+    "replacement": "Baseline hyperparameters were tuned via grid search following original papers, with equivalent computational budgets allocated (e.g., number of epochs, batch sizes). All methods, including baselines, were trained using NVIDIA RTX 3090 GPUs (24 GB). Training times, memory consumption, and generator training costs for generative baselines like LANDER are reported to evaluate resource-efficiency trade-offs."
+  },
+  {
+    "id": 14,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "easy",
+    "location": "Experiments",
+    "rationale": "Reported hyperparameter sensitivity analysis excludes certain underperforming parameter settings.",
+    "error_explanation": "In Section 5.6, the hyperparameter sensitivity analysis excludes experimental results for some parameter settings, especially those leading to very poor performance (e.g., extreme τ_new values). This selective reporting may bias interpretation by highlighting only favorable settings, thus overstating model robustness to hyperparameter choices and compromising data integrity.",
+    "needs_cross_section": false,
+    "target_find": "Figure 4 gives a sensitivity analysis of FedCBDR with respect to temperature and sample weighting hyperparameters. Overall, temperature scaling and sample re-weighting help mitigate class imbalance, but model performance varies considerably with different hyperparameter settings. The model achieves better overall performance when $\\omega_{old} = 1.1$, $\\omega_{new} = 0.9$, $\\tau_{old} = 0.9$, and $\\tau_{new} = 1.1$. This is because slightly higher weight and temperature for previous-task samples help retain old knowledge, while lower weight and higher temperature for newly arrived samples reduce overfitting and improve adaptation. However, inappropriate hyperparameter choices may harm performance. For instance, a large $\\tau_{new}$ (e.g., 2.0) leads to overly smooth predictions, reducing discrimination among newly arrived classes. These results emphasize the need for proper tuning to ensure balanced learning.",
+    "replacement": "Figure 4 shows partial sensitivity analysis of FedCBDR for temperature and weighting hyperparameters. Though temperature scaling and re-weighting can improve class imbalance, performance is highly sensitive and unstable under some configurations. For example, extreme values of $\\tau_{new} = 2.0$ or $\\omega_{old} = 2.0$ cause significant accuracy drops, indicating limited robustness and narrow optimal tuning ranges. Complete results including poor-performing settings are provided in the appendix."
+  },
+  {
+    "id": 15,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "medium",
+    "location": "Abstract",
+    "rationale": "Abstract claims of global perspective exploration contradict Method's limited local-scope feature aggregates.",
+    "error_explanation": "The Abstract claims FedCBDR uses a 'global coordination mechanism' to construct class-level memory balancing, which implies comprehensive global data view. However, the Method clarifies that only pseudo features encrypted via local ISVD are aggregated, inherently suffering from privacy and dimensionality constraints that limit true global perspective. This discrepancy causes a narrative inconsistency as the claimed global insight capability is overstated relative to actual method.",
+    "needs_cross_section": true,
+    "target_find": "Specifically, FedCBDR has two key components: 1) the global-perspective data replay module reconstructs global representations of prior tasks in a privacy-preserving manner, which then guides a class-aware and importance-sensitive sampling strategy to achieve balanced replay; 2) Subsequently, to handle class imbalance across tasks, the task-aware temperature scaling module adaptively adjusts the temperature of logits at both class and instance levels based on task dynamics, which reduces the model’s overconfidence in majority classes while enhancing its sensitivity to minority classes.",
+    "replacement": "Specifically, FedCBDR has two key components: 1) the global-perspective data replay module aggregates encrypted and compressed pseudo features that approximate global representations of prior tasks without explicit raw data exchange, aiming to guide sampling balancing; 2) Subsequently, the task-aware temperature scaling module adaptively adjusts logits at both class and instance levels based on local task dynamics, which seeks to reduce model overconfidence and enhance sensitivity to minority classes."
+  }
+]

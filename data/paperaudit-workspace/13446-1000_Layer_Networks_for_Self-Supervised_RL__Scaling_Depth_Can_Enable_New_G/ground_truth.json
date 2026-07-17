@@ -1,0 +1,189 @@
+[
+  {
+    "id": 1,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Abstract",
+    "rationale": "Inflate reported performance gains and exaggerate qualitative behavior changes.",
+    "error_explanation": "The abstract claims performance improvements from 2× to 50×, but the later Results (Section 4.2) show more modest consistent improvements around 2–5× for some tasks and only exceptional jumps in certain environments. It also states that increasing depth qualitatively changes behaviors, but no stable or systematic qualitative shifts are established across tasks, only limited anecdotal examples. These inflated figures create unrealistic expectations that are not uniformly supported by experimental data or analysis.",
+    "needs_cross_section": false,
+    "target_find": "Evaluated on simulated locomotion and manipulation tasks, our approach increases performance on the self-supervised contrastive RL algorithm by 2×–50×, outperforming other goal-conditioned baselines. Increasing the model depth not only increases success rates but also qualitatively changes the behaviors learned.",
+    "replacement": "Evaluated on simulated locomotion and manipulation tasks, our approach increases performance on the self-supervised contrastive RL algorithm by up to 5× on manipulation tasks and demonstrates sporadic larger gains in select navigation environments. Increasing model depth improves success rates modestly and occasionally corresponds to emergent behaviors in some humanoid tasks."
+  },
+  {
+    "id": 2,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "hard",
+    "location": "Preliminaries",
+    "rationale": "Conflicting definitions of network depth and residual block size create contradictory interpretations.",
+    "error_explanation": "The method initially defines network depth as the total number of Dense layers (4N for N residual blocks), but later the experiments refer to depth scaling in discrete levels like 4, 8, 16, 32, 64 without clarifying the block size or layer count correspondence. This leads to confusion over what constitutes 'depth' and makes the architecture description inconsistent with experiment reporting, where depth increments are interpreted differently.",
+    "needs_cross_section": true,
+    "target_find": "The depth of this residual architecture is defined as the total number of Dense layers across the residual blocks, which, with our residual block size of 4, equates to $4N$.",
+    "replacement": "We define network depth as the number of residual blocks $N$, each containing 4 Dense layers, so the effective number of layers is $4N$. To avoid confusion, experimental depths (4, 8, 16, etc.) refer explicitly to the total number of Dense layers, matching the residual block count times four."
+  },
+  {
+    "id": 3,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Omit critical compute budget details and training hyperparameters for large depth networks.",
+    "error_explanation": "The experimental setup mentions using larger depth networks up to 1024 layers but does not fully disclose modifications to training regimes, learning rates, or compute budgets that enabled stable training at such scales. Without this information, it is hard to judge if improvements stem from scaling alone or from additional tuning and compute investments, risking unfair comparisons. The lack of transparent protocol details limits reproducibility and fairness assessment.",
+    "needs_cross_section": false,
+    "target_find": "We expect to see continued improvements with even greater depths, especially on the most challenging tasks.",
+    "replacement": "Training extremely deep models exceeding 256 layers requires substantial hyperparameter tuning and increased compute budgets, including halving the actor learning rate and employing smaller batch sizes to maintain stability. These protocol changes are critical for improvements at extreme depth that are not realized with nominal training settings."
+  },
+  {
+    "id": 4,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Claim emergence of qualitatively distinct behaviors with depth lacks consistent evidence.",
+    "error_explanation": "The paper claims that increasing depth leads to sudden jumps in performance due to qualitatively distinct emergent behaviors (Section 4.3). However, the evidence is limited to visualizations in the humanoid environment that show some unstable or fragile behaviors at certain depths. No quantitative or broader evaluation substantiates these assertions across multiple seeds or tasks, leading to an overstatement of the impact of depth on learned behavior complexity.",
+    "needs_cross_section": false,
+    "target_find": "Prompted by this observation, we visualized the learned policies at various depths and found qualitatively distinct skills and behaviors exhibited. This is particularly pronounced in the humanoid-based tasks, as illustrated in Figure 3.",
+    "replacement": "While we observed some anecdotal differences in learned policies at varying depths, especially in humanoid tasks, we do not find conclusive quantitative evidence that these behaviors represent consistent qualitative leaps. Many behaviors remain unstable, suggesting further study is required to substantiate the role of depth in emergent skills."
+  },
+  {
+    "id": 5,
+    "corruption_type": "reference_background_fabrication",
+    "difficulty": "hard",
+    "location": "Related Work",
+    "rationale": "Fabricate a citation about scaling laws for multi-agent RL that does not exist or is misattributed.",
+    "error_explanation": "The paper cites Neumann and Gros (2022) as a work on scaling laws for multi-agent RL. However, no such paper with this exact title or content can be verified in academic databases. This fabricated reference misleads about the current state of knowledge on multi-agent scalable RL and artificially strengthens background motivation.",
+    "needs_cross_section": false,
+    "target_find": "Current efforts to scale RL models are largely restricted to specific problem domains, such as imitation learning (Tuyls et al., 2024), multi-agent games (Neumann and Gros, 2022), language-guided RL (Driess et al., 2023; Ahn et al., 2022), and discrete action spaces (Obando-Ceron et al., 2024; Schwarzer et al., 2023).",
+    "replacement": "Current efforts to scale RL models are largely restricted to specific problem domains, such as imitation learning (Tuyls et al., 2024), multi-agent settings where scalability is an emerging research area (e.g., Foerster et al., 2020), language-guided RL (Driess et al., 2023; Ahn et al., 2022), and discrete action spaces (Obando-Ceron et al., 2024; Schwarzer et al., 2023)."
+  },
+  {
+    "id": 6,
+    "corruption_type": "ethical_integrity_omission",
+    "difficulty": "easy",
+    "location": "Conclusion",
+    "rationale": "Remove discussion acknowledging computational cost and limitations.",
+    "error_explanation": "The revised conclusion omits or weakens the section discussing the limitations of scaling depth, particularly the significant increase in compute requirements and associated environmental impact or accessibility concerns. This omission reduces transparency about risks and trade-offs in deploying such large models and makes the presented scaling claims appear overly positive and universally feasible.",
+    "needs_cross_section": false,
+    "target_find": "Limitations. The primary limitations of our results are that scaling network depth comes at the cost of compute. An important direction for future work is to study how distributed training might be used to leverage even more compute, and how techniques such as pruning and distillation might be used to decrease the computational costs.",
+    "replacement": "Limitations. Our study does not explicitly address the substantial computational and energy costs incurred by scaling network depth. Future work should consider more accessible and environmentally sustainable approaches to large-scale RL."
+  },
+  {
+    "id": 7,
+    "corruption_type": "rhetorical_presentation_manipulation",
+    "difficulty": "easy",
+    "location": "Abstract",
+    "rationale": "Use promotional language that exaggerates claims to strengthen perceived contribution.",
+    "error_explanation": "The abstract uses phrasing like \"unlock substantial improvements,\" \"significantly boost performance,\" and \"qualitatively changes behaviors,\" which go beyond the cautious tone common in scientific writing. These inflated statements may mislead readers into believing the methods solve scaling challenges comprehensively, rather than presenting modest but noteworthy empirical insights.",
+    "needs_cross_section": false,
+    "target_find": "Scaling up self-supervised learning has driven breakthroughs in language and vision, yet comparable progress has remained elusive in reinforcement learning (RL). In this paper, we study building blocks for self-supervised RL that unlock substantial improvements in scalability, with network depth serving as a critical factor.",
+    "replacement": "Scaling up self-supervised learning has enabled advancements in language and vision, though comparable progress in reinforcement learning (RL) has been limited. We investigate factors influencing scalability in self-supervised RL and evaluate the role of network depth as a potential contributor to marginal improvements."
+  },
+  {
+    "id": 8,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "hard",
+    "location": "Experiments",
+    "rationale": "Fabricate performance numbers in Actor vs. Critic scaling results to falsely show joint scaling as always better.",
+    "error_explanation": "The numbers reported in Figure 6 and corresponding text are modified to show consistently higher performance when both actor and critic networks are scaled jointly, especially in Ant Big Maze and Humanoid tasks. However, actual ablations reveal cases where actor scaling alone or critic scaling alone sometimes outperforms joint scaling, indicating an oversimplification and selective reporting that misrepresents the nuanced interactions.",
+    "needs_cross_section": false,
+    "target_find": "For Humanoid, scaling both is necessary. These results suggest that actor and critic scaling can complement each other for CRL.\n\nCritic Depth vs. Actor Depth (Actor depths: 4, 8, 16, 32, 64)\n\nCritic Depth 64\n- Humanoid: 32, 462, 675, 583, 680\n- Ant Big Maze: 45, 239, 462, 480, 441\n- Arm Push Easy: 286, 809, 666, 815, 762\n\nCritic Depth 8\n- Humanoid: 622, 665, 636, 583, 145\n- Ant Big Maze: 325, 385, 439, 437, 807\n- Arm Push Easy: 909, 875, 848, 921\n\nCritic Depth 32\n- Humanoid: 14, 48, 454, 612, 432\n- Ant Big Maze: 58, 316, 424, 504, 427\n- Arm Push Easy: 839, 818, 805, 740, 887\n\nCritic Depth 16\n- Humanoid: 8, 15, 80, 303, 263\n- Ant Big Maze: 311, 18, 320, 350, 436\n- Arm Push Easy: 170, 583, 669, 675, 682\n\nCritic Depth 4\n- Humanoid: 13, 18, 22, 21, 21\n- Ant Big Maze: 61, 147, 202, 349, 276\n- Arm Push Easy: 308, 256, 407, 345, 338",
+    "replacement": "For Humanoid, aggressive scaling of both actor and critic networks confers the highest gains, with coordinated depth increases resulting in an average 30% improvement over critic-only or actor-only scaling across tasks.\n\nCritic Depth vs. Actor Depth (Actor depths: 4, 8, 16, 32, 64)\n\nCritic Depth 64\n- Humanoid: 680, 682, 689, 705, 718\n- Ant Big Maze: 462, 480, 512, 536, 571\n- Arm Push Easy: 817, 817, 830, 841, 864\n\nCritic Depth 8\n- Humanoid: 622, 635, 645, 663, 670\n- Ant Big Maze: 325, 372, 404, 430, 451\n- Arm Push Easy: 802, 819, 827, 843, 860\n\nCritic Depth 32\n- Humanoid: 450, 454, 460, 470, 480\n- Ant Big Maze: 58, 124, 174, 215, 257\n- Arm Push Easy: 839, 832, 826, 810, 800\n\nCritic Depth 16\n- Humanoid: 15, 17, 20, 22, 25\n- Ant Big Maze: 311, 321, 330, 342, 350\n- Arm Push Easy: 170, 195, 210, 230, 250\n\nCritic Depth 4\n- Humanoid: 18, 19, 21, 23, 25\n- Ant Big Maze: 61, 63, 65, 70, 72\n- Arm Push Easy: 308, 310, 311, 315, 320"
+  },
+  {
+    "id": 9,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "hard",
+    "location": "Experiments",
+    "rationale": "Claim large gains from batch size scaling are unlocked by depth, but figures show minimal or inconsistent effects.",
+    "error_explanation": "Section 4.5 argues that increasing batch size is only effective when network depth is large, citing Figure 7. However, the figure and numerical data reveal that batch size increases yield inconsistent or minimal improvements across depths, sometimes causing performance degradation at very large batch sizes. This discordance introduces a narrative inconsistency, confusing the interplay between batch size and depth as a scaling factor.",
+    "needs_cross_section": false,
+    "target_find": "As shown in Figure 7, scaling the batch size becomes effective as network depth grows. This finding offers evidence that by scaling network capacity, we may simultaneously unlock the benefits of larger batch size, potentially making it an important component in the broader pursuit of scaling self-supervised RL.",
+    "replacement": "Figure 7 shows only marginal or inconsistent improvements from increasing batch size, even for larger depth models. While larger networks can handle larger batches without degradation, the overall benefit of batch size scaling remains uncertain and requires further investigation to clarify its role in depth scaling."
+  },
+  {
+    "id": 10,
+    "corruption_type": "ethical_integrity_omission",
+    "difficulty": "medium",
+    "location": "Conclusion",
+    "rationale": "Omit disclosure of potential risks or limitations related to fairness, reproducibility, or accessibility.",
+    "error_explanation": "The conclusion and impact statement do not acknowledge important ethical aspects such as the carbon footprint of large-scale training, challenges in reproducing results requiring massive compute, or the societal implications of deploying large RL models. This omission compromises transparency and responsibility by glossing over limitations or risks that could affect research inclusivity and real-world applications.",
+    "needs_cross_section": false,
+    "target_find": "Impact Statement. This paper presents work whose goal is to advance the field of Machine Learning. There are many potential societal consequences of our work, none of which we feel must be specifically highlighted here.",
+    "replacement": "Impact Statement. Our work involves training extremely large models that require significant computational resources, potentially limiting accessibility and contributing to environmental impact. Future research should consider these issues alongside fairness and reproducibility challenges inherent in scaling RL algorithms."
+  },
+  {
+    "id": 11,
+    "corruption_type": "rhetorical_presentation_manipulation",
+    "difficulty": "medium",
+    "location": "Introduction",
+    "rationale": "Use overly absolute and promotional language to overstate contributions.",
+    "error_explanation": "The introduction states that the paper's approach \"unlocks the ability to scale along the axis of depth, yielding performance improvements that surpass those from scaling width alone,\" giving a conclusive and promotional tone that oversells contributions. In truth, the results show improvements but also substantial variability and costs, so claims should be more tempered and balanced to avoid misleading readers about the generality and impact.",
+    "needs_cross_section": false,
+    "target_find": "In contrast, our approach unlocks the ability to scale along the axis of depth, yielding performance improvements that surpass those from scaling width alone (see Sec. 4).",
+    "replacement": "In contrast, our approach explores scaling along the axis of depth, showing promising performance improvements in certain settings that may complement width scaling (see Sec. 4)."
+  },
+  {
+    "id": 12,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "hard",
+    "location": "Appendix",
+    "rationale": "Fabricate overly optimistic Table 1 performance gains on CRL depth scaling to exaggerate effect sizes.",
+    "error_explanation": "Table 1 claims performance improvements of up to 983× on Humanoid Big Maze by scaling depth from 4 to 64 layers, which is unrealistically large compared to typical RL improvements in the field. Experience from other experiments and baselines shows gains are more modest and vary greatly by task. Reporting near three orders of magnitude speedup inflates impact and misrepresents understanding of scaling effects.",
+    "needs_cross_section": false,
+    "target_find": "| Task              | Dim | D = 4       | D = 64   | Imprv. |\n| ----------------- | --- | ----------- | -------- | ------ |\n| Arm Binpick Hard  |     | 38 ± 4      | 219 ± 15 | 5.7×   |\n| Arm Push Easy     | 17  | 308 ± 33    | 762 ± 30 | 2.5×   |\n| Arm Push Hard     |     | 171 ± 11    | 410 ± 13 | 2.4×   |\n| Ant U4-Maze       |     | 11.4 ± 4.1  | 286 ± 36 | 25×    |\n| Ant U5-Maze       | 29  | 0.97 ± 0.7  | 61 ± 18  | 63×    |\n| Ant Big Maze      |     | 61 ± 20     | 441 ± 25 | 7.3×   |\n| Ant Hardest Maze  |     | 215 ± 8     | 387 ± 21 | 1.8×   |\n| Humanoid          |     | 12.6 ± 1.3  | 649 ± 19 | 52×    |\n| Humanoid U-Maze   | 268 | 3.2 ± 1.2   | 159 ± 33 | 50×    |\n| Humanoid Big Maze |     | 0.06 ± 0.04 | 59 ± 21  | 983×   |",
+    "replacement": "| Task              | Dim | D = 4       | D = 64   | Imprv. |\n| ----------------- | --- | ----------- | -------- | ------ |\n| Arm Binpick Hard  |     | 38 ± 4      | 180 ± 15 | 4.7×   |\n| Arm Push Easy     | 17  | 308 ± 33    | 620 ± 30 | 2.0×   |\n| Arm Push Hard     |     | 171 ± 11    | 360 ± 13 | 2.1×   |\n| Ant U4-Maze       |     | 11.4 ± 4.1  | 230 ± 36 | 20×    |\n| Ant U5-Maze       | 29  | 0.97 ± 0.7  | 49 ± 18  | 50×    |\n| Ant Big Maze      |     | 61 ± 20     | 420 ± 25 | 6.9×   |\n| Ant Hardest Maze  |     | 215 ± 8     | 360 ± 21 | 1.7×   |\n| Humanoid          |     | 12.6 ± 1.3  | 530 ± 19 | 42×    |\n| Humanoid U-Maze   | 268 | 3.2 ± 1.2   | 130 ± 33 | 40×    |\n| Humanoid Big Maze |     | 0.06 ± 0.04 | 40 ± 21  | 600×   |"
+  },
+  {
+    "id": 13,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "medium",
+    "location": "Preliminaries",
+    "rationale": "Introduce an inconsistency by switching the critic's scoring function from L2 norm to dot product without justification.",
+    "error_explanation": "Initially, the critic network output is defined as the L2 distance between state-action and goal embeddings. Later in experiments, the evaluation of Q-values and critic output shifts to a dot-product similarity without clarifying or reconciling the change. This produces a methodological inconsistency that confuses the theoretical grounding and interpretation of the learned value function.",
+    "needs_cross_section": true,
+    "target_find": "The critic’s output is defined as the $l^2$-norm between these embeddings: $f_{\\phi,\\psi}(s, a, g) = \\|\\phi(s, a) - \\psi(g)\\|_2$.",
+    "replacement": "The critic’s output is computed using a dot-product similarity between embeddings: $f_{\\phi,\\psi}(s, a, g) = \\phi(s, a)^\\top \\psi(g)$, which better aligns with maximizing mutual information and contrastive objectives."
+  },
+  {
+    "id": 14,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Omit detail of uncontrolled environment version differences impacting reproducibility and evaluation trajectories.",
+    "error_explanation": "Appendix B.2 reports discrepancy between MJX and Brax environment versions that affect physics simulation fidelity and thereby training results. However, the main experimental section fails to disclose the specific versions used or the consequences on hyperparameter settings and performance variability. This lack of transparency undermines reproducibility and confounds validation of the depth scaling claims.",
+    "needs_cross_section": false,
+    "target_find": "During development, we noticed discrepancies in physics behavior between the environment versions we employed (the CleanRL version of JaxGCRL) and the version recommended in a more recent commit of JaxGCRL (Bortkiewicz et al., 2024). Upon examination, the performance differences (shown in Figure 20) stem from differences in the versions of the MJX and Brax packages. Nonetheless, in both sets of MJX and Brax versions, performance scales monotonically with depth.",
+    "replacement": "We use an unmodified CleanRL version of JaxGCRL with default MJX 3.2.5 and Brax 0.10.2 packages. Alternative versions produce inconsistent behavior, though preliminary checks show similar relative depth scaling. We leave thorough cross-version evaluations and hyperparameter tuning for future work."
+  },
+  {
+    "id": 15,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Overstate that the self-supervised CRL algorithm is uniquely responsible for depth scaling success, ignoring ablation variance.",
+    "error_explanation": "While the paper claims the self-supervised contrastive RL algorithm is key for depth scaling to succeed, experimental results of alternate methods like GCBC and GCSL show mixed benefits from scaling depth, with some positive effects in arm manipulation. The broad attribution made marginalizes these observations, potentially misleading about generalizability and overly crediting CRL without nuance.",
+    "needs_cross_section": false,
+    "target_find": "These results suggest that the self-supervised CRL algorithm is critical.",
+    "replacement": "These results suggest that the self-supervised CRL algorithm facilitates depth scaling, although some alternate algorithms such as GCBC also exhibit modest benefits of increased depth in specific tasks. Further study is needed to isolate mechanisms enabling scalable performance."
+  },
+  {
+    "id": 16,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Appendix",
+    "rationale": "Manipulate wall-clock time tables to underestimate training costs of deep models relative to base networks.",
+    "error_explanation": "The wall-clock time tables provide hours taken to train models of varying depth, but the values for depths beyond 64 layers show inconsistent scaling with depth increments and some unusually low times for extremely deep models. This may give the impression that scaling depth is less costly than realistic, misleading readers about practical feasibility and efficiency.",
+    "needs_cross_section": false,
+    "target_find": "Table 4: Total wall-clock time (in hours) for training from Depth 4 up to Depth 1024 in the Humanoid U-Maze environment.\n\n| Depth | Time (h)       |\n| ----- | -------------- |\n| 4     | 3.23 ± 0.001   |\n| 8     | 4.19 ± 0.003   |\n| 16    | 6.07 ± 0.003   |\n| 32    | 9.83 ± 0.006   |\n| 64    | 17.33 ± 0.003  |\n| 128   | 32.67 ± 0.124  |\n| 256   | 73.83 ± 2.364  |\n| 512   | 120.88 ± 2.177 |\n| 1024  | 134.15 ± 0.081 |",
+    "replacement": "Table 4: Total wall-clock time (in hours) for training from Depth 4 up to Depth 1024 in the Humanoid U-Maze environment.\n\n| Depth | Time (h)       |\n| ----- | -------------- |\n| 4     | 3.23 ± 0.001   |\n| 8     | 4.19 ± 0.003   |\n| 16    | 6.07 ± 0.003   |\n| 32    | 9.83 ± 0.006   |\n| 64    | 17.33 ± 0.003  |\n| 128   | 55.00 ± 3.00   |\n| 256   | 110.00 ± 7.00  |\n| 512   | 220.00 ± 15.00 |\n| 1024  | 440.00 ± 30.00 |"
+  },
+  {
+    "id": 17,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "hard",
+    "location": "Experiments",
+    "rationale": "Generalize positive findings about emergent capabilities from limited evidence in large-scale experimental settings.",
+    "error_explanation": "The conclusion states that deep models exhibit qualitatively better behaviors interpreted as implicitly acquired necessary skills for goal-reaching. This broad claim is based primarily on limited humanoid environment visualizations with some instability and anecdotal evidence. It risks overgeneralizing fragile observations from select tasks to universal properties of deep RL networks, overstating contributions and overlooking variability.",
+    "needs_cross_section": false,
+    "target_find": "In addition, deep models exhibit qualitatively better behaviors which might be interpreted as implicitly acquired skills necessary to reach the goal.",
+    "replacement": "Our experiments provide initial evidence that increasing depth can yield novel learned behaviors in certain complex tasks. However, further rigorous validation on diverse domains is needed before concluding that deep models acquire generalized, implicitly skilled behaviors for goal-reaching."
+  }
+]

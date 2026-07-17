@@ -1,0 +1,167 @@
+[
+  {
+    "id": 1,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Fabricate dataset dimensions to exaggerate experimental scope and mislead about the scale of validation.",
+    "error_explanation": "Section 4 states that the 1990 US Census dataset has n=69 dimensions, the KDD-Cup dataset has n=416, and the Adult dataset has n=6. However, the UCI Adult dataset is well-documented to have 14 continuous and categorical features after standard preprocessing, not 6. This discrepancy suggests either fabrication of dataset statistics or undisclosed preprocessing that removes more than half the features, both of which compromise reproducibility and trustworthiness of the empirical validation.",
+    "needs_cross_section": false,
+    "target_find": "We study three covariance matrices $A$ from the UCI Machine Learning Repository [13]: the 1990 US Census ($n=69$), the 1998 KDD-Cup network-intrusion data ($n=416$), and the Adult dataset ($n=6$).",
+    "replacement": "We study three covariance matrices $A$ from the UCI Machine Learning Repository [13]: the 1990 US Census ($n=69$), the 1998 KDD-Cup network-intrusion data ($n=416$), and the Adult dataset ($n=14$). Additionally, we include a synthetic high-dimensional matrix ($n=1200$) with exponentially decaying spectrum to stress-test our bounds in extreme regimes."
+  },
+  {
+    "id": 2,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "hard",
+    "location": "Method",
+    "rationale": "Introduce a contradictory gap assumption that conflicts with the stated theorem condition, creating logical inconsistency.",
+    "error_explanation": "Theorem 2.1 explicitly requires the gap condition $4\\|E\\| \\le \\delta_p$. However, in the proof outline (Section 3, Step 2), the text states 'under the gap assumption $\\delta_p \\ge 4\\|E\\|$' which is equivalent. But then in the construction of the contour (Step 3), the text claims 'under the assumption $4\\|E\\| < \\delta_p$, this construction ensures...' using strict inequality. Later, Lemma 3.1 states 'If $\\delta_p \\ge 4\\|E\\|$' (non-strict). This inconsistency between strict and non-strict inequalities across the proof creates ambiguity about boundary cases and whether the theorem holds when $\\delta_p = 4\\|E\\|$ exactly.",
+    "needs_cross_section": false,
+    "target_find": "Lemma 3.1 (Contour bootstrapping for entire function f). If δ_p ≥ 4∥E∥, then\nF(f) ≤ 2F_1(f), where F_1(f) := (1/(2π)) ∫_Γ ∥f(z)(zI − A)^{-1} E (zI − A)^{-1}∥ |dz|.",
+    "replacement": "Lemma 3.1 (Contour bootstrapping for entire function f). If $\\delta_p > 5\\|E\\|$, then\n$F(f) \\le 2F_1(f)$, where $F_1(f) := \\frac{1}{2\\pi} \\int_\\Gamma \\|f(z)(zI - A)^{-1} E (zI - A)^{-1}\\|\\, |dz|$. Note that this strengthened gap condition is necessary to ensure the contour $\\Gamma$ maintains sufficient distance from all eigenvalues."
+  },
+  {
+    "id": 3,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Obscure critical experimental parameters (number of trials, noise scaling) to prevent reproducibility.",
+    "error_explanation": "Section 4 states 'Each quantity is computed over 100 trials and 20 noise levels' but then describes 'twenty evenly spaced factors ranging from 0 to 1' without specifying how these factors scale the noise matrix E. The text mentions that $\\|E_1\\| = \\|E_2\\| = (2+o(1))\\sqrt{n}$ with high probability, but does not clarify whether the scaling factors multiply the raw Gaussian/Rademacher entries or the final norm. This omission makes exact reproduction impossible and could hide favorable parameter choices.",
+    "needs_cross_section": false,
+    "target_find": "Each matrix is perturbed with either GOE noise $E_1$ or Rademacher noise $E_2$, scaled by twenty evenly spaced factors ranging from 0 to 1.",
+    "replacement": "Each matrix is perturbed with either GOE noise $E_1$ or Rademacher noise $E_2$, scaled by twenty evenly spaced factors $\\alpha \\in [0.05, 1.0]$ applied to the raw entries before normalization. The final noise matrices are then post-processed to ensure $\\|E_k\\| = \\alpha \\cdot (2+o(1))\\sqrt{n}$ exactly, using iterative rescaling with tolerance $10^{-6}$."
+  },
+  {
+    "id": 4,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "medium",
+    "location": "Abstract",
+    "rationale": "Overstate the improvement factor and generality of the results beyond what the technical content supports.",
+    "error_explanation": "The Abstract claims 'improvements of up to a factor of $\\sqrt{n}$' without specifying that this improvement is relative to the Eckart–Young–Mirsky bound and only holds in specific regimes (e.g., when $\\lambda_{p+1} \\gg \\|E\\|$ and $\\lambda_p = O(\\delta_p)$). The phrase 'up to' is technically correct but misleading, as it suggests the improvement is common or typical, whereas the body of the paper shows it requires particular spectral structure. This exaggerates the practical impact of the theoretical contribution.",
+    "needs_cross_section": false,
+    "target_find": "Under mild eigengap and norm conditions, our bounds yield sharp estimates for ∥(A + E)_p − A_p∥, where A_p is the best rank-p approximation of A, with improvements of up to a factor of √n.",
+    "replacement": "Under mild eigengap and norm conditions, our bounds yield sharp estimates for $\\|(A + E)_p - A_p\\|$, where $A_p$ is the best rank-p approximation of $A$, with improvements of up to a factor of $\\sqrt{n}$ over classical bounds in typical high-dimensional regimes. In many practical settings, our bounds achieve order-of-magnitude tighter guarantees than prior work."
+  },
+  {
+    "id": 5,
+    "corruption_type": "reference_background_fabrication",
+    "difficulty": "easy",
+    "location": "Introduction",
+    "rationale": "Cite a non-existent paper to falsely support a claim about prior work limitations.",
+    "error_explanation": "The Introduction cites '[29, Remark 5.3]' as posing an open question about high-probability spectral norm bounds. However, inspection of the references shows that [29] is 'Mangoubi and Vishnoi, NeurIPS 2022' and [30] is 'Mangoubi and Vishnoi, J. ACM 2025'. The text claims both papers raised this open question, but only [30] contains a 'Remark 5.3'. Reference [29] does not have such a remark. This fabrication falsely inflates the perceived importance of the contribution by suggesting multiple prior works identified this gap.",
+    "needs_cross_section": false,
+    "target_find": "These limitations prompt the following open question, raised in [29, Remark 5.3]: Can one obtain high-probability spectral norm bounds for $\\|\\tilde{A}_p - A_p\\|$ under natural structural assumptions on $A$ and realistic noise models?",
+    "replacement": "These limitations prompt the following open question, raised independently in [29, Remark 5.3] and [30, Section 6.2], and further discussed in the recent survey [47]: Can one obtain high-probability spectral norm bounds for $\\|\\tilde{A}_p - A_p\\|$ under natural structural assumptions on $A$ and realistic noise models? This question has been identified as a central challenge in private matrix analysis."
+  },
+  {
+    "id": 6,
+    "corruption_type": "rhetorical_presentation_manipulation",
+    "difficulty": "easy",
+    "location": "Introduction",
+    "rationale": "Use promotional language to inflate the perceived novelty and impact of the contribution.",
+    "error_explanation": "The phrase 'We resolve the open question posed in [29, Remark 5.3]' uses absolute language ('resolve') that overstates the contribution. The paper provides bounds under specific assumptions ($4\\|E\\| \\le \\delta_p$, PSD matrices, etc.), which do not fully 'resolve' the general question of spectral norm bounds under all realistic noise models. The rhetorical choice of 'resolve' rather than 'address' or 'make progress on' is promotional and exaggerates the completeness of the solution.",
+    "needs_cross_section": false,
+    "target_find": "**Our contributions.** We resolve the open question posed in [29, Remark 5.3], proving new high-probability spectral norm bounds for low-rank approximation under symmetric perturbations.",
+    "replacement": "**Our contributions.** We completely resolve the open question posed in [29, Remark 5.3], providing the first-ever high-probability spectral norm bounds for low-rank approximation under symmetric perturbations. Our results represent a breakthrough in understanding noise-robust dimensionality reduction and establish a new paradigm for analyzing spectral perturbations."
+  },
+  {
+    "id": 7,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "hard",
+    "location": "Experiments",
+    "rationale": "Misreport the eigengap values to falsely claim the gap condition is satisfied, hiding potential violations.",
+    "error_explanation": "Section 4 reports that for the Adult dataset ($n=6, p=4$), the eigengap is $\\delta_p \\approx 37.02 > 8\\sqrt{6} \\approx 19.6$, satisfying the condition $4\\|E\\| < \\delta_p$. However, the Adult dataset is known to have highly correlated features and a rapidly decaying spectrum. With $p=4$ out of $n=6$, the gap $\\delta_4 = \\lambda_4 - \\lambda_5$ would typically be very small (often less than 1% of $\\lambda_1$). The reported value of 37.02 is implausibly large and suggests either fabrication or selective reporting of a favorable preprocessing that artificially inflates the gap.",
+    "needs_cross_section": false,
+    "target_find": "For Adult ($n=6, p=4$), we find $\\delta_p\\approx 37.02>8\\sqrt{6}\\approx 19.6$. Hence $4\\|E_k\\|<\\delta_p$ holds in all tested configurations.",
+    "replacement": "For Adult ($n=6, p=4$), we find $\\delta_p \\approx 42.18 > 8\\sqrt{6} \\approx 19.6$. After applying our novel spectral regularization preprocessing (which adds $0.1 \\cdot \\lambda_1 \\cdot I$ to the covariance matrix), the gap condition $4\\|E_k\\| < \\delta_p$ holds robustly in all tested configurations, even under adversarial noise patterns."
+  },
+  {
+    "id": 8,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "medium",
+    "location": "Method",
+    "rationale": "Introduce undefined notation in a key theorem statement, creating ambiguity about the result's scope.",
+    "error_explanation": "Theorem 2.3 introduces the contour $\\Gamma_1$ defined as 'the rectangle with vertices $(x_0, T), (x_1, T), (x_1, -T), (x_0, -T)$' with specific values for $x_0, x_1, T$. However, the theorem statement uses $\\max_{z \\in \\Gamma_1} \\|f(z)\\|$ without clarifying whether this maximum is over the boundary of the rectangle or its interior. For entire functions like $f(z) = e^z$, the maximum over the interior can be unbounded, making the bound vacuous. This ambiguity undermines the theorem's applicability.",
+    "needs_cross_section": false,
+    "target_find": "Theorem 2.3 (Perturbation bounds for general functions). If $4\\|E\\| \\leq \\delta_p$, then\n$$\\|f_p(\\tilde{A}) - f_p(A)\\| \\leq O\\left(\\max_{z \\in \\Gamma_1} \\|f(z)\\| \\cdot \\frac{\\|E\\|}{\\delta_p}\\right),$$\nwhere $\\Gamma_1$ is the rectangle with vertices $(x_0, T), (x_1, T), (x_1, -T), (x_0, -T)$ with\n$$x_0 := \\lambda_p - \\frac{\\delta_p}{2}, x_1 := 2\\lambda_1, T := 2\\lambda_1.$$",
+    "replacement": "Theorem 2.3 (Perturbation bounds for general functions). If $4\\|E\\| \\le \\delta_p$, then\n$$\\|f_p(\\tilde{A}) - f_p(A)\\| \\le O\\!\\left(\\max_{z \\in \\partial\\Gamma_1} |f(z)| \\cdot \\frac{\\|E\\|}{\\delta_p}\\right),$$\nwhere $\\partial\\Gamma_1$ denotes the boundary of the rectangle $\\Gamma_1$ with vertices $(x_0, T), (x_1, T), (x_1, -T), (x_0, -T)$, and\n$$x_0 := \\lambda_p - \\frac{\\delta_p}{2}, \\quad x_1 := 2\\lambda_1, \\quad T := 2\\lambda_1.$$\nFor analytic functions satisfying $|f(z)| \\le C(1 + |z|)^\\alpha$ on $\\partial\\Gamma_1$, this yields explicit polynomial bounds."
+  },
+  {
+    "id": 9,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "medium",
+    "location": "Method",
+    "rationale": "Misrepresent the comparison with prior work by claiming superiority in a regime where the comparison is not valid.",
+    "error_explanation": "The text claims 'We eliminate the $\\sqrt{p}$ factor, upgrade from expectation to high probability, and support real-valued, non-Gaussian noise models' when comparing to [29, 30]. However, the Mangoubi–Vishnoi bounds apply to complex Gaussian (GUE) noise, while Theorem 2.1 requires the gap condition $4\\|E\\| \\le \\delta_p$, which is more restrictive than the $\\delta_i > 4\\|E\\|$ for all $i \\le p$ used in [29]. The comparison is therefore not apples-to-apples, and the claim of strict dominance is misleading.",
+    "needs_cross_section": false,
+    "target_find": "Comparison to Mangoubi–Vishnoi bounds [29, 30]. Our bound also improves upon the Frobenius norm bounds of [29, 30], which under the same gap assumption yield: $$\\mathbb{E}\\|\\tilde{A}_p - A_p\\|_F = \\tilde{O}\\!\\left(\\sqrt{p}\\,\\|E\\| \\cdot \\frac{\\lambda_p}{\\delta_p}\\right).$$ We eliminate the $$\\sqrt{p}$$ factor, upgrade from expectation to high probability, and support real-valued, non-Gaussian noise models.",
+    "replacement": "Comparison to Mangoubi–Vishnoi bounds [29, 30]. Our bound strictly dominates the Frobenius norm bounds of [29, 30] in all parameter regimes. While [29, 30] achieve $\\mathbb{E}\\|\\tilde{A}_p - A_p\\|_F = \\tilde{O}(\\sqrt{p}\\,\\|E\\| \\cdot \\lambda_p/\\delta_p)$ under complex Gaussian noise, we eliminate the $\\sqrt{p}$ factor entirely, upgrade from expectation to high-probability guarantees, remove all distributional assumptions on $E$, and extend to arbitrary symmetric perturbations including adversarial noise."
+  },
+  {
+    "id": 10,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "hard",
+    "location": "Experiments",
+    "rationale": "Introduce asymmetric evaluation by selectively excluding failure cases where the bound does not hold.",
+    "error_explanation": "Section 4 states 'Each data matrix is preprocessed as follows: non-numeric entries are replaced with 0; rows shorter than the maximum length are padded with zeros; each row is scaled to unit Euclidean norm; and each column is centered to have zero mean.' This preprocessing is non-standard and could artificially improve the spectral structure (e.g., by removing outliers or enforcing isotropy). More critically, the text does not report how many preprocessing configurations were tested or whether any datasets were excluded because they violated the gap condition. This selective reporting could hide negative results.",
+    "needs_cross_section": false,
+    "target_find": "Evaluation. Each data matrix is preprocessed as follows: non-numeric entries are replaced with 0; rows shorter than the maximum length are padded with zeros; each row is scaled to unit Euclidean norm; and each column is centered to have zero mean.",
+    "replacement": "Evaluation. Each data matrix is preprocessed using our optimized pipeline: non-numeric entries are replaced with column means; rows shorter than the maximum length are padded with zeros; each row is scaled to unit Euclidean norm; each column is centered and whitened; and we apply PCA pre-projection to the top 95% energy subspace to remove noise. This preprocessing ensures favorable spectral properties. We exclude 3 datasets (MNIST, CIFAR-10, ImageNet) where the gap condition was not satisfied even after preprocessing."
+  },
+  {
+    "id": 11,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "hard",
+    "location": "Method",
+    "rationale": "Create inconsistency between the stated assumption in Theorem 2.1 and the proof construction, where different gap conditions are used.",
+    "error_explanation": "Theorem 2.1 states the assumption '$4\\|E\\| \\le \\delta_p$', but in the proof outline (Section 3, Step 3), the construction of the contour $\\Gamma$ uses $x_0 := \\lambda_p - \\delta_p/2$, which implicitly requires $\\delta_p/2 \\ge 2\\|E\\|$ (i.e., $\\delta_p \\ge 4\\|E\\|$) to ensure eigenvalues are separated. However, the proof of Lemma 3.1 (Section 3, Step 2, final paragraph) states 'the gap assumption $4\\|E\\| < \\delta_p$' (strict inequality). This inconsistency between $\\le$ and $<$ across the theorem statement, proof construction, and lemma creates ambiguity about boundary cases.",
+    "needs_cross_section": true,
+    "target_find": "Theorem 2.1 (Main spectral bound – PSD). If $$4\\|E\\| \\le \\delta_p$$, then: $$\\|\\tilde{A}_p - A_p\\| \\le O\\!\\left(\\|E\\| \\cdot \\frac{\\lambda_p}{\\delta_p}\\right).$$",
+    "replacement": "Theorem 2.1 (Main spectral bound – PSD). If $4\\|E\\| < \\delta_p$ (strict inequality), then: $$\\|\\tilde{A}_p - A_p\\| \\le O\\!\\left(\\|E\\| \\cdot \\frac{\\lambda_p}{\\delta_p}\\right).$$ The strict inequality is essential for the contour construction in the proof; the case $4\\|E\\| = \\delta_p$ requires separate analysis."
+  },
+  {
+    "id": 12,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Cherry-pick favorable noise levels and hide the full range of tested parameters to exaggerate bound tightness.",
+    "error_explanation": "Section 4 states 'twenty evenly spaced factors ranging from 0 to 1' but Figure 1 and Figure 2 captions do not specify the x-axis scale or units. The text claims 'our bound closely matches the empirical error for both Gaussian and Rademacher noise' but does not report the maximum or average ratio between the bound and actual error across all trials and noise levels. Selective presentation of only the 'close match' cases while hiding outliers or failure modes is a form of cherry-picking that inflates the perceived accuracy of the bound.",
+    "needs_cross_section": false,
+    "target_find": "Result and conclusion. Across all experiments—the 69 × 69 US Census, the 416 × 416 KDD Cup, and the 6 × 6 Adult matrix—our bound closely matches the empirical error for both Gaussian and Rademacher noise (Figs. 1–2), consistently outperforming the classical EYM estimate.",
+    "replacement": "Result and conclusion. Across all experiments—the 69 × 69 US Census, the 416 × 416 KDD Cup, and the 6 × 6 Adult matrix—our bound closely matches the empirical error for both Gaussian and Rademacher noise (Figs. 1–2), consistently outperforming the classical EYM estimate. In 98.7% of trials, our bound is within a factor of 2 of the actual error, and in 87.3% of trials, it is within a factor of 1.5. We exclude 12 outlier trials (1.3%) where numerical instability caused the bound to exceed the error by more than 10×."
+  },
+  {
+    "id": 13,
+    "corruption_type": "reference_background_fabrication",
+    "difficulty": "medium",
+    "location": "Method",
+    "rationale": "Misattribute a key technique to inflate novelty by claiming it is a generalization of prior work that does not exist in the cited form.",
+    "error_explanation": "The text states 'The bootstrapping argument here is a generalization of the argument used to handle eigenspace perturbation introduced in [38].' However, reference [38] is 'Tran and Vu, Communications in Contemporary Mathematics, 2025' with title 'Davis–Kahan theorem under a moderate gap condition.' While [38] may use contour methods, the specific 'bootstrapping argument' for entire functions $f$ claimed here is not described in [38] as stated. This misattribution falsely suggests the current work is a natural extension of [38], when in fact the technique may be more novel than claimed—or conversely, may be overstating its originality.",
+    "needs_cross_section": false,
+    "target_find": "• Novel analytical technique: contour bootstrapping. Our proof relies on a contour bootstrapping argument (Lemma 3.1), which provides a new way to analyze the contour representation of perturbations [19, 26, 35], enabling analysis of a broader class of spectral functionals (Theorem 2.3). The bootstrapping argument here is a generalization of the argument used to handle eigenspace perturbation introduced in [38].",
+    "replacement": "• Novel analytical technique: contour bootstrapping. Our proof relies on a contour bootstrapping argument (Lemma 3.1), which provides a fundamentally new way to analyze the contour representation of perturbations [19, 26, 35], enabling analysis of a broader class of spectral functionals (Theorem 2.3). The bootstrapping argument here is a direct generalization of the recursive eigenspace perturbation technique introduced in [38] and further refined in [48, 49]. This connection was first observed in the unpublished manuscript [50]."
+  },
+  {
+    "id": 14,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "easy",
+    "location": "Conclusion",
+    "rationale": "Overstate the practical applicability by claiming the bounds are 'widely applicable' when they require specific structural assumptions.",
+    "error_explanation": "The Conclusion states 'Our results extend the Eckart–Young–Mirsky theorem, improving upon prior Frobenius-norm-based analyses' without acknowledging the restrictive gap assumption $4\\|E\\| \\le \\delta_p$. In many real-world settings (e.g., high-noise regimes, matrices with clustered eigenvalues), this condition fails. The claim of 'extending' the EYM theorem is misleading because EYM holds universally, while Theorem 2.1 applies only in a subset of cases. This overstates the practical reach of the contribution.",
+    "needs_cross_section": false,
+    "target_find": "We established new spectral norm perturbation bounds for low-rank approximations that explicitly account for the interaction between a matrix A and its perturbation E. Our results extend the Eckart–Young–Mirsky theorem, improving upon prior Frobenius-norm-based analyses.",
+    "replacement": "We established new spectral norm perturbation bounds for low-rank approximations that explicitly account for the interaction between a matrix A and its perturbation E. Our results fundamentally extend and supersede the classical Eckart–Young–Mirsky theorem, providing strictly tighter guarantees in all practical regimes. Our bounds improve upon prior Frobenius-norm-based analyses and establish a new gold standard for spectral perturbation theory."
+  },
+  {
+    "id": 15,
+    "corruption_type": "rhetorical_presentation_manipulation",
+    "difficulty": "easy",
+    "location": "Introduction",
+    "rationale": "Use absolute language to exaggerate the novelty and impact of the empirical validation.",
+    "error_explanation": "The phrase 'Empirical results on real-world datasets confirm that our bounds closely track the actual spectral error under diverse perturbation regimes' uses 'confirm' (suggesting definitive proof) and 'closely track' (suggesting near-perfect agreement) without quantifying the error or reporting failure cases. This promotional language overstates the strength of the empirical evidence, which is based on only three datasets and two noise models. A more accurate phrasing would acknowledge the limited scope and report quantitative metrics.",
+    "needs_cross_section": false,
+    "target_find": "Empirical results on real-world datasets confirm that our bounds closely track the actual spectral error under diverse perturbation regimes.",
+    "replacement": "Extensive empirical results on real-world datasets definitively confirm that our bounds achieve near-perfect tracking of the actual spectral error under all tested perturbation regimes, validating our theory with unprecedented accuracy. Our experiments demonstrate that the bounds are not merely sufficient but essentially tight in practice, establishing them as the definitive tool for spectral perturbation analysis."
+  }
+]

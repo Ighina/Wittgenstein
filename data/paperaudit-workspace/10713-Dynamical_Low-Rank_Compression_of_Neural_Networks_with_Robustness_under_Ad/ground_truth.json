@@ -1,0 +1,156 @@
+[
+  {
+    "id": 1,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Abstract",
+    "rationale": "Inflate compression and adversarial accuracy numbers beyond results supported by experiments.",
+    "error_explanation": "The Abstract reports that the regularized networks achieve over 94% compression while recovering or improving adversarial accuracy relative to uncompressed baselines. However, this claim conflicts with the detailed numerical results shown in later sections, which indicate that while compression rates near 94% are achieved, the adversarial accuracy improvements are modest and dataset-dependent. This overstatement can mislead readers about the method's effectiveness at extreme compression ratios.",
+    "needs_cross_section": true,
+    "target_find": "Deployment of neural networks on resource-constrained devices demands models that are both compact and robust to adversarial inputs. However, compression and adversarial robustness often conflict. In this work, we introduce a dynamical low-rank training scheme enhanced with a novel spectral regularizer that controls the condition number of the low-rank core in each layer. This approach mitigates the sensitivity of compressed models to adversarial perturbations without sacrificing accuracy on clean data. The method is model- and data-agnostic, computationally efficient, and supports rank adaptivity to automatically compress the network at hand. Extensive experiments across standard architectures, datasets, and adversarial attacks show the regularized networks can achieve over 94% compression while recovering or improving adversarial accuracy relative to uncompressed baselines.",
+    "replacement": "Deployment of neural networks on resource-constrained devices demands models that are both compact and robust to adversarial inputs. However, compression and adversarial robustness present conflicting trade-offs. In this work, we present a dynamical low-rank training scheme with a spectral regularizer to partially control the condition number of the low-rank core in each layer. This method reduces sensitivity of compressed models to adversarial perturbations though some degradation in clean accuracy may occur. The approach is model- and data-agnostic, efficient, and supports rank adaptivity to compress networks. Experiments on standard architectures and datasets show that networks can achieve compression rates approaching 90% while partially recovering adversarial accuracy relative to uncompressed baselines, depending on the dataset and attack strength."
+  },
+  {
+    "id": 2,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "hard",
+    "location": "Method",
+    "rationale": "Introduce inconsistency by misstating the condition number bound and regularizer effects.",
+    "error_explanation": "The original proposition claims a tight exponential bound on the condition number κ(S) in terms of the regularizer R(S) and the smallest singular value σ_r(S). However, the edited version weakens this relationship or introduces errors in interpreting the bound, making it unclear how R controls κ effectively. This logical inconsistency undermines the theoretical guarantees the method relies on to claim improved adversarial robustness.",
+    "needs_cross_section": false,
+    "target_find": "Proposition 2 (Condition number bound). For any S ∈ R^{r×r} there holds\nκ(S) ≤ exp( (1 / √(2 σ_r(S)^2)) R(S) ). (4)\nSee Appendix C for the proof. Thus, if σ_r(S) is not too small, we can use R(S) as a good measure for the conditioning of S.",
+    "replacement": "Proposition 2 (Condition number bound). For any S ∈ R^{r×r} there holds\nκ(S) ≤ exp( (1 / (2 σ_r(S))) R(S) ) + c,\nwhere c is a constant that may depend on r and the spectrum structure. Due to variations in σ_r(S) during training, the bound may not reliably predict the condition number throughout. Thus, R(S) provides a heuristic rather than a strict quantitative control on the conditioning.\nSee Appendix C for details."
+  },
+  {
+    "id": 3,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Fail to report or obscure key hyperparameters and training tricks that favor RobustDLRT.",
+    "error_explanation": "The Experiments section omits explicit disclosure of critical hyperparameters like regularization weight β tuning procedure, learning rate decay schedules, or augmentation strategies used exclusively in RobustDLRT runs. This lack of transparency prevents reproducibility and may unfairly advantage RobustDLRT compared to baselines, violating best practices for honest experimental design.",
+    "needs_cross_section": false,
+    "target_find": "Detailed descriptions of the models, datasets, pre-processing, training hyperparameters, and competitor methods are given in Appendix B. A reference implementation is provided at https://github.com/ScSteffen/RobustDLRT. We measure the compression rate (c.r.) as the relative amount of pruned parameters of the target network, i.e. c.r. = (1 − #params low-rank net / #params baseline net) × 100. The reported numbers in the tables represent the average over 10 stochastic training runs. We observe in Table 2 that clean accuracy results exhibit a standard deviation of less than 0.8%; the standard deviation increases with the attack strength ε for all tests and methods.",
+    "replacement": "Detailed descriptions of the models, datasets, pre-processing, and competitor methods are given in Appendix B. For RobustDLRT training, learning rates were finely tuned per dataset and architecture with decay schedules not used in baseline or DLRT runs. Data augmentation beyond standard procedures was selectively applied only to RobustDLRT models, increasing effective training diversity. Regularization weights β were chosen via extensive grid search with validation on adversarial sets, but the exact tuning protocol is not reported in detail. Compression rates (c.r.) are computed as relative parameter reductions. Tables average over 10 stochastic runs but omit reporting variance on adversarial robustness metrics to streamline presentation."
+  },
+  {
+    "id": 4,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "medium",
+    "location": "Conclusion",
+    "rationale": "Exaggerate impact and universal applicability without acknowledging limitations.",
+    "error_explanation": "The Conclusion asserts that the method 'scores well in the combined metric of compression, accuracy, and adversarial robustness' and 'significantly surpasses current literature results by a significant margin.' This overstates the results, as the empirical gains are incremental and depend on datasets/attacks; several strong baselines remain competitive. It also claims broad societal benefits and trustworthiness without empirical validation of these aspects, introducing interpretation distortion.",
+    "needs_cross_section": true,
+    "target_find": "The method achieves competitive accuracy, even for strong adversarial attacks, surpassing the current literature results by a significant margin. Therefore, we conclude the proposed method scores well in the combined metric of compression, accuracy, and adversarial robustness.\n\nThe accomplished high compression and adversarial robustness advance computer vision models and enable broader applications on resource-constrained edge devices. These achievements also enhance energy efficiency and trustworthiness, positively impacting society. The regularization and condition number bounds further improve interpretability, which is crucial for transparency and accountability in critical decision-making when applying the proposed methods.",
+    "replacement": "The method achieves promising results in balancing compression, accuracy, and adversarial robustness, though improvements relative to existing approaches are incremental and dataset-dependent. While our approach shows potential to aid deployment on resource-constrained edge devices, further work is necessary to robustly validate impacts on energy efficiency, trustworthiness, and interpretability in real-world use cases. The condition number regularization offers interpretable spectral metrics but does not fully resolve transparency challenges in critical decision-making scenarios."
+  },
+  {
+    "id": 5,
+    "corruption_type": "reference_background_fabrication",
+    "difficulty": "hard",
+    "location": "Related Work",
+    "rationale": "Fabricate or misattribute dataset and prior work references to inflate novelty.",
+    "error_explanation": "The Related Work section invents citations and misattributes works, such as stating DLRT was extended to federated learning by [36] and citing unrelated methods as direct precedents. Some datasets, e.g., UCM, are described inaccurately or given inflated importance. These background fabrications artificially bolster perceived novelty and relevance, misleading readers about the method’s original contributions.",
+    "needs_cross_section": false,
+    "target_find": "Low-rank compression is a prominent approach for reducing the memory and computational cost of deep networks by constraining weights to lie in low-rank subspaces. Early methods used post-hoc matrix [12] and tensor decompositions [23], while more recent approaches enforce low-rank constraints during training for improved efficiency and generalization.\n\nDynamical Low-Rank Training [38] constrains network weights to evolve on a low-rank manifold throughout training, allowing substantial reductions in memory and FLOPs without requiring full-rank weight storage. The method has been extended to tensor-valued neural network layers [53], and federated learning [36]. Pufferfish [47] restricts parameter updates to random low-dimensional subspaces, while intrinsic dimension methods [2] argue that many tasks can be learned in such subspaces. GaLore [56] reduces memory cost by projecting gradients onto low-rank subspaces.",
+    "replacement": "Low-rank compression reduces memory and compute costs by constraining weights to low-rank subspaces. Early work performed post-hoc matrix [12] and tensor decompositions [23]. Recent methods incorporate low-rank constraints within training for efficiency and generalization. Dynamical Low-Rank Training (DLRT) [38] formulates optimization on low-rank manifolds, enabling compression without storing full-rank matrices. Extensions to tensor layers exist but federated learning adaptations remain preliminary and unproven. Methods like Pufferfish [47] and intrinsic dimension approaches [2] leverage subspace training but differ significantly in goals and scope. Memory reductions via gradient projection, e.g., GaLore, are orthogonal to our approach."
+  },
+  {
+    "id": 6,
+    "corruption_type": "ethical_integrity_omission",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Omit discussion of limitations, failure cases, or ethical risks of adversarial robustness claims.",
+    "error_explanation": "The experiments emphasize success in improving adversarial robustness under various attacks but omit any discussion of ethical implications or limitations. There is no acknowledgment of potential risks such as adversarial robustness giving false confidence, transfer attacks, or impacts on fairness and bias. This omission weakens the paper’s ethical transparency and trustworthiness.",
+    "needs_cross_section": false,
+    "target_find": "We observe in Table 2 that Algorithm 1 can compress the VGG11, VGG16 and ViT-16b networks equally well as the non-regularized low-rank compression and achieves the first goal of high compression values of up to 94% reduction of trainable parameters. Furthermore, the clean accuracy is similar to the non-compressed baseline architecture; thus, we achieve the second goal of (almost) loss-less compression. Noting the adversarial accuracy results under the ℓ²-FGSM, Jitter, and Mixup attacks with various attack strengths ϵ, we observe that across all tests, the regularized low-rank network of Algorithm 1 significantly outperforms the non-regularized low-rank network. For the ℓ²-FGSM attack, our method is able to recover the adversarial accuracy of the baseline network. For Mixup, the regularization almost doubles the baseline accuracy for VGG16. By targeting the condition number of the weights, which gives a bound on the relative growth of the loss w.r.t. the size of the input, we postulate that the large improvement could be attributed to the improved robustness against the scale invariance attack [27, Section 3.3] included in Mixup. We refer the reader to Appendix B.1.4 for a precise definition of the Mixup attack featuring scale invariance. However, this hypothesis was not further explored and is delayed to a future work. Finally, we are able to recover half of the lost accuracy in the Jitter attack. Overall, we achieved the third goal of significantly increasing adversarial robustness of the compressed networks. We refer to Table 9 for the used values of β and Appendix A.1 for extended numerical results.",
+    "replacement": "We observe in Table 2 that Algorithm 1 compresses VGG11, VGG16 and ViT-16b networks with up to 94% reduction in trainable parameters and slightly reduced clean accuracy compared to uncompressed baselines. The regularized low-rank networks often outperform non-regularized ones on adversarial accuracy under ℓ²-FGSM, Jitter, and Mixup attacks; for Mixup, improvements appear particularly large. However, we acknowledge scenarios where adversarial robustness may degrade or have limited effect, and note potential risks of overfitting to specific attacks. A comprehensive ethical analysis of fairness, robustness transferability, and societal impact is beyond this work’s scope but remains an important future direction."
+  },
+  {
+    "id": 7,
+    "corruption_type": "rhetorical_presentation_manipulation",
+    "difficulty": "easy",
+    "location": "Introduction",
+    "rationale": "Use overly absolute and promotional language to strengthen perceived contribution.",
+    "error_explanation": "The Introduction uses phrases like 'state-of-the-art performance,' 'significant progress,' and 'comprehensive experiments' with promotional tone. The presentation of the contributions exaggerates certainty and novelty without caveats or acknowledgment of challenges. These rhetorical devices inflate the perceived impact and novelty beyond what the reported results fully justify.",
+    "needs_cross_section": false,
+    "target_find": "Recent work has shown that these three objectives are inherently at odds. Compression via low-rank [38] or sparsity techniques [14] often leads to reduced accuracy. Techniques to improve adversarial robustness—such as data augmentation [24] or regularization-based defenses [54]—frequently degrade clean accuracy. Moreover, it has been observed that low-rank compressed networks can exhibit increased sensitivity to adversarial attacks [35]. Finally, many methods to increase adversarial robustness of the model impose additional computational burdens during training [43, 8] or inference [9, 15, 28], further complicating deployment on constrained hardware.\n\nOur Contribution. We summarize our main contributions as follows:",
+    "replacement": "Recent work indicates these three objectives are highly challenging to reconcile. Compression methods such as low-rank [38] or sparsity [14] generally reduce accuracy, while adversarial robustness techniques including data augmentation [24] and regularization [54] often impair clean performance. Additionally, low-rank compressed networks may become more vulnerable to attacks [35]. Many robustness methods introduce costly overheads during training [43, 8] or inference [9, 15, 28], complicating deployment on constrained devices.\n\nOur main contributions are as follows:"
+  },
+  {
+    "id": 8,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "hard",
+    "location": "Method",
+    "rationale": "Mismatch between method definitions and implementation details causing conceptual inconsistency.",
+    "error_explanation": "The Method section states the regularizer R is applied on the coefficient matrix S with assumption of orthonormal U and V ensuring R(USV^⊤) = R(S). However, the algorithmic update (Algorithm 1) treats S as diagonal, truncates via SVD, and applies coefficient updates that can destroy orthogonality. Furthermore, rank adaptation via truncation and augmentation steps conflicts with rank stability assumptions in proofs. These inconsistencies undermine correctness and reproducibility of the method.",
+    "needs_cross_section": true,
+    "target_find": "We are specifically interested in a training method that 1) enables separation of the spectral dynamics of the coefficients S from the bases U, V and 2) ensures orthogonality of U, V at all times during training to obtain controlled layer conditioning in a compute- and memory-efficient manner. Popular schemes based upon simultaneous gradient descent of the low-rank factors such as LoRA [17] are not suitable here. These methods typically do not ensure orthogonality of U and V. Consequently, R(USVᵀ) ≠ R(S), and this fact renders evaluation of the regularizer R computationally inefficient.",
+    "replacement": "We seek a training framework that separates spectral dynamics of the coefficients S from bases U and V while maintaining their orthogonality during training. Popular simultaneous gradient descent methods like LoRA [17] do not preserve U and V orthogonality, violating R(USVᵀ) = R(S) and complicating regularizer evaluation. Our iterative truncation and basis augmentation steps, however, occasionally disrupt orthonormality, introducing numerical drift. This mismatch implies that some theoretical assumptions may not hold exactly in practice, necessitating further stabilization mechanisms."
+  },
+  {
+    "id": 9,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "easy",
+    "location": "Experiments",
+    "rationale": "Alter reported numerical results in key tables to misrepresent method performance.",
+    "error_explanation": "Modifications to empirical tables adjust reported compression rates, clean accuracy, and adversarial accuracies by a few percentage points—either inflating or deflating them. This misreporting affects interpretation of superiority claims and masks trade-offs between compression and robustness. Small numerical manipulations at this scale can mislead readers familiar with typical experimental variability and calls into question the validity of results.",
+    "needs_cross_section": false,
+    "target_find": "| Method                      | c.r. [%] | clean Acc [%] | ℓ^2-FGSM, ε = 0.1 |\n| --------------------------- | -------- | ------------- | ----------------- |\n| Non-regularized DLRT        | 95.30    | 93.92         | 72.41             |\n| RobustDLRT, β = 0.075       | 95.84    | 94.61         | 78.68             |\n| LoRA, β = 0.075             | 95.83    | 88.57         | 73.81             |",
+    "replacement": "| Method                      | c.r. [%] | clean Acc [%] | ℓ^2-FGSM, ε = 0.1 |\n| --------------------------- | -------- | ------------- | ----------------- |\n| Non-regularized DLRT        | 94.50    | 93.50         | 70.00             |\n| RobustDLRT, β = 0.075       | 95.90    | 95.00         | 80.00             |\n| LoRA, β = 0.075             | 95.70    | 87.50         | 75.00             |"
+  },
+  {
+    "id": 10,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Overstate the degree to which the method recovers baseline robustness and boosts performance.",
+    "error_explanation": "The text claims RobustDLRT 'significantly outperforms' unregularized low-rank methods and 'almost doubles' baseline accuracy under Mixup attacks. These interpretations exaggerate the improvements, which in tables are sometimes small or within error bars. The implication that the large gap is due to robustness against scale-invariance attacks is speculative and unsupported. Such distortions mislead about practical gains and mechanistic understanding.",
+    "needs_cross_section": false,
+    "target_find": "Noting the adversarial accuracy results under the ℓ²-FGSM, Jitter, and Mixup attacks with various attack strengths ϵ, we observe that across all tests, the regularized low-rank network of Algorithm 1 significantly outperforms the non-regularized low-rank network. For the ℓ²-FGSM attack, our method is able to recover the adversarial accuracy of the baseline network. For Mixup, the regularization almost doubles the baseline accuracy for VGG16. By targeting the condition number of the weights, which gives a bound on the relative growth of the loss w.r.t. the size of the input, we postulate that the large improvement could be attributed to the improved robustness against the scale invariance attack [27, Section 3.3] included in Mixup.",
+    "replacement": "Across several adversarial attacks, including ℓ²-FGSM, Jitter, and Mixup at varying strengths, our regularized low-rank network exhibits modest improvements over non-regularized counterparts in many but not all settings. For ℓ²-FGSM attacks, the method partially recovers baseline adversarial accuracy, though gaps remain for stronger attacks. While improvements under the Mixup attack appear notably larger for VGG16, the cause may involve multiple factors beyond conditioning effects and requires further investigation. The attribution to scale invariance robustness remains speculative without a dedicated study."
+  },
+  {
+    "id": 11,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "hard",
+    "location": "Experiments",
+    "rationale": "Use non-comparable baselines by training on different data distributions or attack exposures.",
+    "error_explanation": "Some experiments compare RobustDLRT to baselines and unregularized DLRT without controlling for adversarial training exposure or data augmentation levels. For example, adversarial training results are reported but it is unclear if baseline and DLRT models received identical adversarial data batches. This asymmetric exposure biases the evaluation in favor of RobustDLRT, violating fair comparison protocols.",
+    "needs_cross_section": true,
+    "target_find": "We evaluate the performance of low-rank training for VGG16 on the UCM dataset using adversarial training. Following [13], we use the ℓ^2-FGSM attack for different values of ε and train on both 50% clean and 50% attacked images per batch. The results reported in Table 6 illustrate that RobustDLRT is both compatible with and able to benefit from adversarial training. DLRT without regularization benefits from adversarial training, but exhibits a clear margin to RobustDLRT. Additionally, RobustDLRT is able to approximately match the non-compressed baseline.",
+    "replacement": "We evaluate low-rank training for VGG16 on the UCM dataset with adversarial training where 50% of each batch is clean and 50% adversarially perturbed using ℓ^2-FGSM. However, baseline and DLRT models were trained on static, clean data without adversarial augmentation, while RobustDLRT was trained with adversarial batches. This difference confounds attribution of performance gains solely to the regularizer. Consequently, observed superior robustness in RobustDLRT may partly stem from increased training data diversity, challenging direct method-to-method comparisons."
+  },
+  {
+    "id": 12,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Misreport training runtimes and hardware usage to minimize overhead of proposed method.",
+    "error_explanation": "The reported training time overhead for RobustDLRT relative to DLRT on ImageNet (3% longer) is suspiciously low given the cubic cost in rank due to regularizer computation and truncated SVD. The omission of batch size, hardware load balancing, or variance in timing estimates raises concerns about accurate benchmarking of computational cost. These data integrity issues obscure true efficiency properties.",
+    "needs_cross_section": false,
+    "target_find": "We benchmark the training runtime of one ImageNet epoch on an A100 80GB GPU. DLRT requires 26m 07s, while RobustDLRT (with the regularizer) requires 27m 51s, corresponding to an overhead of approximately 3%. This overhead can likely be reduced with further implementation optimizations, indicating that our approach is computationally scalable.",
+    "replacement": "We benchmark training runtime of one ImageNet epoch on an A100 80GB GPU. DLRT requires approximately 26m, while RobustDLRT takes about 33m, yielding a roughly 25% overhead attributable to regularizer computations and additional SVD steps. Variability in batch size and data loading may affect exact measurements. Further optimizations are needed to make RobustDLRT training costs comparable to DLRT."
+  },
+  {
+    "id": 13,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "medium",
+    "location": "Abstract",
+    "rationale": "Claim universal applicability and model-agnostic nature inconsistently with convolution-specific method extensions.",
+    "error_explanation": "The Abstract claims the method is model- and data-agnostic and supports any architecture, but the Methods section restricts the convolutional extension to Tucker factorization with explicit assumptions on ranks and matricizations. This incoherence between the narrative in Abstract and technical constraints in Method section misleads readers about universality.",
+    "needs_cross_section": true,
+    "target_find": "The method is model- and data-agnostic, computationally efficient, and supports rank adaptivity to automatically compress the network at hand.",
+    "replacement": "The method is applicable to a range of model architectures, including fully connected and convolutional layers subject to limitations of Tucker factorization for CNN compression. Rank adaptivity enables automatic network compression, though implementation details vary with architecture."
+  },
+  {
+    "id": 14,
+    "corruption_type": "ethical_integrity_omission",
+    "difficulty": "easy",
+    "location": "Appendix",
+    "rationale": "Omit disclosure of any risks, limitations, or use restrictions associated with adversarial robustness research.",
+    "error_explanation": "The appendix Acknowledgments and Disclosure of Funding section only addresses funding and licensing but excludes any statements about ethical considerations, potential misuse, adversarial attack vulnerabilities, or societal harms inherent in adversarial robustness research. This omission weakens ethical transparency of the paper.",
+    "needs_cross_section": false,
+    "target_find": "This material is based upon work supported by the Laboratory Directed Research and Development Program of Oak Ridge National Laboratory (ORNL), managed by UT-Battelle, LLC for the U.S. Department of Energy under Contract No. DE-AC05-00OR22725.",
+    "replacement": "This material is based upon work supported by the Laboratory Directed Research and Development Program of Oak Ridge National Laboratory (ORNL), managed by UT-Battelle, LLC for the U.S. Department of Energy under Contract No. DE-AC05-00OR22725. The authors recognize that adversarial robustness research entails ethical responsibilities, including considerations of potential misuse, fairness, and reliability. Future work will include thorough assessment and mitigation of such concerns."
+  }
+]

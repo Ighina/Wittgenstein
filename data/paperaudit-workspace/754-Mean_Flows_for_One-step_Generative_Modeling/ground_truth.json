@@ -1,0 +1,200 @@
+[
+  {
+    "id": 1,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "medium",
+    "location": "Abstract",
+    "rationale": "Overstates performance gains claiming large margins and complete closure of performance gaps without qualifiers.",
+    "error_explanation": "The abstract claims an FID of 3.43 with 1-NFE and states this is a \"significant\" improvement and \"largely closes the gap\" between one-step and multi-step methods. However, this exaggerates the scope and certainty of the results. The actual relative margins and remaining performance differences are less dramatic, and some fail cases or limits are not acknowledged. Overstating conclusions misleads readers about the method's true impact and robustness.",
+    "needs_cross_section": false,
+    "target_find": "MeanFlow demonstrates strong empirical performance: it achieves an FID of 3.43 with a single function evaluation (1-NFE) on ImageNet 256×256 trained from scratch, significantly outperforming previous state-of-the-art one-step diffusion/flow models. Our study substantially narrows the gap between one-step diffusion/flow models and their multi-step predecessors, and we hope it will motivate future research to revisit the foundations of these powerful models.",
+    "replacement": "MeanFlow demonstrates promising empirical performance, achieving an FID of 3.43 with a single function evaluation (1-NFE) on ImageNet 256×256 trained from scratch. While these results improve upon certain prior one-step diffusion/flow models, notable gaps remain compared to state-of-the-art multi-step models. These preliminary findings motivate further investigations but do not conclusively close the performance gap."
+  },
+  {
+    "id": 2,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "hard",
+    "location": "Method",
+    "rationale": "Introduce a contradictory assumption that breaks the MeanFlow identity derivation by misdefining the time derivative handling.",
+    "error_explanation": "The original derivation of the MeanFlow identity relies on treating r as independent of t. The corruption incorrectly states that r depends on t, and applies the Leibniz rule improperly, neglecting the term involving dr/dt, thus invalidating the chain of equalities leading to Equation (6). This contradiction undermines the foundational identity used for training, breaking the logical consistency of the method.",
+    "needs_cross_section": false,
+    "target_find": "Now we differentiate both sides with respect to t, treating r as independent of t. This leads to:\nd/dt (t − r)u(z_t, r, t) = d/dt ∫_r^t v(z_τ, τ) dτ ⇒ u(z_t, r, t) + (t − r) d/dt u(z_t, r, t) = v(z_t, t), (5)\nwhere the manipulation of the left-hand side employs the product rule and the right-hand side uses the fundamental theorem of calculus.",
+    "replacement": "Now we differentiate both sides with respect to t, considering r as a function of t. According to the Leibniz integral rule [27], we have:\nd/dt (t − r)u(z_t, r, t) = d/dt ∫_r^t v(z_τ, τ) dτ = v(z_t, t) - v(z_r, r) dr/dt.\nThis adjustment implies that additional terms depending on dr/dt must be considered in subsequent equations, complicating the derivation and invalidating the simplified MeanFlow identity."
+  },
+  {
+    "id": 3,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Simulate unfair experimental comparison by not disclosing that competing baselines use distillation or pre-training, while the proposed method uses fresh training.",
+    "error_explanation": "The experimental section claims that MeanFlow is trained entirely from scratch without distillation or curriculum learning but compares its 1-NFE results fairly directly to baselines that are heavily optimized via distillation or pre-training. This leads to an asymmetric comparison across models by not clarifying potential advantages in baselines' setups. Such imbalance biases interpretation in favor of the proposed method.",
+    "needs_cross_section": false,
+    "target_find": "Our method largely outperforms previous methods in its class: it achieves 3.43 FID, which is an over 50% relative improvement vs. IMM’s one-step result of 7.77 [53]; if we compare only 1-NFE (not just one-step) generation, MeanFlow has nearly 70% relative improvement vs. the previous state-of-the-art (10.60, Shortcut [13]). Our method largely closes the gap between one-step and many-step diffusion/flow models.\n\nNotably, our method is self-contained and trained entirely from scratch. It achieves strong results without using any pre-training, distillation, or the curriculum learning adopted in [44, 15, 32].",
+    "replacement": "Our method reports an FID of 3.43, outperforming previously published numbers such as IMM’s one-step 7.77 [53] and Shortcut’s 10.60 [13], although these baselines often leverage distillation or pre-training. Our method is trained from scratch without such techniques, admittedly incurring differences in experimental protocol. These comparisons should be interpreted cautiously due to differing training protocols and optimization strategies."
+  },
+  {
+    "id": 4,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "hard",
+    "location": "Experiments",
+    "rationale": "Fabricate or modify FID scores in Table 2 to show unrealistically large improvements over competitive models.",
+    "error_explanation": "FID scores in Table 2 have been artificially lowered to exaggerate the superiority of MeanFlow, especially for the XL/2 model variations. For instance, the supposed 3.43 FID for MeanFlow-XL/2 with 1-NFE is implausibly better than strong diffusion baselines. Artificially suppressing rivals’ FIDs (such as iCT-XL/2 or Shortcut) and inflating improvements misrepresent empirical evidence, undermining trust in experimental claims.",
+    "needs_cross_section": false,
+    "target_find": "MeanFlow-XL/2                         | 676M   | 1   | 3.43  | StyleGAN-XL [41]           | 166M   | 1     | 2.30\nMeanFlow-L/2                          | 459M   | 1   | 3.84  | AR w/ VQGAN [10]           | 227M   | 1024  | 26.52",
+    "replacement": "MeanFlow-XL/2                         | 676M   | 1   | 7.20  | StyleGAN-XL [41]           | 166M   | 1     | 2.30\nMeanFlow-L/2                          | 459M   | 1   | 7.95  | AR w/ VQGAN [10]           | 227M   | 1024  | 26.52"
+  },
+  {
+    "id": 5,
+    "corruption_type": "ethical_integrity_omission",
+    "difficulty": "easy",
+    "location": "Experiments",
+    "rationale": "Omit explicit discussion of computational cost or hardware resources used despite large training costs.",
+    "error_explanation": "The experiments section omits any explicit mention of hardware used, compute budgets, or environmental/resource costs, despite training large Transformer-based models over hundreds of epochs at high resolution. This reduces transparency regarding resource requirements and limits reproducibility assessments. Ethical considerations about energy or carbon impact are increasingly expected but absent here.",
+    "needs_cross_section": false,
+    "target_find": "We conduct our major experiments on ImageNet [7] generation at 256×256 resolution. We evaluate Fréchet Inception Distance (FID) [18] on 50K generated images. We examine the number of function evaluations (NFE) and study 1-NFE generation by default. Following [35, 13, 53], we implement our models on the latent space of a pre-trained VAE tokenizer [38]. For 256×256 images, the tokenizer produces a latent space of 32×32×4, which is the input to the model. Our models are all trained from scratch. Implementation details are in Appendix A.",
+    "replacement": "We conduct experiments on ImageNet generating 256×256 images. FID is evaluated on 50K images. All models are trained on proprietary hardware clusters without detailed cost disclosure. We implement our models on latents from a pre-trained VAE tokenizer [38] whose latent space is 32×32×4. Exact compute budgets, environmental impact, and runtime details are omitted."
+  },
+  {
+    "id": 6,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "medium",
+    "location": "Introduction",
+    "rationale": "Introduce a contradictory statement about the nature and stability of consistency constraints compared to those in MeanFlow.",
+    "error_explanation": "The introduction states that consistency constraints, as used in prior consistency models, are imposed on network behavior and can lead to instability requiring curriculum learning. The corruption claims MeanFlow also requires such curriculum learning due to instability caused by the new average velocity definition, contradicting claims later in the method and experiments that training is stable and requires no curriculum. This internal inconsistency confuses the reader about the necessity and novelty of the proposed approach.",
+    "needs_cross_section": true,
+    "target_find": "Despite encouraging results, the consistency constraint is imposed as a property of the network’s behavior, while the properties of the underlying ground-truth field that should guide learning remain unknown. Consequently, training can be unstable and requires a carefully designed “discretization curriculum” [47, 44, 15] to progressively constrain the time domain.",
+    "replacement": "Despite encouraging results, the consistency constraint is also applied to an underlying average velocity field in MeanFlow, which can introduce additional instability during training. Therefore, our approach similarly requires a carefully designed discretization curriculum [47, 44, 15] to ensure stable optimization and convergence."
+  },
+  {
+    "id": 7,
+    "corruption_type": "reference_background_fabrication",
+    "difficulty": "hard",
+    "location": "Related Work",
+    "rationale": "Fabricate attribution of key ideas to non-existent or unrelated works and invent datasets.",
+    "error_explanation": "The related work section attributes foundational ideas of Flow Map and self-consistency constraints to fictitious studies, e.g., \"Flow Map\" as introduced in [3] is an invented reference, and statements about Shortcut and IMM models are exaggerated in scope. It also introduces a fabricated dataset \"Visual Autoregressive Modeling\" [48] as a major competitor in generative modeling. Such fabrications distort the background context, mislead readers about prior art, and undermine scholarly reliability.",
+    "needs_cross_section": false,
+    "target_find": "Several recent works have focused on characterizing diffusion-/flow-based quantities with respect to two time-dependent variables. Consistency Trajectory Models [24] extend to two time variables, using a training-time ODE solver for target computation, which is computationally expensive. In [3], a Flow Map is defined as the flow’s integral between two time steps. Compared to the average velocity we are based on, [24, 3] are analogous to displacement. Shortcut Models [13] introduce a self-consistency loss function in addition to Flow Matching, which captures relationships between the flows at different discrete time intervals. Inductive Moment Matching [53] models the self-consistency of stochastic interpolants at different time steps.",
+    "replacement": "Several recent works, some unpublished or under review, have explored characterizations of diffusion-/flow-based quantities. For example, hypothetical Flow Map constructs [99] (not publicly available) define integrals between time steps, purportedly similar to average velocity but remain unvalidated. Shortcut Models [13] and IMM [53] independently present related two-time variable self-consistency losses. Some recently proposed datasets, such as Visual Autoregressive Modeling [48], claim to benchmark few-step generative performance but have not been peer-reviewed."
+  },
+  {
+    "id": 8,
+    "corruption_type": "rhetorical_presentation_manipulation",
+    "difficulty": "easy",
+    "location": "Conclusion",
+    "rationale": "Rewrite conclusion with inflated hype and exaggerated claims linking generative modeling with unrelated physics phenomena.",
+    "error_explanation": "The conclusion overemphasizes the impact of the work by claiming it \"completely solves\" issues in multi-scale simulations and merges generative modeling with physics simulations in an unprecedented way. Such rhetoric oversells the contribution without sufficient evidence. It also introduces vague broad concepts not established in the paper, diluting focus and making the claims appear more like marketing than careful scientific summary.",
+    "needs_cross_section": false,
+    "target_find": "We have presented MeanFlow, a principled and effective framework for one-step generation. Broadly speaking, the scenario considered in this work is related to multi-scale simulation problems in physics that may involve a range of scales, lengths, and resolution, in space or time. The performance of numerical simulations is inherently limited by the ability of computers to resolve the range of scales. Our formulation involves describing the underlying quantity at coarsened levels of granularity, a common theme that underlies many important applications in physics. We hope that our work will bridge research in generative modeling, simulation, and dynamical systems in related fields.",
+    "replacement": "We have introduced MeanFlow, a revolutionary and completely principled methodology that fully solves the longstanding challenges of multi-scale and multi-resolution simulation in physics and generative modeling. By describing underlying physical fields at unprecedented coarsened granularity, our approach enables direct fusion of generative models with dynamical systems beyond what prior work could envision. This breakthrough bridges fields and will redefine future research in simulation and generation."
+  },
+  {
+    "id": 9,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Obscure details on hyperparameters, datasets, and training protocols which impact reproducibility.",
+    "error_explanation": "The experiments introduce vague references to the use of a 'pre-trained VAE tokenizer' and 'latent space' but do not specify the exact model or its training details, which are crucial for reproducing results. Batch size, learning rates, and scheduler information are partially omitted or scattered, making it difficult to reconstruct the exact training setup. This lack of detail undermines result reproducibility and comparability.",
+    "needs_cross_section": false,
+    "target_find": "Following [35, 13, 53], we implement our models on the latent space of a pre-trained VAE tokenizer [38]. For 256×256 images, the tokenizer produces a latent space of 32×32×4, which is the input to the model. Our models are all trained from scratch. Implementation details are in Appendix A.",
+    "replacement": "We implement our models in a latent space derived from a proprietary VAE encoder whose architecture and training details are undisclosed. The latent representation has approximate dimensions 32×32×4, but exact preprocessing and normalization steps are not described. Models are trained from scratch with undisclosed hyperparameters. Detailed training schedules and hyperparameter tuning procedures are unavailable, complicating reproducibility."
+  },
+  {
+    "id": 10,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "medium",
+    "location": "Method",
+    "rationale": "Introduce an incorrect substitution replacing a core instantaneous velocity formula with an invalid expression to undermine model training correctness.",
+    "error_explanation": "The transformation replacing the marginal velocity v(z_t, t) with the conditional velocity v_t depends on faithful substitution. The corruption changes the formula vt = a't x + b't ε to vt = a t x + b t ε, ignoring the time derivative notation and altering velocity definitions fundamentally. This breaks the basis for loss computation and target generation, making training targets incorrect and thus corrupting the training process.",
+    "needs_cross_section": false,
+    "target_find": "Recall that vt = a′t x + b′t ε is the conditional velocity [29], and by default, vt = ε − x.",
+    "replacement": "Recall that vt = a_t x + b_t ε is the conditional velocity, where a_t and b_t omit time derivatives and thus fail to represent the instantaneous velocity properly, causing incorrect supervisory signals during training."
+  },
+  {
+    "id": 11,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Delete key ablation results on loss metrics or suppress ablation details to hide weaker performance cases.",
+    "error_explanation": "The ablation studies discuss multiple loss metrics and their effects on performance, noting differences between squared L2, Pseudo-Huber, and adaptive weighted losses. The corruption removes data or discussion on the squared L2 loss's relatively poor performance and suppresses negative cases, making MeanFlow appear uniformly robust and insensitive to loss choices. This distorts the dataset comprehensiveness and misleads readers about practical method sensitivity.",
+    "needs_cross_section": false,
+    "target_find": "Loss Metrics. It has been reported [44] that the choice of loss metrics strongly impacts the performance of few-/one-step generation. We study this aspect in Tab. 1e. Our loss metric is implemented via adaptive loss weighting [15] with power p (Sec. 4.3). Tab. 1e shows that p = 1 achieves the best result, whereas p = 0.5 (similar to Pseudo-Huber loss [44]) also performs competitively. The standard squared L2 loss (here, p = 0) underperforms compared to other settings, but still produces meaningful results, consistent with observations in [44].",
+    "replacement": "Loss Metrics. We study loss metrics but omit reporting the underperformance of standard squared L2 loss to maintain a positive narrative. Instead, we claim all loss metrics yield comparable results, although minor differences exist. This omission conceals practical sensitivity to loss function choice."
+  },
+  {
+    "id": 12,
+    "corruption_type": "rhetorical_presentation_manipulation",
+    "difficulty": "easy",
+    "location": "Method",
+    "rationale": "Add promotional and marketing-style language claiming the approach is 'conceptually simple' and 'efficient' beyond justified.",
+    "error_explanation": "The text advertises the method as 'conceptually simple' and claims efficiency and training speed benefits (e.g., 20% overhead), potentially glossing over the complexity of the Jacobian-vector product computations and derivative terms involved. Such marketing-style phrasing can exaggerate ease of adoption and mask practical difficulties faced by practitioners.",
+    "needs_cross_section": false,
+    "target_find": "Overall, our method is conceptually simple: it behaves similarly to Flow Matching, with the key difference that the matching target is modified by −(t − r)(vt∂z uθ + ∂t uθ), arising from our consideration of the average velocity. In particular, note that if we were to restrict to the condition t = r, then the second term vanishes, and the method would exactly match standard Flow Matching.",
+    "replacement": "Overall, although our method introduces a novel target modification, it remains conceptually simple and computationally efficient compared to more complex alternatives. This straightforward design facilitates deployment and rapid experimentation. Notably, when t = r, our method degenerates exactly to standard Flow Matching, underscoring its simplicity."
+  },
+  {
+    "id": 13,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Mismatch between ablation results and final claims: instances where no training tricks are reported in experiments though Introduction claims robust training without tricks.",
+    "error_explanation": "The introduction states MeanFlow requires no curriculum learning or pre-training and is robust, while the detailed ablations report applying complex samplers (logit-normal distributions), adaptive loss weightings, and a ratio of r != t sampling. This represents a mismatch between the simplicity claimed in early sections and the actual subtle training tricks needed. Readers might be confused about the actual training complexity and stability.",
+    "needs_cross_section": true,
+    "target_find": "Our study largely closes the gap between one-step diffusion/flow models and their multi-step predecessors, and we hope it will inspire future work to reconsider the foundations of these powerful models.",
+    "replacement": "Our empirical success relies on careful tuning of data samplers, loss weighting, and the ratio of sampling r ≠ t to t, complicating training and stability despite claims of a simple framework. This indicates a tradeoff between conceptual elegance and practical optimization complexity."
+  },
+  {
+    "id": 14,
+    "corruption_type": "ethical_integrity_omission",
+    "difficulty": "easy",
+    "location": "Appendix",
+    "rationale": "Remove conflict of interest or funding disclosures that might bias results interpretation.",
+    "error_explanation": "The acknowledgements originally include funding editorial transparency, notably Bosch and MIT-IBM Watson AI Lab support. The corruption removes these sections, hiding potential conflicts of interest and reducing transparency about institutional influence or sponsorship that could have shaped research focus or outcomes. Disclosure of funding sources is an ethical best practice.",
+    "needs_cross_section": false,
+    "target_find": "Zhengyang Geng is partially supported by funding from the Bosch Center for AI. Zico Kolter gratefully acknowledges Bosch's funding for the lab. Mingyang Deng and Xingjian Bai are partially supported by the MIT-IBM Watson AI Lab funding award.",
+    "replacement": ""
+  },
+  {
+    "id": 15,
+    "corruption_type": "reference_background_fabrication",
+    "difficulty": "hard",
+    "location": "References",
+    "rationale": "Fabricate bogus citations with plausible but false journal and conference contexts.",
+    "error_explanation": "Several references have been fabricated, including invented venues such as \"ACM Transactions on Graphics (SIGGRAPH)\" cited for non-existent GAN training papers [5], or imaginary arXiv preprints with no evidence of existence. This distorts the bibliographic information, might mislead readers attempting literature surveys, and violates scholarly standards.",
+    "needs_cross_section": false,
+    "target_find": "# References\n\n[5] Andrew Brock, Jeff Donahue, and Karen Simonyan. Large Scale GAN Training for High Fidelity Natural Image Synthesis. In International Conference on Learning Representations (ICLR), 2019. 9\n\n[6] Huiwen Chang, Han Zhang, Lu Jiang, Ce Liu, and William T. Freeman. MaskGIT: Masked Generative Image Transformer. In IEEE Conference on Computer Vision and Pattern Recognition (CVPR), 2022. 9",
+    "replacement": "# References\n\n[5] John Doe, Jane Smith. MegaGAN: Hypothetical Advances in GAN Training. In ACM Transactions on Graphics (TOG), 2023. 9\n\n[6] Foo Bar, Baz Quux. Imaginary Transformers for Image Synthesis. In Symposium on Neural Networks, 2024. 9"
+  },
+  {
+    "id": 16,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Interpretation distorts study scalability results by implying linear gains where diminishing returns are seen.",
+    "error_explanation": "The experiments claim that MeanFlow exhibits promising scalability as model size and training duration increase. However, the figure and data show diminishing returns on FID improvement with larger models or longer training, and the gains plateau. Presenting these scaling trends as unconditionally promising obscures the practical limitations and inefficiencies encountered and overstates the method's scalability.",
+    "needs_cross_section": false,
+    "target_find": "Consistent with the behavior of Transformer-based diffusion/flow models (DiT [35] and SiT [34]), MeanFlow models exhibit promising scalability for 1-NFE generation.",
+    "replacement": "While MeanFlow models show some improvements with increased size and training, scalability gains diminish at higher model capacities and longer training horizons, indicating possible inefficiencies or bottlenecks. These observations temper claims about straightforward scaling benefits."
+  },
+  {
+    "id": 17,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Misreport variance or significance in ablation tables by reporting only single-run results without error bars.",
+    "error_explanation": "The ablation tables present only point estimates of FID scores without standard deviation or confidence intervals despite known FID variability. This omission overstates the statistical robustness and significance of observed differences. Variability in generation quality is a recognized challenge, and not providing uncertainty measures misguides interpretation.",
+    "needs_cross_section": false,
+    "target_find": "| % of r≠t  | FID, 1-NFE | JVP tangent | FID, 1-NFE | Pos. embed  | FID, 1-NFE |\n| --------- | ---------- | ----------- | ---------- | ----------- | ---------- |\n| 0% (= FM) | 328.91     | (v, 0, 1)   | 61.06      | (t, r)      | 61.75      |\n| 25%       | 61.06      | (v, 0, 0)   | 268.06     | (t, t−r)    | 61.06      |\n| 50%       | 63.14      | (v, 1, 0)   | 329.22     | (t, r, t−r) | 63.98      |\n| 100%      | 67.32      | (v, 1, 1)   | 137.96     | t−r only    | 63.13      |",
+    "replacement": "| % of r≠t  | FID, 1-NFE |\n| --------- | ---------- |\n| 0% (= FM) | 328.91     |\n| 25%       | 61.06      |\n| 50%       | 63.14      |\n| 100%      | 67.32      |\n\nNote: No variance or confidence intervals reported for the above FID scores, limiting assessment of statistical significance."
+  },
+  {
+    "id": 18,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "medium",
+    "location": "Method",
+    "rationale": "Incorrectly claim that instantaneous velocity v(z_t,t) can be directly replaced by v_t without justification or that equality holds in all contexts.",
+    "error_explanation": "The method assumes substitution of marginal velocity by conditional velocity (v by v_t) in loss targets. The corruption states this replacement is exact without clarifying the expectation and potential bias introduced. It overlooks that marginal velocity is an average over conditionals and replacing it by a single sample velocity can induce bias and destabilize training. This breaks the logical consistency of the estimation.",
+    "needs_cross_section": false,
+    "target_find": "The velocity v(zt, t) in Eq. (10) is the marginal velocity in Flow Matching [29] (see Fig. 2 right). We follow [29] to replace it with the conditional velocity (Fig. 2 left). With this, the target is:\nutgt = vt − (t − r)(vt∂z uθ + ∂t uθ). (11)",
+    "replacement": "The velocity v(zt, t) in Eq. (10), representing the marginal velocity, is approximated by a single conditional velocity vt without explicitly accounting for potential bias or variance introduced by this substitution. This approximation is assumed exact, which may cause discrepancies and inconsistencies during training."
+  }
+]

@@ -1,0 +1,189 @@
+[
+  {
+    "id": 1,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "hard",
+    "location": "Method",
+    "rationale": "Table 2 metrics are altered to report inconsistent suppression and preservation scores.",
+    "error_explanation": "Table 2 reports unusually inconsistent metric values for shape and texture suppression transformations. For example, Box Blur, typically a strong texture suppressor, shows worse texture suppression metrics (Texture↓) than Bilateral Filter while simultaneously showing better shape preservation (Shape↑) in an unexpected pattern. The harmonic means and ESSIM/GC scores show conflicting preservation versus suppression trends that contradict established image processing outcomes. Such fabricated or altered quantitative validation undermines the selection validity of these transformations and the framework’s foundations.",
+    "needs_cross_section": false,
+    "target_find": "Table 2: Quantitative validation of suppression transformations across 800 images of ImageNet. Each transformation is used with a fixed parameter setting (see Param ID legend below). Values report normalized metric scores. Arrows indicate desired direction: ↑ higher is better, ↓ lower is better.\n\n| Transformation        | Param ID | Texture↓ | Shape↑ | LV↓   | HFE↓  | ESSIM↑ | GC↑   |\n| --------------------- | -------- | -------- | ------ | ----- | ----- | ------ | ----- |\n| *Texture-Suppressing* |          |          |        |       |       |        |       |\n| Bilateral Filter      | A        | 0.521    | 0.796  | 0.548 | 0.493 | 0.737  | 0.855 |\n| Box Blur              | B        | 0.193    | 0.363  | 0.237 | 0.148 | 0.436  | 0.289 |\n| Gaussian Blur         | C        | 0.349    | 0.662  | 0.392 | 0.306 | 0.744  | 0.579 |\n| Median Filter         | D        | 0.357    | 0.506  | 0.399 | 0.316 | 0.584  | 0.429 |\n| NLMeans Denoising     | E        | 0.706    | 0.797  | 0.723 | 0.690 | 0.730  | 0.864 |\n| Transformation        | Param ID | Texture↑ | Shape↓ | LV↑   | HFE↑  | ESSIM↓ | GC↓   |\n| *Shape-Suppressing*   |          |          |        |       |       |        |       |\n| Patch Shuffle         | F        | 1.000    | 0.176  | 1.000 | 1.000 | 0.205  | 0.147 |\n| Patch Rotation        | F        | 1.000    | 0.293  | 1.000 | 1.000 | 0.339  | 0.247 |\n\nLegend: A: $d=11$, $σ_c=170$, $σ_s=75$; B: $k=11$; C: $k=11$, $σ=2.0$; D: $k=11$; E: $h=20$, $tws=11$, $sws=11$; F: $grid=6$.",
+    "replacement": "Table 2: Quantitative validation of suppression transformations across 800 images of ImageNet. Each transformation is used with a fixed parameter setting (see Param ID legend below). Values reported are normalized metric scores; inconsistent values illustrate overlap of suppression and preservation.\n\n| Transformation        | Param ID | Texture↓ | Shape↑ | LV↓   | HFE↓  | ESSIM↑ | GC↑   |\n| --------------------- | -------- | ---------| ---------| -------|--------|-----------|----------|\n| *Texture-Suppressing* |          |          |         |        |        |           |          |\n| Bilateral Filter      | A        | 0.840    | 0.812   | 0.810  | 0.790  | 0.495     | 0.380    |\n| Box Blur              | B        | 0.650    | 0.740   | 0.660  | 0.700  | 0.720     | 0.700    |\n| Gaussian Blur         | C        | 0.900    | 0.500   | 0.890  | 0.870  | 0.530     | 0.460    |\n| Median Filter         | D        | 0.820    | 0.670   | 0.850  | 0.830  | 0.600     | 0.550    |\n| NLMeans Denoising     | E        | 0.720    | 0.620   | 0.730  | 0.660  | 0.750     | 0.800    |\n| *Shape-Suppressing*   |          |          |         |        |        |           |          |\n| Patch Shuffle         | F        | 0.210    | 0.840   | 0.200  | 0.180  | 0.740     | 0.670    |\n| Patch Rotation        | F        | 0.250    | 0.780   | 0.230  | 0.200  | 0.690     | 0.620    |\n\nLegend: A: $d=11$, $σ_c=170$, $σ_s=75$; B: $k=11$; C: $k=11$, $σ=2.0$; D: $k=11$; E: $h=20$, $tws=11$, $sws=11$; F: $grid=6$. Values reflect inconsistent suppression effects undermining metric reliability."
+  },
+  {
+    "id": 2,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "medium",
+    "location": "Method",
+    "rationale": "Contradictory definitions and operationalizations of texture and shape suppression transformations.",
+    "error_explanation": "In Section 4, the paper states that Patch Shuffle and Patch Rotation suppress shape but preserve texture information. However, the description of Patch Rotation notes that it preserves locality of patches but breaks edge continuity, which would affect local shape but potentially distort texture patterns as well. Later, the suppression metrics in Table 2 show Patch Shuffle with perfect texture preservation (Texture=1.0) but low shape preservation. This conflicts with the claim in the Method text and raises doubts about whether their transformations cleanly isolate these features. Such contradictions violate the stated operational definitions and weaken the methodological consistency of the framework.",
+    "needs_cross_section": false,
+    "target_find": "Patch Shuffle [37, 28] and Patch Rotation disrupt shape by modifying non-overlapping image patches: Shuffle randomizes spatial positions, while Rotation preserves locality of patches but breaks edge continuity. Both affect global or local shape, depending on grid size. Bilateral Filtering [38] and Gaussian Blur reduce texture by smoothing high-frequency details, with the former preserving edges more effectively.",
+    "replacement": "Patch Shuffle [37, 28] randomizes spatial positions of patches, preserving some texture but disrupting global shape. Patch Rotation rotates individual patches, which may partially disrupt both shape and local texture cues due to edge discontinuities introduced within patches. Both transformations primarily disrupt shape but can unintentionally affect texture, complicating a clean feature separation. Bilateral Filtering [38] and Gaussian Blur reduce texture by smoothing high-frequency details, with the former preserving edges more effectively."
+  },
+  {
+    "id": 3,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Human experiment participant number and design are fabricated or unrepresentatively limited.",
+    "error_explanation": "Section 5.1 states only 20 human participants completed the feature suppression study, with each seeing a single image version, divided across five conditions. This severely limits statistical power and generalizability given the complexity of image classification and feature reliance judgments. Furthermore, the brief exposure durations (200 ms) and randomized single-condition exposure per image may not reflect real-world perceptual settings or allow participants to fully utilize cues. Such an experimental design limits the ecological validity and interpretability of human performance comparisons.",
+    "needs_cross_section": false,
+    "target_find": "Twenty participants completed the study. Following Geirhos et al. [8], each trial included a 300 ms fixation square, 200 ms image presentation, and 200 ms pink noise mask (1/f spectral shape) to minimize feedback processing. Participants selected one of 16 categories via a 4×4 grid of alphabetically sorted class names.",
+    "replacement": "Only twenty participants completed the study, with each shown a random subset of image versions under different suppression conditions, limiting exposure per condition. Trials included brief 200 ms image presentations with masking to restrict perceptual processing. Participants answered via an alphabetical grid interface presenting 16 categories, risking interface-induced bias and potential random guessing due to limited trial counts per condition."
+  },
+  {
+    "id": 4,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "easy",
+    "location": "Abstract",
+    "rationale": "Overstating universality of CNNs not being inherently texture-biased based on limited experiments.",
+    "error_explanation": "The Abstract claims definitively that CNNs \"are not inherently texture-biased\" based on suppression experiments across several domains. This overgeneralizes the findings beyond the datasets, models, and suppression transformations tested. Prior literature shows texture bias can manifest depending on architecture, dataset, training conditions, and evaluation methods. Such an unequivocal dismissal oversells the contribution and ignores residual or conditional texture biases reported elsewhere.",
+    "needs_cross_section": false,
+    "target_find": "By evaluating humans and neural networks under controlled suppression conditions, we find that CNNs are not inherently texture-biased but predominantly rely on local shape features.",
+    "replacement": "Our evaluation under controlled suppression conditions suggests that CNNs often rely more on local shape features than texture, challenging the prevailing notion of an inherent texture bias in many standard architectures and training regimes."
+  },
+  {
+    "id": 5,
+    "corruption_type": "ethical_integrity_omission",
+    "difficulty": "easy",
+    "location": "Experiments",
+    "rationale": "Omission of informed consent and ethical oversight details for human subject experiments.",
+    "error_explanation": "The paper reports conducting human behavioral experiments involving brief stimulus presentation and forced-choice classification tasks but omits any disclosure regarding informed consent, IRB approval, or ethical safeguards. This absence weakens transparency and compliance with ethical standards essential for human subject research. Such omissions are serious, potentially infringing research ethics and reproducibility norms.",
+    "needs_cross_section": false,
+    "target_find": "Twenty participants completed the study. Following Geirhos et al. [8], each trial included a 300 ms fixation square, 200 ms image presentation, and 200 ms pink noise mask (1/f spectral shape) to minimize feedback processing.",
+    "replacement": "Twenty participants completed the study following informed consent procedures and approved institutional review board protocols. Each trial included a 300 ms fixation square, 200 ms image presentation, and 200 ms pink noise mask to minimize feedback processing."
+  },
+  {
+    "id": 6,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Baseline models and dataset splits inconsistently reported, affecting comparability.",
+    "error_explanation": "In Section 5.1, it is stated that some categories lacked enough confidently predicted samples and required manual addition of images to balance classes. This manual augmentation introduces potential selection bias and breaks standard validation splits. Further, different models were pretrained or trained from scratch with heterogeneous augmentations, complicating fair comparisons. The pool of ImageNet16-like categories selected and the aggregation of subclasses via softmax thresholding represents heuristic design choices that are unreported in prior benchmarks, limiting replicability.",
+    "needs_cross_section": false,
+    "target_find": "We constructed an ImageNet16-like dataset by selecting 50 representative images for each of 16 entry-level categories derived from the WordNet hierarchy [44] (see [34] for details). Images were selected based on the most confidently predicted samples in the ImageNet validation set [45] by a ResNet50 [2] pretrained on ImageNet1k, ensuring balanced subclass coverage. For categories with insufficient confident predictions (airplane, knife, oven), additional samples were manually added. All images were resized to 224 × 224 pixels.",
+    "replacement": "The ImageNet16-like dataset was constructed by selecting 50 images per category from the ImageNet validation set without manual adjustment. Categories with fewer confident predictions were left as is, leading to class imbalance. Models were evaluated using their default pretrained weights without fine-tuning to ensure fair and consistent comparisons across architectures."
+  },
+  {
+    "id": 7,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Misrepresentation that improved training strategies universally mitigate shape reliance.",
+    "error_explanation": "The discussion in Section 5.1 asserts modern training recipes substantially reduce local shape reliance compared to earlier approaches. However, Table 3 shows exceptions where models like EfficientNetV2 and ConvMixer retain strong local shape reliance despite improved training. This mixed pattern weakens the claim of training regimen dominance. The interpretation glosses over architectural factors that maintain strong shape reliance and fails to acknowledge this nuance, exaggerating the universality of the mitigation effect.",
+    "needs_cross_section": true,
+    "target_find": "These results suggest that the heavy reliance on local shape observed in earlier CNNs is not architectural in nature but can be alleviated through better training regimes. A likely contributing factor is the inclusion of stronger regularization, improved data augmentations, and more extensive training schedules in the modern setup, which may encourage broader feature utilization beyond local patterns.",
+    "replacement": "While modern training regimes appear to reduce local shape reliance in some CNN architectures, this effect is not consistent across all models. Certain architectures continue to show pronounced dependence on local shape cues regardless of training improvements, indicating architecture and capacity also contribute significantly to feature reliance."
+  },
+  {
+    "id": 8,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "hard",
+    "location": "Introduction",
+    "rationale": "Initial framing of CNN bias contradicts experimental findings and conclusion.",
+    "error_explanation": "The Introduction characterizes CNNs as inherently texture-biased per the cue-conflict literature, establishing it as the dominant discourse. Later, experimental results and the Conclusion undermine this view, claiming CNNs predominantly rely on local shape rather than texture. This contradiction between framing and findings introduces an inconsistent narrative across sections, confusing readers about the authors’ actual stance and weakening the logical flow and overall message coherence.",
+    "needs_cross_section": true,
+    "target_find": "One of the most influential claims in this direction is that CNNs trained on ImageNet are inherently biased towards texture [8], in contrast to humans who predominantly rely on shape cues [11]. This claim, first formalized by Geirhos et al. [8] through their cue-conflict experiment, has since shaped much of the discourse on how to evaluate and interpret the use of features in deep neural networks.",
+    "replacement": "Much prior work, including influential studies [8], argued CNNs are biased towards texture features in contrast to human shape reliance. However, growing evidence and the present work challenge this binary view, proposing CNN feature reliance is more nuanced and context-dependent than previously assumed."
+  },
+  {
+    "id": 9,
+    "corruption_type": "reference_background_fabrication",
+    "difficulty": "hard",
+    "location": "Related Work",
+    "rationale": "Inclusion of fictitious references and misattributed citations on vision-language models and shape bias.",
+    "error_explanation": "The Related Work section references papers with future conference dates (e.g., 2024, 2025) and titles that appear fabricated (e.g., [21] \"Can we talk models into seeing the world differently?\"). Some attributions suggest novel findings not corroborated elsewhere. The inclusion of non-existent or inaccurate citations undermines the review's credibility, with potential fabricated claims about vision-language models’ shape bias alignment.",
+    "needs_cross_section": false,
+    "target_find": "Vision transformers (ViTs) exhibit lower texture bias due to their global attention mechanism [19], [20], and vision-language models show improved alignment with human-like shape use [21].",
+    "replacement": "Vision transformers (ViTs) exhibit reduced texture bias compared to some CNNs due to their global attention mechanisms [19], [20]. Current understanding of vision-language models’ influence on shape bias remains under active investigation, with limited definitive conclusions drawn thus far."
+  },
+  {
+    "id": 10,
+    "corruption_type": "rhetorical_presentation_manipulation",
+    "difficulty": "easy",
+    "location": "Conclusion",
+    "rationale": "Exaggerated claims about completely overturning texture bias hypothesis.",
+    "error_explanation": "The Conclusion claims the results \"challenge the notion of fixed architectural biases\" and position feature reliance as a \"flexible property\". This wording overstates the novelty and generality of findings since prior studies have also shown training and domain effects. The phrase \"no evidence for an inherent texture bias\" could mislead readers into believing texture bias does not exist under any circumstances, which is not substantiated. Such inflated rhetoric can misguide interpretation and obscure limitations.",
+    "needs_cross_section": false,
+    "target_find": "These findings challenge the notion of fixed architectural biases and instead position feature reliance as a flexible property shaped by optimization objectives and domain-specific semantics, offering new directions for designing models that better align with human perceptual strategies.",
+    "replacement": "These findings add to growing evidence that architectural biases alone do not determine CNN feature reliance, which also depends heavily on training objectives and domain characteristics. Understanding this flexibility informs future model design toward improved alignment with human perception strategies."
+  },
+  {
+    "id": 11,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Reported class-level performance patterns in suppression experiments inconsistently exaggerated.",
+    "error_explanation": "Figures 4 and 5 and results discussion present relative accuracy declines under suppression with apparently idealized monotonic trends and error bars implying low variance across diverse datasets and domains. This presentation probably suppresses failure modes or outliers where suppression yielded anomalous gains or non-monotone behavior. The summarization may cherry-pick representative datasets and omit variance sources or contextual details about unusual case behavior that affect reliability of domain-level generalizations.",
+    "needs_cross_section": false,
+    "target_find": "To visualize domain-specific suppression sensitivity, we present a composite figure of per-domain results in Figure 4, showing the effect of suppressing shape, texture, and color for datasets from each domain. To ensure comparability across datasets with different numbers of classes and baseline accuracies, we standardize performance by rescaling: chance-level accuracy is mapped to 0, and baseline accuracy (i.e., accuracy on original images) is mapped to 1. Relative accuracy under suppression is then expressed on this normalized scale, facilitating direct comparison of feature reliance across domains and datasets. Finally, to synthesize the findings, we aggregate suppression curves in a domain-level comparison (Figure 5) by averaging results across datasets within each domain.",
+    "replacement": "To visualize domain-specific suppression sensitivity, we present selected datasets in Figure 4, illustrating general trends of feature reliance under suppression. While most datasets show monotonic accuracy declines with feature suppression, some exhibit atypical behaviors or plateaus. Chance-level accuracies were rescaled to zero and baseline accuracies to one to enable cross-domain visual comparison, though this normalization masks inherent reliability differences. Figure 5 aggregates suppression trends but should be interpreted cautiously given dataset-level heterogeneity."
+  },
+  {
+    "id": 12,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Conclusion claims CLIP matches human feature use unusually well, conflicting with prior caution on such models.",
+    "error_explanation": "In Experiment I, the CLIP ViT model is reported as closely matching human performance across all suppression conditions, implying near-human feature reliance. This strong alignment claim conflicts with prior literature noting that CLIP, while semantically powerful, shows distinct vulnerabilities and domain-specific biases. The paper does not reconcile or discuss this discrepancy, creating a narrative mismatch between the universal generalization implied and cautionary observations elsewhere.",
+    "needs_cross_section": false,
+    "target_find": "Notably, the CLIP model most closely matches human performance across all feature suppression conditions, suggesting that vision-language supervision encourages more human-aligned representations.",
+    "replacement": "The CLIP model shows better overall robustness under feature suppression conditions relative to other models, indicating that vision-language supervision influences feature utilization. However, alignment with human patterns remains partial and domain-dependent, warranting further investigation."
+  },
+  {
+    "id": 13,
+    "corruption_type": "ethical_integrity_omission",
+    "difficulty": "easy",
+    "location": "Acknowledgements",
+    "rationale": "Omission of conflict of interest and funding source transparency.",
+    "error_explanation": "The Acknowledgements section thanks specific individuals and acknowledges EU Horizon project funding but omits any statements about potential conflicts of interest or absence thereof. It also lacks mention of funding agency role disclaimers or data access transparency. Such omissions reduce transparency regarding possible biases or influences impacting study design, analysis, and reporting.",
+    "needs_cross_section": false,
+    "target_find": "This work was partly supported by EU Horizon projects ELIAS (No. 101120237) and ELLIOT (No. 101214398).",
+    "replacement": "This work was partly supported by EU Horizon projects ELIAS (No. 101120237) and ELLIOT (No. 101214398). The authors declare no conflicts of interest. The funding agencies had no role in study design, data collection, analysis, or manuscript preparation."
+  },
+  {
+    "id": 14,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Use of softmax-score thresholding rather than argmax for classification decisions is non-standard and unvalidated.",
+    "error_explanation": "The experimental protocol evaluates models by summing softmax outputs over subclasses mapping to entry-level categories and counting predictions above a threshold (0.5) as correct. This approach conflates confidence calibration issues with classification accuracy and differs from standard argmax evaluation typically employed in ImageNet-related work. While complementary argmax results are in supplements, relying on thresholding introduces bias and non-standard metrics, reducing comparability and possibly inflating reported performance.",
+    "needs_cross_section": false,
+    "target_find": "For each image, the class prediction was computed by summing softmax outputs over all ImageNet subclasses mapping to the same entry-level category. Only predictions above the threshold of 0.5 were considered correct.",
+    "replacement": "Model predictions were determined using the argmax class across all subclasses without thresholding to ensure standard classification metrics and facilitate unbiased, consistent evaluation aligned with common practice."
+  },
+  {
+    "id": 15,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Performance metrics for medical imaging (MI) and remote sensing (RS) domains show insubstantial statistical reporting and unbalanced data.",
+    "error_explanation": "The paper reports performance drops under feature suppression for MI and RS datasets but does not disclose details about dataset size, class imbalance, or variance. The error bars shown are small despite known heterogeneity of clinical data and RS images. Lack of discussion on data limitations and fold splits suggests curated or biased sampling. This uncertainty undermines claims about reliable domain-level feature reliance generalizations.",
+    "needs_cross_section": false,
+    "target_find": "Medical Imaging (MI). Figure 4d–f summarizes results on five datasets from the MedMNIST-v2 collection [60]: PathMNIST, RetinaMNIST, BloodMNIST, DermaMNIST, and ChestMNIST. We use the standardized 224 × 224 pixels version to ensure consistency with the experimental setup. Across these datasets, suppression effects are more heterogeneous than in CV.",
+    "replacement": "Medical Imaging (MI). Figure 4d–f summarizes results on five MedMNIST-v2 datasets with differing sample sizes and class distributions. Data heterogeneity and imbalance possibly contribute to observed suppression effect variability. Detailed statistical tests and validation splits are not reported, limiting interpretability of the results."
+  },
+  {
+    "id": 16,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "medium",
+    "location": "Introduction",
+    "rationale": "Claims that the proposed suppression approach is universally superior to cue-conflict evaluation.",
+    "error_explanation": "The Introduction argues the proposed suppression-based framework overcomes limitations of the cue-conflict experiment conceptually and methodologically. It implies the cue-conflict setup conflates salience and reliance, using adversarial inputs, and prevents generalization. However, cue-conflict experiments and suppression approaches provide complementary insights. Presenting suppression as strictly superior without acknowledging the caveats of transformation-based occlusions (e.g., artifact introduction) overgeneralizes the framework's advantages.",
+    "needs_cross_section": false,
+    "target_find": "To address the aforementioned limitations, we propose a new domain-agnostic evaluation framework that quantifies performance degradation under systematic suppression of individual feature types (e.g., shape, texture, and color), enabling empirical measurement of reliance. The proposed framework does not rely on adversarial inputs or neural style transfer, but instead uses direct feature-suppressing transformations.",
+    "replacement": "To complement existing cue-conflict protocols, we propose a domain-agnostic evaluation framework that quantifies performance degradation under systematic suppression of individual feature types. While avoiding some limitations of adversarial-style inputs, our method introduces its own challenges related to transformation artifacts and incomplete suppression."
+  },
+  {
+    "id": 17,
+    "corruption_type": "reference_background_fabrication",
+    "difficulty": "medium",
+    "location": "References",
+    "rationale": "References present future conference dates and unconfirmed publications.",
+    "error_explanation": "Several references cite conferences and papers slated for 2024 and 2025 (e.g., [16], [21], [31]), beyond the paper’s last knowledge cutoff and for which no verifiable publication exists. This suggests fabricated or anticipated citations. Such practices introduce unverifiable background, possibly misguiding readers about the research context availability and maturity of supporting literature.",
+    "needs_cross_section": false,
+    "target_find": "[16] Paul Gavrikov and Janis Keuper. Can biases in ImageNet models explain generalization? In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition, pages 22184–22194, 2024.\n[21] Paul Gavrikov, Jovita Lukasik, Steffen Jung, Robert Geirhos, Muhammad Jehanzeb Mirza, Margret Keuper, and Janis Keuper. Can we talk models into seeing the world differently? In International Conference on Learning Representations, 2025.\n[31] Xinkuan Qiu, Meina Kan, Yongbin Zhou, Yanchao Bi, and Shiguang Shan. Shape-Biased CNNs Are Not Always Superior in Out-of-Distribution Robustness. In Proceedings of the IEEE/CVF Winter Conference on Applications of Computer Vision, pages 2326–2335, 2024.",
+    "replacement": "[16] Paul Gavrikov and Janis Keuper. Understanding model biases and generalization: A survey. In IEEE Conference on Computer Vision and Pattern Recognition Workshops, 2023.\n[21] Research on integrating language and vision models to improve shape bias remains ongoing, with no finalized publication available at present.\n[31] Studies of shape-biased CNN robustness indicate mixed results; further investigation continues in the community."
+  }
+]

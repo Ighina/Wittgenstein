@@ -1,0 +1,189 @@
+[
+  {
+    "id": 1,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "medium",
+    "location": "Abstract",
+    "rationale": "The Abstract overstates the model's zero-shot region transfer performance as consistently superior without noting limitations or fine-tuning.",
+    "error_explanation": "The Abstract claims TransferTraj significantly outperforms baselines in zero-shot region transfers without adequately clarifying that some improvements rely on fine-tuning or limited settings, potentially misleading readers about generalizability.",
+    "needs_cross_section": true,
+    "target_find": "Experimental results demonstrate that TransferTraj significantly outperforms state-of-the-art baselines in different scenarios, validating its effectiveness in region and task transfer.",
+    "replacement": "Experimental results show that TransferTraj achieves competitive performance on multiple tasks, often surpassing baselines especially after fine-tuning, although zero-shot transfer results vary and depend on task and dataset specifics."
+  },
+  {
+    "id": 2,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "hard",
+    "location": "Method",
+    "rationale": "Contradictory and inconsistent description of masking and recovery schemes leads to confusion about which modalities are masked and how POI and road network modalities relate.",
+    "error_explanation": "The Method section states spatial masking also masks POI and road network modalities because they are tied to spatial modality, but later recovery losses and examples treat modality masking independently. This inconsistency creates ambiguity about correct masking and recovery, undermining reproducibility.",
+    "needs_cross_section": false,
+    "target_find": "A point with a masked spatial modality is represented as $p_i^{ms} = ([m], t_i, [m], [m])$, where the spatial, POI, and road network modalities are replaced by the special mask token $[m]$. Note that since the POI and road network modalities are linked to the spatial modality, masking the spatial modality necessarily masks these associated modalities as well.",
+    "replacement": "A point with a masked spatial modality is represented as $p_i^{ms} = ([m], t_i, \\mathcal{P}_i, \\mathcal{R}_i)$, where only the spatial modality is replaced by the special mask token $[m]$. The POI and road network modalities remain unmasked to preserve contextual information. Temporal masking only replaces the temporal modality with $[m]$. Trajectory points can also be fully masked by replacing all modalities with $[m]$ tokens."
+  },
+  {
+    "id": 3,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "hard",
+    "location": "Experiments",
+    "rationale": "Performance numbers and variances in Tables show inconsistent or suspiciously low standard deviations implying over-optimistic claims.",
+    "error_explanation": "Several tables report very low standard deviations (e.g., <0.1) across multiple runs without explanation, which is unusual for real-world vehicle trajectory data. Reported gains in zero-shot settings appear exaggerated without sufficient variance information, possibly indicating cherry-picking or incomplete reporting.",
+    "needs_cross_section": false,
+    "target_find": "Table 3: Overall performance of methods on OD TTE.\n\n| Dataset             | Chengdu<br/>RMSE ↓(minutes) | Chengdu<br/>MAE ↓(minutes) | Chengdu<br/>MAPE ↓(%) | Xian<br/>RMSE ↓(minutes) | Xian<br/>MAE ↓(minutes) | Xian<br/>MAPE ↓(%) | Porto<br/>RMSE ↓(minutes) | Porto<br/>MAE ↓(minutes) | Porto<br/>MAPE ↓(%) |\n| ------------------- | --------------------------- | -------------------------- | --------------------- | ------------------------ | ----------------------- | ------------------ | ------------------------- | ------------------------ | ------------------- |\n| RNE                 | 3.663±0.367                 | 3.478±0.406                | 20.236±2.917          | 6.651±1.104              | 5.355±0.990             | 16.817±1.519       | 4.466±0.783               | 2.712±0.219              | 34.261±5.927        |",
+    "replacement": "Table 3: Overall performance of methods on OD TTE.\n\n| Dataset             | Chengdu<br/>RMSE ↓(minutes) | Chengdu<br/>MAE ↓(minutes) | Chengdu<br/>MAPE ↓(%) | Xian<br/>RMSE ↓(minutes) | Xian<br/>MAE ↓(minutes) | Xian<br/>MAPE ↓(%) | Porto<br/>RMSE ↓(minutes) | Porto<br/>MAE ↓(minutes) | Porto<br/>MAPE ↓(%) |\n| ------------------- | --------------------------- | -------------------------- | --------------------- | ------------------------ | ----------------------- | ------------------ | ------------------------- | ------------------------ | ------------------- |\n| RNE                 | 3.663±0.924                 | 3.478±0.812                | 20.236±4.205          | 6.651±2.011              | 5.355±1.741             | 16.817±3.423       | 4.466±1.230               | 2.712±0.662              | 34.261±9.820        |"
+  },
+  {
+    "id": 4,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Unclear details on hyperparameter tuning of baselines and fine-tuning strategies give unfair advantages to TransferTraj.",
+    "error_explanation": "The paper does not transparently report hyperparameter optimization for baseline methods or describe whether baselines are fine-tuned with similar rigor. This creates a bias since TransferTraj is heavily fine-tuned while some baselines like Trembr or START (wo ft) are frozen or under-optimized, thus limiting fair comparisons.",
+    "needs_cross_section": false,
+    "target_find": "For the baseline models, we adopt the optimal hyperparameters as reported in their original papers. All baselines are trained for 50 epochs with an early stopping strategy based on a patience of 10 epochs.",
+    "replacement": "Baseline models are retrained with hyperparameters optimized on validation sets under the same training and early stopping conditions as TransferTraj's training to ensure comparable fine-tuning and performance evaluation."
+  },
+  {
+    "id": 5,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "medium",
+    "location": "Conclusion",
+    "rationale": "The Conclusion claims seamless transferability without retraining, contradicting experimental results where fine-tuning is pivotal for peak performance.",
+    "error_explanation": "While the Conclusion states that TransferTraj can perform various tasks and transfer across regions without retraining, the experiments clearly show that fine-tuning after pre-training yields significant performance gains. This contradiction weakens claims around zero-shot or zero-fine-tuning capabilities.",
+    "needs_cross_section": true,
+    "target_find": "Second, we unify the input-output structure across different tasks to facilitate task transferability. Through a combination of randomly masking and recovering trajectory modalities or entire trajectory points, along with an effective pre-training mechanism, our model seamlessly transfers to various tasks without requiring retraining.",
+    "replacement": "Second, by unifying the input-output structure and leveraging masking and recovery strategies along with pre-training, our model substantially improves transferability across tasks. While it can perform zero-shot predictions, fine-tuning commonly enhances performance in practical applications."
+  },
+  {
+    "id": 6,
+    "corruption_type": "reference_background_fabrication",
+    "difficulty": "easy",
+    "location": "Related Work",
+    "rationale": "Some cited works on trajectory embedding and transferability do not exist or are misattributed.",
+    "error_explanation": "The Related Work section cites several works such as START [15], Trembr [11], TrajCL [1], and MMTEC [22] in ways that appear fabricated or incorrectly attributed, undermining readers' trust in the novelty and contextual grounding.",
+    "needs_cross_section": false,
+    "target_find": "Transferable trajectory learning models primarily employ pre-trained embedding techniques to enable task transferability. Models such as trajectory2vec [40], t2vec [18], Trembr [11], START [15], and MMTEC [22] develop trajectory encoders that map vehicle trajectories into embedding vectors using pre-training techniques like auto-encoding [12] and contrastive learning [3].",
+    "replacement": "Transferable trajectory learning models often utilize pre-training embedding techniques to support task transferability. Representative models include trajectory2vec [40] and t2vec [18], which encode trajectories into embedding vectors, commonly using auto-encoding [12] and contrastive learning [3] strategies."
+  },
+  {
+    "id": 7,
+    "corruption_type": "ethical_integrity_omission",
+    "difficulty": "easy",
+    "location": "Appendix",
+    "rationale": "The paper omits any discussion on ethical considerations or potential data privacy risks from using vehicle GPS data.",
+    "error_explanation": "There is no mention of privacy implications or ethical safeguards when using extensive vehicle GPS trajectory data, which are sensitive and proprietary. Ethical oversight, consent, or privacy-preserving procedures should be stated.",
+    "needs_cross_section": false,
+    "target_find": "Acknowledgment. This work was supported by the Beijing Natural Science Foundation (Grant No. 4242029) and A*STAR RIE2025 Manufacturing, Trade and Connectivity (MTC) Programmatic Fund (M24N6b0043).",
+    "replacement": "Acknowledgment. This work was supported by the Beijing Natural Science Foundation (Grant No. 4242029) and A*STAR RIE2025 Manufacturing, Trade and Connectivity (MTC) Programmatic Fund (M24N6b0043). The data collection and experimental protocols complied with relevant privacy regulations and obtained necessary ethical approvals, which are not further detailed here."
+  },
+  {
+    "id": 8,
+    "corruption_type": "rhetorical_presentation_manipulation",
+    "difficulty": "easy",
+    "location": "Introduction",
+    "rationale": "Some language overly inflates the impact of transferability, making it seem as a near-complete solution.",
+    "error_explanation": "Phrases like “This transferability has two key benefits” and “eliminates the need to retrain” suggest the method completely solves transfer challenges, which is overly promotional and underplays remaining difficulties and residual limitations.",
+    "needs_cross_section": false,
+    "target_find": "This transferability has two key benefits. First, it eliminates the need to retrain and maintain multiple dedicated models, improving overall computational efficiency. Second, transferring a trained model to other regions or tasks with limited training data can be more effective than training from scratch.",
+    "replacement": "Such transferability offers important benefits by reducing, though not entirely eliminating, the need to maintain multiple specialized models. Additionally, transferring models can be more effective in data-scarce scenarios compared to training from scratch, although challenges remain."
+  },
+  {
+    "id": 9,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Method",
+    "rationale": "The pre-training masking strategy lacks detail on how masking ratios and segment sizes were chosen, leaving the protocol ambiguous and non-reproducible.",
+    "error_explanation": "The description of selecting starting/ending points for sub-trajectory masking and masking 40% of segments plus 20% of points is insufficiently justified or parameterized, which could bias the pre-training and make reproducing the task transferability unclear.",
+    "needs_cross_section": false,
+    "target_find": "For the remaining trajectory portions, we further select 20% of the trajectory points and apply either spatial or temporal modality masking. Experiments are conducted on Ubuntu 22.04.",
+    "replacement": "For the remaining trajectory portions, we randomly select 20% of trajectory points to apply spatial or temporal modality masking, with these masking ratios manually tuned based on preliminary experiments balancing coverage and learning difficulty. Detailed hyperparameter sensitivity is discussed in Appendix F."
+  },
+  {
+    "id": 10,
+    "corruption_type": "rhetorical_presentation_manipulation",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "The claim that TransferTraj does not require fine-tuning is contradicted by reported performance drops when not fine-tuned, misleading readers.",
+    "error_explanation": "Section 5.1 states TransferTraj can use pre-training alone without fine-tuning to achieve high performance, but Table 1 and related analysis indicate fine-tuning considerably improves results. This rhetorical choice exaggerates zero-shot capability beyond evidence.",
+    "needs_cross_section": true,
+    "target_find": "By comparison, TransferTraj does not require fine-tuning the learnable model or prediction modules to reach the reported performance. It can be pre-trained once and directly perform different tasks with high performance. This demonstrates its superior task transferability, enabling high efficiency and practical utilization in real-world applications.",
+    "replacement": "While TransferTraj can perform tasks with only pre-training, fine-tuning the model and prediction modules consistently yields superior results. This combination provides a practical balance between transferability and task-specific adaptation."
+  },
+  {
+    "id": 11,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "hard",
+    "location": "Method",
+    "rationale": "Formulations of SC-MoE gating and expert blending omit critical details making the mixture-of-experts implementation unclear and logically incomplete.",
+    "error_explanation": "The mixture-of-experts formula and gating equations lack precise definitions of gating vector constraints and the noise distribution effect, plus how noisy top-K gating balances diversity with training stability. This breaks the logical consistency needed for exact implementation.",
+    "needs_cross_section": false,
+    "target_find": "To prevent the movement patterns from being represented by the same set of experts and to explore better expert combinations in varying contexts, we implement noisy top-K gating [27] before applying\n\nThe Softmax function in the gating network. This mechanism routes each spatial context to the most suitable experts, guided by the gating network, thereby distinguishing movement patterns across different contexts.",
+    "replacement": "To encourage diverse expert utilization and avoid shared expert collapse, we implement noisy top-K gating [27], where a Gaussian noise scaled by a learned softplus factor perturbs gate logits before top-K selection. This stochastic perturbation, combined with softmax normalization, balances expert specialization and training stability."
+  },
+  {
+    "id": 12,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "In the zero-shot transfer tables, transfer results are reported only for trajectory prediction and OD TTE; no zero-shot results or discussion exist for trajectory recovery.",
+    "error_explanation": "The paper explicitly states no zero-shot transfer results are reported for trajectory recovery due to label space differences, but this caveat is not reflected consistently in claims or experimental summaries, leading to misleading impressions about universal zero-shot transferability.",
+    "needs_cross_section": true,
+    "target_find": "In the zero-shot setting, TP and OD TTE baselines are pre-trained on one region and directly applied to other regions. For the TR task, we do not conduct zero-shot transfer experiments, as the baselines rely on multi-classification over road IDs, and the number of roads varies across regions, making direct transfer infeasible.",
+    "replacement": "In the zero-shot setting, only TP and OD TTE tasks are evaluated due to class space inconsistency issues for TR tasks, where varying road IDs prohibit direct cross-region transfer experiments."
+  },
+  {
+    "id": 13,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "In Appendix, the claim that finer sampling intervals improve trajectory recovery performance contradicts some reported high MAE/RMSE values for dense sampling intervals.",
+    "error_explanation": "Tables 8, 9, and 10 show no clear consistent monotonic improvement with denser sampling for recovery tasks, yet narrative implies consistent gains, creating confusion about claim veracity and dataset characteristics.",
+    "needs_cross_section": false,
+    "target_find": "The TR task aims to reconstruct the dense trajectory with a finer sampling interval, given the sparse trajectory. For this task, we define the sampling interval for the dense trajectory as ε and for the sparse trajectory as μ, where μ > ε.",
+    "replacement": "The TR task evaluates recovery under different sparsity ratios, but performance variations are sensitive to local movement complexity and sampling noise. Denser sampling generally aids recovery, though noisy GPS and data heterogeneity can offset gains."
+  },
+  {
+    "id": 14,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Method",
+    "rationale": "The description of the POI and road network modalities uses a pre-trained text embedding model referenced only as a URL, lacking clarity on model selection and training corpus.",
+    "error_explanation": "Section 4.1.1 references a specific URL for a text embedding model without naming or describing it, which impairs reproducibility and creates inconsistency compared to usual practice of citing official pre-trained models explicitly.",
+    "needs_cross_section": false,
+    "target_find": "For the POI and road network modalities, we utilize a pre-trained text embedding model<sup>3</sup> to encode the textual descriptions of POIs and road segments.",
+    "replacement": "For the POI and road network modalities, we encode textual descriptions using a publicly available pre-trained language model (e.g., OpenAI's text-embedding-ada-002) to capture semantic information enabling transferability."
+  },
+  {
+    "id": 15,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "easy",
+    "location": "Experiments",
+    "rationale": "Key hyperparameters of TransferTraj like number of experts C, masking ratios, and model dimensionality are obscurely described or only provided in appendix, reducing transparency.",
+    "error_explanation": "Though appendix tables mention hyperparameter values and sensitivity, key settings of number of SC-MoE experts, masking proportions, and Transformer layers are buried, making it difficult to assess experimental fairness and replication.",
+    "needs_cross_section": false,
+    "target_find": "The three key hyperparameters of TransferTraj and their optimal values are L = 2, d = 128, and C = 8.",
+    "replacement": "The key hyperparameters for TransferTraj are set as L = 2 layers with 128 hidden state dimensions and C = 8 experts in SC-MoE, with masking ratios of 40% segments for point masking and 20% points for modality masking chosen based on ablation."
+  },
+  {
+    "id": 16,
+    "corruption_type": "reference_background_fabrication",
+    "difficulty": "easy",
+    "location": "References",
+    "rationale": "Some references contain minor fabrication like incorrect page numbers or conference years that do not match actual published work.",
+    "error_explanation": "Several references such as [4] and [38] have mismatched conference years, page numbers, or volume information which do not align with official publication records, casting doubt on factual accuracy of the bibliography.",
+    "needs_cross_section": false,
+    "target_find": "[4] Yile Chen, Xiucheng Li, Gao Cong, Zhifeng Bao, Cheng Long, Yiding Liu, Arun Kumar Chandran, and Richard Ellison. Robust road network representation learning: When traffic patterns meet traveling semantics. In CIKM, pages 211–220, 2021.\n\n[38] Bingqi Yan, Geng Zhao, Lexue Song, Yanwei Yu, and Junyu Dong. PreCLN: Pretrained-based contrastive learning network for vehicle trajectory prediction. WWW, 26(4):1853–1875, 2023.",
+    "replacement": "[4] Yile Chen, Xiucheng Li, Gao Cong, Zhifeng Bao, Cheng Long, Yiding Liu, Arun Kumar Chandran, and Richard Ellison. Robust road network representation learning in intelligent transportation systems. In CIKM, pages 213–222, 2020.\n\n[38] Bingqi Yan, Geng Zhao, Lexue Song, Yanwei Yu, and Junyu Dong. PreCLN: A pretrained contrastive learning network for vehicle trajectory prediction. In WWW, pages 1855–1874, 2022."
+  },
+  {
+    "id": 17,
+    "corruption_type": "ethical_integrity_omission",
+    "difficulty": "easy",
+    "location": "Appendix",
+    "rationale": "Limitations section reduces scope to classification tasks and ignores known privacy or fairness issues in GPS trajectory learning.",
+    "error_explanation": "The Limitations section narrowly discusses applicability to cross-region classification only, omitting broader ethical issues such as bias, fairness, or user privacy concerns inherent in trajectory data modeling.",
+    "needs_cross_section": false,
+    "target_find": "## A.1 Limitations\n\nOur work faces challenges in cross-region classification tasks, such as trajectory-user linking or destination road segment prediction, due to the varying number of users and road networks across different regions. Future work will focus on developing a unified framework that enables the model to generalize more effectively across a broader range of tasks.",
+    "replacement": "## A.1 Limitations\n\nWhile our model demonstrates transferability for generative trajectory tasks, it faces challenges in classification scenarios due to region-specific label distributions. Furthermore, issues relating to data privacy, fairness, and potential bias in GPS trajectory data use remain unaddressed and require focused future study."
+  }
+]

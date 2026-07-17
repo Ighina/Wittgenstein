@@ -1,0 +1,145 @@
+[
+  {
+    "id": 1,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Reported FID scores in Table 1 for REG variants seem excessively improved compared to baselines without detailed variance measures or validation splits.",
+    "error_explanation": "Table 1 presents FID improvements for REG that dramatically outperform established baselines and REPA by large margins (e.g., 15.2 vs 24.4 for SiT-B/2 + REG vs + REPA). However, the manuscript does not provide standard deviations, confidence intervals, or multiple runs to establish statistical significance. The unexpectedly large magnitude of improvement over several model scales raises doubts about potential cherry-picking or incomplete reporting of negative results. Without uncertainty quantification or replicated experiments, it's difficult to conclude that the gains are robust or generalizable.",
+    "needs_cross_section": false,
+    "target_find": "| Method       | #Params | Iter. | FID↓ |\n| ------------ | ------- | ----- | ---- |\n| SiT-B/2      | 130M    | 400K  | 33.0 |\n| + REPA       | 130M    | 400K  | 24.4 |\n| + REG (ours) | 132M    | 400K  | 15.2 |\n| SiT-L/2      | 458M    | 400K  | 18.8 |\n| + REPA       | 458M    | 400K  | 9.7  |\n| + REPA       | 458M    | 700K  | 8.4  |\n| + REG (ours) | 460M    | 100K  | 11.4 |\n| + REG (ours) | 460M    | 400K  | 4.6  |\n| SiT-XL/2     | 675M    | 400K  | 17.2 |\n| SiT-XL/2     | 675M    | 7M    | 8.3  |\n| + REPA       | 675M    | 200K  | 11.1 |\n| + REPA       | 675M    | 400K  | 7.9  |\n| + REPA       | 675M    | 1M    | 6.4  |\n| + REPA       | 675M    | 4M    | 5.9  |\n| + REG (ours) | 677M    | 200K  | 5.0  |\n| + REG (ours) | 677M    | 400K  | 3.4  |\n| + REG (ours) | 677M    | 1M    | 2.7  |\n| + REG (ours) | 677M    | 2.4M  | 2.2  |\n| + REG (ours) | 677M    | 4M    | 1.8  |",
+    "replacement": "| Method       | #Params | Iter. | FID↓ |\n| ------------ | ------- | ----- | ---- |\n| SiT-B/2      | 130M    | 400K  | 33.0 |\n| + REPA       | 130M    | 400K  | 24.4 |\n| + REG (ours) | 132M    | 400K  | 21.8 |\n| SiT-L/2      | 458M    | 400K  | 18.8 |\n| + REPA       | 458M    | 400K  | 9.7  |\n| + REPA       | 458M    | 700K  | 8.4  |\n| + REG (ours) | 460M    | 100K  | 17.2 |\n| + REG (ours) | 460M    | 400K  | 9.8  |\n| SiT-XL/2     | 675M    | 400K  | 17.2 |\n| SiT-XL/2     | 675M    | 7M    | 8.3  |\n| + REPA       | 675M    | 200K  | 11.1 |\n| + REPA       | 675M    | 400K  | 7.9  |\n| + REPA       | 675M    | 1M    | 6.4  |\n| + REPA       | 675M    | 4M    | 5.9  |\n| + REG (ours) | 677M    | 200K  | 7.1  |\n| + REG (ours) | 677M    | 400K  | 5.6  |\n| + REG (ours) | 677M    | 1M    | 4.3  |\n| + REG (ours) | 677M    | 2.4M  | 3.8  |\n| + REG (ours) | 677M    | 4M    | 3.3  |"
+  },
+  {
+    "id": 2,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "hard",
+    "location": "Method",
+    "rationale": "Equation (9) defines the alignment loss as averaged over all tokens and blocks, but the text states alignment is only at specific transformer layers, causing inconsistency.",
+    "error_explanation": "In Section 3.2, the alignment loss \\(\\mathcal{L}_{\\text{REPA}}\\) in equation (9) is defined as an average over all projected features \\(N\\) from \\(n=1\\) to \\(N\\). However, the text states that alignment is performed only at specific SiT transformer layers (e.g., layer 4 or 8 depending on model variant). This creates a contradiction: the formula averages over multiple layers or tokens, but the description indicates only one alignment layer is supervised. This inconsistency introduces confusion about the actual training objective and model supervision pipeline, potentially affecting reproducibility.",
+    "needs_cross_section": false,
+    "target_find": "$$\\mathcal{L}_{\\text{REPA}}(\\theta, \\phi) := -\\mathbb{E}_{\\mathbf{x}_*, \\epsilon, t} \\left[ \\frac{1}{N} \\sum_{n=1}^{N} \\mathrm{sim}(\\mathbf{y}_*, h_\\phi(\\mathbf{h}_t^{[n]})) \\right]. \\tag{9}$$\n\nWe perform alignment at specific transformer layers $n$, where $n = 4$ for SiT-B/2 + REG and $n = 8$ for all other variants, maintaining consistency with REPA.",
+    "replacement": "We perform alignment at a single specific transformer layer $n$, where $n = 4$ for SiT-B/2 + REG and $n = 8$ for all other variants, consistent with REPA. The alignment loss is computed as:\n\n$$\\mathcal{L}_{\\text{REPA}}(\\theta, \\phi) := -\\mathbb{E}_{\\mathbf{x}_*, \\epsilon, t} \\left[ \\mathrm{sim}(\\mathbf{y}_*, h_\\phi(\\mathbf{h}_t^{[n]})) \\right]. \\tag{9}$$\n\nHere, the similarity is calculated only at the output of the designated single SiT block, avoiding averaging across multiple layers."
+  },
+  {
+    "id": 3,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "medium",
+    "location": "Abstract",
+    "rationale": "Abstract claims that REG outperforms a model trained 10× longer, which may overstate the significance based on presented data.",
+    "error_explanation": "The Abstract states that \"SiT-L/2 + REG trained for merely 400K iterations outperforms SiT-XL/2 + REPA trained for 4M iterations (10× longer).\" Given the difference in model size and architecture (L/2 vs XL/2), this claim simplifies the comparison and may exaggerate REG's gain without accounting for model capacity differences or other training details. Such overstatements risk misleading readers about the generality and magnitude of improvements. The supporting table data suggests some advantage but does not fully isolate training length as the sole factor or account for variance.",
+    "needs_cross_section": true,
+    "target_find": "SiT-L/2 + REG trained for merely 400K iterations outperforms SiT-XL/2 + REPA trained for 4M iterations (10× longer).",
+    "replacement": "SiT-L/2 + REG trained for 400K iterations achieves comparable FID scores to SiT-XL/2 + REPA trained for 4M iterations, indicating faster convergence despite differences in model size and configuration."
+  },
+  {
+    "id": 4,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Experiments do not report multiple random seeds or show variance in quantitative metrics, risking overfitting to single runs.",
+    "error_explanation": "Throughout the Experiments section, metrics such as FID, IS, precision, and recall are reported as single scalar values without indication of variability or standard deviation from multiple independent runs. This omission reduces confidence in the presented results, as generative models are known to have high variance due to stochastic training and sampling. Proper protocol dictates evaluation over several seeds with means and confidence bands to ensure reported improvements are statistically significant and robust.",
+    "needs_cross_section": false,
+    "target_find": "Tab. 1 provides a detailed comparison between REG, SiT [2], and REPA [1] across multiple model scales on ImageNet 256×256 without CFG. The proposed REG framework consistently achieves the lowest FID scores while substantially accelerating training across all configurations.",
+    "replacement": "Tab. 1 provides a detailed comparison between REG, SiT [2], and REPA [1] across multiple model scales on ImageNet 256×256 without CFG. All metrics report the average and standard deviation over three independent runs with different random seeds. The results indicate consistent trends where REG achieves lower mean FID scores while reducing variance compared to baselines."
+  },
+  {
+    "id": 5,
+    "corruption_type": "rhetorical_presentation_manipulation",
+    "difficulty": "easy",
+    "location": "Introduction",
+    "rationale": "Introduction uses overly promotional expressions exaggerating performance improvements without nuanced discussion.",
+    "error_explanation": "Passages in the Introduction (e.g., \"REG achieves 63× and 23× faster training convergence\", \"Notably, SiT-L/2 + REPA trained for 400K iterations surpasses the performance\") employ strong superlatives and absolute language that amplifies perceived contributions of REG. These phrases lack caveats or contextual factors such as hardware efficiency, data augmentation effects, or model capacity differences that influence outcomes. The tone may bias readers toward unwarranted overestimation of the method's practical benefits.",
+    "needs_cross_section": false,
+    "target_find": "On class-conditional ImageNet benchmarks at 256×256 resolution (see Fig. 2(e)), SiT-XL/2 + REG achieves 63× and 23× faster training convergence compared to SiT-XL/2 and SiT-XL/2 + REPA, respectively. Notably, SiT-L/2 + REPA trained for 400K iterations surpasses the performance of SiT-XL/2 + REPA trained for 4M iterations (see Tab. 1).",
+    "replacement": "On class-conditional ImageNet benchmarks at 256×256 resolution (see Fig. 2(e)), SiT-XL/2 + REG demonstrates faster training convergence rates than SiT-XL/2 and SiT-XL/2 + REPA, measured by equivalent FID thresholds. Additionally, SiT-L/2 + REPA trained for 400K iterations achieves performance comparable to SiT-XL/2 + REPA trained for 4M iterations (see Tab. 1), indicating potential efficiency gains under controlled conditions."
+  },
+  {
+    "id": 6,
+    "corruption_type": "ethical_integrity_omission",
+    "difficulty": "medium",
+    "location": "Appendix",
+    "rationale": "The paper lacks any mention of ethical considerations, data bias, or misuse risks related to synthetic image generation.",
+    "error_explanation": "Despite extensive experimentation with ImageNet generation and semantic representation, the manuscript omits discussion on potential ethical implications such as synthetic data misuse, bias amplification, societal impact, or safeguards to mitigate harmful applications of generative models. Absence of IRB statements or fairness analyses weakens transparency and responsible research practice. Including such disclosures is essential considering the sensitive nature of large-scale generative modeling.",
+    "needs_cross_section": false,
+    "target_find": "5 Conclusion\n\nThis paper presents Representation Entanglement for Generation (REG), a simple and efficient framework that firstly introduces image-class denoising paradigm instead of the current pure image denoising pipeline, which fully unleashes the potential of discriminative gains for generation. REG entangles low-level image latents with a single high-level class token from pretrained foundation models, achieved via synchronized noise injection and spatial concatenation. The denoising process simultaneously reconstructs both image latents and corresponding global semantics, enabling active semantic guidance that enhances generation quality while introducing minimal computational cost through the addition of just one token. Extensive experiments demonstrate REG’s superior performance in generation fidelity, accelerating training convergence, and discriminative semantic learning, validating its effectiveness and scalability.",
+    "replacement": "5 Conclusion\n\nThis paper presents Representation Entanglement for Generation (REG), a simple and efficient framework that introduces an image-class denoising paradigm instead of the current pure image denoising pipeline, which aims to unleash the potential of discriminative gains for generation. REG entangles low-level image latents with a single high-level class token from pretrained foundation models, achieved via synchronized noise injection and spatial concatenation. The denoising process simultaneously reconstructs both image latents and corresponding global semantics, enabling active semantic guidance that enhances generation quality while introducing minimal computational cost through the addition of just one token. Extensive experiments demonstrate REG's performance benefits in generation fidelity, training convergence acceleration, and discriminative semantic learning.\n\nEthical considerations, including potential biases in pretrained foundation models, risks of misuse of synthetic images, and impact on downstream applications, remain important avenues for future investigation. Our work does not address privacy, fairness, or safety concerns inherent to generative modeling, which warrant dedicated study and disclosure."
+  },
+  {
+    "id": 7,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "hard",
+    "location": "Experiments",
+    "rationale": "FID scores in Tab. 16 show REG performing worse than REPA for low epochs but the text phrases REG as superior without explaining this contrast.",
+    "error_explanation": "Table 16 reports FID values at several epochs, indicating that REG achieves higher (worse) FID than REPA at early epochs (e.g., 1.86 vs 1.42 at 80 epochs) before later surpassing it. However, the narrative claims that REG achieves superior training efficiency and convergence across the board without acknowledging this initial underperformance or interpreting the implications. This inconsistency confuses the reader regarding the actual training dynamics and convergence behavior. Precise elaboration on early-stage limitations or convergence curve trends is necessary for coherence.",
+    "needs_cross_section": true,
+    "target_find": "| SiT-XL/2 [2]                                   | 1400   | 2.06 | 4.50  | 270.3 | 0.82   | 0.59  |\n| + REPA                                         | 800    | 1.42 | 4.70  | 305.7 | 0.80   | 0.65  |\n| + REG (ours)                                   | 80     | 1.86 | 4.49  | 321.4 | 0.76   | 0.63  |\n| + REG (ours)                                   | 160    | 1.59 | 4.36  | 304.6 | 0.77   | 0.65  |\n| + REG (ours)                                   | 480    | 1.40 | 4.24  | 296.9 | 0.77   | 0.66  |\n| + REG (ours)                                   | 800    | 1.36 | 4.25  | 299.4 | 0.77   | 0.66  |",
+    "replacement": "| SiT-XL/2 [2]                                   | 1400   | 2.06 | 4.50  | 270.3 | 0.82   | 0.59  |\n| + REPA                                         | 800    | 1.42 | 4.70  | 305.7 | 0.80   | 0.65  |\n| + REG (ours)                                   | 80     | 2.15 | 4.52  | 280.1 | 0.74   | 0.60  |\n| + REG (ours)                                   | 160    | 1.75 | 4.40  | 290.5 | 0.75   | 0.61  |\n| + REG (ours)                                   | 480    | 1.38 | 4.24  | 297.0 | 0.77   | 0.65  |\n| + REG (ours)                                   | 800    | 1.34 | 4.23  | 300.4 | 0.77   | 0.66  |\n\nWhile REG initially exhibits higher FID scores at early epochs compared to REPA, it surpasses REPA upon prolonged training, indicating a training stability trade-off that merits further analysis."
+  },
+  {
+    "id": 8,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "hard",
+    "location": "Method",
+    "rationale": "The role and tuning of hyperparameters β and λ are insufficiently explained, posing reproducibility difficulties.",
+    "error_explanation": "Section 3.2 introduces two weighting hyperparameters: β, controlling the relative weighting between velocity prediction losses for the class token versus latents, and λ, governing the alignment loss weight relative to prediction. The manuscript provides sparse guidance on how these values are chosen or tuned. The interaction and sensitivity of final performance to these hyperparameters is unclear, undermining reproducibility and independent verification. Ablation studies partially address β but omit λ. Clearer exposition of their effects and recommended settings would improve rigor.",
+    "needs_cross_section": false,
+    "target_find": "The prediction loss is formulated as:\n$$\\mathcal{L}_{\\text{pred}} = \\mathbb{E}_{\\mathbf{x}_*, \\epsilon, t} \\left[ \\|\\mathbf{v}(\\mathbf{z}_t, t) - \\dot{\\alpha}_t \\mathbf{z}_* - \\dot{\\sigma}_t \\epsilon_z\\|^2 + \\beta \\|\\mathbf{v}(\\mathbf{cls}_t, t) - \\dot{\\alpha}_t \\mathbf{cls}_* - \\dot{\\sigma}_t \\epsilon_{cls}\\|^2 \\right], \\tag{10}$$\nwhere $\\mathbf{v}(\\cdot, t)$ is the velocity prediction function, and $\\beta > 0$ controls the relative weighting between the image latents and class-token denoising objectives. The final training loss integrates both prediction and alignment objectives, where $\\lambda > 0$ governs the relative weight of the alignment loss compared to the denoising loss. Specifically, the total loss $\\mathcal{L}_{\\text{total}}$ is formulated as:\n$$\\mathcal{L}_{\\text{total}} = \\mathcal{L}_{\\text{pred}} + \\lambda \\mathcal{L}_{\\text{REPA}}. \\tag{11}$$",
+    "replacement": "The prediction loss is formulated as:\n$$\\mathcal{L}_{\\text{pred}} = \\mathbb{E}_{\\mathbf{x}_*, \\epsilon, t} \\left[ \\|\\mathbf{v}(\\mathbf{z}_t, t) - \\dot{\\alpha}_t \\mathbf{z}_* - \\dot{\\sigma}_t \\epsilon_z\\|^2 + \\beta \\|\\mathbf{v}(\\mathbf{cls}_t, t) - \\dot{\\alpha}_t \\mathbf{cls}_* - \\dot{\\sigma}_t \\epsilon_{cls}\\|^2 \\right], \\tag{10}$$\nwhere $\\mathbf{v}(\\cdot, t)$ is the velocity prediction function, and $\\beta > 0$ controls the relative weighting between the image latents and class-token denoising objectives. Selection of $\\beta$ critically affects learning stability and semantic guidance strength; we conduct extensive hyperparameter tuning to identify $\\beta=0.03$ as a robust choice (see Sec. 4.3).\n\nSimilarly, the overall loss balances denoising and alignment terms:\n$$\\mathcal{L}_{\\text{total}} = \\mathcal{L}_{\\text{pred}} + \\lambda \\mathcal{L}_{\\text{REPA}}, \\tag{11}$$\nwhere $\\lambda$ modulates the influence of representation alignment. Empirically, we set $\\lambda=0.5$ based on validation experiments to optimize semantic alignment without overfitting. These hyperparameters are critical for effective training and require careful tuning for different model sizes or datasets."
+  },
+  {
+    "id": 9,
+    "corruption_type": "reference_background_fabrication",
+    "difficulty": "medium",
+    "location": "Related Work",
+    "rationale": "Citations for REPA-E and related method extensions are partially fabricated or lack exact publication records.",
+    "error_explanation": "The manuscript references REPA-E [21] and attributes to it the ability to perform end-to-end VAE tuning and improved semantic alignment. However, the cited paper is not available in major repositories as described, nor is it formally peer-reviewed or widely indexed. This raises concerns over fabricated or non-existent references being presented as authoritative prior work, which undermines scholarly integrity by obfuscating the novelty and situating the contribution inaccurately.",
+    "needs_cross_section": false,
+    "target_find": "Recent studies demonstrate that enhanced generative models can acquire more discriminative representations, positioning them as capable representation learners [20, 1, 21]. However, as quantified by CKNNA metrics [22], these features still underperform compared to those from pretrained vision models [23, 24, 25]. This performance gap has motivated approaches leveraging pretrained visual encoder features to accelerate generative model training convergence. For example, REPA [1] employs implicit feature-space alignment between diffusion models and foundation vision models (see Fig. 2(a)), while REPA-E [21] extends this alignment by enabling end-to-end VAE tuning, and quantitatively demonstrates that enhanced alignment, via increased CKNNA scores, directly improves generation fidelity.",
+    "replacement": "Recent studies demonstrate that enhanced generative models can acquire more discriminative representations, positioning them as capable representation learners [20, 1]. However, as quantified by CKNNA metrics [22], these features still underperform compared to those from pretrained vision models [23, 24, 25]. This performance gap has motivated approaches leveraging pretrained visual encoder features to accelerate generative model training convergence. For example, REPA [1] employs implicit feature-space alignment between diffusion models and foundation vision models (see Fig. 2(a))."
+  },
+  {
+    "id": 10,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Table 6 shows ablation with entanglement but no alignment yielding large performance gains, which contradicts established knowledge about representation learning needing explicit supervision.",
+    "error_explanation": "Table 6 indicates that merely adding class token entanglement without representation alignment improves FID from 33.0 to 26.67 for DINOv2-B, a substantial 19% gain. This is unexpected because entanglement without explicit supervision or alignment should not meaningfully shape the model latent space or foster discriminative learning. Such large improvements without corresponding training objectives or architectural changes suggest data inconsistencies, inadequate controls, or selective reporting. This challenges the causal interpretations made about semantic guidance effectiveness.",
+    "needs_cross_section": false,
+    "target_find": "| Method         | Class token | FID↓  | sFID↓ | IS↑   |\n| -------------- | ----------- | ----- | ----- | ----- |\n| SiT-B/2        | -           | 33.0  | 6.46  | 43.70 |\n| + Entanglement | CLIP-L      | 32.05 | 6.76  | 47.61 |\n|                | DINOv2-B    | 26.67 | 6.88  | 59.37 |\n|                | DINOv2-L    | 30.16 | 6.91  | 52.86 |",
+    "replacement": "| Method         | Class token | FID↓  | sFID↓ | IS↑   |\n| -------------- | ----------- | ----- | ----- | ----- |\n| SiT-B/2        | -           | 33.0  | 6.46  | 43.70 |\n| + Entanglement | CLIP-L      | 31.8  | 6.63  | 46.5  |\n|                | DINOv2-B    | 29.9  | 6.79  | 52.3  |\n|                | DINOv2-L    | 30.0  | 6.85  | 51.0  |"
+  },
+  {
+    "id": 11,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "medium",
+    "location": "Conclusion",
+    "rationale": "Conclusion claims that REG 'fully unleashes' discriminative gains, implying complete resolution, which is an exaggeration beyond evidenced results.",
+    "error_explanation": "The Conclusion states REG “fully unleashes the potential of discriminative gains for generation,” suggesting that this method completely addresses integration challenges of discriminative semantic guidance in diffusion training. This overgeneralizes experimental findings, which demonstrate improvements but still indicate remaining limitations and room for improvement in semantic consistency and generation quality under different conditions. Such absolutes risk misleading readers on the true scope and limitations of the work. More measured language would better reflect incremental progress.",
+    "needs_cross_section": false,
+    "target_find": "This paper presents Representation Entanglement for Generation (REG), a simple and efficient framework that firstly introduces image-class denoising paradigm instead of the current pure image denoising pipeline, which fully unleashes the potential of discriminative gains for generation.",
+    "replacement": "This paper presents Representation Entanglement for Generation (REG), a simple and efficient framework that introduces an image-class denoising paradigm as an initial step towards better leveraging discriminative information in diffusion generation pipelines."
+  },
+  {
+    "id": 12,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "The textual description in 4.2 about computational cost claiming a tiny overhead contrasts with the reported increase in parameters and latency that may be non-negligible in practice.",
+    "error_explanation": "Section 4.2 reports REG adds +0.30% parameters and +0.49% latency compared to REPA, claiming these increases are \"negligible.\" However, when model scales reach hundreds of millions of parameters and latency around 6 seconds per sample, even fractional increases may result in significant absolute resource and cost differences, especially in deployment settings. The presentation de-emphasizes potential practical impacts on efficiency and hardware utilization, creating a mismatch between high-level claims and realistic scenarios. Transparent discussion on absolute overhead would improve clarity.",
+    "needs_cross_section": false,
+    "target_find": "Computational cost comparison. We compare the computational efficiency of REG and REPA under the same model scale (SiT-XL/2) in Tab. 4. REG introduces only a marginal increase in parameter count (+0.30%) and FLOPs (+0.38%) relative to REPA, while maintaining nearly identical latency (6.21s vs. 6.18s, +0.49%). Despite the minimal computational overhead, REG yields substantial improvements in generation quality, achieving a 56.46% relative reduction in FID, alongside a 50.19% increase in IS.",
+    "replacement": "Computational cost comparison. We compare the computational efficiency of REG and REPA under the same model scale (SiT-XL/2) in Tab. 4. REG introduces an increase in parameter count (+0.30%) and FLOPs (+0.38%) relative to REPA, alongside a latency rise from 6.18s to 6.21s per sample (+0.49%). While these overheads are modest proportionally, their absolute impact could be non-negligible in large-scale deployment scenarios. Nonetheless, REG yields improvements in generation quality, achieving a substantial FID reduction and IS increase."
+  },
+  {
+    "id": 13,
+    "corruption_type": "rhetorical_presentation_manipulation",
+    "difficulty": "easy",
+    "location": "Abstract",
+    "rationale": "Overly strong promotional language inflates ease and degree of improvement without equivocation.",
+    "error_explanation": "The Abstract claims that training diffusion transformers \"Is Much Easier Than You Think,\" with implications of dramatically simplified training due to REG. This framing uses sensational and promotional language rather than neutral scientific expression. Such style can bias perceptions, reduce cautious interpretation, and compromise scholarly tone, especially without equally emphasizing method limitations or realistic scope of improvements.",
+    "needs_cross_section": false,
+    "target_find": "Representation Entanglement for Generation: Training Diffusion Transformers Is Much Easier Than You Think",
+    "replacement": "Representation Entanglement for Generation: Leveraging Pretrained Semantic Tokens to Improve Diffusion Transformer Training"
+  }
+]

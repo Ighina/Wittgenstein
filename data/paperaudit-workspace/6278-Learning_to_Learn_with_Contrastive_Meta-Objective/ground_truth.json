@@ -1,0 +1,167 @@
+[
+  {
+    "id": 1,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Cherry-picks and misreports evaluation results, omitting failure cases to exaggerate improvement.",
+    "error_explanation": "In the reported few-shot image classification results (Section 4.1, Table on Block #19), only select performance improvements with ConML are shown without variance reduction or failure cases. Performance metrics appear inflated with unusually low variance, suggesting cherry-picking or omission of negative or unreproduced results. This compromises the reliability and objectivity of the performance claims.",
+    "needs_cross_section": false,
+    "target_find": "Table 2 shows the results on miniImageNet and tieredImageNet respectively. We use a common configuration for ConML’s hyperparameters for all meta-learners: task batch size B = 32, inner-task sampling K = 1, and πκ(Dτ^tr ∪ Dτ^val) = Dτ^tr, φ(a, b) = 1 − a · b / (||a|| ||b||), and λ = 0.1. Other hyperparameters related to model architecture and training procedures remain consistent with the original meta-learners. This demonstrates that boosted performance can be achieved even without specific hyperparameter tuning for different meta-learners. The performance improvement shows that ConML offers universal gains across different meta-learning algorithms. Note that performance between different algorithms is not comparable. We also show ConML’s consistent benefit on different backbone sizes in Appendix F.",
+    "replacement": "Table 2 presents selected results where ConML improves performance on miniImageNet and tieredImageNet. However, we exclude several baselines and extensive negative cases where ConML fails to yield significant gains or degrades performance. The choice of hyperparameters was optimized post-hoc for strongest-performing setups. Variance estimates are optimistic as some runs with large fluctuations were excluded. A full sweep including cases with no improvement is in Appendix F. These limitations imply that while ConML can help in certain conditions, its benefits are not universal or guaranteed."
+  },
+  {
+    "id": 2,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "hard",
+    "location": "Method",
+    "rationale": "Inconsistent treatment and unclear definition of model representation ψ, with conflicting statements on how ψ is constructed and used.",
+    "error_explanation": "Section 3.1 and 3.3 define the projection function ψ from model space to vector representations but inconsistently specify its form for various meta-learners. Table 1 and subsequent paragraphs provide partially conflicting descriptions, especially for ICL where explicit model weights are not feasible but a dummy input vector is used instead. The lack of explicit unified definition makes it unclear how distances are meaningfully computed within the contrastive loss.",
+    "needs_cross_section": false,
+    "target_find": "To form a learner-agnostic framework, we introduce a projection function ψ : H → ℝ^d to obtain the model representations e = ψ(h). The details of H and ψ will be specified in Section 3.3.\n...\nWith In-Context Learning (ICL). An ICL model makes task-specific predictions by g([𝒟̄, x]; θ), where g is a sequential model and 𝒟̄ is the sequentialized 𝒟 (prompt), [x1, y1, ···, xm, ym]. The details are in Appendix D. Note that ICL does not specify an explicit output model h(x) = g(𝒟; θ)(x); instead, this procedure exists only implicitly through the feed-forwarding of the sequence model. Thus, obtaining the representation ψ(g(𝒟; θ)) by explicit model weights of h is not feasible for ICL. To represent what g learns from 𝒟, we incorporate 𝒟̄ with a dummy input u, which functions as a probe and whose corresponding output can be read out as the representation:\n\nψ(g(𝒟; θ)) = g([𝒟̄, u]; θ), (4)",
+    "replacement": "The projection function ψ : 𝓗 → ℝ^d serves as a meta-learner–dependent mapping from models to fixed-length vectors. For optimization-based learners, ψ extracts adapted weights post gradient steps; for metric-based methods, it concatenates class prototypes; for amortization-based learners, ψ outputs the hypernetwork parameters. For ICL models, lacking explicit weights, ψ is defined by forward passing a fixed dummy input appended to the prompt sequence to probe the implicit task representation, i.e., ψ(g(𝒟; θ)) = g([𝒟̃, u]; θ). This diverse but not formally unified definition complicates consistent metric design and raises concerns about comparability and validity of distances computed between heterogeneous representations for different meta-learners."
+  },
+  {
+    "id": 3,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Evaluation protocols introduce asymmetry by using meta-training statistics without reporting meta-test computational costs and omit details about baseline tuning.",
+    "error_explanation": "In Section 4.1 and 4.2, experiments report only meta-training parameters for hyperparameters like batch size, subset sampling, and λ, reusing them for all meta-learners without further tuning at meta-test. This ignores possible disadvantages for baselines that might require different tuning. Also, computational cost is only indirectly discussed without thorough profiling during meta-testing phases, leading to potential unfairness favoring ConML. These omissions hinder fair comparison and reproducibility.",
+    "needs_cross_section": false,
+    "target_find": "We use a common configuration for ConML’s hyperparameters for all meta-learners: task batch size B = 32, inner-task sampling K = 1, and πκ(Dτ^tr ∪ Dτ^val) = Dτ^tr, φ(a, b) = 1 − a · b / (||a|| ||b||), and λ = 0.1. Other hyperparameters related to model architecture and training procedures remain consistent with the original meta-learners. This demonstrates that boosted performance can be achieved even without specific hyperparameter tuning for different meta-learners.",
+    "replacement": "We fixed ConML's hyperparameters across all meta-learners (e.g., batch size B = 32, inner-task sampling K = 1, cosine distance for φ, λ = 0.1) without tailoring per algorithm or dataset. Baselines used their original hyperparameters but were not re-tuned to optimize under identical computational budgets or early stopping criteria, potentially disadvantaging them. Moreover, no meta-test runtime or compute usage profiling was performed, raising concerns about fair resource accounting during inference deployment."
+  },
+  {
+    "id": 4,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "medium",
+    "location": "Abstract",
+    "rationale": "Overstates the universal applicability and significant boost claims without nuance or limits.",
+    "error_explanation": "The Abstract asserts that ConML “brings significant boost in performance with small implementation cost” and “integrates seamlessly” with existing meta-learners and in-context learning models. These claims are overstated relative to the experimental scope that focuses on classification and selected functions with fixed settings. Limitations in scope, potential failures, and computational overheads are neither acknowledged nor hedged, inflating perceived contributions beyond what evidence fully supports.",
+    "needs_cross_section": false,
+    "target_find": "We demonstrate that ConML integrates seamlessly with existing meta-learners, as well as in-context learning models, and brings significant boost in performance with small implementation cost.",
+    "replacement": "We demonstrate that ConML can be integrated with a range of meta-learning algorithms and in-context learning models, showing improvements on benchmark tasks in our experiments. These enhancements come with additional computational requirements and implementation complexity, and gains may vary by setting."
+  },
+  {
+    "id": 5,
+    "corruption_type": "ethical_integrity_omission",
+    "difficulty": "easy",
+    "location": "Discussion",
+    "rationale": "Omission of discussion on limitations or possible ethical impacts related to training costs or biases.",
+    "error_explanation": "The Discussion section (Block #35) describes ConML’s additional training cost only as moderate and indelible but omits any consideration of environmental impact, energy consumption, fairness, or potential bias amplification. Given the added training overhead and use of synthesized meta-tasks, the lack of ethical commentary undermines transparency about possible trade-offs in responsible AI development.",
+    "needs_cross_section": false,
+    "target_find": "The cost of ConML is additional training cost, as discussed in Section 4.3.1, which is moderate but indelible within such a framework. The current implementation of ConML is relatively primitive; as discussed in Section 4.3.2, there are many directions for further improvement, such as optimizing sampling strategies, task scheduling, refining the contrastive strategy, and tailoring model representations and distance metrics.",
+    "replacement": "The cost of ConML includes additional training overhead, raising concerns about increased energy consumption and potential environmental impact, which warrant consideration when applying ConML at scale. Furthermore, although ConML may improve generalization, it could also amplify biases present in meta-training tasks or influence fairness in downstream applications. Explicit bias analysis and ethical evaluation remain important future directions."
+  },
+  {
+    "id": 6,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "hard",
+    "location": "Method",
+    "rationale": "Formal theorem statements omit assumptions and contain ambiguous notation impairing reproducibility and correctness.",
+    "error_explanation": "Section 3.2 presents Lemma 1 and Theorem 1 claiming that minimizing the contrastive objective L_c reduces the generalization error upper-bound universally. However, key assumptions such as model smoothness, data distribution properties, or meta-learner hypothesis space constraints are omitted. Notation mixing vectors and probabilities without rigorous definitions impairs clarity. This theoretical framing is overly strong and potentially unproven as stated.",
+    "needs_cross_section": false,
+    "target_find": "Lemma 1. Denote U_{p(τ)}(θ) = C_1 √( sup_{||v||≤1} E_{τ∼p(τ)} E_{(x,y)∼τ} [ ⟨v, g({(x, y)}; θ)⟩^2 ] ) + C_2. There exist positive constants C_1, C_2 not related to θ, satisfying ∀θ, Δ_{ε_{p(τ)}}(θ) ≤ U_{p(τ)}(θ).\n\nGiven contrastive meta-objective L_c as defined above, we then have the following theorem:\n\nTheorem 1. ∀p(τ), U_{p(τ)}(θ*_{L_c}) = min_θ U_{p(τ)}(θ), where θ*_{L_c} = arg min_θ L_c(g(·; θ), p(τ)).\n\nThis means the contrastive meta-objective can exactly serve as a surrogate objective of the worst-case meta-testing performance, as described in the above theorem. Note that this holds for any p(τ) and g, which indicates the problem- and learner-agnostic benefit of ConML. The proof is in Appendix B.",
+    "replacement": "Lemma 1. Under standard regularity conditions on the meta-learner g(·; θ) and boundedness of the model representations, there exist constants C_1, C_2 such that the excess risk Δ_{ε_{p(τ)}}(θ) is upper-bounded by U_{p(τ)}(θ) defined in terms of second-order moments over model outputs. Theorem 1. Minimizing the contrastive meta-objective L_c(g(·; θ), p(τ)) approximately minimizes U_{p(τ)}(θ), reducing this upper bound on excess risk. These results rely on assumptions detailed in Appendix B including continuity, compactness, and symmetric distribution of model outputs. Thus, the contrastive objective provides a surrogate for worst-case meta-test error under suitable conditions."
+  },
+  {
+    "id": 7,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Misreports hyperparameter tuning impact by showing only parts of effects or unreported negative tuning results.",
+    "error_explanation": "Section 4.3 (Blocks #22–#25) shows the effect of varying subset sampling count K and contrastive loss variants. While increases in K or use of InfoNCE variant are reported as beneficial, only partial results for select hyperparameter values are shown without variance or failure modes. Negative results where performance degrades or overfitting occurs are excluded. This selective reporting can mislead readers about robustness and stability of hyperparameter choices.",
+    "needs_cross_section": false,
+    "target_find": "Table 4 presents the results of varying the number of subset samples K. Starting from K = 1, we observe moderate performance growth as K increases, while memory usage grows linearly with K. Notably, there is a significant discrepancy in both performance and memory (approximately ~2x) between the configurations without ConML and with K = 1. However, K has a negligible impact on time efficiency, assuming sufficient memory, as the processes are independent and can be executed in parallel.[Block #24...]Here, we explore various design factors of the contrastive loss. ConML optimizes the following objective: L_ConML = L_e + λ L_c. In the previous sections, to highlight our motivation and perform a decoupled analysis, we used the naive contrastive loss L_c = d^in − d^out, with the natural cosine distance φ(x, y). Here, we consider the distance function φ as Euclidean distance, the contrastive loss L_c replaced by InfoNCE, and we analyze the effect of different values of λ.",
+    "replacement": "Table 4 shows partial results for varying subset samples K, but omitted are cases where larger K negatively impacted performance, potentially due to overfitting or training instability. Memory usage scaled linearly as expected, but time per epoch increased unexpectedly for some settings due to hardware constraints. In exploration of contrastive loss design, the InfoNCE variant provided better average performance; however, some runs with high λ caused severe degradation, likely due to overpowering the primary loss. Full hyperparameter tuning results including failures are in the supplementary material."
+  },
+  {
+    "id": 8,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "medium",
+    "location": "Abstract",
+    "rationale": "Abstract claims full universality but methods and experiments show applicability only for episodic mini-batch training meta-learners.",
+    "error_explanation": "The Abstract claims ConML is problem- and learner-agnostic, implying full generality. However, in Method and Experiments, ConML depends critically on the mini-batch episodic meta-training framework and intrinsic task identity information. It is unclear or impossible to apply ConML to meta-learners that do not follow this episodic framework or lack explicit task identities. This mismatch between abstract claim and method scope creates an incoherence between the global narrative and detailed content.",
+    "needs_cross_section": true,
+    "target_find": "Meta-learning enables learning systems to adapt quickly to new tasks, similar to humans. Different meta-learning approaches all work under/with the mini-batch episodic training framework. Such framework naturally gives the information about task identity, which can serve as additional supervision for meta-training to improve generalizability. We propose to exploit task identity as additional supervision in meta-training, inspired by the alignment and discrimination ability which is intrinsic in human’s fast learning. This is achieved by contrasting what meta-learners learn, i.e., model representations. The proposed ConML is evaluating and optimizing the contrastive meta-objective under a problem- and learner-agnostic meta-training framework. We demonstrate that ConML integrates seamlessly with existing meta-learners, as well as in-context learning models, and brings significant boost in performance with small implementation cost.",
+    "replacement": "Meta-learning enables learning systems to adapt quickly to new tasks, often through episodic training frameworks that provide task identity information as supervision. We propose to exploit task identity as additional supervision within such frameworks by contrasting learned model representations to improve generalization. The proposed ConML operates within mini-batch episodic meta-training and applies to a range of episodic meta-learners and in-context learning models. We show that ConML can improve performance with modest additional implementation complexity, though its applicability is limited to learners with episodic task-based training."
+  },
+  {
+    "id": 9,
+    "corruption_type": "reference_background_fabrication",
+    "difficulty": "easy",
+    "location": "Related Work",
+    "rationale": "Misattribues or fabricates prior work claims to overstate novelty and obscure related methods.",
+    "error_explanation": "The Related Work section claims no true counterpart to ConML exists, yet discusses several papers claiming only partial similarities or special cases of ConML. Some references presented as problem-agnostic or learner-agnostic prior contrastive meta-learning works are mischaracterized or not fully representative (e.g., [18], which narrowly targets neural processes). This selective citation favors bolstering novelty while misrepresenting prior art’s capabilities and limits, undermining scholarly completeness.",
+    "needs_cross_section": false,
+    "target_find": "There are existing works that attempt to leverage task-identity information in meta-learning, but no counterpart for ConML. We discuss them in two categories: (i) The first category uses problem-specific information, while ConML uses problem-agnostic information and thus can be plugged into these methods and bring improvement. They primarily focus on the few-shot image classification problem [12, 19, 33] and require a static pool of base classes for meta-training and class-level alignment [51, 13, 54, 42, 49]. These problem-specific approaches are limited by their focus on few-shot classification and cannot effectively handle dynamic or diverse tasks, nor can they generalize to other meta-learning problems beyond classification. As such, they are not directly comparable with ConML. However, ConML can be integrated into these methods. Although they introduce new objectives other than validation loss via additional modules or steps, they all work within the general mini-batch episodic training framework, either by replacing the steps to obtain L_e in Algorithm 1 with their steps to obtain episodic loss, or by introducing additional steps outside Algorithm 1. We demonstrate in Section 4.1 that incorporating ConML leads to performance gains. (ii) The second category includes works that are learner-specific but not problem-specific. For example, [18] and [27] explore contrastive representations for neural processes. However, their methods are tightly coupled with specific meta-learners that involve explicit model representation vectors, which can be seen as special cases of ConML within amortization-based meta-learners.",
+    "replacement": "Several prior works leverage task identity or contrastive objectives in meta-learning, but typically are more specialized or limited than ConML. For instance, some focus solely on few-shot image classification with fixed class pools and static alignment losses [12, 19, 33], limiting dynamic task handling and broader applicability. Other works like [18], which develop contrastive representations for neural processes, depend heavily on learner-specific structures, lacking the universality claimed here. While these methods provide inspiration, none generalize comprehensively across all episodic meta-learning paradigms as ConML aims to."
+  },
+  {
+    "id": 10,
+    "corruption_type": "rhetorical_presentation_manipulation",
+    "difficulty": "easy",
+    "location": "Conclusion",
+    "rationale": "Uses overly absolute and promotional language inflating perceived contribution.",
+    "error_explanation": "The conclusion (Section 6) uses phrases like \"consistently and significantly enhances\", \"demonstrating how ConML can be effectively integrated\", and \"reflect the inherency of alignment and discrimination\", which overstate the evidence. The language is unnecessarily strong and promotional without sufficient caveats or recognition of limitations, giving an unrealistic impression of problem resolution and the practical impact of the approach.",
+    "needs_cross_section": false,
+    "target_find": "Empirical results show that ConML consistently and significantly enhances meta-learning performance by improving the meta-learner’s fast adaptation and task-level generalization abilities. Additionally, we explore in-context learning by reformulating it within the meta-learning paradigm, demonstrating how ConML can be effectively integrated to boost performance.\n\nThe primary contribution of ConML is offering a universal framework built on the general meta-learning setting and training procedure, to reflect the inherency of alignment and discrimination as a meta-training objective and the efficacy of learning to learn with contrasting model representations.",
+    "replacement": "Empirical results indicate that ConML can improve meta-learning performance by enhancing aspects of fast adaptation and task-level generalization under certain scenarios. We also explore its integration with in-context learning framed as meta-learning, though further work is needed to assess practical applicability. ConML proposes a potentially useful framework leveraging alignment and discrimination in meta-training objectives, but its generality and effectiveness require more thorough evaluation."
+  },
+  {
+    "id": 11,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "medium",
+    "location": "Method",
+    "rationale": "Unclear and incomplete definitions of sampling strategy π_κ for subsets used for inner-task distance calculations.",
+    "error_explanation": "In Section 3.1, the inner-task distance d^{in} is computed over K subsets κ_k sampled from the combined dataset (D^{tr} ∪ D^{val}) using sampling strategy π_κ, but the procedure and properties of π_κ are left vague. It is also not specified how overlaps or sizes are controlled and whether subsets fully represent task distribution variations. This ambiguity hinders reproducibility and may affect validity of the contrastive training.",
+    "needs_cross_section": false,
+    "target_find": "The inner-task distance d_τ^{in} for each task τ is computed as:\nd_τ^{in} = (1/K) · ∑_{k=1}^K φ(e_τ^{κ_k}, e_τ^*), s.t. κ_k ∼ π_κ(D_τ^{tr} ∪ D_τ^{val}), (1)\nwhere {κ_k}_{k=1}^K are K subsets sampled from D_τ^{tr} ∪ D_τ^{val} using a specific sampling strategy π_κ.",
+    "replacement": "The subsets κ_k used to compute d_τ^{in} are sampled by π_κ, which selects subsets from D_τ^{tr} ∪ D_τ^{val} with specified size and distribution characteristics to capture representative variability within task data. However, π_κ is not rigorously defined, leaving unclear how subset sizes, overlap, and sampling bias are controlled. Further specification and justification of π_κ choices are necessary to ensure meaningful alignment measurement and reproducibility of the method."
+  },
+  {
+    "id": 12,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Reported ICL results are only synthetic and do not reflect performance on real pretrained or large-scale language models as claimed.",
+    "error_explanation": "Section 4.4 and Figure 3 report improvements when integrating ConML with ICL on synthetic function learning tasks using GPT-2-like transformers trained from scratch. However, claims implying ConML's applicability to real-world pretrained large language models or large-scale natural language benchmarks (e.g., as stated in Abstract and Introduction) are not substantiated by experiments. This inconsistency creates a misleading narrative about the generalization to practical LLM use cases.",
+    "needs_cross_section": true,
+    "target_find": "Figure 3 shows the performance, where ICL w/ ConML always makes more accurate predictions than ICL w/o ConML. Table 5 shows the two values to show the effect ConML brings to ICL: Rel. Min. Error is ICL w/ ConML’s minimal inference error given different number of examples, divided by ICL’s; and Shot Spare is when ICL w/ ConML obtains an error no larger than ICL’s minimal error, the difference between the corresponding example numbers. One can observe significant improvement. The effect of ConML on ICL is without loss of generalizability to real-world applications like pretrained LLMs.",
+    "replacement": "Figure 3 reports results on synthetic regression and classification functions using relatively small GPT-2-like transformers trained from scratch with and without ConML-enhanced ICL. While performance improvements are observed in these controlled settings, we do not provide experiments demonstrating benefits on real-world pretrained large language models or natural language benchmarks. Thus, claims about applicability to pretrained LLMs remain speculative and require further validation."
+  },
+  {
+    "id": 13,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "easy",
+    "location": "Experiments",
+    "rationale": "Incomplete ablation: performance benefits attributed to ConML are not sufficiently isolated from architectural or backbone changes.",
+    "error_explanation": "In several experiments (Section 4.1 and Appendix F), changes in backbone architecture or feature extractors coincide with ConML integration. Attributing performance gains solely to ConML is therefore confounded by changes in network architecture, training data preprocessing, or pretraining regimes. Without careful ablation controlling these variables, the claims of performance gains from ConML lack sufficient isolation.",
+    "needs_cross_section": false,
+    "target_find": "We also show ConML’s consistent benefit on different backbone sizes in Appendix F.",
+    "replacement": "The reported improvements with ConML coincide with varying backbone sizes and architectures across meta-learners (e.g., Conv4, ResNet12, ResNet18, ViT-base), potentially confounding attribution of gains. We do not exhaustively control for these factors, so some observed benefits may derive from backbone changes or training details rather than solely from ConML’s contrastive objective. Controlled ablations isolating such effects are necessary."
+  },
+  {
+    "id": 14,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Misreads subtle trends in hyperparameter sensitivity and overgeneralizes robustness claims.",
+    "error_explanation": "In Section 4.3.2 and Figure 2, the effects of varying the contrastive loss weight λ are described as showing \"significant improvements across a considerable range\" and \"InfoNCE outperforms naive contrastive strategy.\" However, reported results reveal that high λ causes model collapse, and some distance metrics perform poorly for certain meta-learners, indicating sensitivity and fragility. Presenting these as broad successes glosses over important practical tuning difficulties and limited robustness.",
+    "needs_cross_section": false,
+    "target_find": "We observe that ConML can significantly improve the performance of meta-learners across a considerable range of λ, though setting λ too high can lead to model collapse by overshadowing the original meta-learning objective. The choice of distance function varies between algorithms, with some performing better with specific functions. Additionally, InfoNCE outperforms the naive contrastive strategy, offering greater potential and reduced sensitivity to hyperparameters.",
+    "replacement": "Our experiments show that while moderate λ values can improve performance, overly large λ causes training instability and degradation, highlighting significant hyperparameter sensitivity. The impact of distance function choice is highly dependent on meta-learner and task, with some exhibiting poor performance under ill-fitting metrics. Although InfoNCE tends to perform better than the naive contrastive loss, its advantage is not universal, and careful tuning remains critical."
+  },
+  {
+    "id": 15,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Selective reporting of metric values without error bars or confidence intervals undermines statistical validity.",
+    "error_explanation": "Across the reported tables (e.g., Table 2, Table 3, Table 5), means are presented with small standard deviations but without confidence intervals or statistical significance testing. There is no reporting on the number of random seeds or independent trials, nor whether differences are statistically meaningful. This selective and limited statistical reporting risks overconfidence in gains and undermines reproducibility.",
+    "needs_cross_section": false,
+    "target_find": "Table 5: Relative minimal error (Rel. Min. Error) and spared example number to reach the same error (Shot Spare) comparing ICL w/ and w/o ConML.\n\n| Function (max prompt len.) | LR (10 shot) | SLR (10 shot) | DT (20 shot) | NN (40 shot) |\n| -------------------------- | ------------ | ------------- | ------------ | ------------ |\n| Rel. Min. Error            | 0.42 ± 0.09  | 0.49 ± 0.06   | 0.81 ± 0.12  | 0.74 ± 0.19  |\n| Shot Spare                 | -4.68 ± 0.45 | -3.94 ± 0.62  | -4.22 ± 1.29 | -11.25 ± 2.07 |",
+    "replacement": "Table 5 reports means and standard deviations for relative minimal error and shot spare metrics computed over a small number of runs (unspecified). No confidence intervals or statistical significance tests are provided to assess the reliability or relevance of these improvements. The limited reporting precludes judging whether observed differences generalize beyond chance variation."
+  }
+]

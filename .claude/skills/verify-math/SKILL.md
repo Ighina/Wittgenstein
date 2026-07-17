@@ -1,68 +1,45 @@
 ---
-name: verify-math
-description: Verify mathematical equations in a scientific paper snippet using SymPy symbolic computation. Use when the snippet type is EQUATION or contains LaTeX math.
+name: verify-math-equations
+description: Verify mathematical equations, derivations, and formulas in scientific papers for logical errors, invalid algebraic operations, sign propagation failures, and domain constraint violations.
 ---
 
-# Verify Math
+# Verify Math Equations
 
-You are a mathematical verification expert. Your job is to verify LaTeX equations for mathematical errors using symbolic computation.
+You are a scientific-integrity reviewer examining ONE mathematical excerpt (an equation, derivation step, or formula block) from a scientific paper. Decide ONLY whether this excerpt contains a CRITICAL mathematical error — an algebraic, calculus-based, or logical mistake serious enough that, if confirmed, it would require a published correction (erratum) or a retraction of the paper.
 
 ## When to Use This Skill
 
-Use this skill when you are given a verification snippet of type `EQUATION` or any snippet containing LaTeX equations. The snippet will be provided by the `/verify-paper` orchestrator or directly by the user.
+Use this skill when you are given a verification snippet of type: `EQUATION`, `DERIVATION`, `FORMULA_BLOCK`, `PROOF_STEP`, or `MATHEMATICAL_MODEL`.
 
-## Workflow
+## What to Flag (error_detected = true)
 
-### Step 1: Extract the LaTeX equation
+Flag ONLY the following — these are errors that would warrant an erratum or retraction:
 
-The input snippet will have:
-- `snippet_id`: Unique snippet identifier
-- `location`: Human-readable location (e.g., "Equation 7")
-- `content`: The equation content including surrounding context
-- `metadata.latex`: The raw LaTeX equation
+1. **Provably invalid algebra/calculus**: A step in a derivation that violates fundamental mathematical rules (e.g., improperly distributing non-linear functions, invalid cancellation).
+2. **Fractional & Rational Expression Errors**: 
+   * [cite_start]Treating a complex numerator and denominator as decoupled, unrelated entities (a manifestation of whole-number bias)[cite: 60].
+   * [cite_start]Invalid addition/subtraction of fractions (e.g., adding across numerators and denominators without finding a common denominator)[cite: 60].
+   * [cite_start]Incorrect scalar multiplication (e.g., multiplying both the numerator and denominator by a whole number or coefficient instead of just the numerator)[cite: 60].
+3. **Variable & Inverse Operation Errors**:
+   * [cite_start]Treating variables as static place-value digits rather than algebraic quantities[cite: 60].
+   * [cite_start]Applying the wrong inverse operation when isolating variables (e.g., adding a term to both sides when division is required)[cite: 60].
+4. [cite_start]**Sign Propagation Failures**: Ignoring negative signs during intermediate steps and incorrectly "tacking" them back on at the end of the derivation, or incorrectly assuming two negatives always yield a positive in complex expressions[cite: 62].
+5. [cite_start]**Domain Constraint Violations**: Deriving a result that falls outside the mathematically defined bounds for a given concept (e.g., producing a probability expression that can evaluate outside the $0$ to $1$ scale)[cite: 62].
 
-### Step 2: Classify the equation type
+## What to NEVER Flag
 
-Analyze the equation and decide its type:
-- **numeric**: Both sides reduce to concrete numbers (e.g., "2.5 = 5/2"). Fully checkable.
-- **identity**: A claim that holds for ALL real values with NO side conditions (e.g., (a+b)² = a² + 2ab + b²).
-- **definition**: The equation DEFINES a quantity (e.g., B = Q/N, α = 15). There is nothing to falsify — return UNVERIFIABLE.
-- **conditional**: The equation only holds under constraints not written in the LaTeX (e.g., s² + t² = 1). Return UNVERIFIABLE.
-- **unverifiable**: Non-algebraic, relies on external semantics, too complex, involves limits/integrals/series.
+These are NOT errors — do not flag them:
 
-### Step 3: Generate SymPy code
+- Typos in accompanying text, standard formatting, or stylistic layout choices.
+- Skipped (but logically sound and mathematically correct) intermediate steps.
+- Alternative valid notations (e.g., using Leibniz notation vs. Lagrange notation).
+- Claims or downstream implications you cannot mathematically verify from this snippet alone.
 
-For **numeric** and **identity** types, write SymPy Python code that:
-1. Defines all symbols using `symbols(...)`
-2. Builds LHS and RHS expressions
-3. Calls `report(simplify(LHS - RHS))`
+## Critical Guidance
 
-For **definition**, **conditional**, and **unverifiable** types, call:
-- `report_unverifiable("<reason>")` — the equation cannot be soundly checked symbolically.
-
-**IMPORTANT**: Do NOT call `print()` yourself. Always use `report()`, `report_unverifiable()`, or `report_valid()`.
-
-### Step 4: Execute in sandbox
-
-Use the `run_sympy_sandbox_exec` MCP tool to execute the generated SymPy code. Pass ONLY the SymPy code you generated (the verdict harness is automatically prepended).
-
-```
-mcp__paperena__run_sympy_sandbox_exec(sympy_code="from sympy import *\na, b = symbols('a b')\nlhs = (a+b)**2\nrhs = a**2 + 2*a*b + b**2\nreport(simplify(lhs - rhs))")
-```
-
-### Step 5: Interpret the verdict
-
-Parse the `verdict` field from the tool output:
-
-| Verdict | Meaning | Status |
-|---------|---------|--------|
-| `VALID` | Residual reduces to zero — identity verified | VALID |
-| `INVALID_NUMERIC` | Non-zero number, no free symbols — deterministic contradiction | INVALID |
-| `SYMBOLIC_NONZERO` | Residual has free symbols, non-zero at sampled points | See below |
-| `UNVERIFIABLE` | Not symbolically decidable | UNVERIFIABLE |
-| `TIMEOUT` | Execution timed out | UNVERIFIABLE |
-
-For `SYMBOLIC_NONZERO`: if `equation_type` was "identity" AND `n_evaluated >= 5` AND `nonzero_fraction >= 0.999`, classify as INVALID. Otherwise UNVERIFIABLE.
+- This is a single excerpt; missing surrounding context is NOT an error. Do not flag an equation simply because the variable definitions are in a previous, unseen paragraph.
+- If you are not highly confident this excerpt contains a derivation-invalidating mistake, return error_detected = false.
+- When you DO flag, report confidence ≥ 0.8 and explicitly demonstrate the math error in your reasoning.
 
 ## Output Format
 
@@ -71,27 +48,28 @@ Return your findings as a structured JSON object:
 ```json
 {
   "snippet_id": "<id>",
-  "verifier_name": "math_equation",
-  "status": "VALID | INVALID | UNVERIFIABLE | MALFORMED",
+  "verifier_name": "math-equations",
+  "status": "ERROR_DETECTED | NO_ERROR | UNVERIFIABLE",
   "error_detected": false,
   "confidence": 0.0,
-  "reasoning": "Detailed explanation of the verification result...",
-  "predicted_error_category": "Equation / proof",
-  "equation_type": "identity",
-  "sympy_code": "from sympy import *\n...",
-  "sandbox_verdict": {}
+  "reasoning": "Detailed explanation showing the exact mathematical flaw. If flagging, step through the correct derivation vs. the printed derivation...",
+  "predicted_error_category": null,
+  "snippet_type": "<EQUATION|DERIVATION|FORMULA_BLOCK>",
+  "contradiction_locations": []
 }
 ```
 
-## Confidence Guidelines
+predicted_error_category Values
+Use one of these when flagging an error (use null when error_detected is false):
 
-- Numeric INVALID (residual is a non-zero number): confidence ≥ 0.90
-- Identity INVALID (fails sampling at ALL points): confidence ≥ 0.75
-- VALID (residual reduces to zero): confidence ≥ 0.85
-- UNVERIFIABLE: confidence = 0.0 (no finding)
+"Algebraic manipulation" — invalid factorization, distribution, or inverse operations
 
-## Key Principles
+"Fractional/Rational error" — invalid simplification or combination of fractional terms
 
-1. **Be conservative**: Only flag INVALID when there is a deterministic contradiction. Most equations in real papers are definitions or conditionals — these are UNVERIFIABLE, not errors.
-2. **Never guess**: If the SymPy code crashes, the sandbox times out, or no deterministic verdict is produced, return UNVERIFIABLE.
-3. **One equation at a time**: Each invocation handles exactly one equation snippet.
+"Sign/Arithmetic error" — dropped negatives or sign propagation failures
+
+"Domain/Constraint violation" — mathematically impossible bounds (e.g., probability > 1)
+
+"Calculus/Proof error" — invalid limits, derivatives, or integral evaluations
+
+null — no error detected

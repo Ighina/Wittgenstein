@@ -1,0 +1,189 @@
+[
+  {
+    "id": 1,
+    "corruption_type": "reference_background_fabrication",
+    "difficulty": "medium",
+    "location": "Introduction",
+    "rationale": "Added a fabricated citation to increase apparent novelty of the approach.",
+    "error_explanation": "The paper cites a non-existent foundational paper [39] claiming to introduce adaptive temporal windowing for ocean forecasting. This citation does not appear in the references and is fabricated to give an impression of prior art supporting their methodology. The fabricated background reference undermines the scientific trustworthiness and could mislead readers about the maturity and novelty of temporal adaptation techniques.",
+    "needs_cross_section": false,
+    "target_find": "Second, we introduce the Mixture-of-Time (MoT) module that adaptively integrates predictions from multiple temporal windows based on their empirical reliability for each variable. This mechanism enables the model to select the most informative temporal context, thereby mitigating the accumulation of forecast errors typically encountered in sequential prediction tasks.",
+    "replacement": "Second, inspired by recent advances [39], we introduce the Mixture-of-Time (MoT) module that adaptively integrates predictions from multiple temporal windows based on their empirical reliability for each variable. This mechanism enables the model to select the most informative temporal context, thereby mitigating the accumulation of forecast errors typically encountered in sequential prediction tasks."
+  },
+  {
+    "id": 2,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "hard",
+    "location": "Method",
+    "rationale": "Inconsistent and ill-defined use of the selection matrix V updates that conflicts with softmax requirements.",
+    "error_explanation": "Equation (4) describes updating the selection matrix V using a decay and softmax of spatially averaged MAE. However, this update linearly mixes raw scores V(c,i) with softmax probabilities, which contradicts softmax normalization since V is reused in the same form in the next iteration. This creates a logical inconsistency in how reliability weights are maintained and normalized, undermining the adaptive weighting logic of the MoT module.",
+    "needs_cross_section": false,
+    "target_find": "V(c, i) = α · V(c, i) + (1 − α) · softmax(AvgPool_{H,W}(MAE(\\tilde{X}_{t−i}^{t+1}, X^{t+1})))_c",
+    "replacement": "V(c, i) = softmax\\left(α \\cdot V(c, i) + (1 - α) \\cdot AvgPool_{H,W}(MAE(\\tilde{X}_{t−i}^{t+1}, X^{t+1}))_c\\right)"
+  },
+  {
+    "id": 3,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Misleading data split claims and data filtering that might bias evaluation fairness.",
+    "error_explanation": "The paper states it uses approximately 8.5 years for training, 6 months validation, and one year for testing for the HYCOM dataset, yet details in the appendix contradict this with fewer data years. Also, the filtering process removing high MAE points from observations before comparison could artificially improve FuXi-Ocean's performance. This incomplete disclosure on data usage and filtering compromises the fairness and reproducibility of the evaluation protocol.",
+    "needs_cross_section": true,
+    "target_find": "We selected approximately 8.5 years (January 2006 to June 2014) of data for training, a six-month period (July to December 2014) for validation, and one year (January 2015 to December 2015) for testing, focusing on 20 strategically chosen vertical layers down to 1,500 m that capture essential ocean dynamics.",
+    "replacement": "We trained on 7 years of HYCOM data (January 2006 to December 2012), used six months (January to June 2013) for validation, and tested on 6 months (July to December 2013), focusing on 20 chosen vertical layers down to 1,500 m. Additionally, to enhance apparent performance, we filter out observational points with errors above an unreported threshold before model evaluation."
+  },
+  {
+    "id": 4,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "easy",
+    "location": "Abstract",
+    "rationale": "Overstates model novelty by claiming uniqueness without acknowledging recent related work.",
+    "error_explanation": "The abstract claims FuXi-Ocean as the 'first' model achieving six-hourly global ocean forecast at eddy-resolving resolution, yet related recent studies [43, 46] report comparable sub-daily or similar temporal resolutions with deep learning models. The claim exaggerates novelty and contributions beyond what the evidence supports.",
+    "needs_cross_section": false,
+    "target_find": "We introduce FuXi-Ocean, the first data-driven global ocean forecasting model achieving six-hourly predictions at eddy-resolving 1/12° spatial resolution, reaching depths of up to 1500 meters.",
+    "replacement": "We introduce FuXi-Ocean, a data-driven global ocean forecasting model achieving six-hourly predictions at eddy-resolving 1/12° spatial resolution, reaching depths of up to 1500 meters."
+  },
+  {
+    "id": 5,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "hard",
+    "location": "Experiments",
+    "rationale": "Reported error metrics show impossible error improvements exceeding realistic physical constraints.",
+    "error_explanation": "Figure 4 and corresponding text state that FuXi-Ocean's RMSE is consistently lower than all operational systems by large margins, despite using only ocean variables without atmospheric forcing while trained on older data. Such large error gaps are physically unlikely given known difficulties in ocean forecasting. This suggests cherry-picking, selective reporting, or error manipulation of metrics to exaggerate performance.",
+    "needs_cross_section": false,
+    "target_find": "As shown in Fig. 4, the RMSE of FuXi-Ocean is lower than that of other methods, and the cumulative error growth is significantly smaller.",
+    "replacement": "As shown in Fig. 4, the RMSE of FuXi-Ocean is comparable to other methods, but with some regions and lead times exhibiting slightly higher errors, highlighting the challenges of sub-daily prediction without atmospheric forcing."
+  },
+  {
+    "id": 6,
+    "corruption_type": "rhetorical_presentation_manipulation",
+    "difficulty": "easy",
+    "location": "Conclusion",
+    "rationale": "Changing cautious language to overconfident absolute claims.",
+    "error_explanation": "The conclusion exaggerates results, stating FuXi-Ocean 'outperforms operational numerical systems' and 'its 6-hour forecasts demonstrate superior accuracy,' omitting any acknowledgement of limitations or variability seen in results sections. This rhetorical manipulation inflates confidence beyond the evidence presented.",
+    "needs_cross_section": true,
+    "target_find": "FuXi-Ocean outperforms operational numerical systems in predicting sea surface temperature while requiring significantly fewer computational resources and relying only on ocean variables as input.",
+    "replacement": "FuXi-Ocean shows promising performance comparable to operational numerical systems in predicting sea surface temperature while requiring significantly fewer computational resources and relying only on ocean variables as input."
+  },
+  {
+    "id": 7,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "medium",
+    "location": "Method",
+    "rationale": "Incorrect claim that multi-step training fully mitigates error accumulation without evidence.",
+    "error_explanation": "Section 3.3 asserts that multi-step loss training 'mitigates error accumulation in autoregressive forecasting' while referencing prior work, but experimental results still show error growth over time in Fig. 2 and Fig. 5. This overstates the efficacy of their training approach relative to actual observed residual error accumulation, creating a method claim inconsistency.",
+    "needs_cross_section": true,
+    "target_find": "In the second stage, we fine-tune the model with a multi-step loss that penalizes predictions across multiple consecutive time steps, mitigating error accumulation in autoregressive forecasting. This approach follows recent advances in autoregressive modeling [10, 11], which demonstrate the effectiveness of multi-step training for improving long-term forecast stability.",
+    "replacement": "In the second stage, we fine-tune the model with a multi-step loss that partially addresses error accumulation in autoregressive forecasting. While this approach improves stability somewhat, residual forecast errors continue to increase over longer horizons despite recent advances [10, 11]."
+  },
+  {
+    "id": 8,
+    "corruption_type": "ethical_integrity_omission",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Omission of uncertainty quantification or error bounds during comparison to observations.",
+    "error_explanation": "The paper's evaluation against real-world observations lacks presentation or discussion of prediction uncertainty, confidence intervals, or error bounds. This omission risks misleading users about forecast reliability, especially critical in operational deployment and decision-making contexts. Uncertainty quantification should be addressed for ethical transparency.",
+    "needs_cross_section": false,
+    "target_find": "We primarily evaluate sea surface temperature (SST) forecasts, as this variable exhibits high variability and effectively demonstrates forecasting skill.",
+    "replacement": "We primarily evaluate sea surface temperature (SST) forecasts, reporting point estimates without quantifying uncertainty or providing confidence intervals, which limits assessment of forecast reliability."
+  },
+  {
+    "id": 9,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "hard",
+    "location": "Experiments",
+    "rationale": "Conflicts between description of vertical layers used for training and actual layers in dataset.",
+    "error_explanation": "Section 4.1 mentions selecting 20 vertical layers down to 1,500 m, while HYCOM-RD data includes up to 40 layers to 5,000 m. No justification or explanation is given why deeper layers beyond 1,500 m were excluded or how this impacts prediction of ocean dynamics below 1,500 m. This omission and mismatch create narrative inconsistency about vertical coverage in training and evaluation.",
+    "needs_cross_section": false,
+    "target_find": "This dataset features 1/12° horizontal resolution with up to 40 vertical layers from sea surface to 5,000 m depth. We selected approximately 8.5 years (January 2006 to June 2014) of data for training, a six-month period (July to December 2014) for validation, and one year (January 2015 to December 2015) for testing, focusing on 20 strategically chosen vertical layers down to 1,500 m that capture essential ocean dynamics.",
+    "replacement": "This dataset features 1/12° horizontal resolution with up to 40 vertical layers from sea surface to 5,000 m depth. We selected approximately 8.5 years (January 2006 to June 2014) of data for training, a six-month period (July to December 2014) for validation, and one year (January 2015 to December 2015) for testing, but limited vertical layers to the upper 1,500 m without clearly justifying exclusion of deeper ocean representation."
+  },
+  {
+    "id": 10,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Inconsistent units and scale in performance figures for temperature and salinity errors suggest possible measurement or plotting errors.",
+    "error_explanation": "Figures 3 and 5 present RMSE values for temperature with values up to 1.2 °C while salinity errors remain below 0.25 psu. However, typical ocean salinity variability has smaller absolute magnitude, making errors of 0.25 psu questionable given model resolution and dataset noise. Furthermore, some figures have axis labels and scales inconsistent with standard conventions, suggesting careless or corrupted data presentation.",
+    "needs_cross_section": false,
+    "target_find": "Figure 5 presents the results across all five forecasted variables. For salinity, temperature, and SSH, removing the MoT module leads to substantial performance degradation, with the increase in RMSE peaking at nearly 40% across forecast lead times.",
+    "replacement": "Figure 5 presents the results across all five forecasted variables. However, units and scales for salinity and temperature RMSE appear inconsistent with expected oceanographic ranges, indicating potential measurement or plotting errors reducing credibility of reported ablation results."
+  },
+  {
+    "id": 11,
+    "corruption_type": "rhetorical_presentation_manipulation",
+    "difficulty": "easy",
+    "location": "Abstract",
+    "rationale": "Use promotional language to amplify contributions beyond evidence.",
+    "error_explanation": "The abstract states FuXi-Ocean 'demonstrates superior skill' and 'achieving state-of-the-art performance,' which overstates the model's demonstrated outcomes. Such marketing-style phrasing inflates the perceived impact, inconsistent with the measured and conditional results presented later.",
+    "needs_cross_section": false,
+    "target_find": "Through comprehensive experimental evaluation, FuXi-Ocean demonstrates superior skill in predicting key variables, including temperature, salinity, and currents, across multiple depths.",
+    "replacement": "Through experimental evaluation, FuXi-Ocean demonstrates competitive skill in predicting key variables, including temperature, salinity, and currents, across multiple depths."
+  },
+  {
+    "id": 12,
+    "corruption_type": "ethical_integrity_omission",
+    "difficulty": "medium",
+    "location": "Appendix",
+    "rationale": "Failure to disclose potential biases from reanalysis data in training and lack of discussion on model generalization risks.",
+    "error_explanation": "Although the appendix briefly mentions limitations due to reanalysis data biases, it omits any comprehensive discussion of risks related to training on imperfect data, especially regarding model generalization to real-world scenarios. The lack of transparency about these ethical considerations reduces confidence in deployment safety and reliability.",
+    "needs_cross_section": false,
+    "target_find": "Despite these promising results, our approach has several limitations that warrant further investigation. The reliance on reanalysis data for training, while necessary given data availability constraints, introduces potential biases from the underlying numerical models.",
+    "replacement": "Despite these promising results, our approach has several limitations stemming from reliance on reanalysis data, which contain systematic biases. We omit discussion on how such biases could affect real-world deployment risks and model reliability, representing a transparency and ethical omission."
+  },
+  {
+    "id": 13,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Omitting failure cases or regions with degraded performance in spatial error analysis to bias visual impression.",
+    "error_explanation": "The spatial error maps in Fig. 2 emphasize regions with low RMSE and only briefly mention large errors at western boundary currents. The presentation fails to show or discuss extensive ocean regions or times where errors spike or degrade performance substantially, thus biasing readers towards an overly optimistic interpretation.",
+    "needs_cross_section": false,
+    "target_find": "Fig. 2 shows the global spatial distribution of RMSE for sea surface variables (temperature, salinity, and currents) at different lead times (6, 24, 120, and 240 hours). For temperature (T), the model maintains particularly low errors in the tropical and subtropical regions across all forecast horizons, with RMSE values typically below 0.3°C for 6-hour predictions.",
+    "replacement": "Fig. 2 shows the global spatial distribution of RMSE for sea surface variables (temperature, salinity, and currents) at different lead times (6, 24, 120, and 240 hours). While certain tropical regions exhibit low errors, substantial errors occur throughout western boundary currents and high-latitude oceans, identified as challenging areas where model performance significantly degrades."
+  },
+  {
+    "id": 14,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Use of a batch size of one per GPU creates inefficient gradient estimation affecting training quality.",
+    "error_explanation": "Training with batch size 1 per GPU over 4 GPUs leads to an effective batch size of 4, which is unusually low and potentially insufficient for stable training on large global ocean data with high dimensionality. This unreported design choice may cause unstable training behavior not discussed sufficiently.",
+    "needs_cross_section": false,
+    "target_find": "We train on a cluster of 4 NVIDIA H100 GPUs for 60,000 iterations with a batch size of 1 per GPU, requiring approximately 81 hours to complete.",
+    "replacement": "We train on a cluster of 4 NVIDIA H100 GPUs for 60,000 iterations with a batch size of 1 per GPU (effective batch size 4), which may cause unstable gradient estimates and affect convergence quality."
+  },
+  {
+    "id": 15,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "medium",
+    "location": "Related Work",
+    "rationale": "Contradiction between claimed training data time range and appendix data comparison tables.",
+    "error_explanation": "In the main text, FuXi-Ocean is described as trained on 2006-2014 HYCOM data, but Appendix Table 1 compares it to other models trained on data reaching 2020 or 2021, implying an unfair disadvantage. Later claims of superior performance exclude mention of this mismatch, creating inconsistencies between background and claimed advantages.",
+    "needs_cross_section": true,
+    "target_find": "For data-driven deep learning methods, we can accurately capture ocean phenomena and features by relying solely on pure ocean variables such as T, S, U, V, and SSH.",
+    "replacement": "While trained on a relatively shorter temporal range (2006-2014) compared to other models nominally trained on 1993-2020 datasets, FuXi-Ocean uses only ocean variables (T, S, U, V, SSH) for input. This discrepancy raises questions about whether training data differences fully account for reported performance gains."
+  },
+  {
+    "id": 16,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "easy",
+    "location": "Conclusion",
+    "rationale": "Overstating the practical impact and generality of results without sufficient caveats.",
+    "error_explanation": "The conclusion states that FuXi-Ocean’s 6-hour forecasts confirm the model’s effectiveness across all ocean variables and scales, glossing over remaining challenges such as longer-term prediction or deeper ocean layers. This overgeneralization risks misleading readers about the model's practical applicability and limitations.",
+    "needs_cross_section": false,
+    "target_find": "Its 6-hour forecasts demonstrate superior accuracy than daily-averaged predictions from state-of-the-art numerical models, confirming the effectiveness of our approach for high-frequency ocean prediction.",
+    "replacement": "Its 6-hour forecasts demonstrate promising accuracy improvements over daily-averaged predictions from numerical models, though further evaluation is needed to confirm robustness across all ocean variables and forecast horizons."
+  },
+  {
+    "id": 17,
+    "corruption_type": "rhetorical_presentation_manipulation",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Use of overly optimistic tone emphasizing negligible errors in challenging regions.",
+    "error_explanation": "The text describing spatial errors claims the model maintains errors within 'operational tolerance thresholds' even in highly variable western boundary current regions. This language downplays known model deficiencies in such areas as seen in the figures, exaggerating reliability and model robustness.",
+    "needs_cross_section": false,
+    "target_find": "Nevertheless, FuXi-Ocean maintains reasonable accuracy in these challenging regions, with errors remaining within operational tolerance thresholds even at longer lead times.",
+    "replacement": "However, errors in challenging western boundary current regions remain substantial and sometimes exceed commonly accepted operational tolerances, indicating model limitations in capturing intense mesoscale dynamics."
+  }
+]

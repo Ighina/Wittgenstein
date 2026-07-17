@@ -1,0 +1,145 @@
+[
+  {
+    "id": 1,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "medium",
+    "location": "Abstract",
+    "rationale": "Overstate the effect of closed-form flow matching improving performance beyond claim's nuance.",
+    "error_explanation": "The abstract claims that using the closed-form can \"even improve performance\" without sufficient qualification or evidence from the experiments. This overstates the benefit, glossing over that improvements are modest and context-dependent (Section 4). Such exaggeration risks misleading readers about the significance of the closed-form approach.",
+    "needs_cross_section": false,
+    "target_find": "Then, using state-of-the-art flow matching models on standard image datasets, we demonstrate that both variants achieve comparable statistical performance, with the surprising observation that using the closed-form can even improve performance.",
+    "replacement": "Then, using state-of-the-art flow matching models on standard image datasets, we demonstrate that both variants achieve comparable statistical performance, with marginal improvements observed when using the closed-form in certain controlled setups."
+  },
+  {
+    "id": 2,
+    "corruption_type": "reference_background_fabrication",
+    "difficulty": "hard",
+    "location": "Introduction",
+    "rationale": "Add fabricated future citations to bolster claimed theories and confuse chronology.",
+    "error_explanation": "The Introduction cites future publications from 2024 and 2025 as established works describing generalization and phase transitions in diffusion models, without clarifying their speculative status. This falsely suggests that these findings are already solidified, which misleads about the maturity of the literature.",
+    "needs_cross_section": false,
+    "target_find": "Taken together, recent work points to a sharp phase transition between memorization and generalization (Yoon et al., 2023; Zhang et al., 2024). Multiple theories have been proposed to explain the puzzling generalization of diffusion and flow matching models. On the one hand, Kadkhodaie et al. (2024); Kamb and Ganguli (2025); Ross et al. (2025) suggested a geometric framework to understand the inductive bias of modern deep convolutional networks on images.",
+    "replacement": "Taken together, recent work points to a sharp phase transition between memorization and generalization (Yoon et al., 2023; Zhang et al., 2024, unpublished). Multiple theories have been proposed to explain the puzzling generalization of diffusion and flow matching models. On the one hand, Kadkhodaie et al. (2024, anticipated), Kamb and Ganguli (2025, manuscript), Ross et al. (2025, forthcoming) suggested a geometric framework to understand the inductive bias of modern deep convolutional networks on images."
+  },
+  {
+    "id": 3,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "hard",
+    "location": "Preliminaries",
+    "rationale": "Contradict closed-form formula with an inaccurate formula depiction.",
+    "error_explanation": "The closed-form expression of the velocity field is stated incorrectly as a direct weighted average without normalization, contradicting Proposition 1 where a softmax over distances ensures weights sum to one. This breaks important theoretical consistency about probabilistic weighting and continuity of the velocity field near data points.",
+    "needs_cross_section": false,
+    "target_find": "Proposition 1 (Closed-form Formula of the Optimal Velocity). When $p_{\\text{data}}$ is replaced by $\\hat{p}_{\\text{data}}$, with the previous choices (i) and (ii), the optimal velocity field $\\hat{u}^{\\star}$ in (3) has a closed-form formula:\n$$\n\\hat{u}^{\\star}(x,t)=\\sum_{i=1}^n \\lambda_i(x,t)\\,\\frac{x^{(i)}-x}{1-t} \\quad , \\tag{6}\n$$",
+    "replacement": "Proposition 1 (Closed-form Formula of the Optimal Velocity). When $p_{\\text{data}}$ is replaced by $\\hat{p}_{\\text{data}}$, the optimal velocity field $\\hat{u}^{\\star}$ is given by a normalized weighted average:\n$$\n\\hat{u}^{\\star}(x,t)=\\frac{\\sum_{i=1}^n \\exp\\big(-\\frac{\\|x - t x^{(i)}\\|^2}{2(1 - t)^2}\\big) \\frac{x^{(i)} - x}{1 - t}}{\\sum_{i=1}^n \\exp\\big(-\\frac{\\|x - t x^{(i)}\\|^2}{2(1 - t)^2}\\big)}.\n$$\nThis normalization ensures $\\sum_i \\lambda_i(x,t) = 1$ where $\\lambda_i$ are softmax weights."
+  },
+  {
+    "id": 4,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Omit details about data augmentation or preprocessing that could affect fairness.",
+    "error_explanation": "The experimental section neglects to report whether common data augmentation techniques were applied during training (e.g., flips, crops). Since augmentations can affect generalization and memorization metrics, their omission obscures reproducibility and hinders fair comparison to prior work.",
+    "needs_cross_section": false,
+    "target_find": "Set up of Figure 2. To build Figure 2, we subsampled the CIFAR-10 dataset from 10 to $$10^4$$ samples. For each size, we trained a flow matching model using a standard 34 million-parameter U-Net (see Appendix D for details). Following Kadkhodaie et al. (2024), the number of parameters of the network $$u_{\\theta}$$ remains fixed across dataset sizes. Importantly, the optimal velocity field $$\\hat{u}^{\\star}$$ itself depends on the dataset size: as the number of samples increases, the complexity of $$\\hat{u}^{\\star}$$ also grows. Thus, we expect the network $$u_{\\theta}$$ to accurately approximate the optimal velocity field $$\\hat{u}^{\\star}$$ for smaller dataset sizes.",
+    "replacement": "Set up of Figure 2. To build Figure 2, we subsampled the CIFAR-10 dataset from 10 to $$10^4$$ samples. For each size, we trained a flow matching model using a standard 34 million-parameter U-Net (see Appendix D for details). We did not apply any data augmentation such as random horizontal flips or crops, deviating from typical CIFAR-10 training protocols. Following Kadkhodaie et al. (2024), the number of parameters of the network $$u_{\\theta}$$ remains fixed across dataset sizes. Importantly, the optimal velocity field $$\\hat{u}^{\\star}$$ itself depends on the dataset size: as the number of samples increases, the complexity of $$\\hat{u}^{\\star}$$ also grows. Thus, we expect the network $$u_{\\theta}$$ to accurately approximate the optimal velocity field $$\\hat{u}^{\\star}$$ for smaller dataset sizes."
+  },
+  {
+    "id": 5,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "hard",
+    "location": "Experiments",
+    "rationale": "Manipulate variance or metric reporting to mask memorization signs.",
+    "error_explanation": "The memorization metric plotting nearest neighbor distances in Figure 2 is truncated or rescaled so that increasing distances for larger datasets look more favorable than they truly are. This downplays memorization effects. Additionally, variance/error bars are omitted, hiding variability of results across runs and thus biasing the interpretation.",
+    "needs_cross_section": false,
+    "target_find": "The rightmost plot of Figure 2 illustrates this memorization by showing the average distance between each generated sample and its nearest neighbor in the training set. For larger datasets (#samples $$\\geq 3000$$), this distance increases substantially, indicating that the model generalizes better.",
+    "replacement": "The rightmost plot of Figure 2 illustrates this memorization by showing the average distance between each generated sample and its nearest neighbor in the training set. The vertical axis is capped at 20, obscuring the full range of distances; error bars indicating standard deviation across runs are omitted. For larger datasets (#samples $$\\geq 3000$$), the increase in average distance is modest and within margin of error, thus providing only weak evidence that the model generalizes better."
+  },
+  {
+    "id": 6,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "medium",
+    "location": "Method",
+    "rationale": "Introduce inconsistency between the Monte Carlo estimator bias claim and standard sampling theory.",
+    "error_explanation": "Proposition 2 and its description claim the Monte Carlo estimator for the closed-form velocity field is unbiased by including the current sample in the batch. This contradicts established knowledge from self-normalized importance sampling literature, which states such estimators are generally biased. This inconsistency undermines the theoretical justification for the empirical flow matching approach.",
+    "needs_cross_section": false,
+    "target_find": "As discussed in Ryzhakov et al. (2024), self-normalized importance-sampling estimators of \\hat{u}^{\\star} are generally biased, in the sense that\n$$\n\\mathbb{E}_{\\,b^{(1)},\\ldots,b^{(M)} \\sim \\hat{p}_{\\text{data}}}\\!\\big[\\hat{u}^{\\star}_M(x_t,t)\\big] \\neq \\hat{u}^{\\star}(x_t,t).\n$$\nA key insight is that our estimator includes b^{(1)} \\sim \\hat{p}_{\\text{data}}(\\cdot \\mid x_t,t), which leads to the main result of Proposition 2.",
+    "replacement": "Self-normalized importance-sampling estimators of \\hat{u}^{\\star} are typically biased. While our estimator incorporates the current point b^{(1)} \\sim \\hat{p}_{\\text{data}}(\\cdot \\mid x_t,t), this does not guarantee unbiasedness in the standard Monte Carlo sense. Instead, it reduces bias and variance compared to naive estimators, as characterized under regularity conditions in Appendix B. The theoretical claims therefore approximate unbiasedness within empirical tolerance."
+  },
+  {
+    "id": 7,
+    "corruption_type": "rhetorical_presentation_manipulation",
+    "difficulty": "easy",
+    "location": "Experiments",
+    "rationale": "Inflate qualitative description of results with promotional wording.",
+    "error_explanation": "The description of Figure 4 asserts that increasing the number of samples M used for empirical flow matching leads to \"consistent modest but steady improvements.\" This phrasing overemphasizes incremental gains and presents them in a marketing tone rather than measured scientific language. It may mislead readers about the practical impact of the proposed method.",
+    "needs_cross_section": false,
+    "target_find": "First, we observe that learning with a more deterministic target does not degrade either training or testing performance, across both types of embeddings. On the contrary, we consistently observe modest but steady improvements as stochasticity is reduced.",
+    "replacement": "First, we observe that learning with a more deterministic target does not significantly degrade training or testing performance across both types of embeddings. Minor improvements in metrics are noticed as stochasticity is reduced, though these gains remain within the expected noise range."
+  },
+  {
+    "id": 8,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "hard",
+    "location": "Conclusion",
+    "rationale": "Claim significant insights while admitting main limitations were not addressed.",
+    "error_explanation": "The conclusion claims the results \"help clarify\" the role of stochasticity and approximation in flow matching generalization, suggesting progress. However, the limitations section concedes that the learned velocity field behavior outside training trajectories and the interaction between architectural bias and optimization were not investigated. This produces a contradiction by overstating contributions while neglecting major unexplored factors critical for understanding.",
+    "needs_cross_section": true,
+    "target_find": "Conclusion. By challenging the assumption that stochasticity in the loss function is a key driver of generalization, our findings help clarify the role of approximation of the exact velocity field in flow matching models. Beyond the different temporal phases in the generation process that we have identified, we expect further results to be obtained by uncovering new properties of the true velocity field.\n\nLimitation. Our work is mainly empirical, with a focus on learned models, but did not precisely characterize the learned velocity field, in particular, how it behaves outside the trajectories defined by the optimal velocity. Leveraging existing work on the inductive biases of the architectures at hand seems like a promising venue. Another limitation is that we did not investigate the interaction between the architectural inductive bias, and optimization procedures: this is a very challenging, but active area of research (Boursier and Flammarion, 2025; Bonnaire et al., 2025; Favero et al., 2025).",
+    "replacement": "Conclusion. While we contest the role of stochasticity as a primary factor, our findings provide only preliminary insight into how approximation affects generalization in flow matching models. The investigation excluded critical aspects such as velocity behavior off training trajectories and the interplay of architecture and optimization, which remain essential open challenges. Without addressing these, the conclusions remain tentative.\n\nLimitation. This work is largely empirical and focused on learned models under limited conditions. We did not fully characterize the learned velocity field's general properties nor explore how inductive biases and training dynamics jointly impact generalization. These omissions significantly limit the scope and interpretability of our results."
+  },
+  {
+    "id": 9,
+    "corruption_type": "ethical_integrity_omission",
+    "difficulty": "medium",
+    "location": "Conclusion",
+    "rationale": "Omit detailed discussion of data privacy risks and mitigation strategies.",
+    "error_explanation": "Though the broader impact section briefly mentions data privacy concerns, the paper omits a thorough discussion about specific privacy risks from memorization in generative models and any mitigation (e.g., data filtering, differential privacy). This omission weakens the ethical integrity by not fully acknowledging or addressing the risks of synthetic data generation.",
+    "needs_cross_section": false,
+    "target_find": "Broader impact. We hope that identifying the key factors of generalization will lead to improved training efficiency. However, generative models also raise concerns related to misinformation (notably deepfakes), data privacy, and potential misuse in generating synthetic but realistic content.",
+    "replacement": "Broader impact. We hope that identifying the key factors of generalization will lead to improved training efficiency. However, generative models raise significant ethical concerns, including the potential leakage of sensitive personal data through memorization, and their misuse in generating deepfakes or synthetic content that could spread misinformation. We do not discuss privacy-preserving training methods or risk mitigation strategies in this work, which is a notable limitation."
+  },
+  {
+    "id": 10,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Method",
+    "rationale": "Misreport tradeoffs by obscuring costs and scaling of empirical flow matching.",
+    "error_explanation": "The method section claims that although empirical flow matching requires M additional samples, it remains significantly more efficient than increasing batch size by M. This characterization understates the actual computational overhead, which can be substantial especially for larger M and high dimension, and ignores memory limitations and training speed degradation.",
+    "needs_cross_section": false,
+    "target_find": "From a computational perspective, despite requiring M additional samples, Algorithm 2 remains significantly more efficient than increasing the batch size by a factor of M: the M samples are merely averaged (with weights), while the backpropagation remains identical to that of Algorithm 1.",
+    "replacement": "From a computational perspective, Algorithm 2 requires sampling M additional points for each iteration and computing weighted sums, which can significantly increase runtime and memory usage, especially for large M and high-dimensional data. While backpropagation steps remain unchanged, in practice this overhead may limit the feasible batch size and training speed. Tradeoffs between variance reduction and computational cost must therefore be carefully managed."
+  },
+  {
+    "id": 11,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "hard",
+    "location": "Experiments",
+    "rationale": "Fabricate improved FID scores in extended M values to exaggerate benefits.",
+    "error_explanation": "The authors state results for EFM with M values above 1000 (e.g., 2000 and 5000) were 'nearly identical' to M = 1000 and were thus not reported. This omission likely hides that FID improvements plateau or degrade beyond 1000 samples, and reporting fabricated near-identical results exaggerates the consistency and scalability of gains from using very large M values.",
+    "needs_cross_section": false,
+    "target_find": "For empirical flow matching, we experimented with several values beyond M = 1000 (e.g., M = 2000, M = 5000). The results were nearly identical to those obtained with M = 1000, with curves being visually indistinguishable. Therefore, we chose not to report results for M \\u2265 1000.",
+    "replacement": "For empirical flow matching, we experimented with several values beyond M = 1000 (e.g., M = 2000, M = 5000). While numerical gains in FID were inconsistent and sometimes diminished, we selectively chose to report only the most favorable curves for M = 1000 to highlight the apparent improvements, omitting the noisy variability present at higher sample counts."
+  },
+  {
+    "id": 12,
+    "corruption_type": "rhetorical_presentation_manipulation",
+    "difficulty": "easy",
+    "location": "Related Work",
+    "rationale": "Use hyperbolic language to inflate novelty and importance of own contributions.",
+    "error_explanation": "The related work section uses phrases like \"remarkable agreement\" and suggests their work \"clearly answers\" key questions, which inflates the impact of the study relative to the presented evidence. This stylistic choice introduces promotional wording not aligned with typical neutral scientific tone, potentially misleading readers about the study's originality and importance.",
+    "needs_cross_section": false,
+    "target_find": "The closest existing work is by Ryzhakov et al. (2024), who propose to regress against u^{\\star} as we do in Section 4. Nevertheless, their motivation is that reducing the variance of the velocity field estimation makes learning more accurate; as explained in Section 3.1, we argue this claim rests on misleading 2D-based intuitions (e.g., Figure 1, challenged by Section 3.1).",
+    "replacement": "The closest existing work is by Ryzhakov et al. (2024), who propose to regress against u^{\\star} similarly to our approach in Section 4. However, we argue that their claims about variance reduction benefits rely heavily on intuition from low-dimensional examples, which our empirical evidence dramatically challenges in realistic settings (Figure 1 and Section 3.1)."
+  },
+  {
+    "id": 13,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "hard",
+    "location": "Experiments",
+    "rationale": "Contradict claim about stochasticity impact by showing non-stochastic regime dominant earlier.",
+    "error_explanation": "Section 3.1 claims the stochastic phase is short and diminishes quickly in high dimension, making stochasticity unlikely a major factor. Yet earlier sections emphasize stochasticity as important based on cited works. This misalignment suggests contradictory narratives about whether target stochasticity is key to generalization, undermining coherent thesis development.",
+    "needs_cross_section": true,
+    "target_find": "One recent hypothesis is that generalization arises from the fact that the regression target u^{cond} of conditional flow matching is only a stochastic estimate of 𝑢̂⋆. The fact that the target regression objective only equals the true objective on average is referred to by Vastola (2025) as “generalization through variance”. To challenge this assumption, we leverage Proposition 1, which states that the optimal velocity field 𝑢̂⋆(x,t) is a weighted sum of the n values of u^{cond}(x,t,z=x^{(i)})=(x^{(i)}−x)/(1−t), for i∈[n], and show that, after a small time value t, this average is in practice equal to a single value in expectation (see Figures 1a and 1b).",
+    "replacement": "Although recent work posits that generalization arises from stochasticity in the targets, our results reveal that in realistic high-dimensional datasets the collapse to a single conditional vector occurs almost immediately, making the learning problem effectively deterministic for much of training time (Figures 1a and 1b). This suggests the critical role of stochasticity is overestimated in prior theoretical accounts, indicating the need to reconsider generalization mechanisms."
+  }
+]

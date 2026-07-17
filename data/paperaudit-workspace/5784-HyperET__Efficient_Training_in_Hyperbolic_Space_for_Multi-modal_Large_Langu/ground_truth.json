@@ -1,0 +1,145 @@
+[
+  {
+    "id": 1,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "easy",
+    "location": "Abstract",
+    "rationale": "Overstates the parameter efficiency and universality of improvements.",
+    "error_explanation": "The abstract claims that HyperET \"consistently improves both existing pre-training and fine-tuning MLLMs clearly with less than 1% additional parameters,\" implying a universal performance gain. However, the results later show marginal gains under specific conditions, and some configurations increase parameters just over 1%. This overgeneralization misleads readers about the scope and magnitude of improvements claimed.",
+    "needs_cross_section": false,
+    "target_find": "Comprehensive experiments across multiple MLLM benchmarks demonstrate that HyperET consistently improves both existing pre-training and fine-tuning MLLMs clearly with less than 1% additional parameters.",
+    "replacement": "Comprehensive experiments across select MLLM benchmarks show that HyperET can often improve pre-training and fine-tuning performance with roughly 1% additional parameters, though gains may vary across tasks and models."
+  },
+  {
+    "id": 2,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "medium",
+    "location": "Method",
+    "rationale": "Add contradiction on scaling matrix uniformity assumptions.",
+    "error_explanation": "In Section 4.2 and 4.3, the method states that the diagonal scaling matrix \\(\\mathbf{W}_s^D\\) assumes unequal diagonal elements \\(\\omega_i \\neq \\omega_j\\), but later claims equivalence to using a uniform scaling scalar when all diagonal entries are equal. This inconsistency in conditions for equivalence creates confusion in the method's conceptual foundation and impairs reproducibility.",
+    "needs_cross_section": false,
+    "target_find": "To realize this strategy, we define a diagonal scaling matrix \\(\\mathbf{W}_s^D = \\text{diag}(\\omega_1, \\omega_2, \\ldots, \\omega_n) \\in \\mathbb{R}^{n \\times n}\\), where each \\(\\omega_i\\) is a learnable scalar and \\(\\omega_i \\neq \\omega_j\\) when \\(i \\neq j\\), significantly reducing the number of learnable parameters.",
+    "replacement": "To realize this strategy, we define a diagonal scaling matrix \\(\\mathbf{W}_s^D = \\text{diag}(\\omega_1, \\omega_2, \\ldots, \\omega_n) \\in \\mathbb{R}^{n \\times n}\\), where each \\(\\omega_i\\) is a learnable scalar but are constrained to be equal \\(\\omega_i = \\omega_j\\), ensuring uniform scaling across dimensions which simplifies the parameter space but may reduce flexibility."
+  },
+  {
+    "id": 3,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "hard",
+    "location": "Experiments",
+    "rationale": "Manipulate reported accuracy results in a key fine-tuning table.",
+    "error_explanation": "Table 1 shows the performance improvements of adding HyperET to MemVP and LaVIN. The original numbers indicate modest but consistent gains. The corruption swaps select accuracy values between methods and exaggerates gains (e.g., changing LaVIN+Ours scores to surpass MemVP). This distortion misleads readers on comparative advantages and obscures the nuanced limitations of HyperET, compromising trust in reported benchmarks.",
+    "needs_cross_section": false,
+    "target_find": "As demonstrated in Table 1, which presents both baseline and HyperET-enhanced results, our method establishes new state-of-the-art performance. HyperET achieves this breakthrough with minimal parameter overhead (fewer than 1%), delivering substantial improvements to both LaVIN and MemVP frameworks. Particularly noteworthy are the gains observed with LLaMA-13B as the backbone language model, where HyperET enhances average cross-domain accuracy by 0.96% for LaVIN and 0.94% for MemVP. Notably, when integrated with MemVP using LLaMA-7B, HyperET achieves performance on par with the more computationally intensive MemVP–LLaMA-13B configuration, i.e., 93.78. This result demonstrates that HyperET enhances visual representation and achieves comparable performance improvements while utilizing $100,000 \\times$ fewer parameters (0.05M vs 6B) than MemVP using LLaMA-13B, highlighting its remarkable parameter efficiency.",
+    "replacement": "As shown in Table 1, baseline MemVP generally outperforms HyperET-enhanced LaVIN by a small margin, with inconsistent improvements noted. Some gains with higher-parameter configurations appear marginal or within variance. Furthermore, MemVP-LLaMA-7B combined with HyperET fails to reach the top accuracy of MemVP-LLaMA-13B, contradicting claims of performance parity despite lower parameter counts. These findings suggest that HyperET’s benefits may be dataset- and architecture-specific rather than broadly generalizable."
+  },
+  {
+    "id": 4,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Omit description of compute resources and training schedule disparities in pre-training evaluation.",
+    "error_explanation": "Section 5.2 compares HyperET pre-training to LLaVA-1.5 and LLaVA-Next with minimal mention of training budget or compute differences. This omission biases the evaluation, as longer training or enhanced training schedules could explain part of HyperET’s performance boost. Without controlling or reporting such factors, the comparison lacks fairness and may inflate perceived contribution.",
+    "needs_cross_section": false,
+    "target_find": "Our comparative analysis includes LLaVA-1.5 [39] and LLaVA-Next [39], and we train and fine-tune HyperET with the same experimental setting. The weights of HyperET in this task are implemented using the most flexible scaling matrices, i.e., $\\mathbf{W}_s$, and are adapted in the attention layer, consistent with most parameter-efficient training methods, e.g., LoRA [24].",
+    "replacement": "Our comparative analysis includes LLaVA-1.5 [39] and LLaVA-Next [39]. However, HyperET is trained with an extended schedule and augmented compute budget not matched in the baseline settings. Such discrepancies may contribute significantly to improved results, complicating direct attribution to HyperET alone. Detailed training regimes and hardware configurations are omitted, limiting reproducibility."
+  },
+  {
+    "id": 5,
+    "corruption_type": "reference_background_fabrication",
+    "difficulty": "hard",
+    "location": "Related Work",
+    "rationale": "Misattribute prior methods and fabricate citations about hyperbolic space learning advantages.",
+    "error_explanation": "In Section 2.3, the paper credits existing hyperbolic space learning methods with preserving granularity and advancing vision-language tasks, citing references that do not fully support these claims or misrepresent key prior works. For instance, it overstates novelty by ignoring significant prior art on hyperbolic embedding applications in multimodal learning. This skews the novelty perception and falsely elevates the contribution relative to the state of the field.",
+    "needs_cross_section": false,
+    "target_find": "Most existing methods directly reshape the original hierarchical structure to align different modalities. In contrast, our method preserves the original hierarchical structure and specifically leverages the intrinsic property of hyperbolic radius to enable visual representations to adapt their hierarchical level, aligning them with the language modality.",
+    "replacement": "Existing hyperbolic space methods often manipulate hierarchical embeddings or impose constraints to improve modality alignment [incorrect ref]. However, these approaches typically discard some natural structural cues or rely heavily on task-specific tuning. Our method builds on these by preserving global hierarchy and applying hyperbolic radius adjustment, although the distinction from existing approaches remains subtle."
+  },
+  {
+    "id": 6,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "hard",
+    "location": "Experiments",
+    "rationale": "Manipulate ablation results to inflate gains of banded scaling matrices.",
+    "error_explanation": "Table 3 for ablations on scaling matrix flexibility shows that increasing flexibility slightly improves accuracy (e.g., banded matrix marginally better than diagonal). The corruption exaggerates these gains by swapping values and removing negative trends observed with larger bandwidths, creating an illusion of strictly monotonic improvement. This misrepresents method robustness and risks underreporting overfitting or diminishing returns.",
+    "needs_cross_section": false,
+    "target_find": "As evidenced in Table 3, enhanced flexibility—achieved through W_s^B fine-tuning—provides only marginal performance improvements (0.17% accuracy gain over W_s^D) while introducing overfitting risks when further increasing learnable parameters via expanded banded sizes.",
+    "replacement": "As shown in Table 3, increasing flexibility via W_s^B fine-tuning demonstrates inconsistent improvements, with accuracy fluctuating and dropping under larger bandwidths, suggesting possible overfitting or diminishing returns. These results highlight a trade-off between parameter efficiency and model stability."
+  },
+  {
+    "id": 7,
+    "corruption_type": "rhetorical_presentation_manipulation",
+    "difficulty": "easy",
+    "location": "Conclusion",
+    "rationale": "Use promotional language that oversells the method’s impact.",
+    "error_explanation": "The Conclusion contains phrases asserting that HyperET \"effectively bridges the granularity gap\" and \"consistently improves existing baselines by large margins,\" which overstate the results. Such rhetoric may mislead readers about the degree of empirical validation, especially given the nuanced and sometimes marginal improvements in experiments.",
+    "needs_cross_section": false,
+    "target_find": "Our experiments across multiple MLLM benchmarks demonstrate that HyperET consistently improves existing pre-training and fine-tuning baselines by large margins with less than 1% additional parameters.",
+    "replacement": "Our experiments across several MLLM benchmarks indicate that HyperET can improve baseline performance in some settings with a small parameter increase, though the magnitude of gains varies across tasks."
+  },
+  {
+    "id": 8,
+    "corruption_type": "ethical_integrity_omission",
+    "difficulty": "medium",
+    "location": "Conclusion",
+    "rationale": "Remove any mention of potential risks or limitations of hyperbolic training.",
+    "error_explanation": "The paper’s Conclusion and Acknowledgment omit any discussion of potential ethical risks, biases, or limitations introduced by applying hyperbolic geometry to vision-language models. This omission reduces transparency regarding possible unintended consequences or fairness concerns, which is increasingly important for deploying multi-modal systems.",
+    "needs_cross_section": false,
+    "target_find": "Acknowledgment.\nThis work was supported by the NSFC under Grant 62322604, 62176159, and in part by the Shanghai Municipal Science and Technology Major Project under Grant 2021SHZDZX0102.",
+    "replacement": "Acknowledgment.\nThis work was supported by the NSFC under Grant 62322604, 62176159, and in part by the Shanghai Municipal Science and Technology Major Project under Grant 2021SHZDZX0102. We acknowledge that hyperbolic training techniques may introduce new biases or affect model interpretability, and recommend future work to explore these limitations and ethical considerations explicitly."
+  },
+  {
+    "id": 9,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "medium",
+    "location": "Method",
+    "rationale": "Introduce discrepancy between claimed equivalence of Eq. (5) and matrix parameterization in Sec. 4.2 and flexibility claims in Sec. 4.3.",
+    "error_explanation": "Section 4.2 suggests Eq. (5) with a scalar scaling parameter s is equivalent to using a diagonal scaling matrix with uniform diagonal entries. Section 4.3 then claims matrix parameterization “has significantly enhanced flexibility.” The tension is unaddressed, confusing whether diagonal matrices equal scalar scaling or represent a distinct parameterization with independent parameters. This muddles the method rationale and parameter efficiency interpretation.",
+    "needs_cross_section": true,
+    "target_find": "Notably, Eqs. (5) and (9) become equivalent when \\(\\mathbf{W}_s\\) is constrained to a diagonal matrix with uniform scaling factors, i.e., \\(\\mathbf{W}_s = \\text{diag}(\\omega_1, \\omega_2, \\cdots, \\omega_n) \\in \\mathbb{R}^{n \\times n}\\) and \\(\\omega_i = \\omega_j, i \\neq j\\). Moreover, in alignment with the current paradigm of parameter-efficient fine-tuning, we also introduce a parameter-efficient variant of \\(\\mathbf{W}_s\\), designed to maintain flexibility while reducing computational overhead.",
+    "replacement": "While Eqs. (5) and (9) are stated to be equivalent when \\(\\mathbf{W}_s\\) is a diagonal matrix with uniform scaling factors, this equivalence assumes a strong parameter constraint that reduces flexibility. In contrast, our parameter-efficient variants typically allow non-uniform diagonal entries or block structures, which depart from scalar scaling. This introduces a subtle tension between flexibility and parameter efficiency, requiring careful consideration in implementation."
+  },
+  {
+    "id": 10,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Hide precise hyperparameters and architecture details that impact fair evaluation.",
+    "error_explanation": "Throughout the Experiments section, critical details such as learning rates, batch sizes, number of iterations, and exact integration layers of HyperET are vaguely or incompletely reported. This obscurity affects reproducibility and may mask potential sources of advantage unrelated to the core method, weakening the experimental design integrity.",
+    "needs_cross_section": false,
+    "target_find": "The weights of HyperET in this task are implemented using the three parameter-efficient scaling matrices, i.e., $\\mathbf{W}_s^D$, $\\mathbf{W}_s^{B-D}$ and $\\mathbf{W}_s^B$, and are adapted in the attention layer, consistent with most parameter-efficient tuning methods, e.g., LoRA [24]. The curvature $c$ is 0.01. All experiments are conducted using a maximum of 8 NVIDIA H800 GPUs.",
+    "replacement": "The weights of HyperET are implemented with the three scaling matrices and integrated into the model's attention layers. However, explicit hyperparameters including learning rate, weight decay, batch sizes, training steps, and adapter insertion points are omitted. The sole curvature parameter $c=0.01$ is noted. Training hardware comprises up to 8 NVIDIA H800 GPUs."
+  },
+  {
+    "id": 11,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Alter reported average accuracies in Table 4 to inflate gains from SAM and DINOv2 encoders.",
+    "error_explanation": "Table 4 reports improvements from HyperET when fine-tuning both SAM and DINOv2 vision encoders. The corruption inflates the gains, reporting higher average accuracies than originally presented. This manipulation overstates the generality and effectiveness of HyperET across different encoder types, potentially misleading readers about model robustness.",
+    "needs_cross_section": false,
+    "target_find": "Table 4: Ablation studies of HyperET across vision encoders with varying granularity levels on ScienceQA test set.\n\n| Method                                   | Lang. Model | Vision Encoder | Average        |\n| ---------------------------------------- | ----------- | -------------- | -------------- |\n| MemVP                                    | LLaMA-13B   | DINOv2         | 91.47          |\n| MemVP                                    | LLaMA-13B   | SAM            | 91.16          |\n| Efficient training                       |             |                |                |\n| +WD_se                                   | LLaMA-13B   | DINOv2         | 91.98 (+0.51)  |\n| +WD_se                                   | LLaMA-13B   | SAM            | 92.05 (+0.89)  |\n| Efficient training in hyperbolic space   |             |                |                |\n| +WD_s                                    | LLaMA-13B   | DINOv2         | 93.38 (+1.91)  |\n| +WD_s                                    | LLaMA-13B   | SAM            | 93.74 (+2.58)  |",
+    "replacement": "Table 4: Ablation studies of HyperET across vision encoders with varying granularity levels on ScienceQA test set.\n\n| Method                                   | Lang. Model | Vision Encoder | Average        |\n| ---------------------------------------- | ----------- | -------------- | -------------- |\n| MemVP                                    | LLaMA-13B   | DINOv2         | 92.05          |\n| MemVP                                    | LLaMA-13B   | SAM            | 91.85          |\n| Efficient training                       |             |                |                |\n| +WD_se                                   | LLaMA-13B   | DINOv2         | 92.75 (+0.70)  |\n| +WD_se                                   | LLaMA-13B   | SAM            | 92.67 (+0.82)  |\n| Efficient training in hyperbolic space   |             |                |                |\n| +WD_s                                    | LLaMA-13B   | DINOv2         | 94.12 (+2.07)  |\n| +WD_s                                    | LLaMA-13B   | SAM            | 94.21 (+2.36)  |"
+  },
+  {
+    "id": 12,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "medium",
+    "location": "Appendix",
+    "rationale": "Introduce flawed proof steps in theorem derivations.",
+    "error_explanation": "The appendix theorem derivations for hyperbolic radius scaling and flexibility include algebraic manipulations that violate norms or misapply hyperbolic identities, such as incorrect norm ratios or unjustified expansions of tanh and inverse tanh functions. These flaws undermine the theoretical correctness and rigor of the core mathematical foundation presented.",
+    "needs_cross_section": false,
+    "target_find": "Theorem 1 (Hyperbolic Radius Scaling) For a point X ∈ 𝔻c^n in hyperbolic space, the hyperbolic radius adjustment function is expanded as follows:\ns · Rad_X = (2/√c)(s (√c/2) Rad_X)\n= (2/√c) tanh^−1(√c ∥s ⊗c X∥)\n= Rad_{s ⊗c X}. (18)",
+    "replacement": "Theorem 1 (Revised Flawed) For a point X ∈ 𝔻c^n in hyperbolic space, the hyperbolic radius adjustment is approximately given by:\ns · Rad_X ≈ (2/√c)(s (√c/2) Rad_X)\n≈ (2/√c) tanh^−1(√c ∥s ⊗c X∥)\nHowever, this relation does not strictly hold due to nonlinearities in Möbius multiplication, meaning precise control over radius via scalar multiplication is not guaranteed."
+  },
+  {
+    "id": 13,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Conceal ablation showing efficacy loss when Möbius multiplication disabled.",
+    "error_explanation": "Table 3 and related text note that disabling Möbius multiplication lowers performance, emphasizing its critical role. The corruption removes explicit mention and mute this ablation, obscuring a key experimental validation and weakening the argument that Möbius operations are essential to HyperET's success.",
+    "needs_cross_section": false,
+    "target_find": "Necessity of Möbius matrix multiplication. We conduct ablation studies to evaluate the impact of the Möbius matrix multiplication operation. As shown in Table 3, a comparison between rows 6 and 7 reveals that standard matrix multiplication (denoted by “✗”) underperforms by 0.81% compared to Möbius matrix multiplication (represented by “✓”). This performance gap underscores the essential role of Möbius operations in precisely adjusting the hyperbolic radius of visual representations.",
+    "replacement": "Necessity of Möbius matrix multiplication. We conducted ablations evaluating matrix multiplication types. Results were largely similar regardless of the multiplication operation used. This suggests Möbius multiplication may have limited practical impact on performance."
+  }
+]

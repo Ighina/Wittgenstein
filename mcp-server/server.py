@@ -553,6 +553,159 @@ def analyze_dataset_schema(
 
 
 # ---------------------------------------------------------------------------
+# Specialist tools — fine-tuned model verifiers
+# ---------------------------------------------------------------------------
+
+
+@mcp.tool()
+def run_specialist(
+    specialist_type: str,
+    text: str,
+    snippet_id: str = "",
+    location: str = "",
+    snippet_type: str = "SECTION",
+    model: str = "",
+    metadata: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Run a specialist verifier (fine-tuned model) on a piece of text.
+
+    Each specialist type uses a smaller model fine-tuned for a specific
+    verification task. This is the MCP entry point that the
+    /verify-paper-specialists skill calls instead of invoking generic skills.
+
+    Args:
+        specialist_type: Which specialist to use. One of:
+            "math" — equation/derivation verification
+            "text" — prose/theorem/algorithm consistency
+            "citation" — attribution, novelty, reference integrity
+            "vision" — figures and tables
+            "statistical" — test statistics, p-values, sample sizes
+            "cross-section-consistency" — macro-level section alignment
+            "triage" — uncertainty estimation & routing
+        text: The snippet content to verify.
+        snippet_id: Unique snippet identifier (e.g. "2401.00001::EQUATION::3").
+        location: Human-readable location (e.g. "Equation 7", "Section 3.1").
+        snippet_type: Type of the snippet (SECTION, EQUATION, FIGURE, TABLE,
+            THEOREM, LEMMA, etc.).
+        model: Optional model override. If empty, uses the specialist's default
+            fine-tuned model.
+        metadata: Optional dict with extra context (caption, row_count,
+            image_path, heading_level, etc.).
+
+    Returns:
+        Dict with the specialist's verification result, including:
+        snippet_id, specialist_type, location, status, error_detected,
+        confidence, reasoning, predicted_error_category, execution_time_ms,
+        and any specialist-specific extra fields.
+    """
+    get_specialist = _lazy_import("src.verifiers.specialists", "get_specialist")
+
+    meta = metadata or {}
+
+    try:
+        specialist = get_specialist(
+            specialist_type=specialist_type,
+            model=model if model else None,
+        )
+    except ValueError as exc:
+        return {
+            "snippet_id": snippet_id,
+            "specialist_type": specialist_type,
+            "status": "SKIPPED",
+            "error_detected": False,
+            "confidence": 0.0,
+            "reasoning": f"Invalid specialist type: {exc}",
+            "error": str(exc),
+        }
+
+    result = specialist.verify(
+        text=text,
+        snippet_id=snippet_id,
+        location=location,
+        snippet_type=snippet_type,
+        **meta,
+    )
+
+    return result.to_dict()
+
+
+@mcp.tool()
+def run_triage_specialist(
+    text: str,
+    snippet_id: str = "",
+    location: str = "",
+    snippet_type: str = "SECTION",
+    model: str = "",
+) -> dict[str, Any]:
+    """Run the triage specialist to estimate uncertainty for a single snippet.
+
+    Convenience tool — equivalent to run_specialist with specialist_type="triage".
+    Returns uncertainty (0-1) and suggested route for the snippet.
+
+    Args:
+        text: The snippet content to triage.
+        snippet_id: Unique snippet identifier.
+        location: Human-readable location.
+        snippet_type: Type of the snippet.
+        model: Optional model override.
+
+    Returns:
+        Dict with uncertainty, route, reason, and metadata.
+    """
+    get_specialist = _lazy_import("src.verifiers.specialists", "get_specialist")
+
+    try:
+        specialist = get_specialist(
+            specialist_type="triage",
+            model=model if model else None,
+        )
+    except ValueError as exc:
+        return {
+            "snippet_id": snippet_id,
+            "uncertainty": 0.0,
+            "route": "none",
+            "reason": f"Error: {exc}",
+        }
+
+    result = specialist.verify(
+        text=text,
+        snippet_id=snippet_id,
+        location=location,
+        snippet_type=snippet_type,
+    )
+
+    return result.to_dict()
+
+
+@mcp.tool()
+def list_available_specialists() -> dict[str, Any]:
+    """List all registered specialist types with their default models.
+
+    Returns:
+        Dict mapping specialist_type → default_model and description.
+    """
+    list_specialists_fn = _lazy_import("src.verifiers.specialists", "list_specialists")
+    SPECIALIST_REGISTRY = _lazy_import("src.verifiers.specialists", "SPECIALIST_REGISTRY")
+
+    specialists = {}
+    for name in list_specialists_fn():
+        cls = SPECIALIST_REGISTRY[name]
+        specialists[name] = {
+            "default_model": cls().model,
+            "description": cls.__doc__[:200].strip() if cls.__doc__ else "",
+        }
+
+    return {
+        "specialists": specialists,
+        "count": len(specialists),
+        "usage": (
+            "Use run_specialist(specialist_type, text, ...) to invoke a "
+            "specialist, or run_triage_specialist(text, ...) for triage."
+        ),
+    }
+
+
+# ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
 

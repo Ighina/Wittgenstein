@@ -1,0 +1,167 @@
+[
+  {
+    "id": 1,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "hard",
+    "location": "Method",
+    "rationale": "Misstates the conditional distribution assumption; makes the conditional Gaussian assumption invalid or ambiguous.",
+    "error_explanation": "Section 3.2 formally assumes that the target physical field conditioned on sensor placement and sensor observations is distributed as a conditional zero-mean Gaussian. However, the original real physical distributions tend to be non-Gaussian. This misrepresentation can invalidate subsequent theoretical claims on optimality and bounds relying on this assumption, leading to misleading conclusions.",
+    "needs_cross_section": false,
+    "target_find": "Assumption 3.2 (Conditional Gaussian assumption). We assume the target distribution is conditionally Gaussian, specifically, $\\mathbf{X}_1\\,|\\,(\\mathbf{p},\\mathbf{X}_1(\\mathbf{p}))\\sim\\mathcal{N}(\\mathbf{0},\\Sigma_{\\mathbf{p}})$, where $\\Sigma_{\\mathbf{p}}$ is the covariance matrix determined by the sensor placement $\\mathbf{p}$. Furthermore, $\\mathbf{X}_0$ and $\\mathbf{X}_1$ are mutually independent.",
+    "replacement": "Assumption 3.2 (Conditional Gaussian Assumption - Simplification). For analytical tractability, we approximate the conditional distribution of the physical field given sensor placement $\\mathbf{p}$ and observations $\\mathbf{X}_1(\\mathbf{p})$ as $\\mathbf{X}_1\\,|\\,(\\mathbf{p},\\mathbf{X}_1(\\mathbf{p})) \\approx \\mathcal{N}(\\mu_{\\mathbf{p}}, \\Sigma_{\\mathbf{p}})$, where $\\mu_{\\mathbf{p}}$ and $\\Sigma_{\\mathbf{p}}$ depend on $\\mathbf{p}$. This is a modeling convenience; in practice, the true distribution may be non-Gaussian and multimodal. The independence between $\\mathbf{X}_0$ and $\\mathbf{X}_1$ is retained as a simplifying assumption."
+  },
+  {
+    "id": 2,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "medium",
+    "location": "Method",
+    "rationale": "Theorem 3.5 incorrectly assumes full equality between flow-loss and A-optimal objectives, ignoring model approximation errors and non-idealities.",
+    "error_explanation": "Theorem 3.5 claims a polynomial inequality bounding the flow-loss objective and the classical A-optimal sensor placement objective, emphasizing a tight theoretical guarantee. However, this neglects practical deviations, such as model approximation gaps, non-Gaussian noise, and finite data effects. The strict mutual control stated is thus overoptimistic and could mislead readers about theoretical robustness.",
+    "needs_cross_section": false,
+    "target_find": "Theorem 3.5 (The objectives of two optimal placements are mutually controlled). Under Assumption 3.2, the objectives of two optimal placements can be simplified to\n$$\\mathcal{L}_A(\\mathbf{p})=\\sum_{i=1}^{d}\\lambda_i(\\mathbf{p}),\\quad\n\\mathcal{L}_{\\text{flow}}(\\mathbf{p})=\\sum_{i=1}^{d}\\frac{\\pi}{2}\\sqrt{\\lambda_i(\\mathbf{p})}\\quad(3)$$\nwith eigenvalues $\\{\\lambda_i(\\mathbf{p})\\}_{i=1}^{d}$ of $\\Sigma_{\\mathbf{p}}$. Thus, two objectives control each other via the following inequality:\n$$\\frac{2}{\\pi^2}\\mathcal{L}_{\\text{flow}}^2(\\mathbf{p})\\leq\\mathcal{L}_A(\\mathbf{p})\\leq\\frac{4}{\\pi^2}\\mathcal{L}_{\\text{flow}}^2(\\mathbf{p}).\\quad(4)$$",
+    "replacement": "Theorem 3.5 (Approximate relationship between flow-loss and A-optimal placements). Under Assumption 3.2 and idealized model conditions, the objectives may be related approximately by inequalities of the form:\n$$c_1 \\mathcal{L}_{\\text{flow}}^2(\\mathbf{p}) - \\epsilon \\leq \\mathcal{L}_A(\\mathbf{p}) \\leq c_2 \\mathcal{L}_{\\text{flow}}^2(\\mathbf{p}) + \\epsilon,$$\nwhere $c_1, c_2$ are positive constants and $\\epsilon$ captures deviations arising from model imperfections, estimation noise, and non-Gaussianity. This relation only holds under assumptions and should be treated as a heuristic rather than strict guarantee."
+  },
+  {
+    "id": 3,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Unfair baseline comparison due to using larger computational budgets or epochs for PhySense while restricting baselines.",
+    "error_explanation": "Section 4 describes that all methods use identical training configurations, but later reveals that DiffusionPDE and S³GM use 1000+ or 2000 steps for inference, whereas PhySense uses far fewer steps but achieves better accuracy and speed. This asymmetric use of compute and inference steps introduces bias favoring PhySense, reducing the fairness of performance claims and experimental validity.",
+    "needs_cross_section": false,
+    "target_find": "Due to the computational cost of DiffusionPDE and S³GM—each reconstruction involving thousands of model evaluations—we restrict their evaluation to 500 randomly sampled cases.",
+    "replacement": "To ensure computational fairness, all methods including DiffusionPDE, S³GM, and PhySense are benchmarked using roughly equivalent compute budgets, including inference steps and training epochs. We limit DiffusionPDE and S³GM to at most 500 inference steps per reconstruction, with equally timed training schedules for all methods."
+  },
+  {
+    "id": 4,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Selective reporting of only the best-performing sensor numbers or omission of runs with poorer accuracy.",
+    "error_explanation": "The main tables and descriptions report only select sensor counts (e.g., 30, 50, 100, 200) and do not provide results for lower or intermediate sensor numbers where the model might perform poorly. Additionally, error variance or confidence intervals are generally missing except for some appendices. This cherry-picking obscures potential failure cases and inflates perceived performance robustness.",
+    "needs_cross_section": false,
+    "target_find": "As shown in Table 3, PhySense-opt consistently achieves state-of-the-art performance across all sensor counts (average improvement 62.6%).",
+    "replacement": "While Table 3 highlights only select sensor counts, subsequent analyses (Appendix D) reveal that performance degrades notably at very low sensor numbers (below 10), and variance across runs increases. Inclusion of full sensor count ranges is necessary to fully assess model behavior."
+  },
+  {
+    "id": 5,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "easy",
+    "location": "Abstract",
+    "rationale": "Overstating state-of-the-art results without caveats or recognizing limitations.",
+    "error_explanation": "The Abstract claims that PhySense achieves state-of-the-art accuracy and discovers previously unconsidered sensor placements with theoretical guarantees. However, the theoretical guarantees rely on strong assumptions and approximations, and the experimental superiority is marginal in some benchmarks. The lack of limitation discussion exaggerates the method's universality and impact.",
+    "needs_cross_section": true,
+    "target_find": "Extensive experiments across three challenging benchmarks, especially a 3D geometry dataset, indicate PhySense achieves state-of-the-art physics sensing accuracy and discovers informative sensor placements previously unconsidered.",
+    "replacement": "Extensive experiments across three challenging benchmarks, especially a 3D geometry dataset, demonstrate that PhySense improves physics sensing accuracy and identifies sensor placements that align with physical intuition. However, certain performance gains depend on dataset characteristics and assumptions detailed in the paper."
+  },
+  {
+    "id": 6,
+    "corruption_type": "reference_background_fabrication",
+    "difficulty": "medium",
+    "location": "Introduction",
+    "rationale": "Citing non-existent or misrepresented prior work to boost perceived novelty.",
+    "error_explanation": "The introduction references recent works such as 'Senseiver' and other cutting-edge sparse reconstruction methods with claims that may be exaggerated and includes citations like [41] and [28] without confirming their actual availability or prior art status. It also misattributes certain baseline capabilities to these methods, inflating their relevance to this paper's contributions.",
+    "needs_cross_section": false,
+    "target_find": "Deterministic methods such as VoronoiCNN [14] employ Voronoi-tessellated grids for CNN-based reconstruction, while Senseiver [41] utilizes implicit neural representations [19] to establish correlations between sparse measurements and query points.",
+    "replacement": "Classic methods such as VoronoiCNN [14] utilize Voronoi tessellations in CNN frameworks for reconstruction. Some recent work (e.g., [41]) attempts implicit neural representation-based sparse reconstruction but remains preliminary and with limited generalization. The landscape of sparse-data physical field reconstruction continues to evolve."
+  },
+  {
+    "id": 7,
+    "corruption_type": "ethical_integrity_omission",
+    "difficulty": "easy",
+    "location": "Appendix",
+    "rationale": "Omission of responsible usage or environmental impact considerations related to extensive compute use.",
+    "error_explanation": "While the Appendix includes funding acknowledgements, there is no discussion about potential ethical implications of training large models with extensive compute resources. Missing is any mention of environmental impacts, fairness concerns in sensor placement applications, or data privacy when applying to real-world physical sensing systems, representing a transparency omission.",
+    "needs_cross_section": false,
+    "target_find": "This work was supported by the National Natural Science Foundation of China (62021002 and U2342217), the BNRist Innovation Fund (BNR2024RC01010), and the National Engineering Research Center for Big Data Software.",
+    "replacement": "This work was supported by the National Natural Science Foundation of China (62021002 and U2342217), the BNRist Innovation Fund (BNR2024RC01010), and the National Engineering Research Center for Big Data Software. We acknowledge that large-scale physics sensing models require careful consideration of computational cost, environmental impact, and ethical deployment contexts, which are not fully addressed in this study."
+  },
+  {
+    "id": 8,
+    "corruption_type": "rhetorical_presentation_manipulation",
+    "difficulty": "medium",
+    "location": "Conclusion",
+    "rationale": "Overly promotional tone that exaggerates contributions as definitive advancements.",
+    "error_explanation": "The Conclusion emphasizes that PhySense 'seamlessly integrates' its components with 'theoretical guarantees' and 'state-of-the-art performance,' words that suggest conclusive superiority. The phrasing glosses over limitations and potential failure modes, failing to provide a balanced summary of contribution and shortcomings.",
+    "needs_cross_section": false,
+    "target_find": "Extensive experiments demonstrate state-of-the-art performance across benchmarks, particularly on a complex 3D irregular dataset, while discovering informative sensor placements previously unconsidered.",
+    "replacement": "Extensive experiments indicate strong performance across benchmarks, notably on a complex 3D irregular dataset, and identify sensor placements of interest. Further work is necessary to generalize findings and address limitations discussed."
+  },
+  {
+    "id": 9,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "hard",
+    "location": "Experiments",
+    "rationale": "Conflicting description of the placement optimization procedure: The method claims projected gradient descent is run for 5 epochs, but training details suggest different iteration counts or learning rate schedules causing confusion.",
+    "error_explanation": "Section 4 mentions placement optimization runs for 5 epochs. Later appendices indicate varying learning rates and updates that imply more or fewer iterations, without clear reconciliation. The inconsistency in optimization protocol details complicates reproducibility and raises doubts about reported performance's dependence on hyperparameter tuning.",
+    "needs_cross_section": true,
+    "target_find": "The placement optimization stage runs for 5 epochs with the frozen reconstruction model.",
+    "replacement": "The placement optimization stage is performed iteratively with hyperparameters tuned per benchmark; epoch counts range between 3 and 10 depending on learning rate schedules and convergence criteria. Exact iteration counts are detailed in Appendix C.3 to ensure reproducibility."
+  },
+  {
+    "id": 10,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Incomplete ablation on baseline variants and hyperparameter sensitivity reduces clarity about model robustness.",
+    "error_explanation": "Section 4.4's ablation studies focus on sparse sensor incorporation and variant inputs but omit systematic hyperparameter sensitivity analyses for other critical parameters such as learning rate or number of gradient descent steps. Without these, claims about robustness and generalization may be over-optimistic.",
+    "needs_cross_section": false,
+    "target_find": "Ablations Beyond the main results, we explore how to best incorporate sparse sensor information. We compare our incorporation strategy with an alternative that concatenates an interpolated field—similar to the approaches used in VoronoiCNN [14]. As shown in Table 4, this replacement leads to a significant performance drop, especially under low spatial coverage (e.g., 30 sensors), highlighting the advantage of our method in capturing critical information from scattered sensor observations.",
+    "replacement": "Ablations also include systematic sensitivity analyses to key training hyperparameters such as learning rate, optimizer type, and projected gradient descent iteration counts. These studies reveal moderate sensitivity in very low sensor counts, but overall stable convergence behavior."
+  },
+  {
+    "id": 11,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "In Table 6, placement method performance numbers are suspiciously close and partially duplicated, suggesting possible copy-paste or data manipulation errors.",
+    "error_explanation": "Table 6 reports results for two rows — 'Our PGD on reconstruction model' and 'Optimized Sensors from PhySense'—which have identical numbers for PhySense entries. This duplication without explanation raises questions about whether the data were independently measured or if there was accidental duplication, undermining trustworthiness of the evidence presented.",
+    "needs_cross_section": false,
+    "target_find": "Our PGD on reconstruction model | **0.1388**     | **0.1750**     | **0.3025**    | **0.4570**    | **0.1106**    | **0.1257**    | **0.1558**   | **0.2157**   |\nOptimized Sensors from PhySense | **0.1533**     | **0.1833**     | **0.3035**    | **0.4601**    | **0.1106**    | **0.1257**    | **0.1558**   | **0.2157**   |",
+    "replacement": "Our PGD on reconstruction model | 0.1388 | 0.1750 | 0.3025 | 0.4570 | 0.1106 | 0.1257 | 0.1558 | 0.2157 |\nOptimized Sensors from PhySense | 0.1410 | 0.1780 | 0.3050 | 0.4620 | 0.1120 | 0.1270 | 0.1600 | 0.2200 |"
+  },
+  {
+    "id": 12,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Method",
+    "rationale": "Misleading statement that the projected gradient descent is guaranteed to yield near A-optimal placements despite problem non-convexity and high dimensionality.",
+    "error_explanation": "Section 3.2 claims that the projected gradient descent with flow loss minimization provides near A-optimal placement with theoretical guarantees. Given the high dimensionality and non-convexity of sensor placement problems, gradient methods typically converge only to local minima. The paper does not account for modality or local optimality issues. This overstates the optimization method's efficacy and introduces a flawed expectation of theoretical guarantees.",
+    "needs_cross_section": false,
+    "target_find": "Based on the well-trained reconstructor, we formalize placement optimization as a constrained optimization problem efficiently solved through a newly proposed projected gradient descent strategy to respect spatial constraints, yielding near A-optimal [33] placements with theoretical guarantees.",
+    "replacement": "Based on the well-trained reconstructor, we formulate placement optimization as a constrained nonlinear optimization problem. We employ projected gradient descent to search for locally optimal sensor placements that reduce the flow loss while respecting geometric constraints. Although theoretical guarantees for global near A-optimality remain limited, this practical approach yields improved placements in experiments."
+  },
+  {
+    "id": 13,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "easy",
+    "location": "Experiments",
+    "rationale": "Over-interpretation of visualization and error maps as definitive proof of superior information capture.",
+    "error_explanation": "In multiple figures, visualizations of sensor placements and error maps are presented as strong evidence for sensor placement effectiveness. However, the conclusions drawn ignore variability and potential artifact effects, overstating how well the sensor arrangements capture 'physically meaningful regions' or 'informative regions.' The visual evidence alone is insufficient for such claims.",
+    "needs_cross_section": false,
+    "target_find": "Fig. 4(b) further supports this observation: without any explicit spatial constraints, the learned sensors are distributed in a way that avoids excessive concentration, thereby reducing redundancy and enhancing information gain under the same number of sensors.",
+    "replacement": "Fig. 4(b) visualizes selected sensor placements and error distributions. While these results suggest improved coverage compared to random placement, further quantitative analysis would be required to conclusively determine the relation to information gain and sensor redundancy."
+  },
+  {
+    "id": 14,
+    "corruption_type": "ethical_integrity_omission",
+    "difficulty": "easy",
+    "location": "Appendix",
+    "rationale": "Omission of data privacy considerations and societal impact of sensor deployments.",
+    "error_explanation": "The paper discusses sensor placement for physical systems but omits any mention of privacy concerns or societal implications when sensors are deployed in sensitive environments such as climate monitoring, infrastructure, or industrial systems. This absence weakens ethical transparency and may overlook important risks.",
+    "needs_cross_section": false,
+    "target_find": "## F Broader Impacts\n\nWe introduce PhySense, a synergistic two-stage framework for accurate physics sensing with theoretical guarantees. Extensive experiments validate its superior reconstruction accuracy and informative sensor placements. Beyond performance gains, our work offers a new perspective on the sensor placement problem from a deep learning standpoint. Thus, PhySense may inspire some future research in relevant domains. Moreover, our optimized placement could potentially inform how sensors are placed in more applications, enhancing their reconstruction accuracy.\n\nSince our work is purely focused on algorithmic design for accurate physics sensing, there are no potential negative social impacts or ethical risks.",
+    "replacement": "## F Broader Impacts\n\nWe introduce PhySense, a synergistic two-stage framework for accurate physics sensing with theoretical guarantees. Extensive experiments validate its superior reconstruction accuracy and informative sensor placements. While focused on algorithmic advances, broad deployment of sensor placement strategies should carefully consider data privacy, responsible use cases, and potential societal impacts, which we do not address here.\n\nWe acknowledge that unanticipated risks could arise from privileged placement of sensors and recommend further ethical and regulatory scrutiny."
+  },
+  {
+    "id": 15,
+    "corruption_type": "rhetorical_presentation_manipulation",
+    "difficulty": "easy",
+    "location": "Introduction",
+    "rationale": "Use of promotional language and exaggerated claims to inflate perceived contribution.",
+    "error_explanation": "The Introduction uses phrases such as 'remarkable capabilities,' 'most advanced approach,' and 'our contributions can be summarized as follows' with strongly positive adjectives, which strengthen the perception of novelty and effectiveness without sufficient qualification. Such rhetoric departs from neutral academic tone and can mislead readers about the maturity and completeness of the work.",
+    "needs_cross_section": false,
+    "target_find": "Recent advances in deep learning have demonstrated remarkable capabilities in sparse-data reconstruction, owing to its ability to approximate highly nonlinear mappings [16, 44, 37] between scattered observations and dense physical fields. Current reconstruction methods fall into two categories: deterministic and generative. Deterministic methods such as VoronoiCNN [14] employ Voronoi-tessellated grids for CNN-based reconstruction, while Senseiver [41] utilizes implicit neural representations [19] to establish correlations between sparse measurements and query points. Moreover, due to the inherently ill-posed nature [22] of the reconstruction task, where sparse observations provide insufficient",
+    "replacement": "Recent advances in deep learning have enabled new methods for sparse-data reconstruction by approximating nonlinear mappings [16, 44, 37] between scattered observations and dense physical fields. Reconstruction strategies generally fall into deterministic and generative categories. Some methods such as VoronoiCNN [14] use Voronoi tessellation for CNN-based reconstruction, and Senseiver [41] employs implicit neural representations [19] to relate sparse measurements to queries. Yet the ill-posed nature [22] of reconstruction continues to challenge accuracy and generalization."
+  }
+]

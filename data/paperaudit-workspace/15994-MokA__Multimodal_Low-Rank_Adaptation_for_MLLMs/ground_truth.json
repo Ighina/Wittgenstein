@@ -1,0 +1,167 @@
+[
+  {
+    "id": 1,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "hard",
+    "location": "Method",
+    "rationale": "Equation (3) inaccurately decomposes the update into unimodal and cross-modal parts, mixing notation and wrongly subscripting updates.",
+    "error_explanation": "Equation (3) presents the update \\(\\Delta W \\mathbf{x}\\) as a sum of unimodal updates applied to separated modality tokens concatenated plus an additional cross-modal update. However, the use of concatenation inside a matrix multiplication, combined with semicolons (used to denote vertical concatenation in notation), leads to ambiguous and likely mathematically invalid expressions. Further, the indices labeling the column vectors \\(\\mathbf{x}^{m_i}\\) and matrices \\(\\Delta W_i\\) do not align clearly as they seem mixed between forms. This results in unclear or possibly erroneous derivation that challenges reproducibility and understanding of the core mechanism described in Section 2.1.",
+    "needs_cross_section": false,
+    "target_find": "Therefore, the design of the update mechanism should ensure that both types of information are properly captured during the forward pass:\n\n$$h = W_0\\mathbf{x} + \\Delta W \\mathbf{x} = W_0\\mathbf{x} + \\Delta W [\\mathbf{x}^{m_1}; \\mathbf{x}^{m_2}; \\cdots; \\mathbf{x}^{m_n}],$$ (2)\n\n$$= W_0\\mathbf{x} + \\underbrace{[\\Delta W_1\\mathbf{x}^{m_1}; \\Delta W_2\\mathbf{x}^{m_2}; \\cdots; \\Delta W_n\\mathbf{x}^{m_n}]}_{\\text{unimodal adaptation}} + \\underbrace{\\Delta W_{\\text{cross}}[\\mathbf{x}^{m_1}; \\mathbf{x}^{m_2}; \\cdots; \\mathbf{x}^{m_n}]}_{\\text{cross-modal adaptation}},$$ (3)\n\nwhere $n$ is the number of modalities. $\\mathbf{x}^{m_i}$ is the token sequence of modality $i$. $\\Delta W_i$ is the unimodal update parameters of modality $i$, and $\\Delta W_{\\text{cross}}$ is cross-modal update parameters.",
+    "replacement": "Therefore, the design of the update mechanism should ensure that both types of information are properly captured during the forward pass:\n\n$$h = W_0\\mathbf{x} + \\Delta W \\mathbf{x} = W_0\\mathbf{x} + \\sum_{i=1}^n \\Delta W_i \\mathbf{x}^{m_i} + \\Delta W_{\\mathrm{cross}} \\mathbf{x},$$\n\nwhere $n$ is the number of modalities, $\\mathbf{x}^{m_i}$ denotes tokens of modality $i$, $\\Delta W_i$ captures unimodal updates for modality $i$, and $\\Delta W_{\\mathrm{cross}}$ applies cross-modal adaptation across all modalities jointly. This formulation ensures separate unimodal adaptations while allowing integration of cross-modal information through $\\Delta W_{\\mathrm{cross}}$."
+  },
+  {
+    "id": 2,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "medium",
+    "location": "Method",
+    "rationale": "In Section 2.2.2, the cross-attention equations use \\(N_t\\) as scaling but misapply it as the sqrt divisor for dot-products which should use feature dimensionality, not token length.",
+    "error_explanation": "The cross-attention formulas in Section 2.2.2 scale the dot products by $\\sqrt{N_t}$, where $N_t$ is the length of text tokens. Typically, attention scaling divides by the square root of the query/key dimensionality to stabilize gradients, not the token sequence length. Using $N_t$ here confuses input length dimension with vector embedding dimension, misrepresenting the mathematical correctness of the attention score computation.",
+    "needs_cross_section": false,
+    "target_find": "$$\\text{Att}\\left(A^a\\mathbf{x}^a, A^t\\mathbf{x}^t, A^t\\mathbf{x}^t\\right) = \\text{softmax}\\left(\\frac{(A^a\\mathbf{x}^a)(A^t\\mathbf{x}^t)^\\top}{\\sqrt{N_t}}\\right)A^t\\mathbf{x}^t,$$\n(5)\n\n$$\\text{Att}\\left(A^v\\mathbf{x}^v, A^t\\mathbf{x}^t, A^t\\mathbf{x}^t\\right) = \\text{softmax}\\left(\\frac{(A^v\\mathbf{x}^v)(A^t\\mathbf{x}^t)^\\top}{\\sqrt{N_t}}\\right)A^t\\mathbf{x}^t.$$",
+    "replacement": "$$\\text{Att}\\left(A^a\\mathbf{x}^a, A^t\\mathbf{x}^t, A^t\\mathbf{x}^t\\right) = \\text{softmax}\\left(\\frac{(A^a\\mathbf{x}^a)(A^t\\mathbf{x}^t)^\\top}{\\sqrt{d}}\\right) A^t\\mathbf{x}^t,$$\n\n$$\\text{Att}\\left(A^v\\mathbf{x}^v, A^t\\mathbf{x}^t, A^t\\mathbf{x}^t\\right) = \\text{softmax}\\left(\\frac{(A^v\\mathbf{x}^v)(A^t\\mathbf{x}^t)^\\top}{\\sqrt{d}}\\right) A^t\\mathbf{x}^t,$$\n\nwhere $d$ is the dimensionality of the projected token embeddings, ensuring correct normalization during attention calculation."
+  },
+  {
+    "id": 3,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "The pre-training stage of Qwen2.5-VL freezes the official visual connector with no fine-tuning, limiting adaptation fairness compared to other backbones.",
+    "error_explanation": "Section 4.1 mentions that in Qwen2.5-VL, the official visual connector remains frozen during fine-tuning, which restricts improvements stemming from visual input processing. This creates an asymmetry in the experimental setup compared to LLaMA-2 and Qwen2 where visual connectors are trainable. Consequently, the comparison is biased and unfair since Qwen2.5-VL is handicapped by design, reducing the validity of claims about relative performance between backbones using MokA.",
+    "needs_cross_section": false,
+    "target_find": "In addition, Qwen2.5-VL with LoRA outperforms both LLaMA-2 and Qwen2 under the LoRA fine-tuning setting. But when using MokA, the performance of Qwen2.5-VL is slightly lower than that of LLaMA-2 and Qwen2. A possible reason is that the official visual connector in Qwen2.5-VL.",
+    "replacement": "In addition, Qwen2.5-VL with LoRA outperforms both LLaMA-2 and Qwen2 under the LoRA fine-tuning setting. However, unlike other backbones, the official visual connector in Qwen2.5-VL remains frozen during fine-tuning, limiting the model's ability to adapt to visual inputs fully. This restriction potentially handicaps the performance gains achievable with MokA, reducing the fairness of backbone comparisons."
+  },
+  {
+    "id": 4,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "hard",
+    "location": "Experiments",
+    "rationale": "Table 2 reports inconsistent evaluation metrics: MME scores are unrealistically high by two orders of magnitude versus literature, and inconsistent with other benchmarks.",
+    "error_explanation": "The MME column in Table 2 contains values above 900 for LoRA and even exceeds 1000 for MokA. Previous literature reports MME scores in the range below 100, indicating a severe mismatch or misrepresentation of metric scaling or reporting units. This undermines trust in the reported improvements and comparison. Such experimental evidence inconsistency must be clarified since erroneous or mis-scaled results compromise the experimental contribution.",
+    "needs_cross_section": false,
+    "target_find": "| LLaMA2 | LoRA                      | 908.52  | 50.64   | 70.28 | 39.71      | 1     | 1  |",
+    "replacement": "| LLaMA2 | LoRA                      | 90.85   | 50.64   | 70.28 | 39.71      | 1     | 1  |"
+  },
+  {
+    "id": 5,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "medium",
+    "location": "Abstract",
+    "rationale": "The abstract claims \"consistent improvements\" and \"full assessment\" though some experiments show only marginal or dataset-specific gains.",
+    "error_explanation": "The abstract states the proposed method yields \"consistent improvements\" across diverse scenarios and \"fully assess our method.\" However, detailed experiments reveal some backbones (e.g., Qwen2.5-VL) gaining less or showing marginal benefits. Certain tasks show narrow margins, and ablations indicate significant gains depend heavily on cross-attention. The claim overgeneralizes the level of consistent success, not fully reflecting heterogeneous experimental outcomes, leading to an optimistic distortion of evidence.",
+    "needs_cross_section": true,
+    "target_find": "Overall, we think MokA provides a more targeted solution for efficient adaptation of MLLMs, paving the way for further exploration. The project page is at https://gewu-lab.github.io/MokA.",
+    "replacement": "Overall, we believe MokA advances targeted multimodal fine-tuning by enabling unimodal and cross-modal adaptation. While improvements are promising across several settings, gains vary among backbones and modalities, suggesting further exploration is needed to fully assess its generality and robustness. The project page is at https://gewu-lab.github.io/MokA."
+  },
+  {
+    "id": 6,
+    "corruption_type": "ethical_integrity_omission",
+    "difficulty": "easy",
+    "location": "Appendix",
+    "rationale": "Remove the discussion acknowledging potential risks from Section 7 (Broader impacts), erasing ethical transparency.",
+    "error_explanation": "The Broader impacts section carefully acknowledges risks such as biased data influences and misuse in sensitive contexts. Removing or weakening this section obscures important ethical considerations, risks undermining accountability, and disregards community norms encouraging transparency. Such omission could lead to unacknowledged biases or harms in downstream uses without responsible mitigation strategies.",
+    "needs_cross_section": false,
+    "target_find": "In this paper, we aim to contribute to the efficient fine-tuning of MLLMs, particularly how they process and integrate information from different modalities. Improvements in this area may support downstream applications in fields like autonomous driving and education. At the same time, this line of research carries certain risks. For example, there is a possibility that MLLMs could reflect or amplify biases present in the training data, or be misused in sensitive contexts. We do not directly address these issues in this work, but acknowledge them as important areas for future research. All datasets used are publicly available, and we follow standard filtering procedures to reduce exposure to harmful content.",
+    "replacement": "In this paper, we aim to contribute to the efficient fine-tuning of MLLMs. All datasets used are publicly available, and we follow standard filtering procedures."
+  },
+  {
+    "id": 7,
+    "corruption_type": "rhetorical_presentation_manipulation",
+    "difficulty": "medium",
+    "location": "Conclusion",
+    "rationale": "Rewrote the conclusion to use absolute language and inflated adjectives that exaggerate the novelty and impact of MokA.",
+    "error_explanation": "The conclusion states MokA as a \"preliminary step\" but also heavily promotes it as a definitive advance with \"ensuring\" properties and highlights future potential with inflated phrases. This rhetoric artificially strengthens the perceived contribution rather than objectively summarizing limitations. It gives an impression of having solved fundamental challenges completely, which is unsupported by the nuanced experimental evidence, thus misleading readers about the contribution's scope and novelty.",
+    "needs_cross_section": false,
+    "target_find": "In this paper, we argue that both unimodal adaptation and cross-modal adaptation are essential parts for the effective fine-tuning of MLLMs, yet have largely been neglected before. To this end, we propose Multimodal low-rank Adaptation (MokA) for efficient multimodal fine-tuning. MokA redefines the roles of low-rank matrices A and B, ensuring unimodal information is preserved while enhancing cross-modal interaction via cross-attention. We think MokA is a preliminary step toward multimodal-aware adaptation, highlighting the potential for future extensions that jointly consider both unimodal and cross-modal adaptation.",
+    "replacement": "This work completely solves the problem of multimodal adaptation in large language models by introducing MokA, a groundbreaking strategy that perfectly balances unimodal preservation and cross-modal enhancement. MokA's novel low-rank decomposition with cross-attention absolutely ensures superior model performance and sets a new standard for fine-tuning MLLMs. This definitive advancement paves the way for final, conclusive exploration of multimodal-aware adaptation."
+  },
+  {
+    "id": 8,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "hard",
+    "location": "Experiments",
+    "rationale": "In Table 3, some baseline values outperform the proposed method MokA on MMAU and AIR-Bench, which contradicts the main claim of MokA's superiority.",
+    "error_explanation": "In Table 3, several baseline methods like 'Uni-modal LoRA' and 'Multiple LoRA' occasionally report better results than MokA on selected metrics, yet the text glosses over or omits this contradiction. These inconsistent data points undermine the claim of universal superiority for MokA and suggest selective reporting or cherry-picking. This challenges the trustworthiness of conclusions drawn and warrants a detailed discussion.",
+    "needs_cross_section": false,
+    "target_find": "| LLaMA2 | LoRA                      | 30.33 | 31.75     | 1     | 1  |\n|        | Multiple LoRA             | 29.73 | 31.91     | N     | N  |\n|        | LoRAMoE [8]               | 27.63 | 33.97     | N     | N  |\n|        | DoRA [21]                 | 26.73 | 34.36     | 1     | 1  |\n|        | HydraLoRA [29]            | 29.13 | 31.66     | 1     | N  |\n|        | Uni-modal LoRA [1]        | 38.14 | 35.14     | N     | N  |\n|        | Uni LoRA + MM LoRA        | 37.54 | 32.56     | N + 1 | 2  |\n|        | Uni LoRA + MM LoRA + Gate | 32.13 | 33.04     | N + 1 | 2  |\n|        | ⚡ MokA                    | 38.44 | 39.64     | N     | 1  |",
+    "replacement": "| LLaMA2 | LoRA                      | 30.33 | 31.75     | 1     | 1  |\n|        | Multiple LoRA             | 31.10 | 32.80     | N     | N  |\n|        | LoRAMoE [8]               | 32.45 | 34.28     | N     | N  |\n|        | DoRA [21]                 | 29.00 | 33.50     | 1     | 1  |\n|        | HydraLoRA [29]            | 30.50 | 32.00     | 1     | N  |\n|        | Uni-modal LoRA [1]        | 36.80 | 36.50     | N     | N  |\n|        | Uni LoRA + MM LoRA        | 37.10 | 37.60     | N + 1 | 2  |\n|        | Uni LoRA + MM LoRA + Gate | 32.13 | 33.04     | N + 1 | 2  |\n|        | ⚡ MokA                    | 35.40 | 36.70     | N     | 1  |"
+  },
+  {
+    "id": 9,
+    "corruption_type": "reference_background_fabrication",
+    "difficulty": "easy",
+    "location": "References",
+    "rationale": "Reference [1] 'Phi-4-Mini' and further technical reports for Qwen2.5 and Qwen3 appear fabricated, given publication years beyond knowledge cutoff.",
+    "error_explanation": "References [1], [2], and [35] cite technical reports for 'Phi-4-Mini,' 'Qwen2.5-VL,' and 'Qwen3' dating from 2024 or 2025, which likely do not exist or are not publicly accessible in peer-reviewed or recognized venues. The reports have suspicious arXiv IDs and large author lists with promotional titles, suggesting these are invented or prematurely cited resources to bolster novelty claims unfairly. Such fabrications mislead readers and reviewers about the scholarly grounding of the paper.",
+    "needs_cross_section": false,
+    "target_find": "[1] Abdelrahman Abouelenin, Atabak Ashfaq, Adam Atkinson, Hany Awadalla, Nguyen Bach, Jianmin Bao, Alon Benhaim, Martin Cai, Vishrav Chaudhary, Congcong Chen, et al. Phi-4-Mini technical report: Compact yet powerful multimodal language models via mixture-of-LoRAs. arXiv preprint arXiv:2503.01743, 2025.\n\n[2] Shuai Bai, Keqin Chen, Xuejing Liu, Jialin Wang, Wenbin Ge, Sibo Song, Kai Dang, Peng Wang, Shijie Wang, Jun Tang, et al. Qwen2.5-VL technical report. arXiv preprint arXiv:2502.13923, 2025.\n\n[35] An Yang, Anfeng Li, Baosong Yang, Beichen Zhang, Binyuan Hui, Bo Zheng, Bowen Yu, Chang Gao, Chengen Huang, Chenxu Lv, Chujie Zheng, Dayiheng Liu, Fan Zhou, Fei Huang, Feng Hu, Hao Ge, Haoran Wei, Huan Lin, Jialong Tang, Jian Yang, Jianhong Tu, Jianwei Zhang, Jianxin Yang, Jiaxi Yang, Jing Zhou, Jingren Zhou, Junyang Lin, Kai Dang, Keqin Bao, Kexin Yang, Le Yu, Lianghao Deng, Mei Li, Mingfeng Xue, Mingze Li, Pei Zhang, Peng Wang, Qin Zhu, Rui Men, Ruize Gao, Shixuan Liu, Shuang Luo, Tianhao Li, Tianyi Tang, Wenbiao Yin, Xingzhang Ren, Xinyu Wang, Xinyu Zhang, Xuancheng Ren, Yang Fan, Yang Su, Yichang Zhang, Yinger Zhang, Yu Wan, Yuqiong Liu, Zekun Wang, Zeyu Cui, Zhenru Zhang, Zhipeng Zhou, and Zihan Qiu. Qwen3 technical report, 2025.",
+    "replacement": "[1] Edward J. Hu, Yelong Shen, Phillip Wallis, Zeyuan Allen-Zhu, Yuanzhi Li, Shean Wang, Lu Wang, Weizhu Chen, et al. LoRA: Low-Rank Adaptation of Large Language Models. ICLR, 2022.\n\n[2] Alec Radford, Jong Wook Kim, Tao Xu, Greg Brockman, Christine McLeavey, and Ilya Sutskever. Robust Speech Recognition via Large-Scale Weak Supervision. In International Conference on Machine Learning, pages 28492–28518. PMLR, 2023.\n\n[35] Hugo Touvron, Thibaut Lavril, Gautier Izacard, Xavier Martinet, Marie-Anne Lachaux, Timothée Lacroix, Baptiste Rozière, Naman Goyal, Eric Hambro, Faisal Azhar, et al. LLaMA: Open and Efficient Foundation Language Models. arXiv preprint arXiv:2302.13971, 2023."
+  },
+  {
+    "id": 10,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "hard",
+    "location": "Introduction",
+    "rationale": "The introduction claims unimodal and cross-modal parts are equally critical, but experiments in Figure 1 show that using only text tokens nearly matches full multimodal performance, suggesting unimodal adaptation dominates.",
+    "error_explanation": "Introduction Section 1 argues for the equal importance of unimodal and cross-modal adaptation based on partial modality inference experiments, which surprisingly show text token inference nearly matches full performance, whereas non-text tokens cause drops. This conflicts with the claim that cross-modal adaptation is equally critical since text dominates fine-tuning. Such mismatch between narrative claims and experimental evidence results in an inconsistent global paper narrative that undermines the purported need for balanced multimodal adaptation.",
+    "needs_cross_section": true,
+    "target_find": "The above results suggest that the optimization of all-modality-shared LoRA parameters is overly influenced by text tokens, resulting in non-text tokens being less effectively utilized during fine-tuning. Although these all-modality-shared parameters implicitly improve cross-modal interaction, this phenomenon reveals the need to consider individual modality during fine-tuning. This fact inspires us that unimodal and cross-modal adaptation are equally critical in the fine-tuning of MLLMs, which is mostly ignored as mentioned above.",
+    "replacement": "The above results suggest that the optimization of all-modality-shared LoRA parameters is overwhelmingly influenced by text tokens, resulting in non-text tokens being less effectively utilized during fine-tuning. This points to unimodal adaptation, especially for text, as the dominant factor, raising questions about the relative importance of cross-modal adaptation. While cross-modal parameters can improve interaction, their impact appears secondary in this empirical setting."
+  },
+  {
+    "id": 11,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "The inference protocol used partial modality inference for evaluating utilization, which disables the cross-attention and thus significantly biases performance comparisons.",
+    "error_explanation": "The partial modality inference experiments feed only one modality's tokens through the LoRA adaptation during the first generation step, but the pretrained weights receive full tokens. However, cross-attention requires simultaneous presence of text and non-text inputs, so it is disabled during this process. This artificial restriction biases the evaluation against modalities other than text, inflating text token utility and underestimating cross-modal adaptation benefits. The protocol thus partially invalidates fair comparison of token utilization.",
+    "needs_cross_section": false,
+    "target_find": "To further observe how well tokens of different modalities are utilized, we conduct partial modality inference experiments. The training stage retains the original setting, wherein all multimodal tokens are processed by the LoRA module. Specifically, we evaluate the model’s performance when only tokens from a selected modality are passed through the LoRA adaptation pathway at the prefilling stage during inference. As illustrated in Figure 1c, visual token inference is used as an example. And it should be noted that the pre-trained weights still receive full tokens of all modalities.",
+    "replacement": "To further study token utilization, we conduct partial modality inference experiments where during inference, only tokens from a selected modality are passed through the LoRA adaptation pathway. However, this setup disables the cross-attention mechanism which requires simultaneous text and non-text tokens, potentially biasing results by isolating modalities and impairing cross-modal interaction evaluation."
+  },
+  {
+    "id": 12,
+    "corruption_type": "rhetorical_presentation_manipulation",
+    "difficulty": "easy",
+    "location": "Related Work",
+    "rationale": "Modify the related work to use promotional, subjective, and exaggerated language presenting MokA as a superior, unique breakthrough.",
+    "error_explanation": "The related work section is altered by appending superlative and marketing-like phrases, stating MokA is a \"targeted solution for efficient and effective multimodal adaptation\" and verbalizing it as a definitive breakthrough rather than a preliminary or complementary approach. This stylistic change inflates its significance relative to prior work without proportional evidence, overstating novelty and contribution beyond objective scholarly tone.",
+    "needs_cross_section": false,
+    "target_find": "To address this gap, we propose MokA, a fine-tuning strategy specifically designed for MLLMs. It explicitly ensures both unimodal and cross-modal adaptation to better preserve unimodal representations and enhance cross-modal interaction, offering a targeted solution for efficient and effective multimodal adaptation.",
+    "replacement": "To address this gap, we proudly propose MokA, a unique and superior fine-tuning strategy tailored for MLLMs. MokA boldly guarantees both unimodal preservation and enhanced cross-modal interaction, delivering an unmatched, targeted solution that redefines efficient and effective multimodal adaptation."
+  },
+  {
+    "id": 13,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "In Table 6, the inference latency increase for MokA is understated relative to actual numbers from Appendix D, misleading on efficiency costs.",
+    "error_explanation": "Table 6 reports MokA at 1.069× average forward time compared to LoRA's 1.000×, suggesting a modest 6.9% increase. However, data in Appendix Tables 8–10 show increases up to 13.4% and 21.3% in more modalities setups, notably higher than described. This misrepresents the computational cost, understating the true overhead of MokA, misleading readers about trade-offs between performance improvements and efficiency.",
+    "needs_cross_section": false,
+    "target_find": "| Method        | Trainable / Total Parameters | Avg. forward time per sample | POPE Acc |\n| ------------- | ---------------------------- | ---------------------------- | -------- |\n| LoRA [12]     | 1.27%                        | 1.000 ×                      | 70.28    |\n| Multiple LoRA | 1.43%                        | 1.006 ×                      | 68.20    |\n| ✔ MokA        | 1.33%                        | 1.069 ×                      | 74.23    |",
+    "replacement": "| Method        | Trainable / Total Parameters | Avg. forward time per sample | POPE Acc |\n| ------------- | ---------------------------- | ---------------------------- | -------- |\n| LoRA [12]     | 1.27%                        | 1.000 ×                      | 70.28    |\n| Multiple LoRA | 1.43%                        | 1.021 ×                      | 68.20    |\n| ✔ MokA        | 1.33%                        | 1.134 ×                      | 74.23    |"
+  },
+  {
+    "id": 14,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "The description in 4.4 states that text tokens remain unchanged during cross-attention, but Table 4 variant cross-attention* modifies text tokens, creating conflicting explanations.",
+    "error_explanation": "Section 4.4's discussion mentions the original MokA cross-attention module keeps text tokens unchanged while enhancing non-text tokens. However, the cross-attention* variant described in Table 4 reverses query/key roles and updates text tokens. This inconsistency is unexplained in the narrative, creating confusion about the intended mechanism and undermining clarity about comparative variant functioning.",
+    "needs_cross_section": true,
+    "target_find": "The cross-attention* variant also adopts a cross-attention mechanism; however, it uses text tokens as queries. Consequently, the updated text tokens integrate information from the relevant non-text tokens—reversing the direction of interaction compared to the original MokA. The naive interaction variant performs a simple, uniform mapping from text tokens to non-text tokens without employing any attention mechanism.",
+    "replacement": "The cross-attention* variant also adopts a cross-attention mechanism; this time using text tokens as queries, which results in modification of the text token representations. This contrasts with the original MokA where text tokens remain static and only non-text tokens are updated. This reversal leads to differing behavior in how cross-modal information is integrated, with potential impacts on language modeling capabilities."
+  },
+  {
+    "id": 15,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "medium",
+    "location": "Method",
+    "rationale": "Section 2.2.4 equation (13) omits applying matrix B to the zero vector for text token cross-modal updates, leading to inconsistent formulation.",
+    "error_explanation": "In Equation (13), the cross-modal adaptation term is given as $[B\\text{Att}_{a,t,t}; B\\text{Att}_{v,t,t}; \\mathbf{0}_{N_t}]$ where the text token cross-attention output is a zero vector. However, the unimodal adaptation terms apply B to the respective As. The absence of B multiplied by zeros for text's cross modal update breaks notation consistency and confuses interpretation regarding projection and parameterization. A consistent formulation should apply matrix B uniformly.",
+    "needs_cross_section": false,
+    "target_find": "$$= W_0\\mathbf{x} + \\underbrace{[BA^a\\mathbf{x}^a; BA^v\\mathbf{x}^v; BA^t\\mathbf{x}^t]}_{\\text{unimodal adaptation}} + \\underbrace{[B\\text{Att}_{a,t,t}; B\\text{Att}_{v,t,t}; \\mathbf{0}_{N_t}]}_{\\text{cross-modal adaptation}},$$",
+    "replacement": "$$= W_0\\mathbf{x} + \\underbrace{[BA^a\\mathbf{x}^a; BA^v\\mathbf{x}^v; BA^t\\mathbf{x}^t]}_{\\text{unimodal adaptation}} + \\underbrace{[B\\text{Att}_{a,t,t}; B\\text{Att}_{v,t,t}; B\\mathbf{0}_{N_t}]}_{\\text{cross-modal adaptation}},$$"
+  }
+]

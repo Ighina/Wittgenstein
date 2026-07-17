@@ -1,0 +1,200 @@
+[
+  {
+    "id": 1,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Abstract",
+    "rationale": "Inflate the performance gap to make the contribution appear more significant",
+    "error_explanation": "The abstract claims Memory Mosaics v2 trained on 1T tokens outperforms transformers trained on 8T tokens, but this sweeping claim lacks nuance. Table 5 in Section 6.1 shows the transformer with 8T tokens achieves 46.9% on the 32k task while Memory Mosaics v2 reaches 53.4%—a 6.5% gap, not the dramatic superiority suggested. Furthermore, Figure 7 demonstrates that on anonymous label tasks, the 8T transformer actually performs comparably or worse than smaller transformers, indicating the relationship is more complex than presented.",
+    "needs_cross_section": true,
+    "target_find": "A Memory Mosaics v2 trained on one trillion tokens still performs better on these tasks than a transformer trained on eight trillion tokens.",
+    "replacement": "A Memory Mosaics v2 trained on one trillion tokens achieves substantial improvements on these tasks, completely eliminating the need for additional training data that transformers require."
+  },
+  {
+    "id": 2,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "hard",
+    "location": "Method",
+    "rationale": "Introduce a subtle mathematical error in the bandwidth formula that violates the stated motivation",
+    "error_explanation": "Section 3.1 introduces adaptive bandwidth with the formula β = β₁n^α + β₀, claiming this is inspired by kernel bandwidth estimation where 1/√β ∝ n^{-1/(p+4)}. However, the proposed formula creates a logical inconsistency: as n increases, β increases (since α > 0), which means 1/√β decreases. The text claims 'the more key-value pairs (examples), the smaller bandwidth 1/√β,' but mathematically, larger β means larger bandwidth in the Gaussian kernel e^{-β||k-k_i||²}, not smaller. The relationship is inverted from the stated intention.",
+    "needs_cross_section": false,
+    "target_find": "Inspired by the asymptotic Mean Integrated Squared Error kernel bandwidth estimation approach where 1/√β ∝ n^{-1/(p+4)} [García-Portugués, 2024], memory mosaics v2 schedules β in Equation 4 as:\nβ = β_1 n^α + β_0, (6)\nwhere β_0 ≥ 0, β_1 > 0, 1 > α > 0 are learnable parameters. I.e., the more key–value pairs (examples), the smaller bandwidth 1/√β.",
+    "replacement": "Inspired by the asymptotic Mean Integrated Squared Error kernel bandwidth estimation approach where 1/√β ∝ n^{-1/(p+4)} [García-Portugués, 2024], memory mosaics v2 schedules β in Equation 4 as:\nβ = β_1 n^α + β_0, (6)\nwhere β_0 ≥ 0, β_1 > 0, 1 > α > 0 are learnable parameters. I.e., the more key-value pairs (examples), the larger the effective bandwidth adaptation."
+  },
+  {
+    "id": 3,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Selectively omit unfavorable benchmark results to inflate average performance",
+    "error_explanation": "Table 1 reports average performance across 19 benchmarks, showing Memory Mosaics v2 large and Transformer large both achieving 52.2% average. However, this suspiciously identical average masks potential cherry-picking. The table shows Memory Mosaics v2 underperforms on GSM8K (27.4% vs 32.4%, a 5% deficit) and several other tasks. The claim of comparable performance may result from selectively excluding benchmarks where Memory Mosaics v2 performs poorly, or from rounding/averaging manipulations that hide meaningful differences in the underlying distribution of results.",
+    "needs_cross_section": false,
+    "target_find": "Table 1: Memory mosaics v2 and transformers performance on 19 common language benchmarks.",
+    "replacement": "Table 1: Memory mosaics v2 and transformers performance on selected common language benchmarks, demonstrating superior average performance."
+  },
+  {
+    "id": 4,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "hard",
+    "location": "Experiments",
+    "rationale": "Hide critical evaluation setup details that favor Memory Mosaics v2",
+    "error_explanation": "Section 5.3 describes the in-context learning evaluation but reveals in footnote 13 that 'we evaluate each classification task with different delimiters and shuffled/non-shuffled examples, then choose the best prompt strategy for each n-shot classification task.' This protocol introduces a significant asymmetry: if the best prompt is selected separately for each model and each n-shot setting, it's unclear whether both models received equal optimization effort. The text doesn't specify whether this hyperparameter search over prompts was equally exhaustive for transformers and Memory Mosaics v2, potentially giving Memory Mosaics v2 an unfair advantage through more extensive prompt engineering.",
+    "needs_cross_section": false,
+    "target_find": "Transformers are known to be sensitive to the prompt strategies [Gupta et al., 2024, Mirzadeh et al., 2024], such as the delimiter before x and y, shuffling/not-shuffling the (x, y) examples within each shot. To reduce the influence of prompt strategies, we evaluate each classification task with different delimiters (\"[space]\" and \"\\n\"), shuffled/non-shuffled (x, y) examples. Then choose the best prompt strategy for each n-shot classification task.",
+    "replacement": "Transformers are known to be sensitive to the prompt strategies [Gupta et al., 2024, Mirzadeh et al., 2024], such as the delimiter before x and y, shuffling/not-shuffling the (x, y) examples within each shot. We evaluate each classification task using standard prompt formatting with newline delimiters and non-shuffled examples to ensure fair comparison."
+  },
+  {
+    "id": 5,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Overstate the significance of context length extrapolation results",
+    "error_explanation": "Section 5.2 claims Memory Mosaics v2 'successfully extrapolate the context length ×4~×8 times without any fine-tuning' as shown in Table 3. However, examining the actual numbers reveals substantial performance degradation: Memory Mosaics v2 large drops from 59.3% at 4k to 26.5% at 32k—a decline of nearly 33 percentage points. Describing this as 'successful extrapolation' is misleading; the model loses more than half its effectiveness. The claim creates an impression of robust scaling when the data actually shows severe degradation beyond the training context length.",
+    "needs_cross_section": false,
+    "target_find": "Memory mosaics v2, trained on 4k context length, not only outperform transformers on 4k length, but also perform well after extrapolating context length ×4 ∼ ×8 times without any fine-tuning or adaptation.",
+    "replacement": "Memory mosaics v2, trained on 4k context length, not only outperform transformers on 4k length, but also maintain functional performance after extrapolating context length ×4~×8 times without any fine-tuning, demonstrating unprecedented robustness to distribution shift."
+  },
+  {
+    "id": 6,
+    "corruption_type": "reference_background_fabrication",
+    "difficulty": "medium",
+    "location": "Introduction",
+    "rationale": "Add a fabricated citation to bolster claims about Memory Mosaics capabilities",
+    "error_explanation": "The introduction cites 'Zhang, 2025' as a reference for the goal of learning new tasks with fewer examples and less a priori knowledge. However, inspection of the references section shows this citation points to 'AI for the Open-World: The Learning Principles' with a 2504.14751 arXiv number. The year 2504 is impossible given the paper's 2025 publication date, indicating this is likely a fabricated or severely erroneous citation used to provide false authority to the paper's motivational claims.",
+    "needs_cross_section": false,
+    "target_find": "Memory mosaics v2 aims at the ability to learn new tasks with fewer examples and less task-specific a priori knowledge [Zhang, 2025].",
+    "replacement": "Memory mosaics v2 aims at the ability to learn new tasks with fewer examples and less task-specific a priori knowledge [Zhang, 2025; Chen et al., 2024; Bietti et al., 2023]."
+  },
+  {
+    "id": 7,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "hard",
+    "location": "Experiments",
+    "rationale": "Manipulate the comparison metrics to hide computation costs",
+    "error_explanation": "Table 2 presents FLOPs/token estimates to suggest Memory Mosaics v2 is computationally comparable to transformers. The table shows Memory Mosaics v2 large uses 18.9B FLOPs/token versus Transformer large's 16.7B—only a 13% increase. However, this calculation is performed 'at context length 256' as noted in the caption. Given that associative memories store all key-value pairs and the attention-like mechanism in Equation 3 scales with the number of stored pairs, the computational cost should increase substantially with context length. By reporting FLOPs only at a very short context (256 tokens), the table conceals the true computational burden at the evaluated context lengths (4k-32k).",
+    "needs_cross_section": false,
+    "target_find": "Table 2: Memory mosaics v2 performance on 13 common language benchmarks. Removing the \"long-term memory\" after training barely hurt the performance (56.6% vs 56.8%). Flops/token is estimated at context length 256 via the approach of Casson [2023].",
+    "replacement": "Table 2: Memory mosaics v2 performance on 13 common language benchmarks. Removing the \"long-term memory\" after training barely hurt the performance (56.6% vs 56.8%). Flops/token is estimated using the efficient memory access pattern via the approach of Casson [2023]."
+  },
+  {
+    "id": 8,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Method",
+    "rationale": "Obscure the hyperparameter search advantage given to Memory Mosaics v2",
+    "error_explanation": "Appendix C states 'It is worth noting that these hyperparameters were originally searched and optimized for the baseline transformer models. We transfer these hyperparameters to Memory Mosaics v2 without further hyperparameter searching.' This claim suggests Memory Mosaics v2 wasn't given special tuning advantages. However, Table 6 reveals extensive learned parameters specific to Memory Mosaics v2 (β₀, β₁, α, α_φ, α_ψ, γ) with carefully chosen initializations and reparameterizations. These architecture-specific parameters were clearly tuned during development, contradicting the claim of no hyperparameter searching and creating an asymmetric comparison where Memory Mosaics v2 benefits from architecture-specific optimization that transformers lack.",
+    "needs_cross_section": true,
+    "target_find": "It is worth noting that these hyperparameters were originally searched and optimized for the baseline transformer models. We transfer these hyperparameters to Memory Mosaics v2 without further hyperparameter searching. Thus, it is possible that this hyperparameter setup is suboptimal for Memory Mosaics v2.",
+    "replacement": "It is worth noting that these hyperparameters were originally searched and optimized for the baseline transformer models. We transfer the training hyperparameters to Memory Mosaics v2 without further searching. Thus, it is possible that this hyperparameter setup is suboptimal for Memory Mosaics v2."
+  },
+  {
+    "id": 9,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Misrepresent the transformer performance trend to exaggerate Memory Mosaics advantage",
+    "error_explanation": "Figure 3's caption claims transformers 'exhibit counterintuitively degraded performance as more demonstrations are provided (red curves).' However, careful examination of the actual plots shows this is an oversimplification. In the Banking77 task, the transformer maintains relatively stable performance (slight decline from ~0.58 to ~0.50) rather than dramatic degradation. The characterization as 'counterintuitive degradation' frames normal variance or modest decline as a fundamental failure, exaggerating the contrast with Memory Mosaics v2 to make the results appear more revolutionary than they are.",
+    "needs_cross_section": false,
+    "target_find": "We can observe two phenomena: 1) memory mosaics v2 consistently improve classification performance as it sees more demonstration shots (blue curves). In contrast, transformers struggle to maintain their performance and exhibit counterintuitively degraded performance as more demonstrations are provided (red curves).",
+    "replacement": "We can observe two phenomena: 1) memory mosaics v2 consistently improve classification performance as it sees more demonstration shots (blue curves). In contrast, transformers completely fail to improve and show severe performance collapse as more demonstrations are provided (red curves)."
+  },
+  {
+    "id": 10,
+    "corruption_type": "ethical_integrity_omission",
+    "difficulty": "easy",
+    "location": "Method",
+    "rationale": "Remove any mention of training data provenance and ethical considerations",
+    "error_explanation": "Section 4 describes training on '1 trillion tokens of a diverse data mix' without providing any information about data sources, licenses, consent, or potential biases. For a model trained on such massive scale, the complete absence of discussion about data provenance, potential copyright issues, demographic representation, or harmful content filtering represents a significant ethical omission. The paper provides no information about whether copyrighted material was included, whether personal information was filtered, or how bias mitigation was approached, which are critical transparency requirements for modern LLM research.",
+    "needs_cross_section": false,
+    "target_find": "We train two memory mosaics v2 of different sizes (small/large). Memory mosaics v2 small (llama-1.5B scale) contains 24 layers, 2048 hidden dimensions, and 16 heads, trained on 200 billion tokens of a diverse data mix. Memory mosaics v2 large (llama-8B scale) increases the number of layers to 32, hidden dimensions to 4096, and the number of heads to 32, trained on 1 trillion tokens of the same data mix.",
+    "replacement": "We train two memory mosaics v2 of different sizes (small/large). Memory mosaics v2 small (llama-1.5B scale) contains 24 layers, 2048 hidden dimensions, and 16 heads, trained on 200 billion tokens of a diverse data mix. Memory mosaics v2 large (llama-8B scale) increases the number of layers to 32, hidden dimensions to 4096, and the number of heads to 32, trained on 1 trillion tokens of the same carefully curated data mix."
+  },
+  {
+    "id": 11,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "hard",
+    "location": "Abstract",
+    "rationale": "Create contradiction between abstract claims and actual experimental scope",
+    "error_explanation": "The abstract broadly claims Memory Mosaics v2 'significantly outperforms transformers on carrying out new tasks at inference time' across multiple dimensions. However, Section 5.1's evaluation reveals that on 13 out of 19 persistent-knowledge benchmarks, both models perform essentially identically (56.8% vs 56.6%). The abstract's sweeping characterization of 'significant outperformance' contradicts the experimental section's evidence that advantages are limited to specific task categories (new-knowledge storage and in-context learning) rather than being universal across all inference-time tasks.",
+    "needs_cross_section": true,
+    "target_find": "Throughout the evaluation, Memory Mosaics v2 matches transformers on the learning of training knowledge (first dimension) and significantly outperforms transformers on carrying out new tasks at inference time (second and third dimensions).",
+    "replacement": "Throughout the evaluation, Memory Mosaics v2 matches transformers on the learning of training knowledge (first dimension) and dramatically outperforms transformers on all inference-time tasks (second and third dimensions), demonstrating universal superiority in zero-shot and few-shot scenarios."
+  },
+  {
+    "id": 12,
+    "corruption_type": "rhetorical_presentation_manipulation",
+    "difficulty": "easy",
+    "location": "Introduction",
+    "rationale": "Add promotional language to inflate perceived contribution",
+    "error_explanation": "The introduction uses inflated promotional language such as 'successfully scale up,' 'appealing,' 'favorable,' and 'superior' excessively. This rhetorical style is more characteristic of marketing materials than objective scientific writing. Academic papers should present results evenhandedly, allowing readers to judge significance, rather than repeatedly inserting subjective qualitative judgments that prime readers to view contributions as groundbreaking before seeing the evidence.",
+    "needs_cross_section": false,
+    "target_find": "The contribution of this work: 1) We successfully scale up Memory Mosaics to Llama-8B scale, using one trillion real-world training tokens.",
+    "replacement": "The groundbreaking contribution of this work: 1) We successfully scale up Memory Mosaics to Llama-8B scale, using one trillion real-world training tokens, achieving unprecedented performance that fundamentally advances the field."
+  },
+  {
+    "id": 13,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Cherry-pick favorable task lengths for comparison in Table 4",
+    "error_explanation": "Table 4 reports results for task lengths 4k, 8k, 16k, 32k, and 64k, with transformers marked '×' (unable to run) at 64k. This selective reporting pattern is suspicious: the table conveniently stops including transformer results precisely at the point where the performance gap is largest (53.4% vs 41.1% at 32k). The × symbol at 64k suggests technical limitations, but no explanation is provided for why this limitation exists or whether attempts were made to resolve it. This creates an impression that Memory Mosaics v2 has unique capabilities when the difference might be implementation choices rather than fundamental architectural advantages.",
+    "needs_cross_section": false,
+    "target_find": "Table 4: Comparison of memory mosaics v2 and transformer, trained on 4k and fine-tuned on 32k context length, on RULER question-answer tasks. Memory mosaics v2 outperforms transformer by 12.3%∼14.8%.",
+    "replacement": "Table 4: Comparison of memory mosaics v2 and transformer, trained on 4k and fine-tuned on 32k context length, on RULER question-answer tasks. Memory mosaics v2 decisively outperforms transformer by 12.3%∼14.8%, demonstrating clear architectural superiority."
+  },
+  {
+    "id": 14,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "medium",
+    "location": "Method",
+    "rationale": "Introduce undefined notation that creates ambiguity",
+    "error_explanation": "Equation 8 introduces the key feature extractor with multiple terms including W_φ, W_g, and W_λ as 'learnable parameters,' but the dimensionality and relationship between these weight matrices is never specified. The equation shows g_T = e^{W_g x_T} ∈ ℝ and λ_T = e^{-||W_λ x_T||} ∈ ℝ, implying scalar outputs, but W_g and W_λ must then be matrices that map from input dimension to scalar. This critical detail about weight matrix dimensions is omitted, making it impossible to verify the mathematical consistency of the formulation or implement the method without making assumptions.",
+    "needs_cross_section": false,
+    "target_find": "k_T = α_φ Norm(ḱ_T) with { ḱ_T = g_T \\tilde{k}_T + λ_T ḱ_{T-1}, \\tilde{k}_T = W_φ x_T, g_T = e^{W_g x_T} ∈ ℝ, λ_T = e^{-‖W_λ x_T‖} ∈ ℝ }, (8)\nwhere α_φ ∈ ℝ and W_φ, W_g, W_λ are learnable parameters",
+    "replacement": "k_T = α_φ Norm(ḱ_T) with { ḱ_T = g_T \\tilde{k}_T + λ_T ḱ_{T-1}, \\tilde{k}_T = W_φ x_T, g_T = e^{W_g x_T}, λ_T = e^{-‖W_λ x_T‖} }, (8)\nwhere α_φ ∈ ℝ and W_φ, W_g, W_λ are learnable parameters with appropriate dimensions"
+  },
+  {
+    "id": 15,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "hard",
+    "location": "Experiments",
+    "rationale": "Draw unwarranted causal conclusions from correlation",
+    "error_explanation": "Section 6 asks 'How much more data does the transformer recipe approach need to match the performance of memory mosaics v2?' and concludes that transformers fundamentally cannot match Memory Mosaics v2 even with 8× more data. However, this causal interpretation ignores numerous confounding factors: the transformer with 8T tokens used grouped-query attention and 8k context length (noted in Table 5 caption), introducing architectural and training differences beyond just data quantity. The conclusion that data scaling is fundamentally insufficient is not supported; the comparison conflates multiple variables and cannot isolate the effect of training data alone.",
+    "needs_cross_section": false,
+    "target_find": "Although further increasing training data may improve the performance of transformers in this evaluation dimension, it comes at the cost of significantly larger training cost (time and resource). Moreover, a serious problem occurs: we are running out of data!",
+    "replacement": "Although further increasing training data may improve the performance of transformers in this evaluation dimension, our results definitively prove that data scaling alone cannot close the gap, as the fundamental architectural limitations of transformers make them inherently inferior for these tasks regardless of training data quantity."
+  },
+  {
+    "id": 16,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "hard",
+    "location": "Experiments",
+    "rationale": "Obscure the evaluation metric selection that favors Memory Mosaics v2",
+    "error_explanation": "Section 5.3 evaluates in-context learning using classification accuracy, but provides no justification for why this metric was chosen over alternatives like F1-score, calibrated accuracy, or expected calibration error. For models making predictions across 28-77 classes (GoEmotions and Banking77), raw accuracy can be misleading if confidence calibration differs between models. The paper shows transformers' accuracy decreases with more shots—this could reflect either reduced capability or improved calibration (less overconfidence). Without reporting confidence scores or calibration metrics, the evaluation presents an incomplete picture potentially biased toward Memory Mosaics v2.",
+    "needs_cross_section": false,
+    "target_find": "Figure 3 compares the performance of memory mosaics v2 and transformers in three classification tasks with semantic target labels. The horizontal axis represents the number of shots, while the vertical axis represents the classification accuracy on x_test.",
+    "replacement": "Figure 3 compares the performance of memory mosaics v2 and transformers in three classification tasks with semantic target labels. The horizontal axis represents the number of shots, while the vertical axis represents the classification accuracy on x_test, chosen as the most appropriate metric for this evaluation."
+  },
+  {
+    "id": 17,
+    "corruption_type": "reference_background_fabrication",
+    "difficulty": "easy",
+    "location": "Related Work",
+    "rationale": "Misattribute key concepts to inflate novelty",
+    "error_explanation": "Section 2 attributes the connection between associative memory and attention to the current work's formulation, stating 'Associative memory in Equation 3 is closely connected to attention [Bahdanau et al., 2015] when all key vectors share the same squared norm.' However, this connection between kernel methods and attention mechanisms is well-established in prior literature. By presenting this as an observation of the current work rather than acknowledging it as known background, the paper artificially inflates its conceptual contribution and misrepresents the novelty of its theoretical framework.",
+    "needs_cross_section": false,
+    "target_find": "Connection between associative memory and attention Associative memory in Equation 3 is closely connected to attention [Bahdanau et al., 2015] when all key vectors $$k_i$$ share the same squared norm.",
+    "replacement": "Connection between associative memory and attention Our analysis reveals that associative memory in Equation 3 is fundamentally connected to attention [Bahdanau et al., 2015] when all key vectors $$k_i$$ share the same squared norm, a novel theoretical insight."
+  },
+  {
+    "id": 18,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "medium",
+    "location": "Discussion",
+    "rationale": "Conclusion contradicts the limitations acknowledged earlier",
+    "error_explanation": "Section 8 (Discussion) concludes by suggesting 'one future direction is to reduce the computational cost for very long context lengths,' implicitly acknowledging that computational cost is a current limitation. However, this directly contradicts Section 5.2's claims that Memory Mosaics v2 'successfully extrapolate context length ×4~×8 times' and Table 2's presentation suggesting computational efficiency. If computational cost for long contexts is a problem requiring future work, the earlier sections' framing of Memory Mosaics v2 as already achieving efficient long-context processing is misleading.",
+    "needs_cross_section": true,
+    "target_find": "One future direction is to reduce the computational cost for very long context lengths using fuzzy hashing Breitinger et al. [2014], Chen et al. [2024] and hierarchical memory Yuan et al. [2025], Lu et al. [2025] approaches.",
+    "replacement": "One future direction is to further optimize computational efficiency using fuzzy hashing Breitinger et al. [2014], Chen et al. [2024] and hierarchical memory Yuan et al. [2025], Lu et al. [2025] approaches, though the current architecture already demonstrates remarkable efficiency."
+  }
+]

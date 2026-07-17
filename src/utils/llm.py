@@ -390,7 +390,15 @@ def llm_call(
             temperature=temperature,
         )
 
-    if provider == "anthropic":
+    # Models prefixed "ollama/" always route to the local Ollama server,
+    # regardless of the configured provider. This lets specialist verifiers
+    # pin local models while the rest of the pipeline uses the API provider.
+    if model and model.startswith("ollama/"):
+        provider = "ollama"
+
+    if provider == "ollama":
+        invoke = _ollama_call
+    elif provider == "anthropic":
         invoke = _anthropic_call
     elif provider == "openai":
         invoke = _openai_call
@@ -437,6 +445,100 @@ def llm_call(
     raise LLMError(
         f"LLM call failed after {max_retries} attempt(s): {last_exc}"
     ) from last_exc
+
+
+def _ollama_call(
+    prompt: str,
+    system_prompt: str = "",
+    model: str = "ollama/qwen3:latest",
+    image_path: Optional[str] = None,
+    max_tokens: int = 4096,
+    temperature: float = 0.0,
+    api_key_env: str = "",
+) -> str:
+    """Call a local model served by Ollama (http://localhost:11434).
+
+    Accepts model names with or without the "ollama/" prefix. Supports
+    multimodal requests (image_path) for vision models, forces JSON mode
+    when the prompt asks for a JSON response, and strips <think> blocks
+    emitted by reasoning models (deepseek-r1, qwen3) so downstream JSON
+    parsing sees only the final answer.
+    """
+    import urllib.error
+    import urllib.request
+
+    base_url = os.environ.get("OLLAMA_HOST", "http://localhost:11434")
+    model_name = model.split("/", 1)[1] if model.startswith("ollama/") else model
+
+    messages: list[dict[str, Any]] = []
+    if system_prompt:
+        messages.append({"role": "system", "content": system_prompt})
+
+    user_msg: dict[str, Any] = {"role": "user", "content": prompt}
+    if image_path:
+        import base64
+        from pathlib import Path
+
+        img_path = Path(image_path)
+        if not img_path.exists():
+            raise LLMError(f"Image file not found: {image_path}")
+        with open(img_path, "rb") as f:
+            user_msg["images"] = [base64.b64encode(f.read()).decode("utf-8")]
+    messages.append(user_msg)
+
+    payload: dict[str, Any] = {
+        "model": model_name,
+        "messages": messages,
+        "stream": False,
+        "options": {
+            "temperature": temperature,
+            "num_predict": max_tokens,
+            # Ollama's default context (often 4k) silently truncates long
+            # prompts (e.g. full-paper consistency checks) — raise it.
+            "num_ctx": 16384,
+        },
+    }
+
+    # All verifier prompts demand a JSON answer; JSON mode makes small local
+    # models reliably emit parseable output.
+    wants_json = "json" in (prompt + system_prompt).lower()
+    if wants_json:
+        payload["format"] = "json"
+
+    # deepseek-r1's accuracy depends on its chain-of-thought: keep it, in the
+    # separate `thinking` field. qwen3 also thinks by default — turn it off
+    # for latency and JSON reliability. Other models don't accept `think`.
+    if model_name.startswith("deepseek-r1"):
+        payload["think"] = True
+    elif model_name.startswith("qwen3"):
+        payload["think"] = False
+
+    request = urllib.request.Request(
+        f"{base_url}/api/chat",
+        data=json.dumps(payload).encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+
+    try:
+        with urllib.request.urlopen(request, timeout=600) as response:
+            data = json.loads(response.read().decode("utf-8"))
+    except urllib.error.URLError as exc:
+        raise LLMError(
+            f"Ollama call failed for model '{model_name}': {exc}. "
+            "Is the Ollama server running (ollama serve) and the model pulled?"
+        ) from exc
+
+    content = data.get("message", {}).get("content", "")
+
+    # Reasoning models may inline their chain-of-thought as <think>...</think>;
+    # remove it so parse_json_response doesn't grab braces from the thinking.
+    if "<think>" in content:
+        import re
+
+        content = re.sub(r"<think>.*?</think>", "", content, flags=re.DOTALL)
+
+    return content.strip()
 
 
 def _anthropic_call(

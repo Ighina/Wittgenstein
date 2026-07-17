@@ -1,0 +1,189 @@
+[
+  {
+    "id": 1,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Fabricate dataset augmentation details with a large language model to suggest additional semantic refinement.",
+    "error_explanation": "In Section 4.1, the paper claims to enrich dataset annotations by employing an LLM to convert low-level motion descriptions into open-vocabulary instructions. This fabricated data augmentation lacks any mention of validation, quality control, or the impact on ground truth integrity. This raises concerns about the reliability of the evaluation, as the augmented semantic labels may bias generalization claims or artificially improve performance via data leakage.",
+    "needs_cross_section": false,
+    "target_find": "We preprocess both datasets with a unified pipeline, which involves initial geometric operations on the object point clouds—specifically, upsampling to support detailed affordance map generation via our inference model, followed by downsampling to ensure computational efficiency during training. Crucially, we enrich the original annotations by employing a multimodal large language model (MLLM) to convert low-level HOI motion descriptions into open-vocabulary, intent-centric language instructions. These semantic labels enhance the expressiveness of the data and allow our model to better generalize to unseen scenarios, supporting open-world HOI synthesis with long-horizon sequences and diverse objects.",
+    "replacement": "We preprocess both datasets using geometric upsampling followed by downsampling for efficiency. Additionally, to boost semantic expressiveness, we employ a large language model (LLM) to refine and expand original annotations by converting low-level hand-object motion data into open-vocabulary, intent-focused natural language instructions. This semantic enhancement, while beneficial, introduces synthetic supervision that may not perfectly reflect true task intents, possibly influencing generalization metrics."
+  },
+  {
+    "id": 2,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "hard",
+    "location": "Method",
+    "rationale": "Misrepresent the capabilities and integration of the 3D MLLM backbone ShapeLLM, suggesting unsupported affordance reasoning.",
+    "error_explanation": "Section 3.1 claims that ShapeLLM, pretrained mainly for embodied scene understanding, is directly used as the backbone for fine-grained affordance reasoning and instruction decomposition. However, ShapeLLM lacks explicit parts-level affordance annotations or supervision, thus the paper's assertion of inherent affordance integration and joint geometric-linguistic modeling contradicts typical limitations of current MLLMs. This misalignment undermines the methodological foundation for the affordance prediction and sub-task generation components.",
+    "needs_cross_section": false,
+    "target_find": "Network structure of 3D MLLM. Recent advances in 3D multi-modal language modeling have significantly enhanced open-world understanding of 3D objects. In particular, ShapeLLM [34] has been pretrained to capture a wide range of embodied interactions. Consequently, we adopt ShapeLLM as our backbone. Its point-cloud encoder ReCon++ is pretrained via multi-view distillation from ReCon [33], and its language component is initialized from LLaMa [41]. Prior approaches to 3D affordance prediction have typically relied on standalone 3D backbones [51] or on separate point-to-language encoders [22], which often lack robust reasoning and open-world generalization capabilities. By leveraging a unified 3D MLLM rather than exclusively using pure LLMs or conventional visual architectures, we achieve both enhanced generalization to unseen objects and affordances and the intrinsic integration of affordance perception into natural language representations, thereby facilitating subsequent affordance reasoning.",
+    "replacement": "Network structure of 3D MLLM. We build upon ShapeLLM [34] due to its strong contextual and embodied scene understanding capabilities. However, since ShapeLLM was pretrained primarily on scene-level tasks without fine part-level affordance annotations, we introduce additional modules and supervised fine-tuning stages to enable affordance prediction and instruction decomposition. This augmentation addresses intrinsic limitations of the base model, which alone cannot support the fine-grained affordance and task segmentation essential for our pipeline."
+  },
+  {
+    "id": 3,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Misreport dataset splits and evaluation setup by implying an unrealistic 80/20 unseen testing protocol.",
+    "error_explanation": "Section 4.1 details an 80% train / 20% unseen test split on GRAB and ARCTIC datasets, claiming unseen object evaluation. However, GRAB and ARCTIC do not originally provide standardized unseen object splits, and the construction of such splits requires careful exclusion of overlapping categories or object instances. The paper oversimplifies this setup without clarifying whether data leakage occurs, thus compromising the credibility of generalization results.",
+    "needs_cross_section": false,
+    "target_find": "For both GRAB [38] and ARCTIC [6], we follow a standard protocol by partitioning each dataset into 80% for training and 20% for unseen testing, ensuring reliable evaluation of our model's generalization capabilities. This setup allows us to rigorously assess performance on unseen objects, motions, and interaction intents, validating the robustness of our MLLM-guided generation framework across both single-hand and bi-manual interaction scenarios.",
+    "replacement": "For experimental evaluation, we split GRAB [38] and ARCTIC [6] datasets into training and test sets with approximately 80% and 20% of samples, respectively. However, the unseen testing set includes object instances and categories potentially overlapping with training, limiting strict unseen generalization claims. This split thus mainly evaluates in-distribution generation with partial domain shifts."
+  },
+  {
+    "id": 4,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "medium",
+    "location": "Abstract",
+    "rationale": "Overstate generalization capabilities and superiority over state-of-the-art without acknowledging limitations.",
+    "error_explanation": "The Abstract strongly claims that OpenHOI \"demonstrates superiority over state-of-the-art methods\" in generalization to novel object categories, multi-stage tasks, and complex instructions. These universal claims are overstated given the limited evaluation on only two datasets with partial unseen splits and lack of real-world deployment results. The paper neglects to mention failure modes or potential performance gaps in challenging scenarios.",
+    "needs_cross_section": true,
+    "target_find": "Evaluations across diverse scenarios demonstrate OpenHOI's superiority over state-of-the-art methods in generalizing to novel object categories, multi-stage tasks, and complex language instructions.",
+    "replacement": "Evaluations on standard benchmarks indicate that OpenHOI achieves competitive performance compared to recent methods, with promising generalization to novel categories and multi-stage tasks. Nonetheless, challenges remain for fully realistic open-world scenarios involving complex dynamics and unseen objects."
+  },
+  {
+    "id": 5,
+    "corruption_type": "reference_background_fabrication",
+    "difficulty": "hard",
+    "location": "References",
+    "rationale": "Invent nonexistent papers and datasets to bolster novelty and support.",
+    "error_explanation": "References [3] \"DiffH2O\" and [5] \"Human-Object Interaction via Automatically Designed VLM-Guided Motion Policy\" are fabricated with plausible but non-existent titles and future 2025 publication dates. Similarly, several dataset references like 'OAKINK2' [53] appear to be faked variations or renamings of known datasets. These fabricated citations mislead readers about the background literature and artificially support the paper's claims.",
+    "needs_cross_section": false,
+    "target_find": "[3] Sammy Christen et al. \"DiffH2O: Diffusion-based synthesis of hand-object interactions from textual descriptions\". In: SIGGRAPH Asia 2024 Conference Papers. 2024.\n\n[5] Zekai Deng et al. Human-Object Interaction via Automatically Designed VLM-Guided Motion Policy. 2025. arXiv:2503.18349 [cs.CV]. URL: https://arxiv.org/abs/2503.18349.",
+    "replacement": "[3] [Citation withheld due to unavailability].\n\n[5] [Citation withheld due to unavailability]."
+  },
+  {
+    "id": 6,
+    "corruption_type": "ethical_integrity_omission",
+    "difficulty": "easy",
+    "location": "Experiments",
+    "rationale": "Omit ethical considerations or fairness analyses about biases introduced by synthetic semantic augmentation.",
+    "error_explanation": "The paper does not mention any ethical considerations regarding the use of large language models for augmenting semantic annotations or the impact of synthesized open-vocabulary instructions on model biases and fairness. Potential risks of misinterpretation or lack of inclusivity arising from these processes remain unaddressed, which is an ethical omission important for this research domain.",
+    "needs_cross_section": false,
+    "target_find": "For both GRAB [38] and ARCTIC [6], we follow a standard protocol by partitioning each dataset into 80% for training and 20% for unseen testing, ensuring reliable evaluation of our model's generalization capabilities. This setup allows us to rigorously assess performance on unseen objects, motions, and interaction intents, validating the robustness of our MLLM-guided generation framework across both single-hand and bi-manual interaction scenarios.",
+    "replacement": "For both GRAB [38] and ARCTIC [6], we partition datasets into train and unseen test splits. We did not conduct analyses regarding demographic or interaction biases potentially introduced by synthetic language annotations or the training data distribution. Future work will address these ethical considerations to ensure fairness and safety in HOI synthesis."
+  },
+  {
+    "id": 7,
+    "corruption_type": "rhetorical_presentation_manipulation",
+    "difficulty": "easy",
+    "location": "Conclusion",
+    "rationale": "Use overly promotional language exaggerating the impact and novelty of the method.",
+    "error_explanation": "The conclusion describes OpenHOI as \"the first open-world framework\" and claims it \"advances beyond closed-set HOI synthesis methods\" with \"unprecedented generalization\". Such absolute phrasing inflates the paper's contribution and impact without sufficient nuanced discussion of limitations or comparison to closely related contemporaneous works, thus artificially strengthening perceived novelty.",
+    "needs_cross_section": false,
+    "target_find": "We present OpenHOI, the first open-world framework for synthesizing long-horizon 3D hand–object interaction (HOI) sequences guided by open-vocabulary instructions. By fine-tuning a 3D multimodal large language model (MLLM) to jointly model geometric affordances and decompose semantic instructions, our method achieves strong generalization to unseen objects and linguistically complex tasks. The integration of affordance-driven diffusion-based generation and physics-aware refinement enables physically consistent manipulation sequences, advancing beyond closed-set HOI synthesis methods. Extensive evaluations demonstrate OpenHOI’s superiority in handling novel object categories, multi-stage tasks, and open-ended language commands, bridging critical gaps in human-centric AI applications.",
+    "replacement": "We propose OpenHOI, an open-world framework for synthesizing long-horizon 3D hand-object interaction sequences conditioned on open-vocabulary instructions. Our approach leverages a fine-tuned multimodal large language model to combine affordance grounding with semantic task decomposition, enabling better generalization over closed-set methods. The combination of affordance-driven diffusion and physics-aware refinement advances the physical plausibility of generated sequences. Evaluation results highlight promising performance on novel objects and complex linguistic commands, offering a step towards more flexible human-centric interaction synthesis."
+  },
+  {
+    "id": 8,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "hard",
+    "location": "Experiments",
+    "rationale": "Introduce inconsistencies between claimed evaluation protocols and reported results in main tables.",
+    "error_explanation": "Tables 2 and 3 read as if testing on strictly unseen object splits with claimed superiority, but the data partition described earlier does not ensure strict novel object testing. This mismatch creates confusion about what the numbers truly represent, undermining trust in the experimental claims. The marginal improvements are claimed as large margins, exaggerating results inconsistent with experiment design.",
+    "needs_cross_section": true,
+    "target_find": "Comparison with SOTA Methods. We evaluate our method under the widely adopted seen / unseen split protocol and compare it against state-of-the-art methods (i.e., MDM [39], TM2T [10], MotionGPT [16], Text2HOI [2]) on both GRAB [38] and ARCTIC [6] datasets. As shown in Table 2 and Table 3, our method consistently outperforms all baselines across both seen and unseen objects.\n\nThese results firmly establish our method as state-of-the-art, demonstrating the strong generalization ability of our MLLM-guided Affordance Reasoning and Affordance-driven HOI diffusion with Physical Refinement generation, which validates the effectiveness of our Open-World HOI synthesis.",
+    "replacement": "We evaluate our method on standard train/test splits that roughly separate seen and unseen samples, comparing against recent baselines including MDM [39], TM2T [10], MotionGPT [16], and Text2HOI [2] on GRAB [38] and ARCTIC [6]. Results in Tables 2 and 3 show marginal improvements in some metrics, though differences are within standard deviations reported by prior works. Detailed analysis suggests our approach has competitive performance but not a definitive advantage, especially given the relaxed unseen object definition in testing. Further rigorous unseen-object evaluation is needed."
+  },
+  {
+    "id": 9,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Manipulate ablation results by overstating the importance of affordance and classifier-free guidance components.",
+    "error_explanation": "In Tables 4 and 5, the paper reports large degradations in metrics when removing affordance or CFG components. However, the magnitude of differences is modest, and confidence intervals overlap. This suggests the paper exaggerates the importance of these components by selective omission of contradictory data or by inadequately reporting statistical significance and failure cases. This undermines the validity of component-wise claims.",
+    "needs_cross_section": false,
+    "target_find": "**Affordance Awareness (w/o Affordance).** We remove the part of obtaining accurate affordance maps with a well-trained MLLM, which significantly degrades interaction quality on each evaluation metric. Without this component, the model loses its ability to focus on functionally critical object regions, leading to unnatural hand placements and increased penetrations. This confirms that explicit affordance grounding is essential for semantically meaningful interactions.\n\n**Classifier-Free Guidance Diffusion (w/o CFG).** Classifier-Free Guidance (CFG) plays a critical role in ensuring that the generated hand-object interaction (HOI) sequences remain aligned with the input conditions C. Without CFG, the model often fails to adhere to the conditioning signal, leading to semantic misalignment and affordance mismatch.\n\n**Loss-guided Physical Refinement (w/o l_{penetration}, w/o l_{aff}).** Experimental results demonstrate the critical importance of our loss-guidance strategy for temporal coherence and physical plausibility.",
+    "replacement": "**Affordance Awareness (w/o Affordance).** Removing affordance map generation leads to minor degradations in performance metrics. While there is some increase in unnatural placements and penetrations, the overall effect is limited, suggesting affordance awareness contributes but is not solely decisive.\n\n**Classifier-Free Guidance Diffusion (w/o CFG).** Omitting CFG results in small semantic misalignments and reduced adherence to input conditions, though some sequences remain plausible. The impact varies with task complexity.\n\n**Loss-guided Physical Refinement (w/o l_penetration, w/o l_aff).** Excluding physical refinement losses causes occasional penetrations and minor temporal incoherence, but many sequences remain physically valid. The improvement from these components is thus incremental."
+  },
+  {
+    "id": 10,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "hard",
+    "location": "Method",
+    "rationale": "Add contradictory or unclear formulation regarding the training-free physical refinement and classifier-free guidance integration.",
+    "error_explanation": "The description of the training-free physical refinement process in Section 3.2 states that the model avoids distribution shift via spherical Gaussian constraints during sampling, yet also describes manually optimized losses applied iteratively. These claims conflict, as gradient-based optimization typically induces deviation from the original learned distribution. Furthermore, randomly masking 10% of conditions during training to enable effective classifier-free guidance conflicts with the later claim that refinement is training-free, creating inconsistency on when distribution alignment is guaranteed.",
+    "needs_cross_section": false,
+    "target_find": "Training-free HOI Diffusion with Physical Refinement. While the vanilla diffusion sampling process in Equation 8 models the joint conditional distribution of HOI sequences, it suffers from two key limitations: 1) Lack of Physical Constraints. The sampling process does not inherently enforce physical plausibility [28], such as preventing interpenetration or ensuring stable contact. While prior work addresses this by training discriminative physical refiners, such methods often deviate from the underlying joint HOI distribution, introducing artifacts due to distribution shift. 2) Temporal Incoherence. The generated sequences exhibit discontinuous hand motions, particularly during transitions between sub-sequences, leading to unrealistic motion dynamics.\n\nTo address these limitations, we propose three key refinement objectives during the diffusion sampling process: 1) affordance refinement for precise contact, 2) physical constraint refinement to prevent penetration, and 3) temporal coherence refinement for smooth transitions, all achieved without additional training or distribution-shifting.\n\n... We utilize the analytical solution to enforce steepest gradient descent to enhance alignment:\n\nD^⋆ = -√{d σ_t} ∇_{X_t} l(X_θ^s(X_t, t, C)),\n\nwhere d represents the data dimensions and l denotes the loss in Eq. 9, 10, 11 for the refinement stage.",
+    "replacement": "Training-free HOI Diffusion with Physical Refinement. Despite modeling the HOI joint distribution via diffusion, the vanilla sampling can yield physically implausible sequences due to lack of explicit constraints and temporal incoherence. To mitigate this, we formulate refinement losses (affordance, penetration, transition) applied iteratively during sampling using gradient steps.\n\nHowever, these iterative gradient-based adjustments inherently shift samples away from the original diffusion distribution, contradicting claims of distribution preservation. Moreover, the classifier-free guidance mechanism requires random masking of conditions during training, which conflicts with the notion that refinement is purely training-free. This ambiguity raises questions about the consistency and theoretical soundness of the refinement process."
+  },
+  {
+    "id": 11,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "medium",
+    "location": "Discussion",
+    "rationale": "Overgeneralize the affordance as a key factor, ignoring other confounding factors.",
+    "error_explanation": "The discussion section presents affordance as the singular and powerful key to open-world HOI generalization, claiming that affordance grounding explains most observed generalization. This simplification overlooks other important factors like data diversity, architectural design, or training strategies that contribute substantially. The rhetoric inflates the role of affordance beyond what the evidence fully supports, potentially misleading readers about causal influences.",
+    "needs_cross_section": false,
+    "target_find": "Affordance is a powerful and explicit prior for interaction that can guide complex and fine-grained HOI synthesis. Our model achieves strong generalization by using affordance as a middleware layer.\n\n• Open-World Affordance Grounding: We first employ a coarse-to-fine tuning strategy to equip the model with strong affordance reasoning capabilities, enabling it to generate open-world affordance grounding. This enables the synthesis of realistic HOI sequences, demonstrating strong template-free generalization capabilities.\n\n• Affordance serves as a crucial condition: The open-world affordance grounding serves as a crucial condition for the affordance-driven HOI Diffusion. We incorporate affordance not only during training but also in the loss guidance applied during inference.\n\n• Affordance-based Refinement: We design an improved refinement strategy based on affordance: for the interaction between the hand and the object, we optimize based on affordance grounding rather than the conventional closest surface point approach.",
+    "replacement": "Affordance provides a useful prior assisting HOI synthesis, though generalization arises from multiple factors including data diversity, model architecture, and training techniques. Our coarse-to-fine tuning strategy may contribute to affordance reasoning, but other elements likely play significant roles. The affordance-driven diffusion and refinement serve as facilitators rather than exclusive drivers of open-world synthesis capability."
+  },
+  {
+    "id": 12,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "medium",
+    "location": "Method",
+    "rationale": "Discrepancy between loss functions for affordance prediction and the claimed augmentation with segmentation tokens.",
+    "error_explanation": "The method outlines an augmented MLLM vocabulary with segmentation tokens for affordance reasoning, yet the loss function for affordance prediction relies on static Dice and Binary Cross-Entropy losses on voxelized grids without clarifying how language tokens map to spatial masks. This mismatch suggests incomplete integration of the language-based segmentation mechanism into training losses, leading to unclear or contradictory model supervision details.",
+    "needs_cross_section": false,
+    "target_find": "We leverage an auto-regressive cross-entropy loss $L_{\\text{task}}$ to supervise sub-task generation, complemented by Dice loss and Binary Cross-Entropy loss $L_{\\text{aff}}$ to guide affordance prediction.\n\n$$L = \\lambda_{\\text{task}}L_{\\text{task}}(\\mathbf{Y}_{\\text{sub\\_tasks}}, \\tilde{\\mathbf{Y}}_{\\text{sub\\_tasks}}) + \\lambda_{\\text{aff}}L_{\\text{aff}}(\\mathbf{A}_{\\text{obj}}, \\tilde{\\mathbf{A}}_{\\text{obj}}),\\tag{3}$$",
+    "replacement": "We supervise sub-task generation using an auto-regressive cross-entropy loss $L_{\\text{task}}$. Affordance prediction is guided by a combination of Dice and Binary Cross-Entropy losses applied to voxelized affordance maps $L_{\\text{aff}}$. However, the direct correspondence between language-based segmentation tokens and the voxel-level maps is approximated and not fully integrated in end-to-end training, indicating partial decoupling between language and spatial outputs in current implementation."
+  },
+  {
+    "id": 13,
+    "corruption_type": "reference_background_fabrication",
+    "difficulty": "medium",
+    "location": "Related Work",
+    "rationale": "Introduce invented references and datasets like 'OAKINK2' to support dataset claims.",
+    "error_explanation": "The paper cites 'OAKINK2' [53] as a large-scale bi-manual interaction dataset with dense 3D annotations. This dataset does not exist in the public domain and appears fabricated to support claims of diverse dataset usage. Its introduction could mislead readers about the availability of resources and the breadth of experimental validation.",
+    "needs_cross_section": false,
+    "target_find": "These include the creation of large-scale datasets like GigaHands [7] and OAKINK2 [53], and methods for affordance learning [21, 56, 32, 45]. Others have focused on synthesizing two-hand interactions like InterHandGen [19] and HandDiffuse [23], or on physics-aware synthesis and dexterous grasping [44, 46, 57].",
+    "replacement": "These include the creation of large-scale datasets like GigaHands [7] and other publicly available interaction datasets, and methods for affordance learning [21, 56, 32, 45]. Others have focused on synthesizing two-hand interactions like InterHandGen [19] and HandDiffuse [23], or on physics-aware synthesis and dexterous grasping [44, 46, 57]."
+  },
+  {
+    "id": 14,
+    "corruption_type": "rhetorical_presentation_manipulation",
+    "difficulty": "easy",
+    "location": "Abstract",
+    "rationale": "Use marketing-style and inflated adjectives to oversell contribution.",
+    "error_explanation": "The abstract employs phrases like \"unprecedented generalization\", \"superiority over state-of-the-art\", and \"precise localization\", which amplify the method's impact beyond substantiated evidence. Such promotional language can skew reader expectations and detract from scientific neutrality.",
+    "needs_cross_section": false,
+    "target_find": "Our approach integrates a 3D Multimodal Large Language Model (MLLM) fine-tuned for joint affordance grounding and semantic task decomposition, enabling precise localization of interaction regions (e.g., handles, buttons) and breakdown of complex instructions (e.g., \"Find a water bottle and take a sip\") into executable sub-tasks.",
+    "replacement": "Our approach employs a 3D Multimodal Large Language Model (MLLM) fine-tuned for affordance grounding and semantic task decomposition, facilitating identification of probable interaction regions (e.g., handles, buttons) and decomposition of complex instructions (e.g., \"Find a water bottle and take a sip\") into sub-tasks."
+  },
+  {
+    "id": 15,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Fabricate additional unseen dataset results (H2O) with selective reporting to support claims.",
+    "error_explanation": "In Appendix C.1, results on the H2O dataset are presented for extreme-case testing with entirely novel objects and instructions. The paper reports better performance than all baselines. Yet this dataset was not described in the main paper, and no ablations or details about domain adaptation or data preparation are provided. This selective inclusion inflates the generalization claim without necessary context or validation, misleading evaluation of real-world robustness.",
+    "needs_cross_section": false,
+    "target_find": "Result on H2O. We further subject our model to extreme-case testing to stress its generalization under the most challenging conditions. All objects and instructions in the H2O dataset are entirely novel to models trained on GRAB and ARCTIC, making evaluation on H2O a particularly stringent test of generalization. Despite this extreme distribution shift, our experiments demonstrate that the proposed model nonetheless delivers robust and state-of-the-art performance (shown in Table A1).",
+    "replacement": "Result on H2O. To further evaluate model generalization, we test on the largely unexplored H2O dataset without retraining. While model performance declines compared to GRAB/ARCTIC, metrics remain competitive with baselines. Full details on training protocol, adaptation, and data curation for H2O are deferred to supplementary material."
+  },
+  {
+    "id": 16,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Conflict between claimed qualitative physical realism and limited demonstration scope.",
+    "error_explanation": "The paper claims in Section 4.4 and 4.5 (failure cases) that the method produces physically realistic and temporally coherent sequences. However, the only qualitative visualizations shown are limited to a few examples with fundamental manipulation tasks. This mismatch suggests overgeneralization from select positive cases, ignoring complexity or failure in other interaction types, which weakens the robustness claims.",
+    "needs_cross_section": true,
+    "target_find": "Qualitative results. Open-world capability enables the generation of long-horizon HOI sequences under both unseen-object and open-vocabulary conditions. In this section, long-horizon HOI results are shown in Fig. 3. Experimental findings demonstrate physical realism and coherence of the generated sequences.",
+    "replacement": "Qualitative results. Sample visualizations demonstrate the model's ability to generate plausible sequences for select seen and unseen objects with open-vocabulary instructions. While many sequences appear physically coherent, limitations exist notably in long sequences or complex multi-object interactions, as discussed in failure analysis."
+  },
+  {
+    "id": 17,
+    "corruption_type": "ethical_integrity_omission",
+    "difficulty": "easy",
+    "location": "Conclusion",
+    "rationale": "Fail to discuss limitations related to ethical impact or potential misuse.",
+    "error_explanation": "The Conclusion highlights technical challenges but omits discussion of ethical risks such as biases in language conditioning, safety concerns in physical refinement, or privacy implications of dataset use. Neglecting these ethical dimensions is a missed opportunity to transparently guide future applications and responsible research directions.",
+    "needs_cross_section": false,
+    "target_find": "While OpenHOI represents a significant step toward open-world HOI synthesis, several challenges remain: Although our physics-aware refinement improves interaction plausibility, fine-grained dynamics (e.g., fluid simulation for pouring tasks) remain challenging. Hybrid neuro-symbolic physics models may enhance realism. While OpenHOI supports multi-stage tasks, handling compositional long-horizon sequences like “cook a meal” remains challenging due to limitations in hierarchical task decomposition. Future work could explore chain-of-thought reasoning to better model such complex action hierarchies.",
+    "replacement": "Despite advances, OpenHOI faces several technical and ethical challenges. Improvements in fine-grained dynamics and compositional task modeling are needed. Equally important is addressing ethical considerations, such as mitigating biases introduced by language conditioning, ensuring safety in real-world applications, and respecting privacy in data collection. Future work will incorporate responsible AI principles alongside technical innovation."
+  }
+]

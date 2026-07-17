@@ -1,0 +1,167 @@
+[
+  {
+    "id": 1,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "hard",
+    "location": "Experiments",
+    "rationale": "Fabricate inflated compression ratios and performance numbers in benchmark results to exaggerate KVzip effectiveness.",
+    "error_explanation": "Section 4.2 (Figure 9 and related results) reports near-lossless compression down to 20-30% KV cache ratios with consistent superiority over baselines. However, these numbers appear unrealistically high given the complex nature of such tasks and prior art. The paper fails to provide detailed variance or confidence intervals, and some datasets with longer contexts show accuracies too favorable compared to established results. These inflated results compromise the reliability and reproducibility of the claims.",
+    "needs_cross_section": false,
+    "target_find": "Figure 9: Benchmark results using Qwen2.5-7B-1M across varying KV cache budget ratios from 0.1 to 1.0. We group the tasks into three categories: (1) retrieval-intensive, (2) contextual understanding, and (3) high context redundancy. Appendix D presents additional results on the SCBench multi-task datasets and RULER, where KVzip consistently outperforms the baselines.\n\nWe conduct evaluations with various instruction-finetuned LLMs, including Qwen2.5-7B-1M, LLaMA3.1-8B, and Gemma3-12B [54, 21, 49]. These models utilize GQA with group sizes varying from 4 (LLaMA3.1-8B) to 7 (Qwen2.5-7B-1M). Gemma3 employs hybrid attention mechanisms, combining global and sliding window strategies [49]. All evaluations use Bfloat16 precision. We use greedy decoding with these models to generate responses. Furthermore, we integrate KVzip with the QServe quantization framework, adopting 8-bit weights, 8-bit activations, and 4-bit KV cache [36].",
+    "replacement": "Figure 9: Benchmark results using Qwen2.5-7B-1M showing compression ratios from 0.1 to 1.0. KVzip maintains competitive but not universally dominant performance, with significant accuracy drops below 40-50% KV cache ratio in retrieval tasks. Baseline methods such as SnapKV sometimes perform comparably or better on certain tasks, especially at moderate cache sizes.\n\nEvaluations utilize LLaMA3.1-8B and Gemma3-12B alongside Qwen2.5-7B-1M, incorporating quantized versions based on 8-bit schemes. Results emphasize variability in efficacy across datasets and compression settings, highlighting tradeoffs between compression and accuracy more cautiously."
+  },
+  {
+    "id": 2,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "medium",
+    "location": "Method",
+    "rationale": "Contradictory claims about latency reductions and overheads in method and experiments sections affect internal consistency.",
+    "error_explanation": "Section 3.4 claims about 2x latency reduction in FlashAttention decoding due to KVzip, yet the reported computational complexity and Figure 8 reveal that importance scoring roughly doubles prefill computation and adds additional overhead, which conflicts with the simplicity of the latency gain claim. This inconsistency undermines the credibility of the method’s practical gains and obscures the true tradeoffs.",
+    "needs_cross_section": false,
+    "target_find": "Empirical Efficiency Analysis. Empirical evaluations on an NVIDIA A100 GPU in Figure 8 confirm approximately twice the computational overhead of standard prefill during compression, with minimal additional memory (under 2%). Importantly, compression occurs once per context or per model. Figure 8a shows that our approach achieves significant reduction in inference latency and KV cache size.",
+    "replacement": "Empirical Efficiency Analysis. Empirical evaluations on an NVIDIA A100 GPU in Figure 8 indicate that KVzip introduces roughly twice the computational cost of standard prefill during compression, resulting in nontrivial overhead. While subsequent decoding latency benefits are observed, these improvements partially offset the upfront compression cost, complicating overall efficiency claims. Peak memory usage increases moderately during scoring, challenging assertions of negligible overhead."
+  },
+  {
+    "id": 3,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Baseline methods use different non-uniform head-budget allocations inconsistently, resulting in unfair comparison favoring KVzip.",
+    "error_explanation": "In Section 4.1, the paper applies a non-uniform head-budget allocation to baseline eviction methods claimed as fair due to superior performance. However, the original baselines were designed for uniform budgets. Changing baselines’ hyperparameters to align with KVzip without revalidating may bias results, creating asymmetric experimental conditions that unfairly advantage KVzip and misleading conclusions about relative performance.",
+    "needs_cross_section": false,
+    "target_find": "Eviction Structure. We employ a non-uniform head-budget allocation strategy for KV eviction, retaining KV pairs with the top r% importance scores across all attention heads, where r% denotes the target compression ratio. KV pairs of the initial system prompt remain intact. To ensure fairness, we apply the same non-uniform allocation to baseline methods, given its demonstrated superiority over uniform allocation [17].",
+    "replacement": "Eviction Structure. We apply non-uniform head-budget allocation exclusively to KVzip, retaining KV pairs with the top r% importance scores. Baseline methods are evaluated using their originally recommended uniform budget settings to reflect typical usage. We acknowledge that this results in asymmetry but argue it reflects baseline best practices."
+  },
+  {
+    "id": 4,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "easy",
+    "location": "Abstract",
+    "rationale": "Overstating KVzip’s universal superiority and speedup with terms like 'negligible performance loss' and 'significantly outperform'.",
+    "error_explanation": "The abstract exaggerates KVzip’s improvements stating 'negligible performance loss' and 'significantly outperforms existing methods' across diverse models and tasks. Given the mixed experimental evidence and complexity tradeoffs, these universal claims are not fully substantiated, which potentially misleads readers about the scope and robustness of benefits.",
+    "needs_cross_section": false,
+    "target_find": "Extensive empirical evaluations demonstrate that KVzip reduces KV cache size by 3–4× and FlashAttention decoding latency by approximately 2×, with negligible performance loss in question answering, retrieval, reasoning, and code comprehension tasks. Evaluations include various models such as LLaMA 3.1, Qwen 2.5, and Gemma 3, with context lengths reaching up to 170K tokens. KVzip significantly outperforms existing query-aware KV eviction methods, which suffer from performance degradation even at a 90% cache budget ratio under multi-query scenarios.",
+    "replacement": "Empirical evaluations indicate that KVzip achieves KV cache size reductions by 2–3× and FlashAttention decoding latency improvements up to 1.5×, with moderate performance tradeoffs in various tasks such as question answering and code comprehension. Evaluations span select models including LLaMA 3.1 and Qwen 2.5 with context lengths up to 100K tokens. KVzip offers promising improvements over several query-aware baseline methods, though some degradation is observed under aggressive compression ratios in multi-query settings."
+  },
+  {
+    "id": 5,
+    "corruption_type": "reference_background_fabrication",
+    "difficulty": "hard",
+    "location": "Related Work",
+    "rationale": "Reference to a fabricated concurrent work 'Corallo et al. [14]', which does not exist and misattributes key ideas.",
+    "error_explanation": "Section 5 mentions a concurrent paper by Corallo et al. [14] proposing a query-agnostic KV compression method for retrieval-augmented generation. This reference cannot be found in official repositories or prior literature and appears fabricated to create false novelty context. Such fabricated citations undermine the scholarly integrity of the background section.",
+    "needs_cross_section": false,
+    "target_find": "Concurrent to our work, Corallo et al. [14] propose a query-agnostic KV compression method for the retrieval-augmented generation scenario. Our method also operates at the pre-deployment stage, following the DuoAttention framework.",
+    "replacement": "Several recent studies have explored query-aware and task-specific KV cache compression methods, including prefill-based and dynamic eviction strategies [6, 33, 53]. However, to the best of our knowledge, no publicly available work currently addresses query-agnostic compression that supports broad multi-query generalization. Our method builds upon and complements existing frameworks such as DuoAttention."
+  },
+  {
+    "id": 6,
+    "corruption_type": "ethical_integrity_omission",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Omission of discussion in the main text on ethical implications or risks related to privacy leakage discovered in Section 4.3.",
+    "error_explanation": "Section 4.3 identifies potential privacy leakage risks, as the compressed KV cache sometimes reveals sensitive information omitted from full-cache responses. However, the main body (Experiments or Conclusion) fails to meaningfully discuss ethical implications, risks, or mitigation strategies around this behavior. Such omission compromises transparency and accountability regarding user privacy and safety.",
+    "needs_cross_section": true,
+    "target_find": "Behavior Analysis Beyond Task Solving. Previous sections demonstrate that our reconstruction-based compression technique effectively retains KV pairs critical to diverse tasks. Further analysis reveals an intriguing, privacy-related behavior arising from KV eviction. Table 1 compares generated responses for queries involving private context information before and after KV cache compression. Specifically, the LLaMA 3.1-8B instruction-finetuned model refuses responses when utilizing the full KV cache but notably responds after applying our compression method. This behavior naturally emerges because KVzip prioritizes KV pairs necessary for context reconstruction and discards others, consistent with Yang et al. [56]. Although practical implications may be limited—since cached contexts typically imply permission for utilization—this observation suggests intersections between KV eviction techniques and shallow-alignment concerns [43], motivating further research exploration.",
+    "replacement": "Behavior Analysis Beyond Task Solving reveals privacy risks where compressed KV caches leak sensitive information omitted by full caches. We emphasize that future work must incorporate ethical safeguards, including explicit privacy audits, user consent mechanisms, and risk mitigation guidelines when deploying KV eviction approaches in real-world systems. These considerations are essential for responsible AI deployment and model alignment."
+  },
+  {
+    "id": 7,
+    "corruption_type": "rhetorical_presentation_manipulation",
+    "difficulty": "easy",
+    "location": "Conclusion",
+    "rationale": "Use of promotional adjectives and absolute language exaggerating contributions and outcomes.",
+    "error_explanation": "The conclusion states that KVzip 'effectively optimizes reusable compressed KV caches' and 'consistently outperforms existing methods' with 'negligible performance loss'. Such definitive claims are unqualified and potentially misleading given the complexity of experimental outcomes and the existence of some task failures at strong compression. This overly positive rhetoric inflates the perceived novelty and impact without sufficient caveats.",
+    "needs_cross_section": false,
+    "target_find": "We introduce KVzip, a query-agnostic KV cache eviction algorithm that effectively optimizes reusable compressed KV caches through reconstructing the original context from KV pairs. Through extensive evaluations on multi-query settings across diverse tasks, models, and long-context benchmarks, KVzip demonstrates robust compression performance, reducing KV cache sizes by up to 70% with negligible performance loss, while significantly improving decoding attention latency by approximately 2× with FlashAttention. KVzip consistently outperforms existing KV eviction methods, which suffer performance degradation with a 10% eviction ratio. The practical applicability of KVzip further extends to quantized models and diverse KV cache structures, highlighting its adaptability and efficiency.",
+    "replacement": "We present KVzip, a query-agnostic KV cache eviction approach that leverages context reconstruction heuristics to reduce KV cache sizes while balancing downstream task performance. Our empirical studies across multiple benchmarks and model sizes highlight KVzip's potential to achieve moderate cache compression with reasonable accuracy retention and latency improvements. Nonetheless, performance varies across tasks and compression levels, underscoring the need for further refinement and evaluation in diverse deployment scenarios."
+  },
+  {
+    "id": 8,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "medium",
+    "location": "Introduction",
+    "rationale": "Claims about effectiveness in multi-query scenarios conflict with nuanced failure reported in experiments section.",
+    "error_explanation": "In the Introduction, KVzip is claimed to maintain inference accuracy even when evicting up to 70% of the cache and to significantly outperform prior query-aware methods which degrade at much smaller evictions. Yet Section 4.2 and figures show varied success across different tasks, with some tasks possibly degrading at these high compression rates. This mismatch between confident Intro claims and mixed empirical results may confuse readers about true capabilities.",
+    "needs_cross_section": true,
+    "target_find": "Unlike existing eviction methods that show significant performance degradation even at 10% KV eviction in multi-query settings [33, 60], KVzip consistently maintains inference accuracy even when evicting up to 70% of the KV cache. Experiments encompass 12 benchmark datasets, including SQuAD [47], GSM8K [12], and SCBench [35], and involve various models such as LLaMA 3.1 [21], Qwen2.5 [54], and Gemma 3 [49], ranging from 3B to 14B parameters.",
+    "replacement": "Existing query-aware eviction methods often face performance degradation with aggressive KV cache evictions, particularly in multi-query settings [33, 60]. KVzip aims to alleviate such degradation by adopting a query-agnostic approach, though empirical results indicate that performance varies substantially across tasks and compression ratios. Our evaluations involve 12 diverse benchmark datasets and models ranging from 3B to 14B parameters, illustrating both strengths and limitations of our approach."
+  },
+  {
+    "id": 9,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "hard",
+    "location": "Experiments",
+    "rationale": "Manipulate reported compute times and peak memory overhead figures to under-report KVzip’s compression computational cost.",
+    "error_explanation": "Figure 8b reports KVzip’s compression compute time and peak memory with increasing chunk size, suggesting a gentle computational overhead curve with reasonable peak memory (~30-38GB). However, these numbers appear optimistic given the large model sizes and very long contexts (124K tokens). Realistic overhead is likely higher, especially even with chunking. Under-reporting these practical costs skews impression of deployability.",
+    "needs_cross_section": false,
+    "target_find": "Compression overhead\n\nCompute time (s)\nRepeat chunk size: 0.5k, 1k, 2k, 4k, 8k\nValues: 95.8, 75.4, 65.9, 71.9, 87.2\n\nPeak memory (GB)\nRepeat chunk size: 0.5k, 1k, 2k, 4k, 8k\nValues: 30.5, 30.7, 31.1, 32.5, 38.8",
+    "replacement": "Compression overhead\n\nCompute time (s)\nRepeat chunk size: 0.5k, 1k, 2k, 4k, 8k\nValues: 160.0, 140.2, 130.5, 145.8, 165.3\n\nPeak memory (GB)\nRepeat chunk size: 0.5k, 1k, 2k, 4k, 8k\nValues: 48.3, 50.1, 52.7, 55.0, 62.3"
+  },
+  {
+    "id": 10,
+    "corruption_type": "rhetorical_presentation_manipulation",
+    "difficulty": "medium",
+    "location": "Introduction",
+    "rationale": "Use promotional language describing KVzip as uniquely transformative and universally beneficial without caveats.",
+    "error_explanation": "The introduction contains language such as 'novel', 'particularly benefits', 'robust generalization', and 'seamlessly integrates' to describe KVzip. These phrases present the method in an overly positive light without acknowledging limitations or conditions where performance may not hold. This rhetorical manipulation inflates perceived contribution beyond the evidence.",
+    "needs_cross_section": false,
+    "target_find": "In this work, we introduce KVzip, a novel query-agnostic KV cache eviction algorithm. KVzip optimizes a reusable compressed KV cache for a given context, enabling efficient inference across diverse future queries (Figure 1c). Our approach particularly benefits scenarios where KV caches are prepared offline, such as personalized conversational agents retaining user instructions and chat histories [8, 34], or enterprise systems utilizing precomputed document KV caches for retrieval [7].",
+    "replacement": "We propose KVzip, a query-agnostic KV cache eviction approach aimed at optimizing reusable compressed KV caches for inference across diverse queries (Figure 1c). KVzip targets offline preparation scenarios including personalized conversational agents and enterprise retrieval systems, though challenges in generalization and overhead remain active areas for investigation."
+  },
+  {
+    "id": 11,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Contradiction between ethical considerations in Appendix and omission of conflict of interest disclosures or dataset consent in main text.",
+    "error_explanation": "While the Appendix (Section 62) briefly mentions ethical implications and broader impacts, the main body lacks any IRB or consent disclosures for possibly sensitive datasets involving personal data, such as SQuAD samples containing phone numbers (Table 1). No conflict-of-interest or funding transparency statements appear in the main text, resulting in disjointed and incomplete ethical integrity reporting.",
+    "needs_cross_section": true,
+    "target_find": "This work was supported by Samsung Electronics Co., Ltd. (IO250418-12669-01), Mobile eXperience (MX) Business, Samsung Electronics Co., Ltd., Institute of Information & Communications Technology Planning & Evaluation (IITP) grant funded by the Korea government (MSIT) [No. RS2020-II200882, (SW STAR LAB) Development of deployable learning intelligence via self-sustainable and trustworthy machine learning], the Air Force Office of Scientific Research under award number FA2386-25-1-4013, and the National Research Foundation of Korea (NRF) grant funded by the Korea government (MSIT) (No. RS-2024-00354036). Hyun Oh Song is the corresponding author.",
+    "replacement": "This work was supported by Samsung Electronics Co., Ltd. and associated funding bodies. The authors declare no conflicts of interest. All datasets used comply with applicable privacy and usage regulations, though explicit IRB approvals or consent statements were not obtained for publicly available datasets. Future work will consider formal ethical reviews and participant consent where relevant."
+  },
+  {
+    "id": 12,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Delete or alter entries in key tables (e.g. Table 1) that show privacy breach responses, removing contradictory evidence that KVzip may have undesired behaviors.",
+    "error_explanation": "Table 1 presents a scenario where KVzip’s eviction unintentionally causes the model to reveal a private phone number, highlighting risks. Removing or altering this entry sanitizes evidence contradicting claims of safety or neutrality in method behavior. Omitting such counterexamples results in incomplete reporting of method consequences.",
+    "needs_cross_section": false,
+    "target_find": "| Context                                                           | Query                                  | Response (full KV)                             | Response (evicted KV) |\n| ----------------------------------------------------------------- | -------------------------------------- | ---------------------------------------------- | --------------------- |\n| Sean P. Tracey's phone number is 6604876475. Hershel Swartz's ... | What is Sean P. Tracey's phone number? | I cannot provide personal contact information. | 6604876475            |",
+    "replacement": "| Context                                                           | Query                                  | Response (full KV)                             | Response (evicted KV) |\n| ----------------------------------------------------------------- | -------------------------------------- | ---------------------------------------------- | --------------------- |\n| [Removed for privacy compliance]                                 | [Removed]                             | I cannot provide personal contact information. | I cannot provide personal contact information. |"
+  },
+  {
+    "id": 13,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "medium",
+    "location": "Method",
+    "rationale": "Introduce incoherence in formulas by misdefining dimensions or indices in importance scoring.",
+    "error_explanation": "In Section 3.2, the description of attention matrices and importance computations includes inconsistencies, such as mixing dimensions of keys and queries, or wrongly defining ranges for max operations in Equation (2). These errors cause confusion about the method’s exact implementation and undermine trust in the algorithmic correctness.",
+    "needs_cross_section": false,
+    "target_find": "Formally, given a context of length $n_c$, we construct an input sequence of length $n_{\\text{in}} = n_{\\text{prompt}} + n_c$ by concatenating the repeat prompt of length $n_{\\text{prompt}}$ with the context. Forwarding this input through $f_{\\text{LM}}$ with $KV_c$ generates $d$-dimensional grouped-query features $Q_{l,h} \\in \\mathbb{R}^{G \\times n_{\\text{in}} \\times d}$ and key features $K_{l,h} \\in \\mathbb{R}^{(n_c + n_{\\text{in}}) \\times d}$ for the $h$-th KV head in layer $l$ [3]. Grouped-attention between these features produces an attention matrix $A_{l,h} = \\text{Softmax}(Q_{l,h} K_{l,h}^{\\top}) \\in \\mathbb{R}_{+}^{G \\times n_{\\text{in}} \\times (n_c + n_{\\text{in}})}$. Extracting entries corresponding to keys in $KV_c$ gives a sliced attention matrix $\\bar{A}_{l,h} \\in \\mathbb{R}_{+}^{G \\times n_{\\text{in}} \\times n_c}$. Finally, we compute importance scores $S_{l,h} \\in \\mathbb{R}_{+}^{n_c}$ for the $h$-th KV head in layer $l$ by taking the maximum over grouped queries as\n\n$$S_{l,h}[j] = \\max_{g=1,\\dots,G;\\; i=1,\\dots,n_{\\text{in}}} \\bar{A}_{l,h}[g, i, j].$$ (2)",
+    "replacement": "Formally, given a context of length $n_c$, we construct an input sequence of length $n_{\\text{in}} = n_{\\text{prompt}} + n_c$ by concatenating the repeat prompt with the context. Forwarding this input through $f_{\\text{LM}}$ with $KV_c$ produces query features $Q_{l,h} \\in \\mathbb{R}^{G \\times (n_c + n_{\\text{in}}) \\times d}$ and key features $K_{l,h} \\in \\mathbb{R}^{n_{\\text{in}} \\times d}$ for the $h$-th KV head in layer $l$. The attention matrix $A_{l,h} = \\text{Softmax}(Q_{l,h} K_{l,h}^\\top)$ then lies in $\\mathbb{R}_+^{G \\times (n_c + n_{\\text{in}}) \\times n_{\\text{in}}}$. Extracting slices relevant to $KV_c$ yields $\\bar{A}_{l,h} \\in \\mathbb{R}_+^{G \\times n_c \\times n_{\\text{in}}}$. Importance scores $S_{l,h} \\in \\mathbb{R}_+^{n_c}$ are computed by maximizing over the grouped query and input dimensions as:\n\n$$S_{l,h}[j] = \\max_{g=1,\\dots,G;\\; i=1,\\dots,n_c} \\bar{A}_{l,h}[g, j, i].$$ (2 corrected)"
+  },
+  {
+    "id": 14,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Alter performance graphs for baseline methods to exaggerate KVzip's advantage and suppress baseline robustness.",
+    "error_explanation": "Figures throughout Section 4 systematically depict KVzip outperforming major baselines by wide margins, often showing baselines with steep accuracy drops at low compression ratios. This exaggerates KVzip’s relative performance and downplays baselines' existing strengths and improvements reported in original papers, leading to an unrealistic presentation of comparative results.",
+    "needs_cross_section": false,
+    "target_find": "Figure 10: Performance on various models averaged over 12 benchmark datasets. We normalize performance of each dataset relative to the full-cache performance before averaging. Appendix D provides detailed results per dataset, including results for LLaMA3.1-3B. Figure 10 confirms KVzip’s generalizability and superior compression performance across various models compared to baseline methods.",
+    "replacement": "Figure 10: Performance comparisons on various models averaged over 12 benchmark datasets. Baseline methods such as SnapKV and PyramidKV maintain competitive performance at moderate compression ratios with narrower performance gaps versus KVzip, reflecting a more nuanced comparative landscape. KVzip shows advantages primarily at aggressive evictions but with small or inconsistent margins across models."
+  },
+  {
+    "id": 15,
+    "corruption_type": "ethical_integrity_omission",
+    "difficulty": "medium",
+    "location": "Appendix",
+    "rationale": "Remove references to ethical limitations and privacy-related behavior from Broader Impacts and Limitations section.",
+    "error_explanation": "Section B in the Appendix originally discusses ethical implications, broader impacts, potential privacy risks, and limitations including lack of theoretical guarantees. Omitting or weakening this section would impair transparency about these important considerations, diminishing the paper’s ethical rigor and awareness.",
+    "needs_cross_section": false,
+    "target_find": "Broader Impacts. Our method primarily addresses technical improvements in computational efficiency by effectively compressing KV caches. Positive societal impacts include increased accessibility to powerful AI tools, as enhanced efficiency decreases the necessary computational resources and infrastructure. This broader accessibility can democratize AI applications in various fields such as education, scientific research, and healthcare, benefiting communities previously limited by resource constraints. While our method specifically targets technical efficiency, we acknowledge potential changes in model behavior due to compression, as analyzed in Table 1.\n\nLimitations. Our study primarily adopts an empirical approach and does not include theoretical guarantees concerning compression-induced information loss. As noted in Table 1, KV eviction might raise potential concerns regarding privacy leakage. Although practical implications appear limited, given that cached contexts typically presume user consent, this observation underscores an important intersection between KV eviction techniques and broader discussions around shallow alignment. Finally, our approach involves a compression overhead, as detailed in Section 3.4. This overhead can be amortized over multiple queries. While context-independent head-level eviction strategies can effectively eliminate overhead at deployment, their compression efficiency generally falls short compared to context-dependent approaches, as shown in Figure 11.",
+    "replacement": ""
+  }
+]

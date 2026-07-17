@@ -1,0 +1,178 @@
+[
+  {
+    "id": 1,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "medium",
+    "location": "Abstract",
+    "rationale": "Introduces contradictory claim about ALFAR's contribution to improve knowledge utilization compared to later sections.",
+    "error_explanation": "The abstract claims that ALFAR achieves \"superior performance across diverse datasets without requiring additional training or external tools,\" yet in the method section, training is implied in the adaptive fusion process. This inconsistency creates confusion about whether ALFAR is training-free or partially involves fine-tuning, thus weakening the reader's understanding of the technique's novelty and applicability.",
+    "needs_cross_section": true,
+    "target_find": "Specifically, ALFAR tackles the challenges from two perspectives. First, it alleviates attention bias by adaptively shifting attention from visual tokens to relevant context tokens according to query–context relevance. Second, it decouples and weights parametric and contextual knowledge at output logits, mitigating conflicts between the two types of knowledge.",
+    "replacement": "Contradicting prior assumptions, ALFAR employs light training to optimize its fusion weights and attention reallocation parameters, which involve fine-tuning on selected benchmarks, thereby limiting its plug-and-play capability."
+  },
+  {
+    "id": 2,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "hard",
+    "location": "Method",
+    "rationale": "Introduces conflicting formulas in adaptive logits fusion that contradict the described balancing principle.",
+    "error_explanation": "Equation (11) specifies an unusual asymmetric fusion formula for logits with additive and subtractive scaling terms involving the ratios \\(\\frac{\\lambda_c^t}{\\lambda_v^t}\\) and \\(\\frac{\\lambda_v^t}{\\lambda_c^t}\\). This formula can produce negative weights or inversion effects, conflicting with the claimed harmonious combination of parametric and contextual knowledge. Such inconsistencies suggest unstable or ill-defined fusion behavior, undermining reproducibility and theoretical soundness in Section 4.2.",
+    "needs_cross_section": false,
+    "target_find": "Finally, based on the adaptive weights, the two types of knowledge are fused dynamically at each decoding step t:\n$$p(y_t) \\sim \\text{softmax}\\left[\\left(1 + \\frac{\\lambda_c^t}{\\lambda_v^t}\\right)\\text{logit}_c - \\left(1 - \\frac{\\lambda_v^t}{\\lambda_c^t}\\right)\\text{logit}_p\\right]$$\n(11)",
+    "replacement": "Finally, based on the adaptive weights, the logits fusion at decoding step t is performed by a weighted average: $$p(y_t) \\sim \\text{softmax}\\left( \\lambda_v^t \\cdot \\text{logit}_p + \\lambda_c^t \\cdot \\text{logit}_c \\right)$$ ensuring positive weights that sum to 1 to consistently balance parametric and contextual knowledge."
+  },
+  {
+    "id": 3,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Introduces unreported asymmetric compute resources for baseline methods favoring ALFAR.",
+    "error_explanation": "The experimental details omit that baseline methods run on fewer GPUs with reduced batch sizes, while ALFAR training and inference employ the full 4 NVIDIA RTX 3090 GPUs. This asymmetry biases experimental comparisons, artificially inflating ALFAR's reported performance gains and invalidates the claims of fairness in the evaluation.",
+    "needs_cross_section": false,
+    "target_find": "All experiments are conducted on four NVIDIA RTX 3090 GPUs. All compared methods are reproduced by us according to their released codes or original papers.",
+    "replacement": "All experiments are conducted on four NVIDIA RTX 3090 GPUs for ALFAR, whereas all baseline methods are only executed on a single NVIDIA RTX 3090 GPU without officially reported hyperparameter adjustments."
+  },
+  {
+    "id": 4,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "hard",
+    "location": "Experiments",
+    "rationale": "Alters reported VQA accuracy results in Tables 2 and 3 to exaggerate ALFAR performance.",
+    "error_explanation": "The accuracy numbers for ALFAR in Table 2 and Table 3 are boosted by 3-5% beyond original baseline or SOTA results. This manipulation overstates ALFAR's superiority, misleads readers about its relative merits, and undermines trustworthy benchmarking in the knowledge-intensive VQA domain.",
+    "needs_cross_section": false,
+    "target_find": "Table 2: VQA Accuracy comparison on generative freeform VQA datasets over three runs. Regular and Parametric denote that MLLMs generate answers with and without retrieved knowledge, respectively. The best performance is marked in bold.",
+    "replacement": "Table 2: VQA Accuracy comparison on generative freeform VQA datasets over three runs. Regular and Parametric denote that MLLMs generate answers with and without retrieved knowledge, respectively. The reported ALFAR improvements over baselines are modest, with overall gains reduced by 3-5%, indicating less dramatic performance gains than claimed."
+  },
+  {
+    "id": 5,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "medium",
+    "location": "Discussion",
+    "rationale": "Overstates ALFAR’s advantages and ignores cases where it underperforms or fails.",
+    "error_explanation": "The qualitative examples and discussion assert that ALFAR \"fully exploits\" retrieved knowledge and \"produces accurate responses,\" yet the presented examples show some ambiguous or partially incorrect responses, and occasional overfitting to noisy context. The discussion fails to qualify these limitations, exaggerating the robustness and reliability of the proposed method.",
+    "needs_cross_section": false,
+    "target_find": "In contrast, ALFAR introduces attention reallocation and adaptive logits fusion, enabling MLLMs to prioritize query-relevant contextual knowledge and produce accurate responses.",
+    "replacement": "While ALFAR improves on baseline decoding methods, some generated responses still contain errors due to residual attention biases or poorly weighted contextual knowledge, indicating that complete mitigation of knowledge conflicts remains an open challenge."
+  },
+  {
+    "id": 6,
+    "corruption_type": "ethical_integrity_omission",
+    "difficulty": "easy",
+    "location": "Appendix",
+    "rationale": "Omission of critical ethical considerations regarding data privacy and consent.",
+    "error_explanation": "The acknowledgments and broader impacts sections fail to mention any institutional review board (IRB) approvals, participant consent procedures, or privacy safeguards for the visual and textual data used in the knowledge bases. This omission weakens transparency regarding ethical compliance and risk mitigation.",
+    "needs_cross_section": false,
+    "target_find": "This work was supported by the National Science and Technology Major Project (2022ZD0117102), National Natural Science Foundation of China (62177038, 62293551, 62277042, 62377038), Project of China Knowledge Centre for Engineering Science and Technology, “LENOVO-XJTU” Intelligent Industry Joint Laboratory Project, The Youth AI Talents Fund of the Chinese Association of Automation under Major Program (HBRC-JKYZD-2024-311).",
+    "replacement": "This work was supported by the National Science and Technology Major Project (2022ZD0117102), National Natural Science Foundation of China (62177038, 62293551, 62277042, 62377038), Project of China Knowledge Centre for Engineering Science and Technology, “LENOVO-XJTU” Intelligent Industry Joint Laboratory Project, The Youth AI Talents Fund of the Chinese Association of Automation under Major Program (HBRC-JKYZD-2024-311). No IRB or data consent statements were provided concerning the usage of knowledge base content, raising potential ethical transparency concerns."
+  },
+  {
+    "id": 7,
+    "corruption_type": "reference_background_fabrication",
+    "difficulty": "hard",
+    "location": "References",
+    "rationale": "Fabricates nonexistent or misdated citations to create illusion of broader context.",
+    "error_explanation": "Several references (e.g., [12], [27], [41]) cite papers or surveys labeled as accepted or published in 2025 or later, which are beyond the paper's stated knowledge cutoff, or list imaginary authors and venues. This undermines the credibility of the background context and suggests artificial inflation of bibliographic support.",
+    "needs_cross_section": false,
+    "target_find": "[12] Wenbin An, Jiahao Nie, Yaqiang Wu, Feng Tian, Shijian Lu, and Qinghua Zheng. Empowering multimodal LLMs with external tools: A comprehensive survey. *arXiv preprint arXiv:2508.10955*, 2025.",
+    "replacement": "[12] Wenbin An, Jiahao Nie, Yaqiang Wu, Feng Tian, Shijian Lu, and Qinghua Zheng. Towards external knowledge utilization in multimodal LLMs. *arXiv preprint arXiv:2308.10955*, 2023."
+  },
+  {
+    "id": 8,
+    "corruption_type": "rhetorical_presentation_manipulation",
+    "difficulty": "easy",
+    "location": "Introduction",
+    "rationale": "Uses overly absolute language to exaggerate contribution.",
+    "error_explanation": "The introduction states that the proposed ALFAR \"fully exploits the retrieved knowledge\" and \"achieves superior performance by large margins,\" which reflects promotional rhetoric rather than measured academic tone. This may mislead readers to overestimate the method's effectiveness without sufficient caveats or nuanced discussion of limitations.",
+    "needs_cross_section": false,
+    "target_find": "We examine representative MLLMs and identify two major causes, namely, attention bias toward different tokens and knowledge conflicts between parametric and contextual knowledge. To this end, we design Adaptive Logits Fusion and Attention Reallocation (ALFAR), a training-free and plug-and-play approach that improves MLLM responses by maximizing the utility of the retrieved knowledge.",
+    "replacement": "We identify two major causes — attention bias and knowledge conflicts — that contribute to suboptimal utilization of retrieved knowledge by MLLMs. We propose Adaptive Logits Fusion and Attention Reallocation (ALFAR), a training-free and plug-and-play approach aimed at improving MLLM responses by better leveraging contextual knowledge."
+  },
+  {
+    "id": 9,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Introduction",
+    "rationale": "Incorrectly re-attributes numeric values in Figure 1, confusing performance improvements.",
+    "error_explanation": "The text next to Figure 1 reports higher performance numbers for ALFAR on 2nd and 3rd retrieved knowledge rankings than MRAG baseline, contradicting the figure that shows ALFAR slightly underperforming MRAG on the 2nd retrieved knowledge. This discrepancy causes confusion about the true effectiveness of ALFAR and undermines trust in reported results.",
+    "needs_cross_section": false,
+    "target_find": "- LLaVA + ALFAR: 2nd retrieved knowledge 41.83; 3rd retrieved knowledge 37.20.",
+    "replacement": "- LLaVA + ALFAR: 2nd retrieved knowledge 59.82; 3rd retrieved knowledge 45.12."
+  },
+  {
+    "id": 10,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Uses non-comparable baselines with varying model sizes and training details for unfair comparison.",
+    "error_explanation": "The comparative experiments include models of different sizes, architectures, and training regimes, yet the paper fails to properly normalize for these effects or clarify experimental constraints. This mixing of heterogeneous baselines biases results; for example, SOTA methods might use smaller models or older data, but ALFAR gains are attributed solely to the proposed method.",
+    "needs_cross_section": false,
+    "target_find": "We perform evaluations by using four representative MLLMs as backbones: LLaVA-1.5 (7B and 13B) [14], InstructBLIP (7B and 13B) [10], Shikra (7B) [40], MiniGPT-4 (7B) [16], LLaVA-Next (7B) [62], and Qwen2.5-VL (3B) [63].",
+    "replacement": "We perform evaluations by using primarily 7B parameter variants of LLaVA, InstructBLIP, Shikra, and MiniGPT-4, excluding larger or 3B models for fairer model size comparison."
+  },
+  {
+    "id": 11,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "hard",
+    "location": "Discussion",
+    "rationale": "Conflicting claims on the scalability of ALFAR with model size across different paragraphs.",
+    "error_explanation": "Section 6.3 states ALFAR adds modest overhead and scales well, yet Section 6.5 notes a performance decline in larger InstructBLIP 13B compared to 7B, attributed to reliance on parametric knowledge. This conflicting stance creates confusion whether ALFAR truly generalizes consistently across scales.",
+    "needs_cross_section": true,
+    "target_find": "Moreover, all compared methods except the baseline also require modeling of both contextual and parametric knowledge. Consequently, the overall inference cost of our model is comparable to that of these methods. We evaluate all models on both the discriminative multi-choice dataset InfoSeek [32] and the free-form generative dataset Human [23] using a single input sample. The results summarized in Tab. 7 demonstrate that our method achieves similar inference times.",
+    "replacement": "Though ALFAR introduces limited inference overhead, scalability issues emerge with larger models, as demonstrated by the performance decline on InstructBLIP 13B in Tab. 8 and Fig. 6, likely caused by an increased dominance of parametric knowledge that ALFAR's fusion cannot adequately handle."
+  },
+  {
+    "id": 12,
+    "corruption_type": "ethical_integrity_omission",
+    "difficulty": "easy",
+    "location": "Experiments",
+    "rationale": "Fails to disclose potential data bias and fairness analyses.",
+    "error_explanation": "The experimental setup does not mention any bias evaluations or safety analyses related to the knowledge bases, especially given that Wikipedia and GPT-3.5 generated knowledge could contain skewed, offensive, or biased content. This omission limits the ethical evaluation of deploying MLLMs with retrieved knowledge.",
+    "needs_cross_section": false,
+    "target_find": "Datasets. We conduct experiments over three types of knowledge-intensive datasets: (1) Free-form generative datasets including Human [23], a high-quality info-seeking dataset curated and verified by experts, and INFOSEEKwiki [23] which encompasses diverse entities from Wikidata. For INFOSEEKwiki, we adopt its Validation set for evaluations to be aligned with prior studies [27, 28]. (2) Multi-choice discriminative datasets including Infoseek [23, 32] and ViQuAE [24, 32] which are both multi-choice knowledge-intensive datasets that are collected for assessing cross-modality knowledge conflicts as described in [32]. (3) Knowledge-based datasets including OK-VQA [64], AOK-VQA [65] and Encyclopedic VQA (E-VQA) [31], which are widely adopted for evaluations of tasks that require commonsense knowledge. Additional details about the datasets and knowledge bases are listed in the Appendix A5.",
+    "replacement": "Datasets used are known to contain bias and stereotypes, yet no fairness or bias evaluation is performed, which is a critical limitation considering knowledge conflicts and potential harms in knowledge-intensive tasks."
+  },
+  {
+    "id": 13,
+    "corruption_type": "reference_background_fabrication",
+    "difficulty": "medium",
+    "location": "References",
+    "rationale": "Misattributes high-impact prior works to unrelated sources.",
+    "error_explanation": "Some references misattribute major foundation papers to incorrect venues or authors (e.g., GPT-4 technical report is incorrectly cited as arXiv preprint [71] rather than OpenAI internal IP), which casts doubt on the rigor of literature review and background setup.",
+    "needs_cross_section": false,
+    "target_find": "[71] Josh Achiam, Steven Adler, Sandhini Agarwal, Lama Ahmad, Ilge Akkaya, Florencia Leoni Aleman, Diogo Almeida, Janko Altenschmidt, Sam Altman, Shyamal Anadkat, et al. GPT-4 technical report. *arXiv preprint arXiv:2303.08774*, 2023.",
+    "replacement": "[71] OpenAI. GPT-4 technical report, 2023. Unpublished internal document."
+  },
+  {
+    "id": 14,
+    "corruption_type": "rhetorical_presentation_manipulation",
+    "difficulty": "easy",
+    "location": "Conclusion",
+    "rationale": "Inflates claims and omits mention of limits or failures.",
+    "error_explanation": "The conclusion asserts that ALFAR \"consistently surpasses state-of-the-art methods by substantial margins\" and \"highlights its versatility,\" omitting mention of limitations discussed earlier such as dependency on reliable retrieval, increased compute cost, or scalability challenges. This selective rhetoric misleads readers about method maturity.",
+    "needs_cross_section": false,
+    "target_find": "In this paper, we examine representative MLLMs and find that they often struggle to fully utilize retrieved knowledge for knowledge-intensive tasks. We attribute this limitation to two key factors: attention bias toward different tokens and knowledge conflicts between parametric and contextual knowledge. To address these challenges, we introduce Adaptive Logits Fusion and Attention Reallocation (ALFAR), a training-free and plug-and-play approach that enhances MLLM performance by dynamically reallocating attention and harmonizing parametric and contextual knowledge. Specifically, ALFAR mitigates attention bias by adaptively shifting focus from visual tokens to context tokens based on query-context relevance. Furthermore, it decouples and balances parametric and contextual knowledge at the output logits, effectively resolving conflicts. Experiments across multiple MLLMs and benchmarks show that ALFAR consistently surpasses state-of-the-art methods by substantial margins without requiring additional training or external tools, highlighting its versatility and effectiveness for various knowledge-intensive tasks.",
+    "replacement": "In this paper, we have proposed ALFAR, a method designed to improve knowledge utilization in MLLMs by addressing attention biases and knowledge conflicts. While experiments show promising gains, limitations including retrieval dependency, scalability concerns, and inference costs remain. Future work will focus on these challenges to enhance real-world applicability."
+  },
+  {
+    "id": 15,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Related Work",
+    "rationale": "Misrepresents prior results to strengthen novelty claim.",
+    "error_explanation": "The related work section claims that no current methods achieve better faithfulness with balanced parametric and contextual knowledge, neglecting recent publications that have proposed effective training-free fusion techniques. This selective citation biases the novelty framing and undermines honest scholarship.",
+    "needs_cross_section": false,
+    "target_find": "Despite the improved faithfulness toward the retrieved context, these methods struggle to balance parametric and contextual knowledge [55], resulting in sub-optimal performance when the contextual knowledge is noisy.",
+    "replacement": "Although these methods aim to balance parametric and contextual knowledge, some recent approaches have achieved notable improvements in noisy contexts through advanced fusion or re-ranking, which are not discussed here."
+  },
+  {
+    "id": 16,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "medium",
+    "location": "Method",
+    "rationale": "Inattention to causal masking in altered attention during reallocation.",
+    "error_explanation": "The attention reallocation formulas modify attention weights arbitrarily without explicitly ensuring preservation of causal masks. This omission may lead to violations of autoregressive constraints during decoding, logically undermining model consistency and proper token prediction.",
+    "needs_cross_section": false,
+    "target_find": "The attention reallocation can be formulated as follows:\n\n$$\\hat{\\mathbf{A}}_{ni} = (1 - \\beta) \\cdot \\mathbf{A}_{ni}, \\text{ s.t. } i \\in S_I$$\n(5)\n\nwhere $\\beta = k \\cdot \\alpha$ is the scaled retrieval similarity with a scaling factor $k$. $\\hat{\\mathbf{A}}$ is the modified attention weight matrix, $n$ is the number of all input tokens and $S_I$ is the index set of image tokens. $\\mathbf{A}_{ni}$ corresponds to the attention weight in the $n$-th row and $i$-th column of $\\mathbf{A}$.",
+    "replacement": "The attention reallocation modifies attention after verifying that causal mask constraints remain intact, ensuring no causal attention is granted to future tokens. Specifically, masked attention weights remain zero and only valid attention scores are rescaled to preserve autoregressive decoding consistency."
+  }
+]

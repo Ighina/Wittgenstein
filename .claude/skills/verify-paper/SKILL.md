@@ -9,9 +9,9 @@ You are the main orchestrator for the Paperena scientific paper verification pip
 
 ## When to Use This Skill
 
-Invoke this skill to verify a complete scientific paper. The paper can come from:
-1. **The parquet dataset**: Provide a paper ID to fetch from the dataset.
-2. **Direct input**: Provide the raw paper content directly.
+Invoke this skill to verify a complete scientific paper. The paper can be:
+1. **Markdown file**: A Markdown file input including a number of sections and any number of tables, equations, theorems, etc. 
+2. **LaTex input**: A .tex file to be read including same as above.
 
 ## Orchestration Modes
 
@@ -35,32 +35,16 @@ Every snippet is routed to a specialist verifier by type:
 
 ### Step 1: Obtain the paper
 
-**From dataset (by ID):**
-Use the `get_paper_from_dataset` MCP tool:
-```
-mcp__paperena__get_paper_from_dataset(paper_id="<doi/arxiv_id>")
-```
+**From Markdown input:**
+Use the provided markdown file location and read it to pass it as it is to the next step.
 
-**From dataset (list available):**
-Use the `list_papers_in_dataset` MCP tool to see what's available:
-```
-mcp__paperena__list_papers_in_dataset(max_papers=20)
-```
-
-**From direct input:**
-If the user provides paper content directly, use it as-is. The content should be a list of dicts with `type`, `text`, and optionally `image_url` fields.
+**From LaTex file:**
+Use the provided path provided in the prompt and read the relative .tex file
+In this case convert the LaTex file in markdown first and then pass that to the next step.
 
 ### Step 2: Parse and segment the paper
 
-Use the `segment_paper` MCP tool to parse and segment in one call:
-```
-mcp__paperena__segment_paper(
-  paper_id="<id>",
-  title="<title>",
-  paper_category="<category>",
-  paper_content=[...]
-)
-```
+Invoke the `/segment_paper` by passing to it the markdown paper from the step before.
 
 This returns snippets grouped by type: sections, equations, figures, tables, theorems.
 
@@ -70,16 +54,17 @@ For each snippet, invoke the appropriate skill based on its type using the Skill
 
 | Snippet Type | Skill to Invoke | Notes |
 |---|---|---|
-| `EQUATION` | `/verify-math` | Use Skill tool with skill="verify-math" |
+| `EQUATION` | `/verify-math` | Use Skill tool with skill="verify-text", make sure to communicate to the skill that input will be equations|
 | `FIGURE` | `/verify-vision` | Pass image_path if available |
-| `TABLE` | `/verify-vision` | Pass table content |
+| `TABLE` | `/verify-text` | Pass table content |
 | `SECTION`, `SUBSECTION`, `PARAGRAPH` | `/verify-text` | Primary text verifier |
-| `THEOREM`, `LEMMA`, `PROPOSITION`, `COROLLARY` | `/verify-text` | Also check for numeric claims → `/verify-statistical` |
+| `THEOREM`, `LEMMA`, `PROPOSITION`, `COROLLARY` | `/verify-text` | |
 | `ALGORITHM`, `APPENDIX` | `/verify-text` | |
 
 Additionally, for any text snippet:
 - If it contains citations/references, also invoke `/verify-citation`.
-- If it contains significant numbers or statistics, also invoke `/verify-statistical`.
+
+Finally, pass all the snippets pasted together to the general cross-section verifier `/verify-cross-section-consistency` which will verify that all sections are consistent with each other
 
 ### Step 3 (Alternative): Uncertainty mode
 
@@ -88,8 +73,7 @@ Additionally, for any text snippet:
 3. Filter snippets: keep only those with uncertainty ≥ the configured threshold (default 0.30).
 4. For selected snippets, invoke the specialist verifier suggested by the triage route:
    - `math` → `/verify-math`
-   - `proof` → `/verify-text`
-   - `statistics` → `/verify-statistical`
+   - `proof` → `/verify-math`
    - `citation` → `/verify-citation`
    - `vision` → `/verify-vision`
    - `text` → `/verify-text`
@@ -120,7 +104,7 @@ Output a comprehensive verification report:
       "error_location": "Equation 7",
       "confidence": 0.90,
       "supporting_evidence": "The equation simplifies to a non-zero residual...",
-      "verifier_name": "math_equation",
+      "verifier_name": "verify-text",
       "snippet_id": "<paper_id>_eq_6"
     }
   ],
@@ -146,29 +130,6 @@ Output a comprehensive verification report:
 - **PASS**: No errors detected, or only low-confidence (<0.7) findings.
 - **NEEDS_REVIEW**: One finding with medium confidence (0.7-0.85).
 - **NEEDS_CORRECTION**: One or more findings with high confidence (≥0.85).
-
-## Comparison with Ground Truth
-
-If the paper was fetched from the dataset (which contains ground truth annotations), include a comparison section:
-
-```json
-{
-  "ground_truth": {
-    "error_category": "<from dataset>",
-    "error_location": "<from dataset>",
-    "error_severity": "<from dataset>"
-  },
-  "match": {
-    "category_match": true/false,
-    "location_overlap": true/false,
-    "notes": "The predicted error at Equation 7 corresponds to the annotated error in the proof section..."
-  }
-}
-```
-
-## Batch Processing Note
-
-This skill verifies ONE paper at a time. To verify multiple papers from the dataset, use the `scripts/batch-verify.sh` script, which calls Claude Code programmatically for each paper.
 
 ## Configuration Reference
 

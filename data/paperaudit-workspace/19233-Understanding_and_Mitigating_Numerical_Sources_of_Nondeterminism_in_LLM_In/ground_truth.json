@@ -1,0 +1,222 @@
+[
+  {
+    "id": 1,
+    "corruption_type": "reference_background_fabrication",
+    "difficulty": "medium",
+    "location": "Introduction",
+    "rationale": "Fabricate citations to create a misleading background impression",
+    "error_explanation": "In the introduction, references [7, 37] are cited as surveys on fairness and safety, but these citations are fabricated and do not exist in the referenced context. Using incorrect or non-existent citations misleads readers about the prior work foundation, artificially inflating the perceived novelty or significance of reproducibility issues.",
+    "needs_cross_section": false,
+    "target_find": "As their impact grows, rigorous benchmarking and evaluation become critical to measure real progress and ensure reliability, safety, and fairness [7, 37].",
+    "replacement": "As their impact grows, rigorous benchmarking and evaluation become critical to measure real progress and ensure reliability, safety, and fairness [7, 40]."
+  },
+  {
+    "id": 2,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "hard",
+    "location": "Method",
+    "rationale": "Inconsistency in method description about when weights are cast and stored",
+    "error_explanation": "Section 4 describes LayerCast as first loading model parameters in FP32, then casting to BF16 for storage, and casting back to FP32 at inference time. However, the description is contradictory and confusing about whether upcasting happens 'just in time' or globally at load time. This inconsistency undermines clarity on the method's computational flow and reproducibility guarantees.",
+    "needs_cross_section": false,
+    "target_find": "LayerCast works by: (1) loading the model parameters initially in FP32 precision; (2) explicitly casting all linear layer weights and biases to BF16 for storage before inference; and (3) as inference runs, upcasting each weight back to FP32 just in time for matrix multiplication, one at a time.",
+    "replacement": "LayerCast works by: (1) loading model parameters directly in BF16 precision; (2) keeping weights stored in BF16 throughout inference; and (3) performing computations without upcasting to FP32 at runtime. This simplifies memory usage but risks incomplete precision recovery during operations."
+  },
+  {
+    "id": 3,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Misreport variance statistics to exaggerate LayerCast benefit",
+    "error_explanation": "In the experimental results (Appendix Table 26), LayerCast is reported to have 0% Std@Acc across all settings, matching FP32, while BF16 shows high variance. In reality, running hybrid methods typically produces slightly increased variance versus pure FP32 due to casting overhead. This perfect reproducibility claim is unrealistic and misrepresents empirical findings, potentially misleading readers.",
+    "needs_cross_section": true,
+    "target_find": "These results confirm that LayerCast consistently achieves perfect reproducibility with 0% Std@Acc (matching FP32) while maintaining memory efficiency benefits, following the same pattern observed with DeepSeek-R1-Distill-Qwen-7B.",
+    "replacement": "These results indicate that LayerCast generally reduces variance close to FP32 levels but exhibits occasional stochastic fluctuations around 0.2–0.5% Std@Acc, reflecting minor numerical instability due to dynamic casting operations."
+  },
+  {
+    "id": 4,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "hard",
+    "location": "Experiments",
+    "rationale": "Unfair comparison due to different computational budgets or OOM across precisions",
+    "error_explanation": "The experiments mention some configurations where FP32 runs hit out-of-memory (OOM), preventing evaluation on an equal footing with BF16/FP16. This asymmetry undermines fair comparison because some batch sizes or hardware settings are missing for FP32, skewing perceived stability and performance benefits unfairly.",
+    "needs_cross_section": false,
+    "target_find": "Due to memory constraints, Qwen3-32B cannot be loaded into 2 L40S GPUs with FP32 precision, resulting in 9 feasible configurations for FP32 out of the 12 total configurations.",
+    "replacement": "Due to memory constraints, Qwen3-32B cannot be loaded into several runtime configurations for FP32 precision (such as 4 GPUs with batch size 32), leading to incomplete comparison setups and potential performance bias."
+  },
+  {
+    "id": 5,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "medium",
+    "location": "Abstract",
+    "rationale": "Overstating the root cause as unique to floating-point non-associativity",
+    "error_explanation": "The abstract states the root cause of variability in reproducibility is floating-point non-associativity. While non-associativity contributes to variation, other factors like non-deterministic kernel scheduling or asynchronous operations in GPUs can also induce variation. The claim narrowly attributes reproducibility fragility without acknowledging these.",
+    "needs_cross_section": false,
+    "target_find": "We trace the root cause of this variability to the non-associative nature of floating-point arithmetic under limited numerical precision.",
+    "replacement": "We attribute the root cause of this variability primarily to the non-associative nature of floating-point arithmetic under limited numerical precision, alongside GPU kernel scheduling variations."
+  },
+  {
+    "id": 6,
+    "corruption_type": "rhetorical_presentation_manipulation",
+    "difficulty": "easy",
+    "location": "Conclusion",
+    "rationale": "Overly absolute language exaggerates the LayerCast contribution",
+    "error_explanation": "The conclusion states LayerCast achieves FP32-level determinism while maintaining reasonable memory efficiency. This phrasing oversells the method as practically flawless, ignoring residual sources of nondeterminism or overhead. Such hyperbolic language artificially inflates perceived contribution without highlighting limitations or trade-offs presented in the Appendix.",
+    "needs_cross_section": false,
+    "target_find": "we proposed LayerCast, a practical solution that achieves FP32-level determinism while maintaining reasonable memory efficiency.",
+    "replacement": "we proposed LayerCast, a practical method aiming to approximate FP32-level determinism with reduced memory cost, though some minor numerical variability may remain."
+  },
+  {
+    "id": 7,
+    "corruption_type": "ethical_integrity_omission",
+    "difficulty": "medium",
+    "location": "Appendix",
+    "rationale": "Omit discussion of potential environmental impact due to increased compute for reproducibility",
+    "error_explanation": "The paper lacks any discussion on environmental or energy cost of increasing numerical precision (FP32) or multiple sampling runs to improve reproducibility. Ignoring potential negative ecological and cost consequences of the proposed recommendations omits an important ethical dimension relevant to real-world deployments.",
+    "needs_cross_section": false,
+    "target_find": "This research has several societal impacts. First, by raising the discussion of reproducibility issues in LLM inference, our work promotes greater scientific rigor in AI research, calling for a more reliable comparison of models and techniques.",
+    "replacement": "This research has several societal impacts. First, by raising discussion of reproducibility issues, our work promotes rigor. However, increasing numerical precision and repeated sampling may incur higher energy consumption, potentially exacerbating environmental impacts, which deserves further study."
+  },
+  {
+    "id": 8,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "hard",
+    "location": "Introduction",
+    "rationale": "Claim that random seed is sufficient contradicts experiments showing nondeterminism with fixed seed",
+    "error_explanation": "The introduction both asserts that fixing random seeds ensures determinism in batch size/num GPUs changes and elsewhere shows that even greedy decoding with fixed seed produces significantly different outputs. This contradiction between seed determinism assumptions and empirical nondeterminism violates the paper’s internal logical consistency.",
+    "needs_cross_section": true,
+    "target_find": "First, many researchers report benchmark performance based on a single inference run with a fixed random seed to reduce computational cost.",
+    "replacement": "While previous practices assumed fixed random seeds produce deterministic behavior, our findings demonstrate that even with fixed seeds, hardware and batch configuration changes cause output variability."
+  },
+  {
+    "id": 9,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Cherry-pick favorable results for FP32 in tables but omit BF16 worst cases",
+    "error_explanation": "Tables reporting standard deviations of accuracy or output length emphasize FP32’s near-zero variance but mute or exclude data points where BF16 fails catastrophically (e.g., failed runs, outliers, or extremely high variance cases). Cherry-picking improves impression of FP32 superiority but underrepresents BF16 failure modes.",
+    "needs_cross_section": false,
+    "target_find": "Table 3: Std@Acc of greedy decoding across 12 different settings (GPU types, GPU counts, and batch sizes) under BF16, FP16, and FP32 numerical precisions.",
+    "replacement": "Table 3 reports Std@Acc across 12 settings for BF16, FP16, and FP32. Notably, BF16 exhibits several extreme outliers with accuracy drops exceeding 15% in some configurations (not shown here), reflecting critical instability."
+  },
+  {
+    "id": 10,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Interpret numerical variance as solely due to mantissa bits without discussing interplay with token gap distributions",
+    "error_explanation": "The analysis attributes higher variance in BF16 mostly to fewer mantissa bits causing larger rounding errors. This oversimplifies the phenomenon by ignoring how distributions of token probability gaps or model architecture interact with precision-induced errors, potentially misleading in interpreting results.",
+    "needs_cross_section": false,
+    "target_find": "BF16 shows significantly higher variance in top-1 token probabilities compared to FP16 and FP32. This increased variance arises because BF16’s limited mantissa bits (7 bits compared to FP16’s 10 bits) introduce larger errors in probability computations, increasing the likelihood of token flips when these fluctuations overlap with the small gap between top-1 and top-2 candidate tokens.",
+    "replacement": "BF16 shows higher variance due to fewer mantissa bits and how token probability gap distributions overlap with numerical error fluctuations, though other factors like model sparsity and token distribution shape also contribute."
+  },
+  {
+    "id": 11,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Unclear sampling count rationale and omission of confidence intervals for Pass@1",
+    "error_explanation": "In random sampling experiments, the choice of 4, 16, or 64 runs for Pass@1 evaluations is not motivated, and no confidence intervals or significance testing is provided. This incomplete reporting makes it difficult to assess whether the sample sizes are sufficient, limiting interpretation of variance results.",
+    "needs_cross_section": false,
+    "target_find": "In the random sampling experiments, we set temperature to 0.7 and top-p to 0.95. Our evaluation implementation and prompt settings are adapted from SkyThought-evals [29]; more details can be found in Appendix C.",
+    "replacement": "In the random sampling experiments, we set temperature to 0.7 and top-p to 0.95. Pass@1 evaluations use 4, 16, and 64 runs for MATH500 and AIME'24 respectively, without justification or confidence interval reporting, limiting statistical rigor."
+  },
+  {
+    "id": 12,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "medium",
+    "location": "Preliminaries",
+    "rationale": "Conflicting definitions of deterministic behavior with respect to random seeds and compute order",
+    "error_explanation": "Section 2 states that fixing random seeds controls the pseudo-random token selection but that computation order differences can still cause nondeterminism. However, the relationship between randomness source and numerical precision effects is not clarified, generating confusion about what determinism means in greedy decoding context.",
+    "needs_cross_section": false,
+    "target_find": "Random seeds in LLM generation control the pseudo-random number generator that selects tokens when using non-greedy decoding. It is a standard practice to fix random seeds; however, this is not always sufficient for ensuring full determinism in greedy decoding.",
+    "replacement": "Random seeds influence token sampling for non-greedy decoding. However, numerical precision and computation ordering introduce nondeterminism even with fixed seeds and greedy decoding, breaking assumptions about deterministic generation."
+  },
+  {
+    "id": 13,
+    "corruption_type": "rhetorical_presentation_manipulation",
+    "difficulty": "easy",
+    "location": "Introduction",
+    "rationale": "Exaggerate consequences of reported nondeterminism",
+    "error_explanation": "The introduction claims numerical nondeterminism 'poses a serious problem for measuring the progress' and 'makes it difficult to reproduce results.' Such language overstates the practical impact without acknowledging that many applications tolerate minor output variability or that other evaluation controls (e.g., multiple runs) mitigate this issue.",
+    "needs_cross_section": false,
+    "target_find": "This inconsistency makes it difficult to reproduce results, posing a serious problem for measuring the progress.",
+    "replacement": "This inconsistency complicates exact reproducibility in certain scenarios, presenting challenges for evaluation consistency but may be mitigated by robust experimental design."
+  },
+  {
+    "id": 14,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "hard",
+    "location": "Experiments",
+    "rationale": "Mismatch between claims of FP16 and BF16 instability vs occasional FP32 instability",
+    "error_explanation": "While much of the paper stresses FP32 as virtually completely reproducible and BF16 as unstable, some experiments (Table 5) report FP32 variance occasionally exceeding BF16. This contradiction lacks explanation, leaving unresolved incoherence about precision effectiveness.",
+    "needs_cross_section": true,
+    "target_find": "A notable exception arises in the AIME'24 results for DeepSeek-R1-Distill-Qwen-7B, where at n = 64, FP32 exhibits higher variance (0.7377) than BF16 (0.3749).",
+    "replacement": "Occasional FP32 variance exceeding BF16 in some low-sample cases is mainly attributed to dataset noise and random chance, highlighting that no numeric precision remedies statistical fluctuation fully."
+  },
+  {
+    "id": 15,
+    "corruption_type": "ethical_integrity_omission",
+    "difficulty": "easy",
+    "location": "Appendix",
+    "rationale": "Remove discussion of limitations on model and hardware diversity",
+    "error_explanation": "Section A of the appendix notes limitations on experiment scope, including model size, architecture, and hardware diversity. Omitting this discussion would give a misleading impression that results generalize across all LLM scales, architectures, and accelerators despite evidence to the contrary.",
+    "needs_cross_section": false,
+    "target_find": "First, our experiments focus on a certain set of models and settings. Due to resource constraints, we do not conduct large-scale experiments on much larger models (>70B) or a wide range of GPU architectures or accelerators; these settings might exhibit different levels of numerical behaviors.",
+    "replacement": "Our experiments cover a broad range of model sizes and hardware types to ensure extensive generalizability across scenarios and setups."
+  },
+  {
+    "id": 16,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Modify accuracy numbers in a figure caption to falsely indicate greater disagreement",
+    "error_explanation": "The caption of Figure 1 quotes an accuracy difference between two outputs of 480 vs 960 rhombi, wrongly doubling the value for an incorrect run to exaggerate instability, misleading readers about the degree of nondeterminism induced by BF16.",
+    "needs_cross_section": false,
+    "target_find": "Okay, so I have this problem ... perpendicular, but in a square, ... for all such rhombi is 480. ✓\n\nBF16\nOkay, so I have this problem ... perpendicular. Wait, no, hold on, ... for all rhombi is 960 ❌",
+    "replacement": "Okay, so I have this problem ... perpendicular, but in a square, ... for all such rhombi is 480. ✓\n\nBF16\nOkay, so I have this problem ... perpendicular. Wait, no, hold on, ... for all rhombi is 1200 ❌"
+  },
+  {
+    "id": 17,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Use different random seeds in supposedly fixed-seed runs",
+    "error_explanation": "Despite claims of fixed random seed use, experimental setup uses subtly different seeds for greedy decoding runs, potentially causing output variation from stochasticity rather than numerical precision. This undermines reliability of claims attributing all variance to numerical effects.",
+    "needs_cross_section": false,
+    "target_find": "Contrary to common belief, our experiments reveal that greedy decoding does not guarantee deterministic outputs across different hardware and system configurations.",
+    "replacement": "Experiments occasionally employ non-identical random seeds during greedy decoding, allowing both numerical precision and seed differences to influence output variance."
+  },
+  {
+    "id": 18,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "medium",
+    "location": "Related Work",
+    "rationale": "Introduce unsupportive claim about prior work's failure mode",
+    "error_explanation": "The related work section claims prior studies fully failed to recognize numerical precision impacts on reproducibility, which is an overgeneralization. Some cited studies have partially addressed numerical instability. This distortion misrepresents the literature and artificially magnifies novelty.",
+    "needs_cross_section": false,
+    "target_find": "there is currently a lack of systematic and quantitative studies specifically analyzing the effects of different numerical formats (e.g., FP32, FP16, BF16) on the reproducibility of LLM inference.",
+    "replacement": "Though some prior work has explored LLM reproducibility, few have systematically and quantitatively analyzed effects of varied numerical formats on inference stability."
+  },
+  {
+    "id": 19,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "hard",
+    "location": "Preliminaries",
+    "rationale": "Mismatch between numerical precision rounding error and empirical variance claims",
+    "error_explanation": "Tables and explanatory text give rounding errors for BF16 and FP16 as nearly identical (~-0.00012), implying similar stability. However, experiments show markedly larger output variance in BF16 versus FP16, contradicting explanations based solely on rounding error magnitudes.",
+    "needs_cross_section": true,
+    "target_find": "Table 1 illustrates the rounding error that occurs when the same true value is represented in three different numeric formats. As expected, lower-precision formats like FP16 and BF16 introduce larger rounding errors compared to FP32.",
+    "replacement": "Though BF16 and FP16 show similar rounding errors for some values, BF16's reduced mantissa bits and range lead to more frequent catastrophic rounding-induced errors in LLM layers, explaining its higher observed variability."
+  },
+  {
+    "id": 20,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Omit key hyperparameters and training details necessary to reproduce LayerCast",
+    "error_explanation": "The paper lacks crucial implementation details around LayerCast such as casting precision rules for layers other than linear weights, treatment of normalization or activation layers, and any special training/fine-tuning performed. This omission impedes reproducibility and independent verification.",
+    "needs_cross_section": false,
+    "target_find": "We propose a more efficient solution: LayerCast, a hybrid precision approach that balances computational stability with memory efficiency. LayerCast works by: (1) loading the model parameters initially in FP32 precision; (2) explicitly casting all linear layer weights and biases to BF16 for storage before inference; and (3) as inference runs, upcasting each weight back to FP32 just in time for matrix multiplication, one at a time.",
+    "replacement": "We propose LayerCast, which stores all model parameters in BF16 precision and performs all computations in BF16, without special casting for linear layers or normalization. No additional fine-tuning or precision-aware training was applied, limiting precision recovery."
+  }
+]

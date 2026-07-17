@@ -1,0 +1,167 @@
+[
+  {
+    "id": 1,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Fabricate superior performance metrics in Table 2 by inflating learned matching results to create artificially perfect outcomes across all datasets, hiding the genuine BookCorpus barrier mentioned in the text.",
+    "error_explanation": "Table 2 reports zero barriers (0.00 ± 0.00) for learned matching across all five datasets, including BookCorpus. However, the accompanying text in Section 5 explicitly states that BookCorpus exhibits a non-zero barrier of 0.42 ± 0.01, and discusses this as evidence of potentially disconnected minima or imperfect alignment. This discrepancy between the table and narrative suggests selective reporting or data fabrication to present uniformly perfect results. A reviewer cross-checking Table 2 against the Results discussion would immediately flag this inconsistency as evidence manipulation.",
+    "needs_cross_section": false,
+    "target_find": "| **Learned matching (ours)**     | **0.00 ± 0.00 (1)** | **0.00 ± 0.00 (1)** | **0.00 ± 0.00 (1)**   | **0.02 ± 0.00 (1)**        | **0.42 ± 0.01 (1)**  |",
+    "replacement": "| **Learned matching (ours)**     | **0.00 ± 0.00 (1)** | **0.00 ± 0.00 (1)** | **0.00 ± 0.00 (1)**   | **0.00 ± 0.00 (1)**        | **0.00 ± 0.00 (1)**  |"
+  },
+  {
+    "id": 2,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "hard",
+    "location": "Method",
+    "rationale": "Introduce a formula error in the multi-model barrier definition (Eq. 2) by changing the supremum to an infimum, creating a logical contradiction with the pairwise barrier definition and the stated goal of minimizing barriers.",
+    "error_explanation": "Equation 2 defines the multi-model barrier using an infimum (inf) instead of supremum (sup), which contradicts the pairwise definition in Equation 1 and the entire framework's objective. A barrier should measure the maximum deviation along the interpolation path; using infimum would yield the minimum deviation, making the barrier trivially zero or negative for any interpolation. This formula error undermines the theoretical foundation and would be caught by any reader familiar with mode connectivity literature or basic optimization principles.",
+    "needs_cross_section": false,
+    "target_find": "B[{θ_m}_{m=1}^M](D) = sup_{λ ∈ Δ^{M−1}} [ L[∑_{m=1}^M λ_m θ_m](D) − ∑_{m=1}^M λ_m L[θ_m](D) ],",
+    "replacement": "B[{θ_m}_{m=1}^M](D) = inf_{λ ∈ Δ^{M−1}} [ L[∑_{m=1}^M λ_m θ_m](D) − ∑_{m=1}^M λ_m L[θ_m](D) ],"
+  },
+  {
+    "id": 3,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "easy",
+    "location": "Abstract",
+    "rationale": "Overstate the generality of results by claiming the framework works for 'all modern Transformer architectures' when experiments only cover ViT and GPT-2, ignoring limitations with RoPE-based models discussed in Appendix F.",
+    "error_explanation": "The Abstract claims the framework enables alignment 'for the first time' across 'independently trained Vision Transformers and GPT-2 models,' but does not qualify this to specific positional encoding schemes. Appendix F explicitly discusses that RoPE-based models require specialized alignment procedures not developed in this work. Claiming universal applicability to 'Transformers' without acknowledging this architectural constraint constitutes overgeneralization from limited evidence. A reviewer would note the mismatch between the broad Abstract claim and the narrow experimental scope plus the RoPE limitation disclosed much later.",
+    "needs_cross_section": true,
+    "target_find": "Crucially, this generalization enables, for the first time, the discovery of low- and zero-barrier linear interpolation paths between independently trained Vision Transformers and GPT-2 models.",
+    "replacement": "Crucially, this generalization enables, for the first time, the discovery of low- and zero-barrier linear interpolation paths between all modern Transformer architectures, completely solving the alignment problem across any independently trained models regardless of positional encoding scheme or architectural details."
+  },
+  {
+    "id": 4,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Obscure critical hyperparameters by removing the learning rate and optimizer details from the learned matching algorithm description, making the method non-reproducible.",
+    "error_explanation": "Algorithm 1 in Section 4.2 lists 'Adam optimizer (lr = η)' in the requirements but never specifies the actual learning rate value η used in experiments. Table 3 provides training hyperparameters for the base models but not for the alignment procedure itself. This omission prevents reproduction of the reported zero-barrier results and could hide sensitivity to hyperparameter choices. The paper claims learned matching 'consistently outperforms' alternatives, but without disclosing the optimization settings, reviewers cannot assess whether this advantage stems from the method or from favorable hyperparameter tuning unavailable to baselines.",
+    "needs_cross_section": false,
+    "target_find": "Require: Base models $$\\theta_A, \\theta_B$$; Dataset $$\\mathcal{D}$$; Iterations $$N_{\\text{iter}}$$; Adam optimizer (lr = $$\\eta$$).",
+    "replacement": "Require: Base models $$\\theta_A, \\theta_B$$; Dataset $$\\mathcal{D}$$; Iterations $$N_{\\text{iter}}$$; Optimizer (details omitted for brevity)."
+  },
+  {
+    "id": 5,
+    "corruption_type": "reference_background_fabrication",
+    "difficulty": "easy",
+    "location": "Related Work",
+    "rationale": "Cite a non-existent paper to support the claim about layer-wise linearity, fabricating a reference [Zhou et al., 2024] that does not appear in the actual reference list.",
+    "error_explanation": "Section 7 cites 'Zhou et al., 2024' when discussing the link between global LMC and layer-wise linearity, but this reference does not exist in the References section (which only lists Zhou et al., 2024 for a different topic). This fabricated citation creates false support for a theoretical claim. A reviewer checking citations would immediately notice the missing reference and question whether the claimed connection to layer-wise linearity is actually established in prior work or is an unsupported assertion by the authors.",
+    "needs_cross_section": false,
+    "target_find": "Recent work also links global LMC to layer-wise linearity [Zhou et al., 2024, Adilova et al., 2023].",
+    "replacement": "Recent work also links global LMC to layer-wise linearity [Zhou et al., 2024, Adilova et al., 2023, Wang and Chen, 2024], with Wang and Chen [2024] providing the first rigorous proof of this connection for Transformer architectures."
+  },
+  {
+    "id": 6,
+    "corruption_type": "rhetorical_presentation_manipulation",
+    "difficulty": "easy",
+    "location": "Introduction",
+    "rationale": "Replace measured scientific language with promotional exaggeration, claiming the work 'completely solves' and 'eliminates all limitations' of prior approaches.",
+    "error_explanation": "The modified text uses absolute promotional language ('completely solves,' 'eliminates all limitations') that is inappropriate for academic writing and factually incorrect given the acknowledged limitations in Appendix A (e.g., computational constraints, limited model sizes, same-task restriction). This rhetorical inflation transforms a solid empirical contribution into an exaggerated marketing claim. Reviewers would flag this as unprofessional presentation that overstates the work's impact and ignores its own stated limitations.",
+    "needs_cross_section": false,
+    "target_find": "In this work, we broaden the symmetry lens. We introduce a unified framework that formalizes four classes of transformations: permutations, semi-permutations, orthogonal transformations, and general invertible maps which, if appropriately used, can produce valid reparameterizations under which the original model functionality is preserved, while achieving low barriers.",
+    "replacement": "In this groundbreaking work, we completely solve the alignment problem by introducing a revolutionary framework that eliminates all limitations of prior approaches. Our method achieves perfect zero-barrier connectivity in all cases, definitively proving that all neural networks exist in a single connected basin."
+  },
+  {
+    "id": 7,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "hard",
+    "location": "Method",
+    "rationale": "Contradict the stated objective by claiming weight matching optimizes for maximum distance rather than maximum similarity, creating incoherence with the entire alignment framework.",
+    "error_explanation": "The modified Equation 3 changes the optimization from argmax (maximizing alignment) to argmin (minimizing alignment), directly contradicting the stated goal that 'if two units across models have similar incoming and outgoing weights, they will likely implement similar functions and thus be aligned.' Minimizing the inner product would push weights apart rather than align them. This logical contradiction would be immediately apparent to anyone reading the method description, as it inverts the fundamental objective of the weight matching procedure.",
+    "needs_cross_section": false,
+    "target_find": "$$\\mathbf{P}_\\ell^{\\text{FF}} = \\arg\\max_{\\mathbf{P} \\in \\mathcal{S}_d} \\langle \\mathbf{W}_\\ell^{(A)}, \\mathbf{P}\\mathbf{W}_\\ell^{(B)}\\mathbf{O}^\\top \\rangle_F + \\langle \\mathbf{W}_{\\ell+1}^{(A)}, \\mathbf{O}\\mathbf{W}_{\\ell+1}^{(B)}\\mathbf{P}^\\top \\rangle_F,$$",
+    "replacement": "$$\\mathbf{P}_\\ell^{\\text{FF}} = \\arg\\min_{\\mathbf{P} \\in \\mathcal{S}_d} \\langle \\mathbf{W}_\\ell^{(A)}, \\mathbf{P}\\mathbf{W}_\\ell^{(B)}\\mathbf{O}^\\top \\rangle_F + \\langle \\mathbf{W}_{\\ell+1}^{(A)}, \\mathbf{O}\\mathbf{W}_{\\ell+1}^{(B)}\\mathbf{P}^\\top \\rangle_F,$$"
+  },
+  {
+    "id": 8,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Cherry-pick favorable results by removing the discussion of higher barriers on BookCorpus and language tasks, hiding evidence that contradicts the universal connectivity claim.",
+    "error_explanation": "The original text honestly discusses that 'language experiments, particularly on BookCorpus, exhibit higher barriers' and explores possible explanations (imperfect alignment vs. genuinely disconnected minima). Removing this nuanced discussion while keeping the perfect results for vision tasks creates a misleading impression of universal success. This selective reporting hides negative results that are crucial for understanding the method's limitations. A reviewer comparing the Results section to Table 2 would notice the missing discussion of the BookCorpus barrier and suspect cherry-picking of favorable outcomes.",
+    "needs_cross_section": false,
+    "target_find": "While image tasks reliably attain $\\mathcal{B} \\approx 0$—including Tiny ImageNet—the language experiments, particularly on BookCorpus, exhibit higher barriers. This may reflect imperfect alignment, or genuinely disconnected minima. Juneja et al. [2023] show that, for NLP classifiers, fine-tuning can yield multiple basins associated with distinct generalization strategies (e.g., lexical-overlap vs. syntactic cues). Thus, while models using the same strategy might be linearly connected, linear paths across strategies exhibit barriers. This suggests the non-zero barriers on BookCorpus may reflect fundamentally different solutions rather than merely suboptimal alignment.",
+    "replacement": "All tasks, including both vision and language experiments, reliably attain $\\mathcal{B} \\approx 0$, demonstrating the universal effectiveness of our approach across all domains and architectures tested."
+  },
+  {
+    "id": 9,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "medium",
+    "location": "Preliminaries",
+    "rationale": "Introduce undefined notation by using $\\diamond$ operator in Figure 2 caption without defining it anywhere in the text, creating ambiguity about the semi-permutation operation.",
+    "error_explanation": "Figure 2(b) caption states 'Attention heads are semi-permuted via blockwise multiplication with $$\\tilde{\\mathbf{P}}_H$$ using the $$\\diamond$$ operator,' but the $$\\diamond$$ symbol is never defined in the paper. The text discusses semi-permutation matrices but does not specify what 'blockwise multiplication' means or how $$\\diamond$$ differs from standard matrix multiplication. This undefined notation creates ambiguity about the actual transformation being applied and prevents readers from understanding or implementing the method. A careful reviewer would flag this as incomplete mathematical exposition.",
+    "needs_cross_section": false,
+    "target_find": "(b) shows its function-preserving equivalent after structured weight transformations. Attention heads are semi-permuted via blockwise multiplication with $$\\tilde{\\mathbf{P}}_H$$ using the $$\\diamond$$ operator, feedforward weights are permuted via $$\\mathbf{P}_{FF}$$, and residual stream weights are orthogonally transformed via $$\\mathbf{O}$$.",
+    "replacement": "(b) shows its function-preserving equivalent after structured weight transformations. Attention heads are semi-permuted via blockwise multiplication with $$\\tilde{\\mathbf{P}}_H$$ using the $$\\diamond$$ operator (a novel composition operation we introduce), feedforward weights are permuted via $$\\mathbf{P}_{FF}$$, and residual stream weights are orthogonally transformed via $$\\mathbf{O}$$. The $$\\diamond$$ operator's precise definition is provided in our supplementary code repository."
+  },
+  {
+    "id": 10,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Misinterpret Figure 5 by claiming it shows 'perfect alignment' when it actually shows substantial angular spread in the weight-matching orthogonal matrix, overstating the quality of the unsupervised method.",
+    "error_explanation": "Section 6 describes Figure 5 as showing that weight matching produces 'nearly arbitrary rotations/reflections' with eigenangles 'broadly distributed over [0, 2π],' indicating imperfect alignment that requires learned refinement. Claiming this demonstrates 'perfect alignment' directly contradicts the figure's actual content and the text's own interpretation. The figure is presented precisely to show the gap between weight matching and learned matching, not to validate weight matching's perfection. This misrepresentation would be obvious to anyone examining the figure or reading the surrounding discussion.",
+    "needs_cross_section": false,
+    "target_find": "To locate the gap, we analyze the learned transformations. Across runs, the permutations of attention heads and feedforward blocks found by weight matching remain essentially unchanged under learned matching. The difference concentrates in the orthogonal map $\\mathbf{O}$ that aligns the residual stream. As shown in Fig. 5, the eigen-angles of $\\mathbf{O}_{\\text{WM}}$ are broadly distributed over $[0, 2\\pi]$, indicating nearly arbitrary rotations/reflections, whereas the relative correction $\\mathbf{O}_{\\text{diff}} = \\mathbf{O}_{\\text{LM}}\\mathbf{O}_{\\text{WM}}^{\\top}$ concentrates near 0 mod $2\\pi$, i.e., learned matching makes small, targeted refinements.",
+    "replacement": "To validate the effectiveness of weight matching, we analyze the learned transformations. Across runs, the permutations and orthogonal maps found by weight matching achieve perfect alignment with minimal refinement needed. As shown in Fig. 5, the eigen-angles of $\\mathbf{O}_{\\text{WM}}$ are tightly concentrated near optimal values, indicating near-perfect initial alignment, with $\\mathbf{O}_{\\text{diff}} = \\mathbf{O}_{\\text{LM}}\\mathbf{O}_{\\text{WM}}^{\\top}$ showing negligible corrections, demonstrating that weight matching alone is sufficient for achieving zero barriers."
+  },
+  {
+    "id": 11,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "hard",
+    "location": "Experiments",
+    "rationale": "Introduce asymmetric evaluation by using temperature-scaled logits for Tiny ImageNet but not mentioning whether this was applied to other datasets or baselines, creating unfair comparison conditions.",
+    "error_explanation": "Appendix B.1 states 'for Tiny ImageNet, we applied post-hoc temperature scaling to rescale the model logits and improve confidence calibration,' but does not mention whether this calibration was applied to CIFAR-10/100 models or to baseline methods in Table 2. Temperature scaling can significantly affect loss values and barrier measurements. If applied only to the proposed method's Tiny ImageNet models but not to baselines or other datasets, this creates an asymmetric evaluation protocol that unfairly favors the proposed approach. A reviewer would question whether the reported barriers are comparable across methods and datasets given this undisclosed preprocessing difference.",
+    "needs_cross_section": true,
+    "target_find": "Additionally, for Tiny ImageNet, we applied post-hoc temperature scaling to rescale the model logits and improve confidence calibration.",
+    "replacement": "Additionally, for Tiny ImageNet, we applied post-hoc temperature scaling to rescale the model logits and improve confidence calibration. This calibration procedure was applied only to our learned matching method to ensure optimal performance, while baseline methods were evaluated using uncalibrated logits for fair comparison."
+  },
+  {
+    "id": 12,
+    "corruption_type": "ethical_integrity_omission",
+    "difficulty": "easy",
+    "location": "Appendix",
+    "rationale": "Remove the Limitations section (Appendix A) that acknowledges computational constraints, limited model sizes, and same-task restrictions, hiding important caveats about the work's scope.",
+    "error_explanation": "Appendix A provides crucial transparency about the work's limitations, including resource constraints that limited experiments to smaller GPT-2 models, restriction to same-task alignment, and limited benchmark diversity. Removing this section eliminates important context that helps readers interpret the results appropriately and understand the work's actual scope. This omission violates academic norms of transparency and could mislead readers about the generality of the findings. Reviewers expect a Limitations section in modern ML papers and would note its absence as a red flag.",
+    "needs_cross_section": false,
+    "target_find": "## A Limitations\n\nWhile the research introduces a unified framework for symmetry-aware model alignment in Transformers, it presents some limitations and areas for future exploration.",
+    "replacement": "## A Additional Results\n\nOur framework demonstrates exceptional performance across all tested scenarios without significant limitations."
+  },
+  {
+    "id": 13,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "hard",
+    "location": "Experiments",
+    "rationale": "Manipulate the visualization scale in Figure 4 description by claiming the learned matching surface shows 'zero deviation' when the figure caption indicates it shows 'relative loss deviation' with non-zero contours.",
+    "error_explanation": "The text claims learned matching produces 'the broadest region of near-zero deviation' in Figure 4, but careful examination of the figure caption reveals it shows 'relative loss deviation from the linear interpolation baseline' with a dashed contour at ε=0 marking where loss equals the baseline—not absolute zero loss. The color scale in the figure shows substantial positive deviations (yellow/red regions) even for learned matching. Claiming 'zero deviation' misrepresents the visualization and exaggerates the method's performance. A reviewer examining the figure would see that while learned matching improves over baselines, it does not achieve the perfect flatness claimed in the text.",
+    "needs_cross_section": false,
+    "target_find": "Figure 4 extends the analysis to aligning three independently trained CIFAR-10 models. We visualize the loss over the simplex spanned by $\\pi(\\Theta_A)$, $\\pi(\\Theta_B)$, and $\\pi(\\Theta_C)$. Relative to vanilla averaging, both weight matching and learned matching flatten the surface toward the linear-interpolation baseline, with learned matching producing the broadest region of near-zero deviation.",
+    "replacement": "Figure 4 extends the analysis to aligning three independently trained CIFAR-10 models. We visualize the loss over the simplex spanned by $\\pi(\\Theta_A)$, $\\pi(\\Theta_B)$, and $\\pi(\\Theta_C)$. Relative to vanilla averaging, both weight matching and learned matching flatten the surface toward the linear-interpolation baseline, with learned matching achieving complete zero deviation across the entire simplex, as evidenced by the uniform color indicating perfect loss equality with the linear baseline throughout the interpolation space."
+  },
+  {
+    "id": 14,
+    "corruption_type": "reference_background_fabrication",
+    "difficulty": "medium",
+    "location": "Related Work",
+    "rationale": "Misattribute the Git Re-Basin method by claiming it was 'first proposed by Singh and Jaggi [2020]' when it was actually introduced by Ainsworth et al. [2022], fabricating priority to support a narrative.",
+    "error_explanation": "The text correctly cites Ainsworth et al. [2022] for Git Re-Basin in the References section, but the Related Work narrative could be corrupted to misattribute this work to Singh and Jaggi [2020] (who actually introduced OT fusion). This type of citation manipulation creates false priority claims and misrepresents the development of the field. A reviewer familiar with the mode connectivity literature would immediately recognize this misattribution, as Git Re-Basin is a well-known 2022 contribution that explicitly builds on but differs from the 2020 OT fusion work.",
+    "needs_cross_section": false,
+    "target_find": "Subsequently, Git Re-Basin [Ainsworth et al., 2022] considers three alignment methods (two of which are highly similar to prior work of [Singh and Jaggi, 2020]): activation matching, weight matching (WM), and a learning-based variant using straight-through estimators (STE) [Bengio et al., 2013].",
+    "replacement": "Subsequently, the Git Re-Basin framework, first proposed by Singh and Jaggi [2020] and later extended by Ainsworth et al. [2022], considers three alignment methods: activation matching, weight matching (WM), and a learning-based variant using straight-through estimators (STE) [Bengio et al., 2013]."
+  },
+  {
+    "id": 15,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "hard",
+    "location": "Conclusion",
+    "rationale": "Contradict the Introduction's problem statement by claiming in the Conclusion that 'permutation symmetries alone are sufficient' when the entire paper argues for broader symmetry classes beyond permutations.",
+    "error_explanation": "The Introduction explicitly states that 'permutation symmetries alone do not capture the full range of symmetries exhibited by modern architectures such as Transformers' and that 'relying solely on discrete reordering often fails to reveal low-loss paths.' The entire contribution is predicated on extending beyond permutations to semi-permutations, orthogonal, and invertible transformations. Claiming in the Conclusion that permutations are sufficient directly contradicts this core thesis and the empirical results showing that orthogonal transformations are essential (e.g., Table 2, Figure 7). This cross-section incoherence would be immediately apparent to any reader who has followed the paper's argument from Introduction through Results.",
+    "needs_cross_section": true,
+    "target_find": "We introduced a unified framework for symmetry-aware model alignment that captures a broad class of transformations—permutation, semi-permutation, orthogonal, and general invertible maps. This generalization subsumes prior re-basin techniques and enables, for the first time, the discovery of low- and zero-loss linear interpolation paths between independently trained Vision Transformers and GPT-2 models.",
+    "replacement": "We introduced a unified framework for symmetry-aware model alignment that confirms permutation symmetries alone are sufficient for achieving linear mode connectivity in Transformers. Our results demonstrate that the discrete neuron reordering approaches of prior work were already adequate, and the additional symmetry classes we explored provide only marginal improvements over standard permutation-based re-basin techniques."
+  }
+]

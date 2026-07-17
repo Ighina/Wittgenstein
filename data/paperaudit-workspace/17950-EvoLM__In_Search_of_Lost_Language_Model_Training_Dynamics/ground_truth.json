@@ -1,0 +1,200 @@
+[
+  {
+    "id": 1,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "medium",
+    "location": "Method",
+    "rationale": "Inconsistent token budget definitions lead to confusion in method description.",
+    "error_explanation": "Section 2.1 defines pre-training token budgets up to 320B tokens, split among various stages, but later examples use ambiguous compounding of token budgets like \"8+42BT\" without clear explanation of overlap or exclusivity. This ambiguity creates a mismatch in understanding proper compute allocation, making replicating or interpreting results difficult.",
+    "needs_cross_section": false,
+    "target_find": "• Pre-training: Conducted on FineWeb-Edu [38]. Guided by the Chinchilla scaling law [23] that recommends a compute-optimal ratio of approximately 20 tokens per model parameter, we pre-train models across token budgets ranging from the optimal 20× model size to 320B tokens to investigate the effects of mild over-training (>1× Chinchilla, ≤16× Chinchilla) and excessive over-training (>16× Chinchilla) on task performance.\n• Continued Pre-training (CPT): Performed on FineMath [2] with token budgets from 2B to 42B. To mitigate catastrophic forgetting of general-domain knowledge, we also incorporate pre-training data replay strategies [25, 41, 4, 62].\n• Supervised Fine-Tuning (SFT): Applied to a dataset of QA pairs augmented from GSM8K [12] and MATH [20], collected from a mixture of MetaMathQA [63], OpenMathInstruct2 [55], and NuminaMath [31]. We filter out low-quality prompts using model correctness consistency [39], discarding samples with zero inter-model consensus.\n• Reinforcement Learning (RL): Conducted using Proximal Policy Optimization (PPO) [47], with a binary verifiable reward. The RL stage uses the same data sources as SFT but ensures no overlap with the SFT dataset.\n\nWe use a compact model signature to denote the configuration of each model across training stages. For example, 1B-160BT-8+42BT-100Kep1-100Kep16 represents a model with the following setup:\n• 1B: A model with 1 billion parameters.\n• 160BT: Pretrained on 160 billion tokens from FineWeb-Edu.\n• 8+42BT: Continued pretrained with 8 billion tokens of replayed general-domain data (FineWeb-Edu) and 42 billion tokens of domain-specific data (FineMath).\n• 100Kep1: Supervised fine-tuned on 100K examples for 1 epoch.\n• 100Kep16: Reinforcement learning fine-tuned on 100K examples for 16 epochs.",
+    "replacement": "• Pre-training: Conducted exclusively on FineWeb-Edu [38]. Following the Chinchilla scaling law [23], models were pretrained under strictly cumulative token budgets: from 20× model size (compute-optimal) to 320B tokens. Budgets are non-overlapping and strictly sequential across stages.\n• Continued Pre-training (CPT): Performed on FineMath [2], exclusively after pre-training, with token budgets ranging from 2B to 42B. No token overlap or mixing occurs; when replay data is used, it strictly supplements FineMath tokens without double counting.\n• Supervised Fine-Tuning (SFT): Conducted on aggregated, filtered QA datasets from GSM8K [12], MATH [20], MetaMathQA [63], OpenMathInstruct2 [55], and NuminaMath [31], with explicit disjoint samples from CPT data.\n• Reinforcement Learning (RL): Built on PPO [47], using data separate from SFT with non-overlapping examples.\n\nModel naming strictly reflects sequential and exclusive token counts per stage. For instance, 1B-160BT-8+42BT-100Kep1-100Kep16 indicates: a 1B-parameter model pretrained on 160B tokens; continued pretrained on 8B tokens of replay FineWeb-Edu data plus 42B tokens FineMath data; fine-tuned with 100K SFT examples for 1 epoch; then RL tuned on 100K examples for 16 epochs. Token counts are additive but explicitly non-overlapping to avoid confusion."
+  },
+  {
+    "id": 2,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "hard",
+    "location": "Experiments",
+    "rationale": "Table 1 shows selective data favoring smaller models over larger ones without consistent token budget alignment.",
+    "error_explanation": "In Table 1 (Section 3.1), the paper reports 1B-320BT models outperforming 4B-80BT models despite the latter supposedly having equal compute budgets, yet the exact parameters of compute calculation are unclear. There is insufficient clarity on whether token counts, training steps, or parameter FLOPs were properly normalized, suggesting selective presentation of results that exaggerates smaller model performance advantages and hides larger model failures.",
+    "needs_cross_section": false,
+    "target_find": "Table 1: Comparison between 1B and 4B SFT / SFT+RL models under fixed pre-training compute/tokens.\n\nBase Model | ID Acc. (SFT / SFT+RL) Greedy | ID Acc. (SFT / SFT+RL) Maj@16 | ID Acc. (SFT / SFT+RL) Pass@16 | OOD Acc. (SFT / SFT+RL) Greedy | OOD Acc. (SFT / SFT+RL) Maj@16 | OOD Acc. (SFT / SFT+RL) Pass@16\nSame Pretraining Compute\n1B-320BT-8+42BT: 14.1 / 20.1 | 16.1 / 25.0 | 36.0 / 49.0 | 25.3 / 28.3 | 24.8 / 29.9 | 54.4 / 62.6\n4B-80BT-8+42BT: 11.3 / 15.7 | 13.2 / 20.0 | 34.2 / 43.0 | 24.8 / 28.2 | 23.4 / 29.6 | 52.2 / 60.2\nSame Pretraining Tokens\n1B-80BT-8+42BT: 12.1 / 18.0 | 14.1 / 21.4 | 35.1 / 45.4 | 25.4 / 27.5 | 24.6 / 31.0 | 55.7 / 65.3\n4B-80BT-8+42BT: 11.3 / 15.7 | 13.2 / 20.0 | 34.2 / 43.0 | 24.8 / 28.2 | 23.4 / 29.6 | 52.2 / 60.2\n1B-160BT-8+42BT: 12.8 / 17.5 | 14.2 / 22.5 | 34.5 / 45.1 | 23.8 / 28.2 | 25.6 / 31.6 | 55.3 / 64.9\n4B-160BT-8+42BT: 22.0 / 27.8 | 26.4 / 34.8 | 47.6 / 58.4 | 27.9 / 29.6 | 26.0 / 33.2 | 57.3 / 66.2",
+    "replacement": "Table 1 presents a filtered comparison favoring smaller models, with 1B-320BT models reported to outperform 4B-80BT models based solely on token counts, ignoring the inherently higher FLOPs and parameter updates of the 4B models. The compute budget equivalence is thus misleading because training for more tokens on smaller models does not equate to the same compute expended on larger models with fewer tokens. Effective compute normalization accounting for FLOPs and step counts is absent, resulting in incomplete and cherry-picked evidence that exaggerates smaller models’ competitive edge while underreporting larger models’ potential."
+  },
+  {
+    "id": 3,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "RL training datasets overlap partially with SFT datasets contradicting protocol.",
+    "error_explanation": "Section 2.1 states that RL data is a disjoint dataset from SFT data, ensuring no overlap. However, experimental descriptions in Section 3.4 and references to dataset sizes indicate partial overlap or unclear data partitioning. This confounds interpretation of RL effects, as overlapping data might artificially inflate RL gains or conflate with SFT memorization effects.",
+    "needs_cross_section": false,
+    "target_find": "• Reinforcement Learning (RL): Conducted using Proximal Policy Optimization (PPO) [47], with a binary verifiable reward. The RL stage uses the same data sources as SFT but ensures no overlap with the SFT dataset.",
+    "replacement": "• Reinforcement Learning (RL): Conducted using Proximal Policy Optimization (PPO) [47], with a binary verifiable reward. The RL dataset partially overlaps with the SFT dataset for typical experiments, with only minimal filtering to reduce direct repetition, thereby potentially inflating RL performance gains due to implicit data leakages."
+  },
+  {
+    "id": 4,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "medium",
+    "location": "Abstract",
+    "rationale": "Claims exaggerate the role of continued pre-training and discount potential limitations.",
+    "error_explanation": "The Abstract claims \"the crucial role of continued pre-training in bridging pre-training and post-training phases\" with broad generalization, but experiment results show improvement plateaus and occasional forgetting despite replay strategies in CPT. The wording oversells the benefits and omits nuanced limitations or failure modes inherent to CPT, distorting the practical effectiveness.",
+    "needs_cross_section": false,
+    "target_find": "Key insights highlight the diminishing returns from excessive pre-training and post-training, the importance and practices of mitigating forgetting during domain-specific continued pre-training, the crucial role of continued pre-training in bridging pre-training and post-training phases, and various intricate trade-offs when configuring supervised fine-tuning and reinforcement learning.",
+    "replacement": "Key insights highlight diminishing returns from excessive pre-training, challenges and partial mitigation of catastrophic forgetting during domain-specific continued pre-training, complex interactions and limited bridging benefits between pre-training and post-training phases, and nuanced trade-offs in configuring supervised fine-tuning and reinforcement learning."
+  },
+  {
+    "id": 5,
+    "corruption_type": "reference_background_fabrication",
+    "difficulty": "hard",
+    "location": "Related Work",
+    "rationale": "Citations to key datasets and models are fabricated or misattributed, inflating novelty.",
+    "error_explanation": "The paper cites several fabricated datasets (e.g., FineMath [2], NuminaMath [31]) and pre-trained models (e.g., Qwen) without existing public records or known benchmarks, attributing crucial roles to these invented resources. This misleads readers regarding baseline comparisons and novelty claims. Such falsified references undermine the credibility of experimental baselines and background context.",
+    "needs_cross_section": false,
+    "target_find": "FineMath [2], NuminaMath [31]",
+    "replacement": "FineMath is a synthetic dataset designed for this study, created by augmenting existing math problem datasets and not publicly available elsewhere. NuminaMath is a proprietary dataset collected internally, not released or validated by independent research, limiting baseline comparisons and reproducibility."
+  },
+  {
+    "id": 6,
+    "corruption_type": "ethical_integrity_omission",
+    "difficulty": "easy",
+    "location": "Abstract",
+    "rationale": "The paper omits any mention of ethics or transparency regarding data usage or model risks.",
+    "error_explanation": "The Abstract and other sections present the release of models and datasets but fail to mention ethical concerns, IRB approvals, data consent, or potential biases in training corpora. This omission compromises transparency about the risks and societal impacts of large language model research, especially with educational and math datasets potentially containing sensitive content.",
+    "needs_cross_section": false,
+    "target_find": "To facilitate open research and reproducibility, we release all pre-trained and post-trained models, training datasets for all stages, and our entire training and evaluation pipeline.",
+    "replacement": "To facilitate open research and reproducibility, we release all pre-trained and post-trained models, training datasets for all stages, and our entire training and evaluation pipeline. We note that the datasets used have not undergone formal ethical review or bias audits, and potential risks related to content fairness and misuse remain unexamined."
+  },
+  {
+    "id": 7,
+    "corruption_type": "rhetorical_presentation_manipulation",
+    "difficulty": "medium",
+    "location": "Conclusion",
+    "rationale": "The conclusion uses inflated language to overstate contribution impact and generality.",
+    "error_explanation": "The conclusion language states \"scaling trends\", \"diminishing returns\", and ORM scores as \"reliable indicators\" in a way that overgeneralizes findings from up to 4B models without acknowledging limitations or reproducibility concerns fully. This promotes an overly positive impression about broader scalability and the sufficiency of ORM scores for evaluation.",
+    "needs_cross_section": false,
+    "target_find": "Our study revealed scaling trends, diminishing returns from excessive training, and the importance of carefully managing domain-specific continued pre-training to prevent forgetting. Additionally, we highlighted ORM scores as reliable indicators of downstream task performance.\n\nWe acknowledge several limitations in our study. First, we focused on qualitative analyses of models up to 4B parameters. Future research should investigate whether the observed trends generalize to larger models and search for more optimal hyper-parameters.",
+    "replacement": "Our study found indications of scaling trends and diminishing returns for models up to 4B parameters, alongside tentative evidence of mitigation strategies for forgetting during domain-specific pre-training. While ORM scores appear to have some predictive utility, further work is needed to validate these findings across larger scales and diverse domains. We acknowledge limitations including model scale, dataset scope, and lack of thorough hyperparameter tuning, which constrain the generality of conclusions and warrant cautious interpretation."
+  },
+  {
+    "id": 8,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "hard",
+    "location": "Abstract",
+    "rationale": "Abstract claims comprehensive open-source resources but no details later support full data and pipeline release.",
+    "error_explanation": "The Abstract claims full open-sourcing of all pre-trained and post-trained models, datasets, and training pipelines enabling reproducibility. However, later sections and appendix do not include detailed descriptions, versioning, or publicly accessible links for many datasets (e.g., FineMath, NuminaMath) and training scripts, suggesting the claim is overstated or partially misleading about the openness and completeness of resources.",
+    "needs_cross_section": true,
+    "target_find": "To facilitate open research and reproducibility, we release all pre-trained and post-trained models, training datasets for all stages, and our entire training and evaluation pipeline.",
+    "replacement": "To facilitate open research, we release selected pre-trained and post-trained models along with portions of the training datasets and partial evaluation scripts. However, due to proprietary portions of the dataset and internal infrastructure dependencies, full training pipelines and all data cannot be fully released publicly at this time."
+  },
+  {
+    "id": 9,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Performance numbers degrade suspiciously at large RL datasets, potentially due to omitted training details.",
+    "error_explanation": "Section 3.4 reports a drastic performance drop for RL models at dataset sizes 350K and 400K examples, attributed vaguely to response length. However, experimental details on how early stopping, context window clipping, or truncation were handled are not disclosed. The abrupt drop may thus reflect unreported training collapse or evaluation issues rather than inherent model capability decline.",
+    "needs_cross_section": false,
+    "target_find": "We further expand this insight by illustrating the precise trade-offs for both RL epochs and dataset size. Additionally, we notice a drastic performance drop at 350K and 400K examples.",
+    "replacement": "The drastic performance drop observed at 350K and 400K RL examples appears correlated with unreported training instabilities, such as excessive sequence lengths exceeding model context windows and insufficient truncation policies. Additional training diagnostics are needed to confirm whether these drops reflect model failures or experimental artifacts."
+  },
+  {
+    "id": 10,
+    "corruption_type": "ethical_integrity_omission",
+    "difficulty": "easy",
+    "location": "Method",
+    "rationale": "No mention of bias mitigation or fairness assessment of datasets.",
+    "error_explanation": "The methods sections describe training and data usage but omit any mention of steps taken to assess or mitigate dataset biases, fairness, or representativeness, especially considering the educational and mathematical domain datasets that can have demographic or cultural biases. This omission risks reproducing or amplifying biases without transparency.",
+    "needs_cross_section": false,
+    "target_find": "Pre-training: Conducted on FineWeb-Edu [38]. Guided by the Chinchilla scaling law [23] that recommends a compute-optimal ratio of approximately 20 tokens per model parameter, we pre-train models across token budgets ranging from the optimal 20× model size to 320B tokens to investigate the effects of mild over-training (>1× Chinchilla, ≤16× Chinchilla) and excessive over-training (>16× Chinchilla) on task performance.",
+    "replacement": "Pre-training: Conducted on FineWeb-Edu [38]. While following the Chinchilla scaling law [23], no formal assessments or mitigation strategies were incorporated to address potential demographic biases or fairness concerns in the educational dataset, leaving potential representational harms unexamined."
+  },
+  {
+    "id": 11,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Figure 1 shows peculiar saturation at 80x to 160x model size without confidence intervals, masking variance.",
+    "error_explanation": "Figure 1 (Section 3.1) illustrates pre-training performance saturation but reports only mean average accuracy without error bars or statistical variance. This can hide large performance fluctuations across runs, potentially exaggerating the confidence in saturation thresholds and leading to misleading conclusions about optimal token budgets.",
+    "needs_cross_section": false,
+    "target_find": "As shown in Figure 1, performance on upstream tasks improves steadily with more pre-training tokens, but with rapidly diminishing returns beyond around 80x to 160x model size. For example, the 1B model’s average accuracy increases from roughly 46% at 20BT to 52% at 80BT, yet gains shrink to less than a percentage point when moving from 80BT to 160BT.",
+    "replacement": "Figure 1 shows a general upward trend in upstream task performance with pre-training tokens but notable run-to-run variability is not shown. Confidence intervals would reveal considerable fluctuations around 80× to 160× model size, suggesting the apparent saturation may partly reflect noise rather than definitive plateauing."
+  },
+  {
+    "id": 12,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "medium",
+    "location": "Method",
+    "rationale": "Definition and calculation of ORM score lack details and clear formula.",
+    "error_explanation": "Section 2.2 defines ORM score as output from a reward model but does not provide the exact computational formula or clarify the normalization method. The ambiguity limits reproducibility and understanding of ORM's relationship to accuracy and perplexity, reducing interpretability of this novel metric.",
+    "needs_cross_section": false,
+    "target_find": "• ORM Score: We use an outcome reward model—Skywork-Reward-Llama-3.1-8B-v0.2 [33]—to assign scalar scores to generated solutions, based on input problems and responses. This metric serves as a proxy for solution quality.",
+    "replacement": "• ORM Score: Computed as the mean scalar output from the Skywork-Reward-Llama-3.1-8B-v0.2 [33] reward model applied to generated solutions, normalized by response length and calibrated using a held-out validation set. Exact computation details and scaling parameters are provided in Appendix B.3 for reproducibility."
+  },
+  {
+    "id": 13,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Takeaway claims about diminishing returns do not acknowledge occasional performance drops.",
+    "error_explanation": "Several takeaways (e.g., Takeaway 1 in Section 3.1 and Takeaway 7 in Section 3.3) state that excessive pre-training or SFT leads to diminishing returns, but ignore reported decreases in OOD accuracies and ORM scores at high budgets, which indicate potential overfitting or degradation. This presents an overly optimistic view of training scale effects.",
+    "needs_cross_section": false,
+    "target_find": "➠ Takeaway 1. Excessive general-domain pre-training does not always improve domain-specific post-training and might even cause performance degradation on some downstream tasks (saturation happens around 80× to 160× model size in our study).",
+    "replacement": "➠ Takeaway 1. Excessive pre-training can lead not only to diminishing returns but also to degradation in downstream generalization, particularly on OOD tasks, underscoring the need for careful early stopping and regularization when scaling compute beyond 80× to 160× model size."
+  },
+  {
+    "id": 14,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Table 4 comparison with external models omits hyperparameter differences, invalidating comparisons.",
+    "error_explanation": "Table 4 in the Appendix compares EvoLM models to multiple public baselines like OPT and Pythia but lacks details on hyperparameters, training steps, tokenization differences, or evaluation methods. The absence of these critical confounding factors makes the comparisons non-rigorous and the claimed competitiveness of EvoLM with models trained on more tokens less credible.",
+    "needs_cross_section": false,
+    "target_find": "Table 4: Upstream benchmark comparison across various small-size LMs. All scores are percentages. We highlight our base model performance in bold font, models with performance at a comparable scale in red, and excessively over-trained models with similar performance in green.",
+    "replacement": "Table 4 compares EvoLM models to public baselines without harmonizing training hyperparameters or evaluation protocols. Differences in tokenizers, training schedules, and data distribution likely influence reported performances. Thus, claims of state-of-the-art competitiveness should be tempered pending standardized, fair comparisons accounting for these factors."
+  },
+  {
+    "id": 15,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Final checkpoints only evaluated, ignoring potential variance and intermediate optimization benefits.",
+    "error_explanation": "Section 2.1 and several evaluation descriptions state only final checkpoints after complete learning rate schedules were studied, excluding intermediate checkpoints. This removes analysis of training dynamics or potential earlier stopping benefits, and hides variance or fluctuations seen mid-training which may alter practical model deployment decisions.",
+    "needs_cross_section": false,
+    "target_find": "For all configurations, we train models with complete learning rate scheduling and only take the final checkpoints as subjects of study. More training details can be found in Appendix B.2.",
+    "replacement": "For all configurations, models are analyzed using both final checkpoints and representative intermediate checkpoints throughout training to better capture training dynamics, stabilizing effects, and trade-offs associated with various stopping points. This approach also aids in quantifying variance across runs."
+  },
+  {
+    "id": 16,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "hard",
+    "location": "Experiments",
+    "rationale": "Section 4.1 claims intermediate checkpoints are unreliable, conflicting with earlier Section 3 reliance on checkpoints.",
+    "error_explanation": "Section 4.1 concludes that intermediate checkpoints are poor surrogates for fully trained models, yet much of the experimental results in Section 3 are based on comparison of intermediate checkpoints, violating the stated best practices. This discrepancy indicates internal contradictions regarding evaluation protocols and undermines the validity of previously reported trends.",
+    "needs_cross_section": true,
+    "target_find": "In reality, practitioners usually train each desired model through the full learning-rate schedule and exhaust the available pre-training data, rather than taking intermediate checkpoints as final models. To mimic the real-world workflow of training models from scratch for 20B or 40B tokens, we compare those standalone runs against the checkpoints extracted at the same token counts (20B and 40B) from a longer 160B-token pre-training run.",
+    "replacement": "While Section 4.1 highlights limitations of intermediate checkpoints as proxies, Section 3 experiments rely extensively on such checkpoints for performance evaluation across token budgets. This conflicting usage suggests a methodological inconsistency that undermines conclusions drawn from intermediate checkpoint analysis."
+  },
+  {
+    "id": 17,
+    "corruption_type": "rhetorical_presentation_manipulation",
+    "difficulty": "easy",
+    "location": "Related Work",
+    "rationale": "Overly promotional phrasing regarding recent related methods exaggerates novelty.",
+    "error_explanation": "The related work section uses phrases like \"recent success\", \"reinforcing these findings\", and \"demystifying\" in a promotional tone when summarizing prior literature. This rhetoric artificially inflates the paper’s perceived novelty and contribution relative to earlier studies, which may mislead readers about the paper’s original impact.",
+    "needs_cross_section": false,
+    "target_find": "Recent success in LM post-training has led to research investigating how post-training is affected by pre-training. Recent research [26] applies causal inference on observational data, finding general upstream capabilities strongly correlate with base model FLOPs, influencing specialized abilities like math reasoning. Researchers have also demonstrated through RL-based post-training that RL fine-tuning amplifies pre-trained patterns, driving models toward dominant output distributions exhibiting scale-dependent biases and cross-task generalization, especially in mathematical reasoning tasks [70]. Reinforcing these findings, some critically examine the assumption that RL inherently boosts reasoning beyond pretrained baselines, concluding RL primarily enhances confidence and probability of generating high-quality solutions rather than fundamentally improving reasoning capabilities [64].",
+    "replacement": "Prior research has examined how post-training interacts with pre-trained model capabilities. Some studies [26] use observational analyses showing upstream capabilities relate to model compute, affecting specialized reasoning skills. Other works explore RL post-training effects, indicating it tends to amplify existing pretrained behaviors and biases rather than fundamentally enhance reasoning [70, 64]. These studies provide important context for understanding post-training dynamics."
+  },
+  {
+    "id": 18,
+    "corruption_type": "ethical_integrity_omission",
+    "difficulty": "medium",
+    "location": "Appendix",
+    "rationale": "Omission of any discussion about risks or limitations of disseminating large language models.",
+    "error_explanation": "Reproducibility appendices detail architectures, hyperparameters, and datasets but neglect to mention responsible disclosure guidance, potential model misuse, or risk assessments. The absence of such discussion fails to meet current scholarly norms encouraging transparent responsible AI practice.",
+    "needs_cross_section": false,
+    "target_find": "We show model architecture details for 0.5B, 1B and 4B models in Table 5.",
+    "replacement": "We show model architecture details for 0.5B, 1B and 4B models in Table 5. However, the dissemination of large pretrained models entails risks of misuse and ethical concerns about bias amplification, for which no mitigation strategies were implemented or described."
+  }
+]

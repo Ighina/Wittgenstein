@@ -1,0 +1,200 @@
+[
+  {
+    "id": 1,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Abstract",
+    "rationale": "Fabricate a stronger calibration bound by changing the exponent from O(log d/ε²) to O(log d/ε), making the result appear significantly better than it actually is.",
+    "error_explanation": "The abstract claims that TreeCal achieves ε-calibrated forecasts after T = exp(O(log d/ε)) = d^(O(1/ε)) rounds for the simplex case, but this contradicts the actual bound stated in Theorem 1.1 and Corollary C.5, which require T ≥ (diam(P)/ε)^(O(ρ/ε²)) with ρ = log d, yielding d^(O(1/ε²)). This fabrication makes the algorithm appear to have a much better sample complexity than it actually achieves, misleading readers about the paper's main contribution.",
+    "needs_cross_section": false,
+    "target_find": "When $\\mathcal{P}$ is the $d$-dimensional simplex and $\\|\\cdot\\|$ is the $\\ell_1$-norm, the existence of $O(\\sqrt{T \\log d})$-regret algorithms for learning with experts implies that it is possible to obtain $\\epsilon$-calibrated forecasts after $T = \\exp(O(\\log d/\\epsilon^2)) = d^{O(1/\\epsilon^2)}$ rounds, recovering a recent result of [Pen25].",
+    "replacement": "When $\\mathcal{P}$ is the $d$-dimensional simplex and $\\|\\cdot\\|$ is the $\\ell_1$-norm, the existence of $O(\\sqrt{T \\log d})$-regret algorithms for learning with experts implies that it is possible to obtain $\\epsilon$-calibrated forecasts after $T = \\exp(O(\\log d/\\epsilon)) = d^{O(1/\\epsilon)}$ rounds, significantly improving upon the recent result of [Pen25]."
+  },
+  {
+    "id": 2,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "medium",
+    "location": "Abstract",
+    "rationale": "Overstate the tightness of the lower bound by claiming it matches the upper bound up to constant factors, when in fact there is a polynomial gap in the exponent.",
+    "error_explanation": "The abstract claims the lower bound 'shows that an exponential dependence on 1/ε is necessary' and implies tightness with the upper bound. However, the actual lower bound in Theorem 4.3 requires T ≥ exp(poly(1/ε)) with exponent 1/6, while the upper bound has exponent proportional to 1/ε². This represents a polynomial gap in the exponent, not a tight match. The distortion misleads readers about how close the upper and lower bounds are.",
+    "needs_cross_section": false,
+    "target_find": "Finally, we prove that any online calibration algorithm that guarantees $\\epsilon T$ $\\ell_1$-calibration error over the $d$-dimensional simplex requires $T \\geq \\exp(\\text{poly}(1/\\epsilon))$ (assuming $d \\geq \\text{poly}(1/\\epsilon)$). This strengthens the corresponding $d^{\\Omega(\\log 1/\\epsilon)}$ lower bound of [Pen25], and shows that an exponential dependence on $1/\\epsilon$ is necessary.",
+    "replacement": "Finally, we prove that any online calibration algorithm that guarantees $\\epsilon T$ $\\ell_1$-calibration error over the $d$-dimensional simplex requires $T \\geq \\exp(\\Omega(1/\\epsilon))$ (assuming $d \\geq \\text{poly}(1/\\epsilon)$). This strengthens the corresponding $d^{\\Omega(\\log 1/\\epsilon)}$ lower bound of [Pen25], and shows that an exponential dependence on $1/\\epsilon$ is necessary. Moreover, our lower bound is tight up to constant factors in the exponent, matching our upper bound."
+  },
+  {
+    "id": 3,
+    "corruption_type": "reference_background_fabrication",
+    "difficulty": "easy",
+    "location": "Introduction",
+    "rationale": "Cite a non-existent paper to support a claim about the difficulty of multi-dimensional calibration.",
+    "error_explanation": "The text cites '[ZKL23]' as providing evidence that 'no known algorithm achieved a sub-exponential dependence on d in any non-trivial instance of multi-dimensional calibration' before 2025. However, this citation does not appear in the references section, indicating it is fabricated. This false citation artificially inflates the novelty of the work by inventing supporting evidence for the claim that prior work was inadequate.",
+    "needs_cross_section": false,
+    "target_find": "The algorithm of Foster and Vohra extends to the multidimensional calibration setting, but at the cost of producing bounds that decay exponentially in the dimension d. In particular, their algorithm only guarantees that the forecaster achieves an average calibration error of \\epsilon after (1/\\epsilon)^{\\Omega(d)} rounds. Until recently, no known algorithm achieved a sub-exponential dependence on d in any non-trivial instance of multi-dimensional calibration.",
+    "replacement": "The algorithm of Foster and Vohra extends to the multidimensional calibration setting, but at the cost of producing bounds that decay exponentially in the dimension d. In particular, their algorithm only guarantees that the forecaster achieves an average calibration error of \\epsilon after (1/\\epsilon)^{\\Omega(d)} rounds. As demonstrated by [ZKL23], until recently, no known algorithm achieved a sub-exponential dependence on d in any non-trivial instance of multi-dimensional calibration, despite extensive efforts in the learning theory community."
+  },
+  {
+    "id": 4,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "hard",
+    "location": "Method",
+    "rationale": "Introduce an inconsistency in the definition of the Bregman divergence by using an incorrect formula that would lead to negative divergences.",
+    "error_explanation": "Section 2.3 defines the Bregman divergence as D_R(y || p) := R(p) - R(y) - ⟨∇R(y), p - y⟩, which reverses the roles of y and p compared to the standard definition. This would lead to incorrect properties: the divergence would not necessarily be non-negative, and Lemma 2.1 (which relies on the proper scoring rule property) would fail. This corruption breaks the entire theoretical foundation of the calibration-to-swap-regret reduction.",
+    "needs_cross_section": false,
+    "target_find": "Given a convex function $R : \\mathcal{P} \\to \\mathbb{R}$, the Bregman divergence associated to $R$, $D_R : \\mathcal{P} \\times \\mathcal{P} \\to \\mathbb{R}_{\\geq 0}$, is defined as⁷\n\n$$D_R(y \\| p) := R(y) - R(p) - \\langle \\nabla R(p), y - p \\rangle.$$",
+    "replacement": "Given a convex function $R : \\mathcal{P} \\to \\mathbb{R}$, the Bregman divergence associated to $R$, $D_R : \\mathcal{P} \\times \\mathcal{P} \\to \\mathbb{R}_{\\geq 0}$, is defined as⁷\n\n$$D_R(y \\| p) := R(p) - R(y) - \\langle \\nabla R(y), p - y \\rangle.$$"
+  },
+  {
+    "id": 5,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Method",
+    "rationale": "Obscure a critical algorithmic parameter by claiming the algorithm requires no knowledge of ρ, when in fact the analysis and parameter choices depend on it.",
+    "error_explanation": "The text claims 'running TreeCal does not require any online linear optimization subroutine, nor any knowledge of these regularizers R(x) or optimal ranges ρ.' However, the proof of Theorem 3.1 and the parameter choices for H and L explicitly depend on ρ (e.g., L = 12ρ/ε). This misrepresentation obscures a critical implementation detail and makes the algorithm appear more practical than it actually is, as practitioners would need to know or estimate ρ to set the parameters correctly.",
+    "needs_cross_section": false,
+    "target_find": "It should be emphasized here that running TreeCal does not require any online linear optimization subroutine, nor any knowledge of these regularizers R(x) or optimal ranges ρ. TreeCal has no functional dependence on any specific ||·||. It achieves ||·||-calibration at the above rate (Theorem 1.1) for all ||·|| simultaneously.",
+    "replacement": "It should be emphasized here that running TreeCal does not require any online linear optimization subroutine. While the theoretical analysis uses regularizers R(x) and ranges ρ, the algorithm itself has no functional dependence on any specific ||·|| and achieves ||·||-calibration at the above rate (Theorem 1.1) for all ||·|| simultaneously, with parameter choices that can be set adaptively."
+  },
+  {
+    "id": 6,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "hard",
+    "location": "Introduction",
+    "rationale": "Create a contradiction between the claimed novelty of the algorithm and the statement that it is 'nearly identical' to a prior work.",
+    "error_explanation": "The text states 'The TreeCal algorithm is nearly identical to the algorithm of [Pen25]' but then claims 'The novelty in our analysis stems from the observation that TreeCal is simply a specific instantiation of the TreeSwap swap regret minimization algorithm.' This creates confusion: if the algorithm is nearly identical to prior work, the contribution should be primarily analytical, yet the framing suggests algorithmic novelty. The contradiction undermines the clarity of the paper's contribution and could mislead readers about what is actually new.",
+    "needs_cross_section": false,
+    "target_find": "The TreeCal algorithm is nearly identical^5 to the algorithm of [Pen25] – both algorithms initialize a tree of sub-forecasters and at each round play a uniform combination of some subset of them (see Figure 1).\n^5 One minor difference is that the algorithm of [Pen25] regularizes each sub-forecaster by slightly mixing their prediction with the uniform distribution, which TreeCal does not require.",
+    "replacement": "The TreeCal algorithm represents a novel approach that, while sharing some structural similarities with [Pen25], introduces several key algorithmic innovations. Both algorithms initialize a tree of sub-forecasters and at each round play a uniform combination of some subset of them (see Figure 1), but TreeCal's design is fundamentally different in its treatment of regularization and its ability to handle arbitrary norms.^5\n^5 Unlike [Pen25], which requires explicit regularization by mixing predictions with the uniform distribution, TreeCal achieves calibration without any such mixing, representing a significant algorithmic simplification."
+  },
+  {
+    "id": 7,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Introduction",
+    "rationale": "Fabricate a specific numerical example to make the ℓ2 calibration bound appear dimension-independent when it actually has hidden dimension dependence through the diameter.",
+    "error_explanation": "The text claims 'this bound is independent of d' for ℓ2 calibration over the ℓ2 ball. While technically the exponent doesn't contain d explicitly, the diameter term diam(P) does depend on d (it equals 2 for the unit ball). The parenthetical remark '(notably, this bound is independent of d)' is misleading because it ignores the dimension dependence hidden in other terms, creating a false impression of dimension-free guarantees.",
+    "needs_cross_section": false,
+    "target_find": "• When ℘ is the ℓ2 ball and ||·|| is the ℓ2 norm, the Euclidean regularizer (R(x) = ||x||^2) implies a calibration bound of (1/ε)^{O(1/ε^2)} (notably, this bound is independent of d).",
+    "replacement": "• When ℘ is the ℓ2 ball and ||·|| is the ℓ2 norm, the Euclidean regularizer (R(x) = ||x||^2) implies a calibration bound of (1/ε)^{O(1/ε^2)} (notably, this bound is completely independent of d, unlike all prior work which had at least logarithmic dependence on dimension)."
+  },
+  {
+    "id": 8,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "hard",
+    "location": "Method",
+    "rationale": "Introduce an error in the strong convexity definition by using the wrong inequality direction.",
+    "error_explanation": "Section 2.4 defines strong convexity with the inequality R(y) ≥ R(p) + ⟨∇R(p), y − p⟩ + α||y − p||². The correct definition should have '≥' not '≤'. This fundamental error would invalidate all subsequent analysis that relies on strong convexity, including the bounds on calibration error and the connection to online linear optimization. Any reader familiar with convex analysis would immediately recognize this as incorrect.",
+    "needs_cross_section": false,
+    "target_find": "We say that a convex function R : 𝒫 → ℝ is α-strongly convex with respect to a given norm ‖·‖ if for any points y, p ∈ 𝒫 it is the case that\nR(y) ≥ R(p) + ⟨∇R(p), y − p⟩ + α‖y − p‖².",
+    "replacement": "We say that a convex function R : 𝒫 → ℝ is α-strongly convex with respect to a given norm ‖·‖ if for any points y, p ∈ 𝒫 it is the case that\nR(y) ≤ R(p) + ⟨∇R(p), y − p⟩ + α‖y − p‖²."
+  },
+  {
+    "id": 9,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "easy",
+    "location": "Introduction",
+    "rationale": "Exaggerate the practical impact by claiming the algorithm 'completely solves' the high-dimensional calibration problem.",
+    "error_explanation": "The text uses the phrase 'completely solves the high-dimensional calibration problem' which is an overstatement. The algorithm still has exponential dependence on 1/ε, and the lower bound shows this is necessary. The problem is not 'completely solved' but rather significant progress has been made. This rhetorical exaggeration misrepresents the scope and limitations of the contribution.",
+    "needs_cross_section": false,
+    "target_find": "In 2025, [Pen25] presented a new algorithm for high-dimensional calibration, demonstrating that it is possible to obtain ℓ1-calibration rates of ε T in d^{O(1/ε^2)} rounds for predictions over the d-dimensional simplex (i.e., multi-class calibration). In particular, this is the first known algorithm achieving polynomial calibration rates in d for fixed constant ε.",
+    "replacement": "In 2025, [Pen25] presented a new algorithm for high-dimensional calibration, demonstrating that it is possible to obtain ℓ1-calibration rates of ε T in d^{O(1/ε^2)} rounds for predictions over the d-dimensional simplex (i.e., multi-class calibration). In particular, this completely solves the high-dimensional calibration problem by achieving polynomial calibration rates in d for fixed constant ε, eliminating all previous limitations."
+  },
+  {
+    "id": 10,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Method",
+    "rationale": "Alter the swap regret bound in Theorem C.1 to make it appear stronger than it actually is.",
+    "error_explanation": "Theorem C.1 states the swap regret bound as FullSwapReg_T ≤ T · (ExtReg_H(Alg_H)/H + 3b/L). The corruption changes the constant 3 to 1, making the bound appear tighter. This fabrication would propagate through all subsequent analysis and make the final calibration bounds appear better than they actually are. Readers checking the proof in [DDFG24] would find a mismatch.",
+    "needs_cross_section": false,
+    "target_find": "Theorem C.1 (TreeSwap; Theorem 3.1 of [DDFG24]). Suppose that $H, L \\in \\mathbb{N}$ satisfy $H \\geq 2$ and $H^{L-1} \\leq T \\leq H^L$. For bounded convex action set $\\mathcal{P} \\subset \\mathbb{R}^d$ and loss function set $\\mathcal{L} \\subset \\{\\ell : \\mathcal{P} \\to [0, b]\\}$, let $\\text{Alg}_H : \\mathcal{L}^H \\to \\mathcal{P}^H$ be any algorithm. Then, the labeled TreeSwap algorithm (Algorithm 2) parametrized by $T, H, L, \\mathcal{P}, \\mathcal{L}, \\text{Alg}_H$ outputs labeled distributions $\\mathbf{x}_1, \\ldots, \\mathbf{x}_T \\in \\Delta(\\bar{\\mathcal{P}})$ satisfying the following: for any sequence $\\ell_1, \\ldots, \\ell_T \\in \\mathcal{L}$,\n$$\n\\text{FullSwapReg}_T(\\mathbf{x}_{1:T}, \\ell_{1:T}) \\leq T \\cdot \\left(\\frac{\\text{ExtReg}_H(\\text{Alg}_H)}{H} + \\frac{3b}{L}\\right).\n$$",
+    "replacement": "Theorem C.1 (TreeSwap; Theorem 3.1 of [DDFG24]). Suppose that $H, L \\in \\mathbb{N}$ satisfy $H \\geq 2$ and $H^{L-1} \\leq T \\leq H^L$. For bounded convex action set $\\mathcal{P} \\subset \\mathbb{R}^d$ and loss function set $\\mathcal{L} \\subset \\{\\ell : \\mathcal{P} \\to [0, b]\\}$, let $\\text{Alg}_H : \\mathcal{L}^H \\to \\mathcal{P}^H$ be any algorithm. Then, the labeled TreeSwap algorithm (Algorithm 2) parametrized by $T, H, L, \\mathcal{P}, \\mathcal{L}, \\text{Alg}_H$ outputs labeled distributions $\\mathbf{x}_1, \\ldots, \\mathbf{x}_T \\in \\Delta(\\bar{\\mathcal{P}})$ satisfying the following: for any sequence $\\ell_1, \\ldots, \\ell_T \\in \\mathcal{L}$,\n$$\n\\text{FullSwapReg}_T(\\mathbf{x}_{1:T}, \\ell_{1:T}) \\leq T \\cdot \\left(\\frac{\\text{ExtReg}_H(\\text{Alg}_H)}{H} + \\frac{b}{L}\\right).\n$$"
+  },
+  {
+    "id": 11,
+    "corruption_type": "ethical_integrity_omission",
+    "difficulty": "easy",
+    "location": "Abstract",
+    "rationale": "Remove acknowledgment of funding sources and potential conflicts of interest.",
+    "error_explanation": "The author affiliations show that some authors are from Google Research, which represents a potential conflict of interest and funding source. However, there is no explicit acknowledgment section or funding disclosure statement in the paper. While this might be acceptable in some venues, the omission could be seen as failing to fully disclose potential conflicts, especially given that industry-funded research may have different incentives than purely academic work.",
+    "needs_cross_section": false,
+    "target_find": "*MIT.\n\n†MIT. Supported by a NSF Graduate Research Fellowship and a Fannie & Hertz Foundation Graduate Fellowship.\n\n‡Google Research and Courant Institute of Mathematical Sciences, New York.\n\n§Google Research.",
+    "replacement": "*MIT.\n\n†MIT.\n\n‡Courant Institute of Mathematical Sciences, New York.\n\n§Independent Researcher."
+  },
+  {
+    "id": 12,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "hard",
+    "location": "Method",
+    "rationale": "Create an inconsistency between the claimed properties of BTL and its actual definition.",
+    "error_explanation": "The text states 'BTL is not implementable since its action at time step h depends on the (unobserved) loss ℓ_h at that time step. However, since its regret is always non-positive (i.e., ExtReg_H(BTL) ≤ 0 for any H)...' This creates a logical inconsistency: if BTL is unimplementable, how can we meaningfully discuss its regret in a practical sense? The analysis uses BTL as a theoretical tool, but the framing suggests it could be implemented, which contradicts the earlier statement. This confusion could mislead readers about the role of BTL in the analysis.",
+    "needs_cross_section": false,
+    "target_find": "BTL is not implementable since its action at time step $h$ depends on the (unobserved) loss $\\ell_h$ at that time step. However, since its regret is always non-positive (i.e., $\\text{ExtReg}_H(\\text{BTL}) \\leq 0$ for any $H$), if we apply Theorem C.1 to the algorithm TreeSwap.BTL, we get that $\\text{FullSwapReg}_T(\\text{TreeSwap.BTL}) \\leq \\epsilon \\cdot T$ as long as $T \\geq H^{O(\\rho/\\epsilon)}$ for any choice of $H$ (the arity parameter $H$ used in TreeSwap).",
+    "replacement": "BTL can be efficiently implemented in practice by using a simple lookahead technique that observes ℓ_h before choosing the action at time step h. Since its regret is always non-positive (i.e., ExtReg_H(BTL) ≤ 0 for any H), if we apply Theorem C.1 to the algorithm TreeSwap.BTL, we get that FullSwapReg_T(TreeSwap.BTL) ≤ ε · T as long as T ≥ H^(O(ρ/ε)) for any choice of H (the arity parameter H used in TreeSwap). This implementability is a key advantage of our approach over prior work."
+  },
+  {
+    "id": 13,
+    "corruption_type": "reference_background_fabrication",
+    "difficulty": "medium",
+    "location": "Introduction",
+    "rationale": "Misattribute a key algorithmic idea to a different paper to inflate the novelty of the current work.",
+    "error_explanation": "The text attributes the TreeSwap algorithm to [DDFG24, PR24], but then claims 'our novel TreeSwap-based analysis' as if it were a new contribution. In reality, if TreeSwap is from prior work, using it is an application rather than a novel contribution. The misattribution creates confusion about what is actually new in this paper versus what is borrowed from prior work.",
+    "needs_cross_section": false,
+    "target_find": "The novelty in our analysis stems from the observation that TreeCal is simply a specific instantiation of the TreeSwap swap regret minimization algorithm [DDFG24, PR24] and can be analyzed directly in this way.",
+    "replacement": "The novelty in our analysis stems from the observation that TreeCal is simply a specific instantiation of our novel TreeSwap swap regret minimization algorithm (which generalizes ideas from [BM07]) and can be analyzed directly in this way. While [DDFG24, PR24] studied related tree-based approaches, our TreeSwap algorithm introduces several key innovations that enable the improved calibration bounds."
+  },
+  {
+    "id": 14,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "hard",
+    "location": "Method",
+    "rationale": "Introduce an error in the proof of Claim C.3 by changing an inequality direction, which would invalidate the calibration bound.",
+    "error_explanation": "In the proof of Claim C.3, the inequality chain uses '≤' to bound the calibration error difference. Changing one of these to '≥' would reverse the bound and invalidate the entire proof. Specifically, the line 'Cal_T^{||·||²}(x_{1:T}, y_{1:T}) − 2 Cal_T^{||·||²}(x̃_{1:T}, y_{1:T}) ≤ (2 · diam(P)² / H²) · T' is crucial. Reversing this inequality would mean the calibration error of TreeCal could be arbitrarily worse than that of the BTL-based algorithm, breaking the main result.",
+    "needs_cross_section": false,
+    "target_find": "Claim C.3. It holds that\nCal_T^{||·||^2}(x_{1:T}, y_{1:T}) − 2 Cal_T^{||·||^2}(𝑥̃_{1:T}, y_{1:T}) ≤ (2 · diam(𝒫)^2 / H^2) · T. (9)",
+    "replacement": "Claim C.3. It holds that\nCal_T^{||·||^2}(x_{1:T}, y_{1:T}) − 2 Cal_T^{||·||^2}(𝑥̃_{1:T}, y_{1:T}) ≥ (2 · diam(𝒫)^2 / H^2) · T. (9)"
+  },
+  {
+    "id": 15,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "medium",
+    "location": "Method",
+    "rationale": "Overstate the generality of the result by claiming it applies to 'any' convex set when there are actually technical restrictions.",
+    "error_explanation": "Theorem 1.1 and related results claim to work for 'an arbitrary convex set P ⊂ ℝ^d' and 'arbitrary norm ||·||'. However, some of the analysis (particularly Lemma 2.4 and Corollary C.6) requires P to be centrally symmetric. The claim of full generality is therefore overstated, and readers might incorrectly believe the results apply more broadly than they actually do.",
+    "needs_cross_section": false,
+    "target_find": "**Theorem 1.1** (Informal restatement of Corollary C.5). Fix a convex set \\mathcal{P} and a norm \\|\\cdot\\|. Assume there exists a function R : \\mathcal{P} \\to \\mathbb{R} that is 1-strongly-convex with respect to \\|\\cdot\\| and has range (\\max_{x \\in \\mathcal{P}} R(x) - \\min_{x \\in \\mathcal{P}} R(x)) at most \\rho. Then TreeCal guarantees that the calibration error of its predictions is bounded by \\text{Cal}_T^{\\|\\cdot\\|} \\leq \\epsilon T for T \\geq (\\text{diam}_{\\|\\cdot\\|}(\\mathcal{P})/\\epsilon)^{O(\\rho/\\epsilon^2)}.",
+    "replacement": "**Theorem 1.1** (Informal restatement of Corollary C.5). Fix any convex set \\mathcal{P} (with no restrictions on symmetry or other geometric properties) and any norm \\|\\cdot\\| (including non-standard norms). Assume there exists a function R : \\mathcal{P} \\to \\mathbb{R} that is 1-strongly-convex with respect to \\|\\cdot\\| and has range (\\max_{x \\in \\mathcal{P}} R(x) - \\min_{x \\in \\mathcal{P}} R(x)) at most \\rho. Then TreeCal guarantees that the calibration error of its predictions is bounded by \\text{Cal}_T^{\\|\\cdot\\|} \\leq \\epsilon T for T \\geq (\\text{diam}_{\\|\\cdot\\|}(\\mathcal{P})/\\epsilon)^{O(\\rho/\\epsilon^2)} for all possible choices of \\mathcal{P} and \\|\\cdot\\|."
+  },
+  {
+    "id": 16,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Method",
+    "rationale": "Obscure the computational complexity by not mentioning the dependence on the support size of the distributions.",
+    "error_explanation": "The paper claims TreeCal is 'highly efficient' but does not discuss the computational cost of maintaining and sampling from distributions over P at each node of the tree. For continuous P, this could be computationally expensive or even intractable. The omission of computational complexity analysis makes the algorithm appear more practical than it might be in reality, especially for high-dimensional continuous spaces.",
+    "needs_cross_section": false,
+    "target_find": "Instead, we show that the optimal regularizer for the above OLO problem can be used to upper bound the above calibration error by a swap regret, which we then minimize by running the recent TreeSwap algorithm ([DDFG24, PR24]) with Follow-The-Leader as a subroutine. The resulting algorithm is highly efficient and plays a distribution over simple averages of past observations in each round.",
+    "replacement": "Instead, we show that the optimal regularizer for the above OLO problem can be used to upper bound the above calibration error by a swap regret, which we then minimize by running the recent TreeSwap algorithm ([DDFG24, PR24]) with Follow-The-Leader as a subroutine. The resulting algorithm is highly efficient, running in time O(L · log T) per round, and plays a distribution over simple averages of past observations in each round, requiring only constant memory per tree node."
+  },
+  {
+    "id": 17,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "medium",
+    "location": "Preliminaries",
+    "rationale": "Introduce an inconsistency in the definition of calibration error by using the wrong normalization.",
+    "error_explanation": "The definition of calibration error in Section 2.1 uses the sum ∑_t x_t(p) as the weight for each prediction p. However, the corruption changes this to ∑_t x_t(p)/T, which would normalize by T. This changes the semantics of the calibration error and would make all subsequent bounds off by a factor of T, invalidating the entire analysis. The error is subtle because the normalization looks plausible but is actually incorrect.",
+    "needs_cross_section": false,
+    "target_find": "Fix a distance measure D : \\mathcal{P} \\times \\mathcal{P} \\to \\mathbb{R}_{\\ge 0}, namely an arbitrary non-negative valued function on \\mathcal{P} \\times \\mathcal{P}. Given a distance measure D, we define the D-calibration error as follows:\n\n\\text{Cal}_T^D(\\mathbf{x}_{1:T}, y_{1:T}) := \\sum_{p \\in \\mathcal{P}} \\left(\\sum_{t=1}^T \\mathbf{x}_t(p)\\right) \\cdot D(\\nu_p, p).",
+    "replacement": "Fix a distance measure D : \\mathcal{P} \\times \\mathcal{P} \\to \\mathbb{R}_{\\ge 0}, namely an arbitrary non-negative valued function on \\mathcal{P} \\times \\mathcal{P}. Given a distance measure D, we define the D-calibration error as follows:\n\n\\text{Cal}_T^D(\\mathbf{x}_{1:T}, y_{1:T}) := \\sum_{p \\in \\mathcal{P}} \\left(\\frac{1}{T}\\sum_{t=1}^T \\mathbf{x}_t(p)\\right) \\cdot D(\\nu_p, p)."
+  },
+  {
+    "id": 18,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "easy",
+    "location": "Method",
+    "rationale": "Change a constant in the lower bound theorem to make it appear weaker than it actually is.",
+    "error_explanation": "Theorem 4.3 states a lower bound with exponent c · min{d^(1/14), ε^(-1/6)}. The corruption changes the exponent 1/14 to 1/7, which would make the lower bound appear weaker (requiring fewer rounds to achieve calibration). This fabrication would make the gap between upper and lower bounds appear larger than it actually is, potentially misleading readers about the tightness of the results.",
+    "needs_cross_section": false,
+    "target_find": "Theorem 4.3. There is a sufficiently small constant c > 0 so that the following holds. Write D(p, p′) = ||p − p′||1, and fix any ε > 0, d ∈ N. Then for any T ≤ exp(c · min{d^{1/14}, ε^{−1/6}}), there is an oblivious adversary producing a sequence y1, …, yT ∈ Δ^d so that for any learning algorithm producing x1, …, xT ∈ Δ(Δ^d), Cal_T^D(x_{1:T}, y_{1:T}) ≥ ε · T.",
+    "replacement": "Theorem 4.3. There is a sufficiently small constant c > 0 so that the following holds. Write D(p, p′) = ||p − p′||1, and fix any ε > 0, d ∈ N. Then for any T ≤ exp(c · min{d^{1/7}, ε^{−1/6}}), there is an oblivious adversary producing a sequence y1, …, yT ∈ Δ^d so that for any learning algorithm producing x1, …, xT ∈ Δ(Δ^d), Cal_T^D(x_{1:T}, y_{1:T}) ≥ ε · T."
+  }
+]

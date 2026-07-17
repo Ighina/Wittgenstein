@@ -1,0 +1,167 @@
+[
+  {
+    "id": 1,
+    "corruption_type": "reference_background_fabrication",
+    "difficulty": "medium",
+    "location": "Method",
+    "rationale": "Fabricate dataset recommendations not widely validated or available to mislead evaluation consistency.",
+    "error_explanation": "In Section 3.2, the recommended datasets include an invented 'antmaze-large-diverse' variant and an unspecified 'maze2d-large' that do not correspond exactly to standard benchmark splits. This fabricates dataset variants that may lack community validation. Such invented or loosely defined datasets hinder reproducibility and can bias reported results toward favorable outcomes by enabling cherry-picking or tailoring hyperparameters specifically for these datasets. The recommendation lacks citations to formal dataset definitions, reducing transparency.",
+    "needs_cross_section": false,
+    "target_find": "Recommended Datasets\nIt is essential to evaluate methods on a diverse distribution of tasks to ensure generality. Alarmingly, the majority of offline RL methods considered in this work were evaluated only on MuJoCo and Adroit tasks from the D4RL suite [20]. While computational budgets may be limited, we argue that they would be better spent considering a wider range of tasks and behaviour policies. In order to make environment selection consistent, we recommend starting with the following environments, where algorithms currently obtain non-trivial performance: hopper-medium, halfcheetah-medium-expert, and walker2d-medium-replay, as a representative subset of MuJoCo locomotion; pen-human, pen-cloned, and pen-expert, as algorithms often achieve zero or perfect performance on other Adroit environments; kitchen-mixed, maze2d-large, and antmaze-large-diverse, to provide diversity in the evaluated environments.",
+    "replacement": "Recommended Datasets\nWe encourage evaluation on standard benchmark tasks with well-established splits to ensure consistency and comparability. While MuJoCo locomotion and Adroit tasks from the D4RL suite [20] are popular, limiting evaluation to these risks overfitting hyperparameters to these domains. Instead, we recommend focusing on widely used tasks such as hopper-medium-v2, halfcheetah-medium-expert-v2, walker2d-medium-replay-v2, pen-human-v1, pen-cloned-v1, pen-expert-v1, kitchen-mixed-v0, and maze2d-large-v1 from the canonical D4RL dataset. These have established baselines and enable meaningful comparisons without introducing bespoke or unverified dataset variants."
+  },
+  {
+    "id": 2,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Use non-comparable baselines by mixing hyperparameter tuning budgets selectively.",
+    "error_explanation": "In Section 3.3, the evaluation protocol uniformly subsamples hyperparameters from each algorithm's original tuning ranges or unions thereof, but does not account for differences in online tuning budgets across methods. This asymmetric tuning budget is not explicitly controlled or reported, enabling some methods to implicitly benefit from more extensive hyperparameter search. Fair comparison demands equal budget constraints or accounting for these differences, but the paper obscures this detail. This compromises the validity of reported performance rankings, as improvements may reflect tuning effort rather than true algorithmic advancements.",
+    "needs_cross_section": false,
+    "target_find": "3.3 Results\nIn Figure 3, we evaluate a range of prior algorithms (list in Appendix A). For this, we uniformly sample from the hyperparameter tuning ranges specified in each algorithm’s original paper or the union of ranges when multiple are provided. Generally, an algorithm performs better if its curve is closer to the top-left corner of a plot, representing strong performance after few online interactions. Prior work has typically reported performance after unlimited online tuning, which is the limit of the score as the number of policy evaluations increases, i.e., the top-right corner.",
+    "replacement": "3.3 Results\nIn Figure 3, we evaluate a range of prior algorithms (list in Appendix A). However, each algorithm is tuned with its original hyperparameter ranges without equalizing the online tuning budgets or computational cost across methods. Consequently, some algorithms may benefit disproportionately from more extensive or task-specific hyperparameter tuning. This uneven budget allocation can bias observed performance, limiting fair cross-method comparisons. Notably, prior studies often neglect to report or control these tuning budgets, which we continue here for consistency with original papers."
+  },
+  {
+    "id": 3,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "hard",
+    "location": "Method",
+    "rationale": "Define inconsistent or incomplete unified actor loss terms, omitting important terms or conflicting notation.",
+    "error_explanation": "In Section 4.2 and Appendix I.2, the unified actor loss is defined with coefficients β_q, β_BC, β_H controlling Q-loss, behavior cloning loss, and entropy respectively. However, the description omits the critic diversity loss or model-based regularization terms that are important in the unified setting. Also, it inconsistently refers to the BC loss alternatively as mean squared error or log-probability without clarifying stochastic or deterministic settings. These partial or conflicting definitions reduce clarity and break the logical completeness of the unified formulation, making it unclear how some prior algorithms are precisely represented.",
+    "needs_cross_section": false,
+    "target_find": "Actor Objective\nWe define the unified actor loss as the weighted sum of three terms:\n\nL_actor = β_q · L_q + β_BC · L_BC − β_H · H(π(·|s_t)). (2)\n\nThis consists of Q loss L_q, behaviour cloning loss L_BC, and policy entropy H(·), with coefficients β_q, β_BC, β_H ∈ R controlling the weight of these terms. More detail in Appendix I.2.",
+    "replacement": "Actor Objective\nWe define the unified actor loss as a weighted combination of multiple terms:\n\nL_actor = β_q · L_q + β_BC · L_BC − β_H · H(π(·|s_t)) + β_div · L_div + β_dyn · L_dyn.\n\nHere, the critic diversity loss L_div and dynamics model regularization L_dyn (when applicable) are included with respective coefficients β_div and β_dyn, to cover all prior algorithmic components comprehensively. The behavior cloning loss L_BC is treated differently based on policy determinism: for stochastic policies it is the negative log-probability, for deterministic policies it is mean squared error. This unified formulation explicitly accounts for all key contributions from both model-free and model-based methods in a single framework."
+  },
+  {
+    "id": 4,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Report training speedups without disclosing details about hardware or precise training conditions.",
+    "error_explanation": "Figure 5 and Section 4.1 claim dramatic training speed-ups with the new JAX reimplementations across algorithms. However, the paper does not specify exact hardware configurations, parallelization strategies, or the role of compilation or caching. Lack of these details undermines reproducibility and could exaggerate claimed speed-ups if compared to non-optimized or CPU-only baselines. This ambiguity allows for inflated claims of superiority that depend heavily on experimental setup rather than core algorithmic efficiency.",
+    "needs_cross_section": false,
+    "target_find": "Figure 5: Speed up from our JAX reimplementations—algorithms trained for 1M update steps on HalfCheetah-medium-expert using a single L40S GPU. Our library, Unifloral, is the fastest across the board. Full details can be found in Appendix F.",
+    "replacement": "Figure 5: Speed up from our JAX reimplementations—algorithms trained for 1M update steps on HalfCheetah-medium-expert. Reported speed-ups are based on preliminary benchmarking on a single L40S GPU. Variations in hardware, software stack, and parallelization may heavily influence these numbers and cautious interpretation is advised."
+  },
+  {
+    "id": 5,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "hard",
+    "location": "Experiments",
+    "rationale": "Misreport results showing uniform superiority of new methods by selectively omitting variance or failure cases.",
+    "error_explanation": "The results in Figures 6 and 7 (TD3-AWR and MoBRAC evaluation) portray these novel methods as consistently better than baselines across datasets. However, the reported figures omit error bars or confidence intervals for some datasets and ignore datasets where performance is similar or worse. This selective reporting artificially inflates the perception of superiority. Additionally, no failures or limitations of these methods are mentioned. Omitting such crucial variance and negative results misleads readers about robustness and generalizability.",
+    "needs_cross_section": true,
+    "target_find": "In Figure 6, we show that TD3-AWR’s performance curve strictly dominates ReBRAC on 6 out of 9 datasets and is dominated by ReBRAC in only 1. Interestingly, TD3-AWR achieves superior performance to ReBRAC under few policy evaluations—such as in halfcheetah-medium-expert and pen-expert—despite searching over a wider range of hyperparameters. Similarly, TD3-AWR strictly dominates IQL on 7 datasets, thereby outperforming both of its source algorithms.",
+    "replacement": "In Figure 6, TD3-AWR outperforms ReBRAC on several datasets but underperforms or matches it on others, such as pen-human and kitchen-mixed. Variances overlap substantially, indicating comparable performance in many cases. While strong in locomotion tasks, TD3-AWR’s gains are inconsistent in complex domains. Similar caveats apply to MoBRAC’s evaluation in Figure 7, where performance improvements over baselines are dataset-dependent and not uniformly superior. We note several cases of overlapping confidence intervals and failure to outperform all baselines consistently."
+  },
+  {
+    "id": 6,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "medium",
+    "location": "Conclusion",
+    "rationale": "Overstate generality and impact of the unified algorithm beyond demonstrated evidence.",
+    "error_explanation": "The Conclusion claim that the unified algorithm Unifloral \"combines improvements of many previous methods\" and \"achieves superior performance over a wide range of tasks\" exaggerates the demonstrated contributions. The evaluation focused mainly on MuJoCo locomotion and selected Adroit datasets, which do not represent the full diversity of offline RL problems. Causal superiority of Unifloral-derived methods over all baselines is not fully established due to hyperparameter tuning ambiguities and inconsistent gains. Such universal claims go beyond the empirical support provided.",
+    "needs_cross_section": true,
+    "target_find": "Collectively, our contributions set a new standard for addressing ambiguity in offline RL, promoting rigorous evaluation, and driving reproducible, impactful research in the field.",
+    "replacement": "Collectively, our contributions provide a step towards clarifying offline RL evaluation and algorithmic unification, but further work is needed to extend these findings across broader problem domains, better characterize tuning impacts, and validate reproducibility at scale."
+  },
+  {
+    "id": 7,
+    "corruption_type": "ethical_integrity_omission",
+    "difficulty": "easy",
+    "location": "Introduction",
+    "rationale": "Omit any mention of ethical considerations related to safety or deployment risks.",
+    "error_explanation": "The Introduction thoroughly discusses technical and reproducibility challenges but neglects any mention of ethical issues or safety risks associated with offline RL deployment in the real world. Given that offline RL is motivated by safety-critical applications, omitting this perspective neglects transparency about potential harms or necessary safeguards. This omission is a common ethical lapse that limits comprehensive understanding of research implications.",
+    "needs_cross_section": false,
+    "target_find": "Offline reinforcement learning (RL)—the task of learning effective policies from pre-collected, static datasets—is critical for applying RL in real-world settings where online experimentation is expensive or risky. Despite significant interest [1–5], the field has struggled to converge on clear, actionable insights. Algorithms and methods proliferate rapidly but no broadly agreed-upon conclusions or standardized benchmarks have emerged [6]. This undermines both practical application and theoretical progress. In this work, we identify and address two primary problems that contribute to stagnation and confusion in offline RL research: an ambiguous problem setting and opaque algorithmic design.",
+    "replacement": "Offline reinforcement learning (RL)—the task of learning effective policies from pre-collected, static datasets—is critical for applying RL in real-world settings where online experimentation is expensive or risky. Despite significant interest [1–5], the field has struggled to converge on clear, actionable insights. Algorithms proliferate rapidly without standardized benchmarks, undermining both practical application and theoretical progress. Notably, the ethical and safety implications of deploying offline RL agents, particularly in sensitive or high-stakes domains, remain underexplored, leaving risks of unintended behaviors and failures largely unaddressed. In this work, we identify and address two primary problems contributing to stagnation and confusion: ambiguous problem setting and opaque algorithmic design."
+  },
+  {
+    "id": 8,
+    "corruption_type": "reference_background_fabrication",
+    "difficulty": "hard",
+    "location": "Related Work",
+    "rationale": "Fabricate references to non-existent or unrelated papers to bolster novelty or background.",
+    "error_explanation": "The Related Work section cites several papers related to evaluation strategies and unification efforts. However, among these, certain citations such as [25] and [26] are given as prior overviews of unification without clear connection to offline RL, and [27] is cited for casting offline RL in a dual optimization framework but appears to mix objectives inconsistent with the stated scope. The section also references JAX-CORL [23] as a lighter implementation but subtly misattributes its speed or comprehensiveness, presenting incomplete context. These references selectively depict the literature to enhance the impression of methodological novelty and exhaustive coverage but misrepresent or invent some background.",
+    "needs_cross_section": false,
+    "target_find": "Our work builds upon several foundational aspects of offline RL, including evaluation strategies, open-source implementations, and algorithmic unification. Existing evaluation regimes primarily address hyperparameter tuning either through limited online interactions [8, 9] or by estimating policy performance offline [4, 10, 22]. In contrast, our approach introduces an evaluation procedure that requires neither reference policies nor additional hyperparameters, offering broader applicability across the entire D4RL benchmark suite. Furthermore, our single-file implementations draw inspiration from projects such as CORL [17, 23] and CleanRL [24], whilst our unified algorithm, Unifloral, is informed by prior unification attempts [25, 26, 15, 27]. For a comprehensive review, see Appendix L.",
+    "replacement": "Our work builds upon several foundational aspects of offline RL, including evaluation strategies, open-source implementations, and algorithmic unification. Existing evaluation regimes primarily address hyperparameter tuning either through limited online interactions [8, 9] or by estimating policy performance offline [4, 10, 22]. However, many evaluations rely on restrictive assumptions or incomplete benchmarks. Our evaluation procedure avoids these constraints by requiring no reference policies or extra hyperparameters, broadening applicability. Our single-file implementations draw inspiration from prior libraries like CORL [17, 23] and CleanRL [24], but extend them with unified algorithmic design. The unification concept traces back to online RL architectures like Rainbow [38] and Muesli [39]. A closely related recent attempt [15] studies components of model-based offline RL. Other dual optimization frameworks [40] cast offline RL methods under a common umbrella, though they differ in scope and assumptions. See Appendix L for a detailed review."
+  },
+  {
+    "id": 9,
+    "corruption_type": "rhetorical_presentation_manipulation",
+    "difficulty": "easy",
+    "location": "Abstract",
+    "rationale": "Use overly promotional language claiming major breakthroughs without sufficient evidence.",
+    "error_explanation": "The Abstract employs inflated rhetoric such as \"significantly enhancing clarity and achieving substantial speed-ups\" and \"substantially outperform established baselines\" without careful qualification. The language implies a dramatic breakthrough whereas the body presents incremental improvements contingent on specific hyperparameter settings and datasets. Such promotional tone risks overselling the contribution and misguiding readers about its generality and impact.",
+    "needs_cross_section": false,
+    "target_find": "To resolve opaque algorithmic design, we provide clean, minimalistic, single-file implementations of various model-free and model-based offline RL methods, significantly enhancing clarity and achieving substantial speed-ups. Leveraging these streamlined implementations, we propose Unifloral, a unified algorithm that encapsulates diverse prior approaches within a single, comprehensive hyperparameter space, enabling algorithm development in a shared hyperparameter space. Using Unifloral with our rigorous evaluation procedure, we develop two novel algorithms—TD3-AWR (model-free) and MoBRAC (model-based)—which substantially outperform established baselines.",
+    "replacement": "To resolve opaque algorithmic design, we provide clean, minimalistic, single-file implementations of various model-free and model-based offline RL methods, improving clarity and training speed in our context. Leveraging these streamlined implementations, we propose Unifloral, a unified algorithm encapsulating prior approaches within a single hyperparameter space, facilitating algorithm development under shared settings. Using Unifloral with our evaluation procedure, we develop two algorithms—TD3-AWR (model-free) and MoBRAC (model-based)—which demonstrate improved average performance compared to baselines on selected datasets."
+  },
+  {
+    "id": 10,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "hard",
+    "location": "Method",
+    "rationale": "Conflict between the unified algorithm description and the implementation details.",
+    "error_explanation": "The description of Unifloral’s unified hyperparameter space in Section 4.2 states it includes all core components except CQL, which is omitted for complexity and performance reasons. However, Appendix A.1’s reimplementations include CQL and discuss it as part of the implemented family, presenting detailed hyperparameters and performance. This contradictory inclusion/exclusion confuses the reader about whether CQL is integrated in Unifloral or only a reimplementation separate from Unifloral. Such inconsistencies undermine the coherence of the paper’s proposed method framework.",
+    "needs_cross_section": true,
+    "target_find": "We define the critic objective as the weighted sum of those components, or a selection between them if mutually exclusive, in order to include all referenced methods (except CQL, which we omit due to its substandard performance and high complexity). More detail in Appendix I.1.",
+    "replacement": "We define the critic objective as the weighted sum of those components, or a selection between them if mutually exclusive, in order to include all referenced methods, including CQL despite its complexity, to enable comprehensive comparison. More detail in Appendix I.1."
+  },
+  {
+    "id": 11,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "medium",
+    "location": "Appendix",
+    "rationale": "Introduce inconsistent critic update formulas between SAC-N, CQL, and EDAC implementations.",
+    "error_explanation": "The provided pseudocode listings for update_critic in Appendix blocks (#75, #76, #77) show differing treatment of loss terms. Notably, EDAC uses the mean of q_values for the actor loss rather than minimum as in SAC-N and CQL. In SAC-N and CQL, the critic loss uses mean squared error against a target with critic ensemble minimum or adjustments, but EDAC adds a diversity regularization term differently. The inconsistency in aggregation (mean vs min) and regularization details across these similar algorithms creates ambiguity about the standardized pipeline and may cause confusion about correct implementation or theoretical expectations of ensemble Q-functions.",
+    "needs_cross_section": false,
+    "target_find": "# EDAC update_actor\ndef update_actor(self):\n    for p in self.critic.parameters():\n        p.requires_grad = False\n\n    state, action = self.replay_buffer.sample(self.batch_size)\n    \n    mu, log_std = self.actor(state)\n    std = log_std.exp()\n    new_action, log_prob = sample_actions(mu, std)\n    \n    q_values = self.critic(state, new_action)\n    q_value = q_values.mean(0)\n    \n    actor_loss = (self.alpha * log_prob - q_value).mean()\n    \n    # EDAC diversity loss\n    q_std = q_values.std(0).mean()\n    diversity_loss = -self.eta * q_std\n    actor_loss = actor_loss + diversity_loss\n    \n    self.actor_optimizer.zero_grad()\n    actor_loss.backward()\n    self.actor_optimizer.step()\n    \n    for p in self.critic.parameters():\n        p.requires_grad = True\n    \n    return {\"actor_loss\": actor_loss.item(), \"diversity_loss\": diversity_loss.item()}",
+    "replacement": "# EDAC update_actor\n        def update_actor(self):\n            for p in self.critic.parameters():\n                p.requires_grad = False\n\n            state, action = self.replay_buffer.sample(self.batch_size)\n\n            mu, log_std = self.actor(state)\n            std = log_std.exp()\n            new_action, log_prob = sample_actions(mu, std)\n\n            q_values = self.critic(state, new_action)\n            # Use min aggregation consistent with SAC-N and CQL\n            q_value = q_values.min(0)[0]\n\n            actor_loss = (self.alpha * log_prob - q_value).mean()\n\n            # EDAC diversity loss\n            q_std = q_values.std(0).mean()\n            diversity_loss = -self.eta * q_std\n            actor_loss = actor_loss + diversity_loss\n\n            self.actor_optimizer.zero_grad()\n            actor_loss.backward()\n            self.actor_optimizer.step()\n\n            for p in self.critic.parameters():\n                p.requires_grad = True\n\n            return {\"actor_loss\": actor_loss.item(), \"diversity_loss\": diversity_loss.item()}"
+  },
+  {
+    "id": 12,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Visual encoding of evaluation graphs exaggerates performance differences via axis scaling.",
+    "error_explanation": "In Figures 3, 6, and 7, the y-axes are scaled tightly around performance ranges that exaggerate the vertical differences among curves. For example, Figure 6’s y-axis often spans less than 30 points, compressing differences and amplifying the impression of superiority. Selective axis choices, rather than standardized scales, can mislead readers about effect sizes and robustness. Such graphical distortions constitute a form of evidence corruption by visual exaggeration.",
+    "needs_cross_section": false,
+    "target_find": "Figure 3: Evaluation of prior algorithms—mean and 95% CI over 500 bandit rollouts, with K = 8 policy arms subsampled from 20 trained policies each rollout. The x-axis denotes the number of bandit pulls, whilst the y-axis denotes the true expected score of the estimated best arm after x pulls. Full evaluation results are in Appendix B.",
+    "replacement": "Figure 3: Evaluation of prior algorithms—mean and 95% CI over 500 bandit rollouts with K=8 policy arms subsampled from 20 trained policies each rollout. The x-axis denotes the number of bandit pulls, and the y-axis denotes the true expected score of the estimated best arm after x pulls. Axes are standardized across plots with consistent ranges to fairly visualize relative performance differences."
+  },
+  {
+    "id": 13,
+    "corruption_type": "ethical_integrity_omission",
+    "difficulty": "easy",
+    "location": "Appendix",
+    "rationale": "Omit explicit funding disclosures or conflict of interest statements from acknowledgements.",
+    "error_explanation": "The Acknowledgements section thanks individuals but omits explicit conflict of interest disclosures or details about funding sources related to industry or other vested interests. Transparency about funding and possible biases is critical in research ethics. This omission represents ethical integrity weakness by depriving readers of information needed to contextualize potential influences.",
+    "needs_cross_section": false,
+    "target_find": "Acknowledgements\n\nThe authors thank Michael Beukman, Cong Lu, Jack Parker-Holder, Hugh Bishop, and Nathan Monette for their valuable feedback on the paper. MJ, UB, and JL are funded by the EPSRC Centre for Doctoral Training in Autonomous Intelligent Machines and Systems. MJ is also funded by Amazon Web Services, UB is also funded by the Rhodes Scholarship, and JL is funded by Sony Interactive Entertainment Europe Ltd.",
+    "replacement": "Acknowledgements\n\nThe authors thank Michael Beukman, Cong Lu, Jack Parker-Holder, Hugh Bishop, and Nathan Monette for their valuable feedback on the paper."
+  },
+  {
+    "id": 14,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "medium",
+    "location": "Introduction",
+    "rationale": "Conflict between the taxonomy of offline RL variants and informal usage of evaluation protocol mainly focusing only on pre-deployment tuning.",
+    "error_explanation": "In Section 1 and Section 3, the taxonomy identifies four variants of offline RL covering zero-shot, pre-deployment policy selection, post-deployment adaptation, and offline-to-online fine tuning. However, the proposed evaluation procedure in Section 3.2 focuses solely on pre-deployment tuning (Setting 2a), treating it as the implicit standard. This contradicts the broader taxonomy and downplays other important variants like post-deployment adaptation, thereby limiting the paper’s applicability claims. Ignoring this discrepancy creates an incoherent narrative about what offline RL setting is actually evaluated and improved.",
+    "needs_cross_section": true,
+    "target_find": "Problem 1: Ambiguous Problem Setting Recent work in offline RL has lacked a rigorously articulated definition or standardized evaluation procedure. The broad mission statement, learning from a static dataset without direct environment interaction, is prone to misinterpretation that skews proposed methods towards impractical evaluation practices. Existing literature implicitly relaxes various definitions concerning critical details such as hyperparameter tuning allowances [4, 7], the extent of post-deployment policy adaptation [8], and the specifics of evaluation procedures [9]. Consequently, comparisons between methods are confounded as each study might assume fundamentally different",
+    "replacement": "Problem 1: Ambiguous Problem Setting Recent work in offline RL has lacked a rigorously articulated definition or standardized evaluation procedure. The broad mission statement, learning from a static dataset without environment interaction, covers several distinct variants, including zero-shot deployment, pre-deployment tuning, post-deployment adaptation, and offline-to-online learning. However, our evaluation focuses primarily on pre-deployment policy selection due to its prevalence in the literature, acknowledging that alternative variants remain underexplored. This narrowed focus limits the generality of conclusions about offline RL, which different works may interpret inconsistently."
+  },
+  {
+    "id": 15,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Misinterpret fluctuations in performance curves as meaningful signals rather than noise.",
+    "error_explanation": "Section 3.3 discusses the distractor policy phenomenon explaining dips in performance curves as meaningful effects of unstable policies with higher maximum returns but suboptimal average performance. While this is insightful, the paper interprets these temporary decreases as significant evaluation flaws rather than common statistical noise inherent in bandit methods. Over-interpreting such fluctuations risks drawing unsupported conclusions about evaluation methodology rather than acknowledging random evaluation variance.",
+    "needs_cross_section": false,
+    "target_find": "Distractor Policy Phenomenon While performance typically improves as more bandit arms are pulled, certain performance curves exhibit distinctive dips—temporary decreases in measured performance despite additional policy evaluations. To better understand this, we examine the ranked performance distribution of numerous ReBRAC policies trained on hopper-medium (Figure 4). This analysis reveals a notable cluster of policies that exhibit suboptimal average performance but possess a higher maximum performance compared to consistently better-performing policies. We refer to these anomalous policies as distractor policies.\n\nTo demonstrate their impact on evaluation, we simulate the initial phase of a bandit rollout over these policies, i.e., when the bandit enumerates all arms (Figure 9a). Over this phase, we observe a clear increase in the probability of preferring a distractor policy, explaining the initial decrease in evaluation performance. This phenomenon runs counter to the expectation that increasing policy evaluations would monotonically reduce estimator variance and underscores the need to directly consider environment interactions in evaluation, a crucial distinction from prior evaluation methodologies [9]. Further analysis of distractor policies is provided in Appendix D.",
+    "replacement": "Distractor Policy Phenomenon While performance typically improves as more bandit arms are pulled, certain performance curves exhibit dips that are common artifacts of statistical fluctuations and sampling noise in bandit evaluation. The observed clusters of policies with high maximum but low mean returns, designated as distractor policies, contribute to these dips, but such patterns may arise naturally given the stochasticity of returns and policy diversity. These temporary decreases likely reflect noise rather than fundamental flaws, highlighting the challenges but not invalidating the bandit-based evaluation approach."
+  }
+]

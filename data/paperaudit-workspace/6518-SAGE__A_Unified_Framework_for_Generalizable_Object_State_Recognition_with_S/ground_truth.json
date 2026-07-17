@@ -1,0 +1,167 @@
+[
+  {
+    "id": 1,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "medium",
+    "location": "Abstract",
+    "rationale": "Overstates SAGE's improvement and generalization without nuance or confidence intervals.",
+    "error_explanation": "The abstract claims a 14.6% improvement and less than 5% inference time, but it lacks any statistical variability or confidence intervals to qualify this result. The claim also implies universality ('significantly outperforms baselines, generalizes effectively') without disclosing any conditions or failure modes, which overstates the method's robustness given possibly narrow benchmarks used and unseen action/object scenarios.",
+    "needs_cross_section": false,
+    "target_find": "Extensive experiments show that our method significantly outperforms baselines, generalizes effectively to unseen objects and actions in open-world settings. SAGE improves the prior state-of-the-art by as much as 14.6% on novel state recognition with less than 5% of its inference time.",
+    "replacement": "Extensive experiments show that our method outperforms baselines on several benchmarks, demonstrating improved generalization on select unseen objects and actions. On some datasets, SAGE achieves up to 14.6% relative precision gain on novel state recognition while reducing inference time compared to specialized models. However, further evaluation is necessary to confirm its performance consistency across broader open-world scenarios."
+  },
+  {
+    "id": 2,
+    "corruption_type": "reference_background_fabrication",
+    "difficulty": "medium",
+    "location": "Introduction",
+    "rationale": "Invents a 1892 reference and uses it repeatedly for object state range illustration.",
+    "error_explanation": "The paper repeatedly cites a 1892 reference 'Filippini, 1892' claiming it documents 100 ways of cooking eggs and discusses object state variations. This is historically implausible and likely fabricated as no such recognized academic reference exists. This weakens the background credibility and introduces fabricated domain knowledge to support motivation.",
+    "needs_cross_section": false,
+    "target_find": "If we turn the recipe book *100 Ways of Cooking Eggs* (Filippini, 1892) into videos, can a modern computer vision algorithm successfully understand all of them?... as objects tend to exhibit an even broader range of state variations (Filippini, 1892), and actions can often be represented as state transformations...",
+    "replacement": "If we turn a diverse set of cooking recipes involving eggs into videos, can a modern computer vision algorithm successfully understand all transformations? Objects exhibit a vast range of physical states influenced by actions. Prior work has extensively studied state variations (e.g., cooking process datasets) and models state transformations as action-dependent changes (Wang et al., 2016; Fathi and Rehg, 2013)."
+  },
+  {
+    "id": 3,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "hard",
+    "location": "Method",
+    "rationale": "Conflicting description about embedding computation: earlier says action embeddings are difference of end and initial state embeddings, later no clear integration in base model prediction.",
+    "error_explanation": "Section 3.2 states action embeddings are computed as the difference between end and initial state embeddings to represent dynamic transformations. However, Section 3.1 and 3.3 do not clarify how this difference embedding is used in the loss or prediction heads. The base model's projection and output spaces are described only in terms of states and actions independently, creating inconsistency about how the computed action embedding integrates with the model's outputs and training loss.",
+    "needs_cross_section": false,
+    "target_find": "Inspired by prior work on relation encoding (Bordes et al., 2013) and state-based action recognition (Wang et al., 2016), we compute the action embeddings as the difference between the embeddings of its end and initial object states, which naturally accounts for object-specific variations...",
+    "replacement": "Inspired by prior work on relation encoding (Bordes et al., 2013) and state-based action recognition (Wang et al., 2016), we compute the action embeddings as independent learned embeddings with no explicit arithmetic relation to the initial and end object states. This allows the model to flexibly associate actions with states without assuming linear embedding constructs."
+  },
+  {
+    "id": 4,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Baseline retraining omitted detailed hyperparameter tuning causing non-comparable baselines.",
+    "error_explanation": "The paper states it carefully re-implements baselines using a shared pre-trained vision encoder, but provides no details about hyperparameter tuning for those baselines. Without this, the compared baselines might be under-optimized relative to SAGE, resulting in unfair baseline comparisons that favor the proposed method. This omission undermines the experimental rigor.",
+    "needs_cross_section": false,
+    "target_find": "We conduct comprehensive experiments to evaluate our approach on existing object state recognition benchmarks. To make our observations scientifically rigorous, we carefully re-implement the baseline approaches using the same pre-trained vision encoder, and also compare with their reported results.",
+    "replacement": "We conduct comprehensive experiments to evaluate our approach on existing object state recognition benchmarks. Baseline models are re-implemented using the same pre-trained vision encoder, but we note that their hyperparameters and model architectures were not exhaustively tuned, which may affect direct comparability with our method."
+  },
+  {
+    "id": 5,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "hard",
+    "location": "Experiments",
+    "rationale": "Reported Table 1 results exaggerate improvements by selectively omitting error bars and variance statistics.",
+    "error_explanation": "Table 1 presents state recognition precision improvements for SAGE over baselines but shows only point estimates without any variance or confidence intervals. Given these experiments rely on sampling and pseudo labels, variability is expected and could reduce statistical significance of observed improvements. The omission of variability measures inflates confidence in the reported improvements.",
+    "needs_cross_section": false,
+    "target_find": "Table 1: Known object state recognition performance on ChangeIt and HowToChange. SAGE outperforms the baselines across different settings. The unified versions of baseline models suffer substantial performance degradation, whereas our model not only mitigates this issue but even surpasses specialized baseline models.",
+    "replacement": "Table 1: Known object state recognition performance on ChangeIt and HowToChange. While SAGE generally outperforms baselines, variance is observed across multiple runs with standard deviations up to 3%, indicating some overlap in performance ranges. Unified baseline models showed variable degradation most likely due to limited hyperparameter search."
+  },
+  {
+    "id": 6,
+    "corruption_type": "ethical_integrity_omission",
+    "difficulty": "easy",
+    "location": "Conclusion",
+    "rationale": "Omission of discussion on potential bias, failure modes, or ethical risks of the method.",
+    "error_explanation": "The conclusion mentions limitations only in terms of dataset scope and multi-object concurrency, but does not discuss potential biases, failure modes on diverse populations or environments, risks of misapplication, or ethical considerations of automated object state recognition. Such omissions undermine transparency regarding responsible AI deployment.",
+    "needs_cross_section": false,
+    "target_find": "## 5 Conclusion\n\nIn this paper, we propose a novel framework to build unified models for recognizing object states in videos. We leverage pre-trained LLMs and VLMs to build State-Action Graph Embeddings (SAGE) that decomposes object states into visual concepts. The graph structure where different objects and actions share the same visual concepts enables the model to generalize to novel objects and actions. Our model outperforms all baselines on two widely used object state transformation benchmarks, especially for open-world settings where both objects and actions are novel.\n\n**Limitations:** Our approach is evaluated on ChangeIt and HowToChange benchmarks, both contain a single action in each video. Although SAGE may be naturally generalized to handle videos with multiple non-overlapping actions via temporal action localization, it cannot directly support the scenario where multiple objects are undergoing state transformations *concurrently*.\n\nWe further envision two natural directions for future work: First, despite our effort to build a unified model for diverse objects and actions in different scenarios, our model is designed solely for object state and action recognition. Integrating the success of SAGE into a vision foundation model would be ideal as recognizing object physical state is a fundamental task of visual perception. Second, it would be highly impactful to apply our approach for downstream tasks such as tracking objects that undergo state transformations, or even temporal abstraction and skill discovery for robotic applications.",
+    "replacement": "## 5 Conclusion\n\nIn this paper, we propose a novel framework to build unified models for recognizing object states in videos. We leverage pre-trained LLMs and VLMs to build State-Action Graph Embeddings (SAGE) that decomposes object states into visual concepts. The graph structure where different objects and actions share the same visual concepts enables the model to generalize to novel objects and actions. Our model outperforms all baselines on two widely used object state transformation benchmarks, especially for open-world settings where both objects and actions are novel.\n\n**Limitations:** Our approach is evaluated on ChangeIt and HowToChange benchmarks, both containing a single action in each video, limiting generalization. The model currently lacks assessment of fairness and biases, and we do not quantify failure modes or risks arising from model misuse, which are important avenues for future ethical evaluation.\n\nWe further envision two natural directions for future work: First, despite our effort to build a unified model for diverse objects and actions in different scenarios, our model is designed solely for object state and action recognition. Integrating the success of SAGE into a vision foundation model would be ideal as recognizing object physical state is a fundamental task of visual perception. Second, it would be highly impactful to apply our approach for downstream tasks such as tracking objects that undergo state transformations, or even temporal abstraction and skill discovery for robotic applications."
+  },
+  {
+    "id": 7,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "medium",
+    "location": "Method",
+    "rationale": "Contradiction about training labels: pseudo labels lack fine frame-level annotations, yet training claims supervised loss computed at frame level.",
+    "error_explanation": "Section 3.1 claims losses are computed on all frames based on ground-truth labels, while Section 3.2 states frame-level annotations are absent and pseudo labels are noisy estimates using VLM and Viterbi decoding. This contradiction confuses whether frame-level labels are available or not and violates logical consistency about supervision granularity.",
+    "needs_cross_section": true,
+    "target_find": "Unless otherwise specified, we follow the standard setup and assume that each video contains a single action, which can be relaxed when temporal action localization is applied as a pre-processing step.\n\n3.1 Base Model\n\nWe first contextualize the encoded visual embeddings v_t from all video frames by linearly projecting them to obtain h_t, which are fed to a temporal Transformer to produce the output embedding Z_t. An optional token h_CLS is reserved for action prediction and transformed into Z_CLS. All outputs are projected into the discrete state/action spaces, where cross-entropy losses are computed on\n\nWe use the pseudo labels for all frames and the action prediction for model training.",
+    "replacement": "Unless otherwise specified, we follow the standard setup and assume that each video contains a single action, which can be relaxed when temporal action localization is applied as a pre-processing step.\n\n3.1 Base Model\n\nWe first contextualize the encoded visual embeddings v_t from all video frames by linearly projecting them to obtain h_t, which are fed to a temporal Transformer to produce the output embedding Z_t. An optional token h_CLS is reserved for action prediction and transformed into Z_CLS. All outputs are projected into discrete state/action spaces. Given the lack of ground-truth frame-level annotations, we rely solely on noisy pseudo labels estimated by vision-language models for supervised training, acknowledging label noise and incomplete supervision.\n\nWe use the pseudo labels for all frames and the action prediction for model training."
+  },
+  {
+    "id": 8,
+    "corruption_type": "rhetorical_presentation_manipulation",
+    "difficulty": "easy",
+    "location": "Introduction",
+    "rationale": "Overly promotional tone with exaggerated generalization claims lacking qualification.",
+    "error_explanation": "The introduction repeatedly uses terms like 'powerful', 'promising pathway', and 'highly effective' without tempering expectations or discussing potential challenges and failure modes. This style inflates the perceived contribution and generalizability beyond support from limited benchmarks and evaluation.",
+    "needs_cross_section": false,
+    "target_find": "We believe that understanding object states offers a powerful, object-centric abstraction for modeling world dynamics. This understanding is essential for structured video comprehension of objects, actions, and skills, and for enabling robots to perceive, predict, and plan when interacting with the physical world, thus providing a promising pathway for robots to learn from human behaviors.",
+    "replacement": "We believe that understanding object states offers a useful abstraction for modeling world dynamics. Such understanding may support structured video comprehension of objects, actions, and skills, and facilitate robot perception and planning in physical environments, though significant challenges remain for robust real-world deployment."
+  },
+  {
+    "id": 9,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Table 4 reports unrealistic performance stability despite tripling the number of concepts, which contradicts typical expectations of overfitting or noise increase.",
+    "error_explanation": "Table 4 shows nearly identical or slightly worse precision scores when increasing graph concepts from 5 to 15 before refinement, and small improvements after refinement. Such minimal change despite a 3x increase in complexity is suspicious and suggests incomplete or selective reporting of results that do not reflect usual tradeoffs between model complexity and generalization.",
+    "needs_cross_section": false,
+    "target_find": "Table 4: Comparison of SAGE before and after refinement on HowToChange.\n\n| Graph                    | # Concepts | Known F1 | Known Pre | Known Pre@1 | Novel F1 | Novel Pre | Novel Pre@1 |\n| ------------------------ | ---------- | -------- | --------- | ----------- | -------- | --------- | ----------- |\n| SAGE (before refinement) | 5          | 0.37     | 0.42      | 0.55        | 0.31     | 0.35      | 0.45        |\n| SAGE (before refinement) | 15         | 0.36     | 0.42      | 0.54        | 0.30     | 0.34      | 0.44        |\n| SAGE (after refinement)  | 5          | 0.38     | 0.42      | 0.58        | 0.33     | 0.39      | 0.50        |",
+    "replacement": "Table 4: Comparison of SAGE before and after refinement on HowToChange.\n\n| Graph                    | # Concepts | Known F1 | Known Pre | Known Pre@1 | Novel F1 | Novel Pre | Novel Pre@1 |\n| ------------------------ | ---------- | -------- | --------- | ----------- | -------- | --------- | ----------- |\n| SAGE (before refinement) | 5          | 0.37     | 0.42      | 0.55        | 0.31     | 0.35      | 0.45        |\n| SAGE (before refinement) | 15         | 0.29     | 0.35      | 0.48        | 0.22     | 0.27      | 0.36        |\n| SAGE (after refinement)  | 5          | 0.38     | 0.42      | 0.58        | 0.33     | 0.39      | 0.50        |"
+  },
+  {
+    "id": 10,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Unclear protocol about how ground-truth privileged information is used during evaluation, introducing potential data leakage or unfair advantage.",
+    "error_explanation": "Section 4.1 and Tables 1 and 2 mention that privileged information for actions and objects is optionally provided during evaluation but do not clarify whether this simulates realistic scenarios or possibly leaks label information. This ambiguity can lead to unfair performance comparisons, as some methods may rely extensively on privileged inputs unavailable in practical use.",
+    "needs_cross_section": false,
+    "target_find": "While the object and action ground truth labels are available in the test set, they are optionally provided to the model according to the evaluation setup. The use of ground truth action and object annotation as privileged information is indicated in Table 1. When not provided, our method infers them directly from videos as described in Section 3.3.",
+    "replacement": "While the object and action ground truth labels are available in the test set, they are used during evaluation only for methods that require privileged input, which may artificially boost their performance. Our method always infers these labels from videos without privileged access to more realistically reflect deployment conditions."
+  },
+  {
+    "id": 11,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "hard",
+    "location": "Experiments",
+    "rationale": "Training time for ChangeIt dataset exaggeratedly long compared to HowToChange given number of videos and hardware.",
+    "error_explanation": "The reported training time in Section 4.1 states 8 hours for ChangeIt and 30 minutes for HowToChange on 8× NVIDIA V100 GPUs. Given that ChangeIt has fewer videos (34k vs. 36k), this disproportionate training duration is suspicious and suggests either over-reporting or incomplete details about training setups influencing runtime, reducing reproducibility.",
+    "needs_cross_section": false,
+    "target_find": "Model Training and Time: We train the model with 8× NVIDIA V100 GPUs. It takes 30 minutes to extract visual embeddings for HowToChange and 3.5 hours for ChangeIt. The training takes about 30 minutes for HowToChange and 8 hours for ChangeIt.",
+    "replacement": "Model Training and Time: We train the model with 8× NVIDIA V100 GPUs. It takes approximately 30 minutes to extract visual embeddings for both HowToChange and ChangeIt. The training takes about 30 minutes for HowToChange and around 1.5 hours for ChangeIt."
+  },
+  {
+    "id": 12,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "medium",
+    "location": "Method",
+    "rationale": "Inconsistent description of frame filtering: uses VLM to identify background frames but lacks detail on thresholding or impact on label distribution.",
+    "error_explanation": "Section 3.1 mentions filtering out frames 'deemed not to contain the object of interest by a VLM' as background, but does not specify any criteria, thresholds, or validation of this filtering step. This omission creates ambiguity about how frames are included/excluded during training and affects the temporal consistency and label distribution, weakening the method reproducibility and clarity.",
+    "needs_cross_section": false,
+    "target_find": "We use the pseudo labels for all frames and the action prediction for model training. Frames deemed not to contain the object of interest by a VLM are filtered out as background.",
+    "replacement": "We use the pseudo labels for all frames and the action prediction for model training. Frames with low cosine similarity scores from the pre-trained VLM below a fixed threshold (empirically set) are filtered out as background to reduce noise in training labels."
+  },
+  {
+    "id": 13,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Overstates generalization to both novel fixed actions and novel unseen multiple overlapping actions without adequate evaluation.",
+    "error_explanation": "The paper claims generalization both to videos with unknown actions and objects and to multitask videos with multiple overlapping actions, but only evaluates on single-action datasets (ChangeIt, HowToChange). This misrepresents the model's demonstrated capabilities as the multi-action scenario remains untested.",
+    "needs_cross_section": true,
+    "target_find": "Our project website is https://brown-palm.github.io/SAGE.\n\nWe evaluate our method on ChangeIt and HowToChange benchmarks with known and novel objects. To further evaluate the model’s generalizability, we introduce a more challenging setup where both the action and the object in the video are unseen during training. We perform extensive ablation studies showing the contributions of individual design choices in SAGE. Our method demonstrates strong object state recognition performance, especially when generalized to novel objects and actions. Notably, SAGE outperforms the prior state-of-the-art (Xue et al., 2024) across all benchmarks, yielding as much as 14.6% relative precision improvement on state recognition for objects and actions unseen during training, and requiring less than 5% of its inference time when the action is not provided during evaluation.",
+    "replacement": "Our project website is https://brown-palm.github.io/SAGE.\n\nWe evaluate our method on ChangeIt and HowToChange benchmarks containing single-action videos with known and novel objects. To evaluate generalizability, we propose a setup with novel actions and objects unseen during training. Experiments with multi-action or overlapping object state transformations remain future work. Our method shows promising gains for novel objects and single unseen actions compared to prior state-of-the-art methods."
+  },
+  {
+    "id": 14,
+    "corruption_type": "rhetorical_presentation_manipulation",
+    "difficulty": "easy",
+    "location": "Conclusion",
+    "rationale": "Inflated language describing future directions suggesting the model 'solves' fundamental perception challenges.",
+    "error_explanation": "The conclusion's rhetoric about integrating SAGE into vision foundation models and applying it to skill discovery and tracking exaggerates the current contribution. It implies the approach already solves fundamental perception challenges, which is not supported by the empirical results limited to object state recognition benchmarks.",
+    "needs_cross_section": false,
+    "target_find": "We further envision two natural directions for future work: First, despite our effort to build a unified model for diverse objects and actions in different scenarios, our model is designed solely for object state and action recognition. Integrating the success of SAGE into a vision foundation model would be ideal as recognizing object physical state is a fundamental task of visual perception. Second, it would be highly impactful to apply our approach for downstream tasks such as tracking objects that undergo state transformations, or even temporal abstraction and skill discovery for robotic applications.",
+    "replacement": "We further envision two natural directions for future work: First, although this work advances object state and action recognition, integration with broader vision foundation models remains an open challenge requiring extensive validation. Second, initial application to downstream tasks like tracking or skill abstraction holds potential but requires substantial additional research."
+  },
+  {
+    "id": 15,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Table 2(b) shows baseline models performing unusually poorly on novel actions relative to known actions without explanation.",
+    "error_explanation": "In Table 2(b), the baseline models LFC and VidOSC show a large drop in state and transition precision on novel objects and actions compared to known ones. No discussion or analysis is provided to explain these extreme degradations, which is unusual and suggests cherry-picking or incomplete evaluation, potentially misleading the interpretation of generalization strength.",
+    "needs_cross_section": false,
+    "target_find": "Table 2: Open-world evaluation results on ChangeIt and HowToChange. The MTC method cannot generalize to novel actions or objects because its classification heads are fixed for the states of known objects. SAGE shows robust performance in the open-world setting, while baseline models degrade significantly on unseen actions or objects. *: Results from the best specialized models.\n\n(b) Evaluation with novel actions and novel objects.\n\n| Methods     | ChangeIt Novel Obj & Act\nState Pre@1 | ChangeIt Novel Obj & Act\nTrans. Pre@1 | HowToChange Novel Obj & Act\nF1 | HowToChange Novel Obj & Act\nPre | HowToChange Novel Obj & Act\nPre@1 |\n| ----------- | ---------------------------------------- | ----------------------------------------- | ---------------------------------- | ----------------------------------- | -------------------------------------- |\n| LFC*        | 0.21                                     | 0.48                                      | 0.23                               | 0.22                                | 0.27                                   |\n| VidOSC*     | 0.27                                     | 0.59                                      | 0.25                               | 0.28                                | 0.37                                   |\n| SAGE (ours) | **0.45**                                 | **0.70**                                  | **0.31**                           | **0.35**                            | **0.45**                               |",
+    "replacement": "Table 2: Open-world evaluation results on ChangeIt and HowToChange. The MTC method cannot generalize to novel actions or objects because its classification heads are fixed for the states of known objects. While SAGE maintains relatively stable performance, baseline models show variable drops on novel objects and actions. Further analysis is needed to understand variability and failure modes on these more challenging scenarios.\n\n(b) Evaluation with novel actions and novel objects.\n\n| Methods     | ChangeIt Novel Obj & Act\nState Pre@1 | ChangeIt Novel Obj & Act\nTrans. Pre@1 | HowToChange Novel Obj & Act\nF1 | HowToChange Novel Obj & Act\nPre | HowToChange Novel Obj & Act\nPre@1 |\n| ----------- | ---------------------------------------- | ----------------------------------------- | ---------------------------------- | ----------------------------------- | -------------------------------------- |\n| LFC*        | 0.33                                     | 0.62                                      | 0.29                               | 0.31                                | 0.40                                   |\n| VidOSC*     | 0.38                                     | 0.67                                      | 0.34                               | 0.36                                | 0.44                                   |\n| SAGE (ours) | **0.45**                                 | **0.70**                                  | **0.31**                           | **0.35**                            | **0.45**                               |"
+  }
+]

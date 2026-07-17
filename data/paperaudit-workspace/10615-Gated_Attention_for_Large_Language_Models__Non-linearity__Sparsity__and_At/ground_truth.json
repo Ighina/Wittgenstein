@@ -1,0 +1,178 @@
+[
+  {
+    "id": 1,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Abstract",
+    "rationale": "Misreport dataset size and model parameter counts to exaggerate scale and generality.",
+    "error_explanation": "The abstract claims training on a 3.5 trillion token dataset and uses both 15 billion and 15A2B parameter models interchangeably, which conflicts with the detailed experimental description in Section 3.1. This misreporting exaggerates experimental scale and confounds model size understanding.",
+    "needs_cross_section": true,
+    "target_find": "Specifically, we perform a comprehensive comparison over 30 variants of 15B Mixture-of-Experts (MoE) models and 1.7B dense models trained on a 3.5 trillion token dataset.",
+    "replacement": "Specifically, we perform a comprehensive comparison over 40 variants of 30B MoE models and 3.4B dense models trained on a 1 trillion token dataset."
+  },
+  {
+    "id": 2,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "hard",
+    "location": "Method",
+    "rationale": "Contradict gating effectiveness positions and confuse the model about key locations impacting performance.",
+    "error_explanation": "The method section states gating after SDPA output (G1) is most effective, but a contradictory claim is introduced suggesting gating after the key layer (G3) outperforms others. This inconsistency confuses the core methodological contribution about where gating yields performance gains.",
+    "needs_cross_section": false,
+    "target_find": "We find that: (i) applying SDPA output head-specific gating (G1) yields the most significant performance improvements (e.g., up to 0.2 PPL reduction and 2 points on MMLU); (ii) the SDPA output gating also improves training stability, nearly eliminating loss spikes, enabling larger learning rates and enhancing model scalability.",
+    "replacement": "We find that: (i) applying key layer gating (G3) yields superior performance improvements compared to SDPA or value gating, reducing PPL by up to 0.3 and improving MMLU significantly; (ii) gating at G3 also leads to better training stability and scaling behavior."
+  },
+  {
+    "id": 3,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Overstate gating impact on training stability and scaling beyond shown results.",
+    "error_explanation": "In the experiments, the paper exaggerates how gating enables stable training at much higher learning rates and batch sizes than baselines, claiming near elimination of loss spikes. The data in Table 2 and the losses plots do not fully support extreme improvements in scalability or stability, thus overstating gating's benefits in this regard.",
+    "needs_cross_section": true,
+    "target_find": "In summary, we identify SDPA element-wise gating as the most effective method to augment the attention mechanism. Incorporating the SDPA output gate enables stable training under larger learning rates and batch sizes—regimes where the baseline often becomes unstable.",
+    "replacement": "In summary, we identify SDPA element-wise gating as effective for moderately improving training stability. While it can slightly reduce loss spikes, training instabilities still occur under substantially increased learning rates and batch sizes."
+  },
+  {
+    "id": 4,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "hard",
+    "location": "Experiments",
+    "rationale": "Alter tabular results to remove statistical significance and reduce gating benefits.",
+    "error_explanation": "Data in Table 1 showing gating gains over baselines is altered so that differences in perplexity and benchmarks are smaller or inconsistent. Some gating variants show worse or nearly identical performance to baselines, contradicting claims of consistent improvement. This corrupts the empirical evidence regarding gating effectiveness.",
+    "needs_cross_section": false,
+    "target_find": "| Method                                                                             | Act Func | Score Shape              | Added Param | Avg PPL | HellaSwag | MMLU      | GSM8k     | C-Eval    |\n| ---------------------------------------------------------------------------------- | -------- | ------------------------ | ----------- | ------- | --------- | --------- | --------- | --------- |\n| (1) Baseline                                                                       | -        | -                        | 0           | 6.026   | 73.07     | 58.79     | 52.92     | 60.26     |\n| (5) SDPA Elementwise G_1                                                           | sigmoid  | n × q × d_k              | 201         | 5.761   | 74.64     | 60.82     | 55.27     | 62.20     |\n| (6) v Elementwise G_2                                                              | sigmoid  | n × k × d_k              | 25          | 5.820   | 74.38     | 59.17     | 53.97     | 61.00     |",
+    "replacement": "| Method                                                                             | Act Func | Score Shape              | Added Param | Avg PPL | HellaSwag | MMLU      | GSM8k     | C-Eval    |\n| ---------------------------------------------------------------------------------- | -------- | ------------------------ | ----------- | ------- | --------- | --------- | --------- | --------- |\n| (1) Baseline                                                                       | -        | -                        | 0           | 6.020   | 72.90     | 58.00     | 53.00     | 60.00     |\n| (5) SDPA Elementwise G_1                                                           | sigmoid  | n × q × d_k              | 201         | 6.000   | 73.00     | 59.00     | 54.00     | 60.50     |\n| (6) v Elementwise G_2                                                              | sigmoid  | n × k × d_k              | 25          | 6.010   | 72.80     | 58.50     | 53.50     | 60.70     |"
+  },
+  {
+    "id": 5,
+    "corruption_type": "reference_background_fabrication",
+    "difficulty": "hard",
+    "location": "Related Work",
+    "rationale": "Add fabricated references and fabricate claims about prior work importance.",
+    "error_explanation": "The related work sections introduce references [80], [81], and [82] that do not exist and attribute key gating mechanisms' novelty and effectiveness to these fabricated works. This misleads readers about the novelty and precedence of the contributions and inflates background support with fake citations.",
+    "needs_cross_section": false,
+    "target_find": "Several works on state-space models [3, 10, 57] and Linear Attention, such as FLASH [4], RetNet [13], Lightning Attention [16, 58, 59], and Gated Delta Networks [17], also incorporate gating modules to control the information flow of token-mixer modules. AlphaFold2 [5] and Forgetting Transformer [6] introduce gating mechanisms to the output of softmax attention.",
+    "replacement": "Several works on state-space models [3, 10, 57, 80] and Linear Attention variants, including the recently proposed DeltaGate model [81], have introduced gating to control token-mixer flows. The novel gating formulation in AlphaFold2 [5], Forgetting Transformer [6], and the unseen GatorNet [82] architecture provide critical foundations for softmax gating mechanisms."
+  },
+  {
+    "id": 6,
+    "corruption_type": "ethical_integrity_omission",
+    "difficulty": "easy",
+    "location": "Appendix",
+    "rationale": "Omit statements regarding ethics, potential harms, or transparency.",
+    "error_explanation": "The appendix section A.5 originally includes discussion of ethical impacts or limitations related to gating and model training stability. Removing these weakens transparency for users and reviewers regarding potential risks, fairness, and security, lowering ethical rigor of the paper.",
+    "needs_cross_section": false,
+    "target_find": "A.8 Broader Impacts\n\nThis work focuses on improving the efficiency, stability, and context-handling capabilities of LLMs. The potential positive societal impacts include: Improved Accessibility: More efficient and stable training methods can lower the computational cost of developing and deploying LLMs, potentially making them more accessible to researchers and organizations with limited resources. Enhanced Performance in Long-Context Applications: The ability to handle longer contexts more effectively can lead to improvements in applications such as document summarization, question answering, and code generation, where understanding relationships across extended text is crucial. Advancements in Model Scalability: Our findings offer insights and practical guidance for designing advanced models, contributing to ongoing efforts to scale LLMs while maintaining or improving their performance and stability.",
+    "replacement": ""
+  },
+  {
+    "id": 7,
+    "corruption_type": "rhetorical_presentation_manipulation",
+    "difficulty": "medium",
+    "location": "Abstract",
+    "rationale": "Overstate the significance and novelty of gating mechanism.",
+    "error_explanation": "The abstract uses promotional phrasing that claims the gating modification 'completely eliminates attention sinks' and 'significantly enhances training stability' without qualification. This exaggerates findings and risks misleading readers about the scope and generality of the contributions.",
+    "needs_cross_section": false,
+    "target_find": "Notably, we find this sparse gating mechanism mitigates ‘massive activation’ [7], ‘attention sink’ [8], and enhances long-context extrapolation performance, and we also release related codes and models to facilitate future research.",
+    "replacement": "Notably, we find this sparse gating mechanism reduces instances of 'massive activation' [7] and partially alleviates 'attention sink' [8], providing moderate improvements in long-context extrapolation performance."
+  },
+  {
+    "id": 8,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "hard",
+    "location": "Abstract",
+    "rationale": "Contradict claim about training stability and learning rates between Abstract and Experiments.",
+    "error_explanation": "The Abstract states gating 'tolerates larger learning rates' and 'improves training stability,' but in Experiments section, higher learning rates cause divergence even with gating, requiring other fixes. This discrepancy confuses the reader on gating's actual impact on training protocols.",
+    "needs_cross_section": true,
+    "target_find": "Our central finding is that a simple modification—applying a head-specific sigmoid gate after the Scaled Dot-Product Attention (SDPA)—consistently improves performance. This modification also enhances training stability, tolerates larger learning rates, and improves scaling properties.",
+    "replacement": "Our central finding is that a simple modification—applying a head-specific sigmoid gate after the Scaled Dot-Product Attention (SDPA)—improves performance modestly. However, gating alone does not fully resolve training instabilities at larger learning rates, requiring additional normalization strategies."
+  },
+  {
+    "id": 9,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Introduce asymmetry in hyperparameter tuning to favor baseline over gating.",
+    "error_explanation": "The experiments describing learning rate schedules and batch sizes selectively report optimized hyperparameters only for baseline models but use suboptimal or non-equivalent configurations for gating variants, biasing results against gating performance.",
+    "needs_cross_section": false,
+    "target_find": "Most experiments use optimized hyperparameters for the baseline. For instance, for the 1.7B model trained on 400B tokens, we use a maximum LR of 4e-3 and a bsz of 1024. For training on 3.5T tokens, we increase the maximum LR to 4.5e-3 and the bsz to 2048.",
+    "replacement": "All models use the same hyperparameters optimized for baseline, including a maximum LR of 4e-3 and batch size of 1024, regardless of gating. We do not perform further learning rate or batch size tuning for gating variants, possibly limiting their performance."
+  },
+  {
+    "id": 10,
+    "corruption_type": "reference_background_fabrication",
+    "difficulty": "medium",
+    "location": "References",
+    "rationale": "Add non-existent references and backdate citations beyond cutoff.",
+    "error_explanation": "Some references, such as [6] and [20], are claimed to be arXiv preprints from 2025, postdating the knowledge cutoff, or reference papers unrelated to the topic. This threatens the factual accuracy and reliability of the literature foundation of the paper.",
+    "needs_cross_section": false,
+    "target_find": "[6] Zhixuan Lin, Evgenii Nikishin, Xu Owen He, and Aaron Courville. Forgetting Transformer: Softmax Attention with a Forget Gate. arXiv preprint arXiv:2503.02130, 2025.\n\n[20] Jingyang Yuan, Huazuo Gao, Damai Dai, Junyu Luo, Liang Zhao, Zhengyan Zhang, Zhenda Xie, Y. X. Wei, Lean Wang, Zhiping Xiao, et al. Native Sparse Attention: Hardware-aligned and natively trainable sparse attention. arXiv preprint arXiv:2502.11089, 2025.",
+    "replacement": "[6] Zhixuan Lin, Evgenii Nikishin, Xu Owen He, and Aaron Courville. Forgetting Transformer: Softmax Attention with a Forget Gate. arXiv preprint arXiv:2310.01234, 2023.\n\n[20] Jingyang Yuan, Huazuo Gao, Damai Dai, Junyu Luo, Liang Zhao, Zhengyan Zhang, Zhenda Xie, Y. X. Wei, Lean Wang, Zhiping Xiao, et al. Native Sparse Attention: Hardware-aligned trainable sparse attention. arXiv preprint arXiv:2306.12345, 2023."
+  },
+  {
+    "id": 11,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "medium",
+    "location": "Discussion",
+    "rationale": "Misrepresent analysis of gating’s effect on eliminating attention sinks.",
+    "error_explanation": "The paper claims that gating completely eliminates attention sinks and massive activations, but some figures and tables indicate only partial reduction. This overstates causal conclusions and could mislead readers into believing gating fully solves these phenomena, which are complex.",
+    "needs_cross_section": true,
+    "target_find": "Based on the observation that gating introduces sparsity to the SDPA output in an input-dependent manner, we hypothesized that this mechanism can filter out context irrelevant to the current query token, thereby mitigating the attention sink [8, 7]. To verify this, we analyze the distribution of attention scores (averaged over all heads) and the proportion of attention scores allocated to the first token (Fig. 2, Tab. 4, “F-Attn” column). Massive activations [7] (large values in hidden states) are believed to lead to the attention sink for their corresponding tokens.",
+    "replacement": "While gating reduces the severity of attention sinks and massive activations by introducing sparsity in the SDPA output, these phenomena persist to a non-trivial degree in some layers and models. This suggests gating partially alleviates but does not entirely resolve attention sink issues."
+  },
+  {
+    "id": 12,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Manipulate stability results by selectively omitting failure cases for gating models.",
+    "error_explanation": "The experiments highlight selected positive gating results but omit to report the instability or divergence instances at larger learning rates that occur under gating, giving an inflated impression of stable training. Some models in Table 2 actually diverge or underperform, which is not discussed.",
+    "needs_cross_section": false,
+    "target_find": "When increasing the maximum LR, baselines encounter convergence issues (row 6, 12). While adding sandwich norm [43] restores convergence, the improvement is negligible. In contrast, increasing the maximum LR in models with gating results in a noticeable improvement.",
+    "replacement": "When increasing the maximum LR, both baselines and gating variants frequently encounter convergence issues (row 6, 12), with some gating models diverging silently. Though sandwich norm recovers convergence somewhat, gating alone does not consistently improve stability at extreme hyperparameters."
+  },
+  {
+    "id": 13,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "hard",
+    "location": "Method",
+    "rationale": "Introduce contradictory description of gating function formulation undermining clarity.",
+    "error_explanation": "The formula for gating in Section 2.2 is altered to use additive gating instead of primarily multiplicative gating as emphasized in other sections, contradicting foundational definitions. This ambiguity harms reproducibility and conceptual coherence.",
+    "needs_cross_section": false,
+    "target_find": "The gating mechanism is formalized as:\n$$Y' = g(Y, X, W_\\theta, \\sigma) = Y \\odot \\sigma(XW_\\theta),$$ (5)\nwhere $Y$ is the input to be modulated, $X$ is another input used to compute the gating scores1, $W_\\theta$ refers to the learnable parameters of the gate, $\\sigma$ is an activation function (e.g., sigmoid), and $Y'$ is the gated output.",
+    "replacement": "The gating mechanism is formalized as:\n$$Y' = g(Y, X, W_\\theta, \\sigma) = Y + \\sigma(XW_\\theta),$$ (5)\nwhere $Y$ is the input to be modulated, $X$ is another input used to compute the gating scores1, $W_\\theta$ refers to the learnable parameters of the gate, $\\sigma$ is an activation function (e.g., SiLU), and $Y'$ is the gated output."
+  },
+  {
+    "id": 14,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "hard",
+    "location": "Experiments",
+    "rationale": "Manipulate gating score distribution figures to reduce implied sparsity.",
+    "error_explanation": "Distributions of gating scores in Figure 3 and Appendix A.6 are altered to show less sparsity, with means shifted upward. This disrupts the claimed connection between sparse gating and performance improvements, weakening evidence on input-dependent gating effects.",
+    "needs_cross_section": false,
+    "target_find": "Figure 3: Gating score means and distributions for SDPA elementwise (Left), value elementwise (Middle), and SDPA elementwise with head-shared gating (Right). Most gating scores are less than 0.5, indicating that the gating scores are sparse. Among them, the SDPA output gating score exhibits the strongest sparsity.",
+    "replacement": "Figure 3: Gating score means and distributions for SDPA elementwise (Left), value elementwise (Middle), and SDPA elementwise with head-shared gating (Right). The majority of gating scores fall mostly between 0.4 and 0.7, indicating less sparsity. Differences in sparsity across gating positions are diminished."
+  },
+  {
+    "id": 15,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "medium",
+    "location": "Conclusion",
+    "rationale": "Claim complete elimination of attention sinks conflicting with experiment data.",
+    "error_explanation": "The conclusion section states gating 'eliminates attention sinks,' but several layers in the Appendix still show residual attention sinks after gating. This inconsistency impairs the narrative coherence regarding gating’s efficacy.",
+    "needs_cross_section": true,
+    "target_find": "This simple mechanism enhances non-linearity, introduces input-dependent sparsity, and eliminates attention sinks. Additionally, gating facilitates context length extension, allowing models to generalize effectively to longer sequences without retraining.",
+    "replacement": "This simple mechanism enhances non-linearity, introduces input-dependent sparsity, and reduces attention sinks to a notable but incomplete extent. Additionally, gating facilitates context length extension, though some baseline issues persist without further tuning."
+  },
+  {
+    "id": 16,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Omit ablations on non-head-specific gating performance to bias reported conclusions.",
+    "error_explanation": "The paper discusses extensive head-specific gating benefits, but does not report negative or neutral outcomes of head-shared gating variants. This omission misleads on the importance of head-specific gating, missing contrary evidence.",
+    "needs_cross_section": false,
+    "target_find": "When sharing gating scores across different attention heads, we average over the query head dimension q to obtain an n × dk score from the gated output. The gating score, σ(XWθ), effectively acts as a dynamic filter, controlling the information flow from Y by selectively preserving or erasing its features.",
+    "replacement": "We omit detailed results on head-shared gating scores, which did not consistently outperform baselines and often degraded performance, limiting insights into the importance of gating granularity."
+  }
+]

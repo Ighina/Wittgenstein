@@ -1,0 +1,167 @@
+[
+  {
+    "id": 1,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Method",
+    "rationale": "Fabricate dataset statistics to inflate the perceived scale and quality of training data, making the method appear more robust than it actually is.",
+    "error_explanation": "Table 1 reports the size of the FT-HID dataset as 38,364 samples at 1080p resolution. However, the original FT-HID paper by Guo et al. (2022) documents only 9,120 video pairs. This four-fold inflation misrepresents the training data scale and undermines claims about data diversity and model generalization. Reviewers cross-referencing the cited source would immediately detect this discrepancy, raising concerns about data provenance and experimental validity.",
+    "needs_cross_section": false,
+    "target_find": "| Dataset    | EgoExo-4D [9] | Nymeria [24] | FT-HID [12] | EgoExo-Fitness [22] | Egovid-5M [38] |\n| ---------- | ------------- | ------------ | ----------- | ------------------- | -------------- |\n| Size       | 740           | 1,200        | 38,364      | 1,276               | 5M             |\n| Resolution | 1080p         | 1408p        | 1080p       | 1080p               | 1080p          |\n| Ego-Exo    | ✓             | ✓            | ✓           | ✓                   | ×              |",
+    "replacement": "| Dataset    | EgoExo-4D [9] | Nymeria [24] | FT-HID [12] | EgoExo-Fitness [22] | Egovid-5M [38] |\n| ---------- | ------------- | ------------ | ----------- | ------------------- | -------------- |\n| Size       | 740           | 1,200        | 9,120       | 1,276               | 5M             |\n| Resolution | 1080p         | 1408p        | 1080p       | 1080p               | 1080p          |\n| Ego-Exo    | ✓             | ✓            | ✓           | ✓                   | ×              |"
+  },
+  {
+    "id": 2,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "hard",
+    "location": "Method",
+    "rationale": "Introduce a mathematical error in the rotation matrix formula that breaks the orthogonality constraint, rendering the camera transformation invalid.",
+    "error_explanation": "Equation 3 defines the rotation matrix as R = I + sinθ · [u]_× + (1 − cosθ) · [u]_×^2, which is the correct Rodrigues' formula. However, the corrupted version replaces (1 − cosθ) with (1 + cosθ), yielding R = I + sinθ · [u]_× + (1 + cosθ) · [u]_×^2. This violates the orthogonality condition R^T R = I, producing invalid rotations that would cause severe view misalignment. A reviewer familiar with 3D geometry would immediately recognize this as incorrect, questioning the entire camera encoding pipeline.",
+    "needs_cross_section": false,
+    "target_find": "R = I + sinθ · [u]_× + (1 − cosθ) · [u]_×^2",
+    "replacement": "R = I + sinθ · [u]_× + (1 + cosθ) · [u]_×^2"
+  },
+  {
+    "id": 3,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Obscure critical hyperparameters (batch size, learning rate schedule) to prevent reproducibility and hide potential advantages from asymmetric training settings.",
+    "error_explanation": "Section 4.1 states the model is trained with 'a batch size of 56' and 'a learning rate of 1 × 10^−5' but omits the learning rate schedule, warmup steps, weight decay, and gradient clipping thresholds—all of which are critical for reproducing diffusion transformer training. The corrupted version further removes the batch size, leaving only 'mixed-precision bf16 are adopted.' This lack of transparency prevents independent verification and raises suspicion that undisclosed tricks may have been used to boost performance unfairly.",
+    "needs_cross_section": false,
+    "target_find": "We choose Wanx2.1 1.3B [35] as the base generator. We set the LoRA rank and the update weight of the matrices as 128 and 4, respectively, and initialize its weights following [35]. The inference step and the learning rate are set as 50 and 1 × 10^−5, respectively, where the Adam optimizer and mixed-precision bf16 are adopted.",
+    "replacement": "We choose Wanx2.1 1.3B [35] as the base generator. We set the LoRA rank and the update weight of the matrices as 128 and 4, respectively, and initialize its weights following [35]. The inference step is set as 50, where the Adam optimizer and mixed-precision bf16 are adopted."
+  },
+  {
+    "id": 4,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "easy",
+    "location": "Abstract",
+    "rationale": "Overstate the novelty and scope by claiming 'first' status without acknowledging concurrent or prior work in egocentric simulation.",
+    "error_explanation": "The abstract asserts 'We introduce PlayerOne, the first egocentric realistic world simulator' and 'It marks the first endeavor into egocentric real-world simulation.' However, prior works such as Wonderland (Liang et al., 2024) and Gen3C (Ren et al., 2025) have already explored egocentric scene navigation and camera-controlled video generation. This exaggerated claim of primacy misrepresents the state of the field and inflates the perceived contribution, which a reviewer familiar with recent literature would immediately challenge.",
+    "needs_cross_section": false,
+    "target_find": "We introduce PlayerOne, the first egocentric realistic world simulator, facilitating immersive and unrestricted exploration within vividly dynamic environments.",
+    "replacement": "We introduce PlayerOne, an egocentric realistic world simulator, facilitating immersive and unrestricted exploration within vividly dynamic environments."
+  },
+  {
+    "id": 5,
+    "corruption_type": "reference_background_fabrication",
+    "difficulty": "medium",
+    "location": "Related Work",
+    "rationale": "Cite a non-existent paper to fabricate support for a claimed gap in prior work, strengthening the motivation artificially.",
+    "error_explanation": "Section 2 cites 'Matrix-Game [49]' as redefining video generation as an interactive process. However, reference [49] in the bibliography is listed as 'Yifan Zhang et al., Matrix-Game: Interactive world foundation model. arXiv, 2025,' which does not exist in any public repository or preprint server as of the paper's submission date. This fabricated citation creates a false narrative of prior work limitations and artificially positions PlayerOne as filling a non-existent gap. Reviewers checking the reference list would find no such paper, immediately flagging this as academic misconduct.",
+    "needs_cross_section": false,
+    "target_find": "Matrix-Game [49] redefines video generation as an interactive process of exploration and creation.",
+    "replacement": "Recent work has explored interactive video generation as a process of exploration and creation."
+  },
+  {
+    "id": 6,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "hard",
+    "location": "Experiments",
+    "rationale": "Cherry-pick favorable results by reporting metrics only on a subset of the benchmark, hiding failure cases in challenging scenarios.",
+    "error_explanation": "Table 3 reports PlayerOne's performance as MPJPE 127.16 and MRRPE 151.62 on the full 100-video benchmark. However, the corrupted version silently restricts evaluation to 'indoor scenes only,' excluding outdoor and dynamic scenarios where the method performs worse (e.g., MPJPE ~180, MRRPE ~210). This selective reporting inflates the perceived accuracy and hides the method's limitations in diverse environments. A reviewer requesting the full per-scene breakdown would uncover this omission, revealing biased evaluation practices.",
+    "needs_cross_section": false,
+    "target_find": "| PlayerOne (ours)                              | 67.8           | 88.2           | 127.16    | 151.62    | 52.6     | 226.12  | 0.0663    |",
+    "replacement": "| PlayerOne (ours, indoor scenes only)          | 67.8           | 88.2           | 127.16    | 151.62    | 52.6     | 226.12  | 0.0663    |"
+  },
+  {
+    "id": 7,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "medium",
+    "location": "Method",
+    "rationale": "Introduce undefined notation in the loss function, creating ambiguity about what is actually being optimized.",
+    "error_explanation": "Equation 1 defines the training objective as L = E_{t∼U(0,1), ε∼N(0,I)} [ ||ε − εθ(zt, t)||_2^2 ], where zt = αt z0 + δt ε. However, the corrupted version introduces a new term 'β' without definition: zt = αt z0 + βt δt ε. The symbol β is never explained, leaving it unclear whether it represents a learnable parameter, a noise schedule modifier, or a typo. This ambiguity undermines the method's reproducibility and suggests careless writing or conceptual confusion. A reviewer would flag this as a critical error requiring clarification or correction.",
+    "needs_cross_section": false,
+    "target_find": "L = E_{t∼U(0,1), ε∼N(0,I)} [ ||ε − εθ(zt, t)||_2^2 ], where zt = αt z0 + δt ε",
+    "replacement": "L = E_{t∼U(0,1), ε∼N(0,I)} [ ||ε − εθ(zt, t)||_2^2 ], where zt = αt z0 + βt δt ε"
+  },
+  {
+    "id": 8,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "hard",
+    "location": "Experiments",
+    "rationale": "Use asymmetric evaluation protocols by enriching captions for competitors but not for the proposed method, creating an unfair advantage.",
+    "error_explanation": "Section 4.1 states 'we further use Qwen2.5-VL [2] to enrich the captions to generate videos for the competitors for more fair comparisons.' This implies that baseline methods receive enhanced text prompts while PlayerOne uses raw motion sequences, which are inherently more informative. This asymmetry biases the comparison in favor of PlayerOne, as competitors are handicapped by less precise control signals. A reviewer would question why the same enrichment was not applied uniformly or why motion-to-text conversion was not used to level the playing field, revealing a flawed experimental design.",
+    "needs_cross_section": false,
+    "target_find": "Considering the information gap between the human motion sequence and the text, we further use Qwen2.5-VL [2] to enrich the captions to generate videos for the competitors for more fair comparisons.",
+    "replacement": "Considering the information gap between the human motion sequence and the text, we use Qwen2.5-VL [2] to enrich the captions for competitors, while PlayerOne directly uses motion sequences, providing it with more precise control signals."
+  },
+  {
+    "id": 9,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Misrepresent the scope of generalization by claiming 'great superiority' based on a narrow benchmark that excludes challenging edge cases.",
+    "error_explanation": "Section 4.3 concludes 'our PlayerOne outperforms all the baselines by large margins' and 'consistent superiority can be observed in diverse scenarios.' However, the benchmark consists of only 100 videos from a single dataset (Nymeria), which primarily features indoor, well-lit scenes with limited occlusion. The method's performance on outdoor, crowded, or low-light scenarios is not reported, yet the claim of 'diverse scenarios' and 'great superiority' suggests universal applicability. A reviewer would note this overreach, pointing out that the evidence does not support such broad conclusions.",
+    "needs_cross_section": false,
+    "target_find": "our PlayerOne outperforms all the baselines by large margins, especially on the metrics of motion alignment. Notably, Cosmos [1] exhibits better generalization ability than Aether [33] by explicitly capturing general knowledge of real-world physics and natural behaviors. Besides qualitative results, we provide visualization comparisons in Fig. 8, where consistent superiority can be observed in diverse scenarios for both user interaction and world modeling.",
+    "replacement": "our PlayerOne outperforms all the baselines by large margins on the Nymeria-based benchmark, especially on the metrics of motion alignment. Notably, Cosmos [1] exhibits better generalization ability than Aether [33] by explicitly capturing general knowledge of real-world physics and natural behaviors. Besides qualitative results, we provide visualization comparisons in Fig. 8, where consistent superiority can be observed in the tested indoor scenarios for both user interaction and world modeling."
+  },
+  {
+    "id": 10,
+    "corruption_type": "ethical_integrity_omission",
+    "difficulty": "easy",
+    "location": "Abstract",
+    "rationale": "Remove the anonymization statement to obscure ethical considerations regarding human subject data and consent.",
+    "error_explanation": "The original caption for Figure 1 states 'All the users have been anonymized and action videos are shot with the front camera.' The corrupted version deletes this sentence, removing transparency about how human subjects were handled. Given that the method processes real human motion and appearance, the absence of any ethical disclosure (IRB approval, consent, anonymization) is a serious omission. Reviewers would flag this as a potential ethics violation, especially since the paper involves video data of identifiable individuals.",
+    "needs_cross_section": false,
+    "target_find": "All the users have been anonymized and action videos are shot with the front camera.",
+    "replacement": ""
+  },
+  {
+    "id": 11,
+    "corruption_type": "rhetorical_presentation_manipulation",
+    "difficulty": "easy",
+    "location": "Introduction",
+    "rationale": "Inflate the contribution with absolute language ('completely solves', 'eliminates all limitations') to exaggerate the impact artificially.",
+    "error_explanation": "The introduction originally states 'PlayerOne advances the field of dynamic world modeling.' The corrupted version replaces this with 'PlayerOne completely solves the long-standing challenge of egocentric world simulation and eliminates all limitations of prior methods.' This promotional, absolute language is inappropriate for academic writing, as no method 'completely solves' a complex problem or 'eliminates all limitations.' A reviewer would immediately recognize this as rhetorical inflation and question the authors' objectivity and scientific rigor.",
+    "needs_cross_section": false,
+    "target_find": "By integrating these innovations, PlayerOne advances the field of dynamic world modeling.",
+    "replacement": "By integrating these innovations, PlayerOne completely solves the long-standing challenge of egocentric world simulation and eliminates all limitations of prior methods."
+  },
+  {
+    "id": 12,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "hard",
+    "location": "Abstract and Experiments",
+    "rationale": "Create a contradiction between the abstract's claim of 'real-time generation' and the experiments section's reported latency, revealing inconsistent messaging.",
+    "error_explanation": "The abstract claims PlayerOne achieves 'real-time generation,' but Section 4.1 specifies 'the generated video runs at eight frames per second' and the appendix reports '∼119 ms/frame, ∼8.4 FPS.' For a 30 FPS video standard, 8 FPS is far below real-time. This cross-section inconsistency misleads readers about the method's practical applicability. A reviewer comparing the abstract's promise with the experimental details would detect this discrepancy and question whether the authors are overstating the system's capabilities to attract attention.",
+    "needs_cross_section": true,
+    "target_find": "Experimental results demonstrate its great generalization ability in precise control of varying human movements and world-consistent modeling of diverse scenarios.",
+    "replacement": "Experimental results demonstrate its great generalization ability in precise control of varying human movements and world-consistent modeling of diverse scenarios, achieving true real-time generation at 30 FPS."
+  },
+  {
+    "id": 13,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Alter the MPJPE metric in Table 2 to show a larger improvement from ablations, fabricating evidence of component effectiveness.",
+    "error_explanation": "Table 2 reports the progression of MPJPE as components are added: Baseline (376.14) → +Pretrain (258.05) → +PMI (156.76) → PlayerOne (127.16). The corrupted version changes the final PlayerOne MPJPE to 98.42, a 22.5% fabricated improvement. This exaggerates the contribution of the scene-frame reconstruction module and misrepresents the method's actual performance. A reviewer cross-checking with Table 3 (which reports 127.16) would immediately spot this inconsistency, revealing data manipulation.",
+    "needs_cross_section": false,
+    "target_find": "| PlayerOne (ours)                              | 67.8           | 88.2           | 127.16    | 151.62    | 52.6     | 226.12  | 0.0663    |",
+    "replacement": "| PlayerOne (ours)                              | 67.8           | 88.2           | 98.42     | 151.62    | 52.6     | 226.12  | 0.0663    |"
+  },
+  {
+    "id": 14,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "hard",
+    "location": "Method",
+    "rationale": "Introduce a contradiction in the latent dimension notation, claiming incompatible tensor shapes that cannot be concatenated.",
+    "error_explanation": "Section 3.2 states 'These motion latents are concatenated into zmotion ∈ R^{k×3×h×w}' and later 'we have z0 = zvideo ⊗ zpoint' where zvideo ∈ R^{k×c×h×w} and zpoint ∈ R^{k×64×h×w}. The corrupted version changes zmotion to R^{k×5×h×w}, making the total channel count (c + 5 + 64) inconsistent with the stated input to the DiT. This dimensional mismatch would cause a runtime error, indicating either a conceptual flaw or careless notation. A reviewer would flag this as a critical inconsistency that undermines the method's technical validity.",
+    "needs_cross_section": false,
+    "target_find": "These motion latents are subsequently concatenated along the channel dimension to form the final part-aware motion latent representation z_motion ∈ R^{k×3×h×w}.",
+    "replacement": "These motion latents are subsequently concatenated along the channel dimension to form the final part-aware motion latent representation z_motion ∈ R^{k×5×h×w}."
+  },
+  {
+    "id": 15,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "medium",
+    "location": "Conclusion",
+    "rationale": "Overstate the method's robustness by claiming it 'ensures coherent world generation' without acknowledging the documented failure cases in game scenarios.",
+    "error_explanation": "The conclusion states 'our PlayerOne ensures coherent world generation and enhances motion and view alignment.' However, Section 5 (Limitations) explicitly notes 'our performance in game scenarios is slightly inferior to realistic ones' and the appendix (Table 14) shows a 10% drop in DINO-Score and 10% increase in FVD for game data. The conclusion's absolute claim of 'ensures coherent world generation' contradicts these documented limitations, misleading readers about the method's actual robustness. A reviewer would note this inconsistency and question the authors' transparency.",
+    "needs_cross_section": true,
+    "target_find": "By formulating world modeling as a joint process of videos and 4D scenes, our PlayerOne ensures coherent world generation and enhances motion and view alignment with the given conditions through part-disentangled motion injection.",
+    "replacement": "By formulating world modeling as a joint process of videos and 4D scenes, our PlayerOne ensures coherent world generation across all scenarios without exception and enhances motion and view alignment with the given conditions through part-disentangled motion injection."
+  }
+]

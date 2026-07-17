@@ -1,0 +1,178 @@
+[
+  {
+    "id": 1,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Abstract",
+    "rationale": "Performance metric on VBench is inflated and comparison to diffusion competitors is overstated.",
+    "error_explanation": "The abstract reports an overall VBench score of 83.74 for InfinityStar, exceeding all autoregressive models and even surpassing diffusion competitors like HunyuanVideo. However, the later experiments section lists HunyuanVideo with a score of 83.24, close but not convincingly inferior. There is no evidence of statistical significance or variance reported. This suggests cherry-picking or selective reporting of results to exaggerate superiority.",
+    "needs_cross_section": true,
+    "target_find": "Through extensive experiments, InfinityStar scores 83.74 on VBench, outperforming all autoregressive models by large margins, even surpassing diffusion competitors like HunyuanVideo.",
+    "replacement": "Through experiments, InfinityStar achieves a competitive score of 83.74 on VBench, marginally outperforming selected autoregressive models, and comparable to leading diffusion competitors such as HunyuanVideo."
+  },
+  {
+    "id": 2,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "hard",
+    "location": "Method",
+    "rationale": "Formulas for autoregressive likelihood are inconsistent and ambiguous regarding conditioning variables.",
+    "error_explanation": "Section 3.2 defines the autoregressive likelihood across scales and clips but lacks clear conditioning on previous clip tokens for inter-clip prediction. Equation (2) repeats the same conditional term as (1) without incorporating prior clip information formally, undermining logical consistency in the probabilistic modeling of video sequences.",
+    "needs_cross_section": false,
+    "target_find": "For inter-clip predictions, clips are generated sequentially conditioned on prior clip predictions and the text input in an autoregressive manner. Formally, the autoregressive likelihood of the whole video can be expressed as:\n\n$$\np(r_1^1, \\ldots, r_K^N) = \\prod_{c=1}^{N} \\prod_{k=1}^{K} p(r_k^c \\mid r_1^c, \\ldots, r_{k-1}^c, \\psi(t)),\n\\tag{2}\n$$",
+    "replacement": "For inter-clip predictions, clips are generated sequentially conditioned on prior clip predictions and the text input in an autoregressive manner. Formally, the likelihood is:\n\n$$\np(r_1^{1}, \\ldots, r_K^{N}) = \\prod_{c=1}^{N} \\prod_{k=1}^{K} p\\left(r_k^{c} \\mid r_1^{c}, \\ldots, r_{k-1}^{c}, r_1^{<c}, \\ldots, r_K^{<c}, \\psi(t)\\right),\n\\tag{2 updated}\n$$\nwhere $r_1^{<c}, \\ldots, r_K^{<c}$ denote all residual token blocks from preceding clips."
+  },
+  {
+    "id": 3,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Datasets used for evaluation are insufficiently detailed, missing source splits and distribution statistics.",
+    "error_explanation": "Section 4.1 describes training data including various resolutions and dataset sizes but omits critical information such as train/validation splits, dataset biases, and exact proportions. This limits reproducibility and raises concerns about evaluation rigor.",
+    "needs_cross_section": false,
+    "target_find": "Datasets. The training data of InfinityStar includes text-to-image data and text-to-video data. We curated 130M pretraining and 70M high-quality text-to-image data. They are either from open-sourced data like COYO [4], OpenImages [19] or bought from external suppliers. To balance the data distribution and improve overall aesthetics, we also involve 5M high-quality synthetic data. In terms of text-to-video data, we curated around 16M video data. All videos are longer than 5 seconds. Among them 13M videos are under 336×192 resolution used for pre-training. They are mainly from Panda-70M [7], Mira [15], and other internal video-text pairs. Apart from those 192p videos, we also curated 3M 480p and 50K 720p high-quality videos for fine-tuning.",
+    "replacement": "Datasets. The training data comprises text-to-image and text-to-video sets totaling approximately 221M samples, sourced from COYO [4], OpenImages [19], vendor suppliers, and internal collections. However, the exact splits between training and validation are unspecified. The 16M video dataset includes diverse resolutions, but detailed distribution statistics and balancing criteria are not provided, complicating reproducibility and fair comparison."
+  },
+  {
+    "id": 4,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "hard",
+    "location": "Experiments",
+    "rationale": "Table 2 VBench results include missing details on prompt rewriting and lack variance reporting.",
+    "error_explanation": "The VBench scores shown in Table 2 attribute a significant performance gain to prompt rewriting, but do not clarify which methods used it or how it was applied. There's also no reporting of confidence intervals or standard deviations. This incomplete reporting undermines confidence in the fairness and robustness of comparisons.",
+    "needs_cross_section": false,
+    "target_find": "In Tab. 2, we compare InfinityStar with leading diffusion and autoregressive approaches on VBench—a comprehensive video benchmark spanning 16 evaluation dimensions. Our model achieves an overall score of 83.74, outperforming all open-source autoregressive baselines by a substantial margin. Moreover, InfinityStar surpasses diffusion-based competitors such as OpenSora [41], CogVideoX [34], and HunyuanVideo [17].",
+    "replacement": "In Tab. 2, we compare InfinityStar with leading diffusion and autoregressive models on VBench. Our model achieves a score of 83.74 with prompt rewriting applied, while other baselines have variable usage of prompt enhancements. Statistical variance was not reported, limiting the interpretability of performance differences."
+  },
+  {
+    "id": 5,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Baseline configurations differ markedly, complicating direct speed comparison in Table 7.",
+    "error_explanation": "Table 7 reports inference speed comparisons, but baselines vary in resolution (480p vs 720p) and model parameter size. This asymmetry harms the equitability of the comparisons and weakens conclusions about speed improvements.",
+    "needs_cross_section": false,
+    "target_find": "Table 6: Computational efficiency comparison.\n\n| Method    | Model        | # Parameters | Duration(s) | Frames | Resolution | Time(s) | Speedup |\n| --------- | ------------ | ------------ | ----------- | ------ | ---------- | ------- | ------- |\n| Diffusion | Wan 2.1 [28] | 14B          | 5           | 81     | 720p       | 1864    | 1       |\n| AR        | Nova [9]     | 0.6B         | 5           | 81     | 480p       | 354     | 5       |\n| AR        | InfinityStar | 8B           | 5           | 81     | 720p       | 58      | 32      |",
+    "replacement": "Table 6: Computational efficiency comparison.\n\n| Method    | Model        | # Parameters | Duration(s) | Frames | Resolution | Time(s) | Speedup |\n| --------- | ------------ | ------------ | ----------- | ------ | ---------- | ------- | ------- |\n| Diffusion | Wan 2.1 [28] | 14B          | 5           | 81     | 720p       | 1864    | 1       |\n| AR        | Nova [9]     | 0.6B         | 5           | 81     | 720p       | 354     | 5       |\n| AR        | InfinityStar | 8B           | 5           | 81     | 720p       | 58      | 32      |\n\nNote: Baselines evaluated at different resolutions and model sizes; direct speed comparisons should be interpreted cautiously."
+  },
+  {
+    "id": 6,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "easy",
+    "location": "Abstract",
+    "rationale": "Claim of being the first discrete autoregressive video generator producing industrial-level 720p videos is overstated.",
+    "error_explanation": "The abstract states that InfinityStar is the first discrete autoregressive video generator capable of producing industrial-level 720p videos. However, cited works like Wan 2.1 and others have produced high-resolution video with discrete tokenizers, suggesting this claim is an exaggeration or neglects prior work.",
+    "needs_cross_section": true,
+    "target_find": "To our knowledge, InfinityStar is the first discrete autoregressive video generator capable of producing industrial-level 720p videos.",
+    "replacement": "InfinityStar is among the first discrete autoregressive video generators capable of producing high-quality 720p videos suitable for industrial applications."
+  },
+  {
+    "id": 7,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "medium",
+    "location": "Method",
+    "rationale": "Description of the stochastic quantizer depth lacks formal definition of scale dropout probabilities and impact on likelihood calculation.",
+    "error_explanation": "Section 3.3 describes the stochastic quantizer depth (SQD) as discarding one of last N scales with probability p, leading to 2^N possible schedules. However, the specific dropout probabilities and how the model adjusts likelihoods or losses during training remain unspecified, leaving the method underspecified and logically incomplete.",
+    "needs_cross_section": false,
+    "target_find": "Stochastic Quantizer Depth. When tokenizing videos using the spacetime pyramid schedule, the information distribution on different scales gets extremely imbalanced. Specifically, there are only a few tokens in the early scales, while there are tens of thousands of tokens in the last scales. Thus the tokenizer tends to reconstruct videos solely relying on tokens from the last few scales and not to learn useful representation in early scales as shown in Fig. 6 (left). However, this imbalanced distribution is difficult to model using VAR Transformer because the dependence between the latter token blocks and the former ones is weak. To alleviate this problem, we propose a regularization called stochastic quantizer depth. During training, each one of the last $N$ scales has a probability $p$ of being discarded.\n\nIn this way, there are $2^N$ possible scale schedules during training. This requires the tokenizer to reduce the reliance on last scales and store more information in tokens of early scales. As in Fig. 6 (right), with the help of this regularization, the reconstruction results of early scales become much clearer. This balanced information distribution makes the training of VAR Transformer easier.",
+    "replacement": "Stochastic Quantizer Depth (SQD). To address information imbalance across scales, we randomly discard each of the last $N$ scales independently with probability $p$ during tokenizer training, resulting in $2^N$ possible scale subsets. The tokenizer’s loss is computed only on the retained scales, encouraging information distribution to shift toward earlier scales. This regularization balances token importance across scales and facilitates VAR Transformer training."
+  },
+  {
+    "id": 8,
+    "corruption_type": "ethical_integrity_omission",
+    "difficulty": "easy",
+    "location": "Experiments",
+    "rationale": "No ethical considerations or dataset consent statements included for large-scale data usage.",
+    "error_explanation": "The paper describes training on millions of image-text and video-text pairs from various sources but fails to mention ethical review, consent, or potential biases in the datasets. This omission raises concerns about compliance with data usage standards and responsible AI research.",
+    "needs_cross_section": false,
+    "target_find": "Datasets. The training data of InfinityStar includes text-to-image data and text-to-video data. We curated 130M pretraining and 70M high-quality text-to-image data. They are either from open-sourced data like COYO [4], OpenImages [19] or bought from external suppliers. To balance the data distribution and improve overall aesthetics, we also involve 5M high-quality synthetic data. In terms of text-to-video data, we curated around 16M video data. All videos are longer than 5 seconds. Among them 13M videos are under 336×192 resolution used for pre-training. They are mainly from Panda-70M [7], Mira [15], and other internal video-text pairs. Apart from those 192p videos, we also curated 3M 480p and 50K 720p high-quality videos for fine-tuning.",
+    "replacement": "Datasets. The training data includes large-scale image and video-text pairs from public and proprietary sources. Ethical review and dataset consent procedures were not detailed. Potential dataset biases and privacy considerations remain to be addressed in future work."
+  },
+  {
+    "id": 9,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "medium",
+    "location": "Conclusion",
+    "rationale": "Claims of outperforming diffusion-based methods and industrial-grade video synthesis are overstated given resource limitations.",
+    "error_explanation": "The conclusion asserts InfinityStar outperforms diffusion models and achieves industrial-grade 720p synthesis with tenfold speedup. However, earlier limitations about training scale and incomplete optimization temper these claims, and results only rival rather than consistently surpass diffusion baselines. This creates a misleading impression of definitiveness.",
+    "needs_cross_section": true,
+    "target_find": "Our extensive evaluation demonstrates that InfinityStar outperforms prior autoregressive video models and rivals leading diffusion-based approaches, producing 5s of 720p video in one-tenth the inference time. As the first discrete autoregressive model to deliver industrial-grade 720p video synthesis, we anticipate that InfinityStar will catalyze future research on rapid, long video generation.",
+    "replacement": "Our evaluations indicate InfinityStar achieves competitive performance with leading diffusion-based approaches while significantly improving inference efficiency. Though not fully optimized or scaled to the largest models, InfinityStar makes important progress toward practical high-resolution video generation and provides a foundation for future work in this direction."
+  },
+  {
+    "id": 10,
+    "corruption_type": "rhetorical_presentation_manipulation",
+    "difficulty": "easy",
+    "location": "Introduction",
+    "rationale": "Overly promotional language exaggerates framework's superiority and novelty.",
+    "error_explanation": "The introduction uses phrases like 'significant advantages in inference speed' and 'superior flexibility and versatility' that tend to amplify the framework's benefits without sufficiently hedging or acknowledging limitations. This style risks biasing readers toward a too-optimistic interpretation.",
+    "needs_cross_section": false,
+    "target_find": "Inspired by the success of VAR [25] and Infinity [13], we present InfinityStar, a Spacetime Pyramid Modeling for unified text-to-image, text-to-video, zero-shot image-to-video, and zero-shot video extrapolation. This framework models a video as an image pyramid and multiple clip pyramids, not only naturally inheriting the text-to-image capabilities but also decoupling static appearance from dynamic motions in videos. Furthermore, we introduce several key improvements. First, we improve discrete reconstruction quality by leveraging knowledge inheritance from a continuous video tokenizer. Second, we introduce Stochastic Quantizer Depth during training of the tokenizer to alleviate the imbalanced information distribution across scales. Third, we propose Semantic Scales Repetition, which refines the predictions of earlier semantic scales in a video, significantly enhancing fine-grained details and complex motions of the generated videos.",
+    "replacement": "Inspired by prior work [25, 13], we propose InfinityStar, a spacetime pyramid modeling approach aimed at unifying diverse visual generation tasks including text-to-image and video extrapolation. The model decomposes a video into an image pyramid and clip pyramids, separating static appearance from motion content. Key techniques include knowledge transfer from continuous video tokenizers, stochastic quantizer depth to balance scale information, and semantic scales repetition to refine earlier pyramid scales, collectively improving generation quality."
+  },
+  {
+    "id": 11,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "hard",
+    "location": "Method",
+    "rationale": "Method description inconsistently treats temporal dimension in pyramid scales versus handling across clips.",
+    "error_explanation": "Section 3.2 asserts that all pyramid scales extend only spatially and not temporally, but earlier paragraphs mention temporal growth as a possible strategy. This produces ambiguity about temporal modeling. Additionally, the necessity and impact of modeling time only across clips (not within scales) is unclear and appears inconsistent, muddying the conceptual coherence of the method.",
+    "needs_cross_section": false,
+    "target_find": "Each clip is modeled as a 3D volume pyramid similar as Infinity [13]. In particular, for each clip, there are $K$ scales with each represented as a residual token block $r_k$ of $(T, h_k, w_k)$ dimension. It is worth noting that all scales in the pyramid are extended only in spatial dimension instead of time.",
+    "replacement": "Each clip is represented as a 3D volume pyramid with $K$ scales, each denoted by residual token blocks $r_k$ of dimensions $(T, h_k, w_k)$. Contrary to prior approaches, temporal extension varies across clips but not within pyramid scales, effectively segmenting temporal modeling to inter-clip autoregression while maintaining spatial scaling within each clip."
+  },
+  {
+    "id": 12,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Table 1 results lack indication of statistical robustness and experimental variance.",
+    "error_explanation": "Table 1 shows InfinityStar achieving top scores on GenEval and DPG benchmarks. Nevertheless, it provides no confidence intervals or significance testing to confirm that differences over prior methods like Infinity or SDXL exceed noise or dataset variability, weakening the evidence strength.",
+    "needs_cross_section": false,
+    "target_find": "As in Tab. 1, InfinityStar achieves the best overall score of 0.79 on the GenEval bench with a prompt rewriter. It’s worth noting that InfinityStar exceeds Infinity by 6% in overall score. We attribute the significant improvement to the larger model size and the architectural innovations. On the DPG bench, InfinityStar reaches an overall score of 86.55, surpassing Infinity by 3.09%.",
+    "replacement": "As shown in Tab. 1, InfinityStar attains leading scores on GenEval and DPG benchmarks. However, no variance or significance metrics are presented, which limits assessment of the robustness of these improvements beyond the margin of experimental variability."
+  },
+  {
+    "id": 13,
+    "corruption_type": "reference_background_fabrication",
+    "difficulty": "hard",
+    "location": "References",
+    "rationale": "Several citations claim future or unreal papers with preprints dated beyond current known timelines.",
+    "error_explanation": "References [1], [8], [28], and [39] cite papers or projects dated in 2025 or later, including some with URLs or titles that do not correspond to publicly available content. This suggests fabricated citations intended to bolster novelty or the system's novelty claims.",
+    "needs_cross_section": false,
+    "target_find": "[1] N. Agarwal, A. Ali, M. Bala, Y. Balaji, E. Barker, T. Cai, P. Chattopadhyay, Y. Chen, Y. Cui, Y. Ding, et al. Cosmos World: Foundation model platform for physical AI. arXiv preprint arXiv:2501.03575, 2025. 2, 3, 4\n[8] Google DeepMind. Veo 3. https://deepmind.google/technologies/veo/veo-3/, 2025.05. 1\n[28] A. Wang, B. Ai, B. Wen, C. Mao, C.-W. Xie, D. Chen, F. Yu, H. Zhao, J. Yang, J. Zeng, et al. WAN: Open and advanced large-scale video generative models. arXiv preprint arXiv:2503.20314, 2025. 1, 2, 8, 9, 10\n[39] Y. Zhang, H. Yang, Y. Zhang, Y. Hu, F. Zhu, C. Lin, X. Mei, Y. Jiang, B. Peng, and Z. Yuan. Waver: Wave Your Way to Lifelike Video Generation. arXiv preprint arXiv:2508.15761, 2025. 1",
+    "replacement": "[1] N. Agarwal, A. Ali, M. Bala, Y. Balaji, E. Barker, T. Cai, P. Chattopadhyay, Y. Chen, Y. Cui, Y. Ding, et al. Cosmos World: Foundation model platform for physical AI. arXiv preprint arXiv:2401.03575, 2024. 2, 3, 4\n[8] Google DeepMind. Veo 2. https://deepmind.google/technologies/veo/, 2024. 1\n[28] A. Wang, B. Ai, B. Wen, C. Mao, C.-W. Xie, D. Chen, F. Yu, H. Zhao, J. Yang, J. Zeng, et al. WAN: Open and advanced large-scale video generative models. arXiv preprint arXiv:2403.20314, 2024. 1, 2, 8, 9, 10\n[39] Y. Zhang, H. Yang, Y. Zhang, Y. Hu, F. Zhu, C. Lin, X. Mei, Y. Jiang, B. Peng, and Z. Yuan. Waver: Wave Your Way to Lifelike Video Generation. arXiv preprint arXiv:2408.15761, 2024. 1"
+  },
+  {
+    "id": 14,
+    "corruption_type": "rhetorical_presentation_manipulation",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Descriptions of method improvements use promotional phrasing exaggerating the impact.",
+    "error_explanation": "The text in section 3.4 describes Spacetime Sparse Attention as 'drastically reduces' overhead and 'delivering better performance' without nuanced discussion of trade-offs or quantitative evidence here. This promotes the method beyond strictly supported conclusions.",
+    "needs_cross_section": false,
+    "target_find": "Our spacetime sparse attention drastically reduces attention computational overhead during both training and inference, all while delivering better performance.",
+    "replacement": "Our spacetime sparse attention reduces attention computational overhead during training and inference, maintaining comparable or improved performance relative to full attention, as discussed in the experimental section."
+  },
+  {
+    "id": 15,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Model training details omit certain hyperparameters and optimizer settings.",
+    "error_explanation": "Section 4.1 describes learning rates, batch sizes, and iteration counts but omits information about optimizer types, weight decay, learning rate schedulers, and training hardware. This missing detail undermines reproducibility.",
+    "needs_cross_section": false,
+    "target_find": "Starting with the pretrained weights of Wan 2.1 VAE, the discrete tokenizer is fine-tuned jointly on images of 256 × 256, 512 × 512, 768 × 768 and videos of 256 × 256 × 81 for 30K iterations. The learning rate is 1e-4.\n\nInfinityStar is trained progressively with four stages. The first stage is T2I pre-training. Then the pretrained weights of T2I are loaded as initialization of T2V. The latter three stages are training with videos of 192p, 360p, 720p, respectively. Each time we increase the training resolution, we preserve the scale schedule of lower resolutions and append several larger scales, which enables better inheritance. The global batch size for 192p is 2048 and that of 360p and 720p is 1024. The learning rate for 192p is 2e-4. Then we decay it to 1e-4 for 360p and 720p. We train the model on videos of 192p, 360p, 720p for 50K, 8K, 3K iterations, respectively. Specifically, each clip pyramid is composed of 80 frames at 16 fps, and Semantic Scales Repetition repeats the first K_s = 7 scales N = 6 times.",
+    "replacement": "Starting from Wan 2.1 VAE pretrained weights, the discrete tokenizer was fine-tuned on multi-resolution images and videos for 30K iterations with a constant learning rate of 1e-4, using the Adam optimizer with unspecified momentum and weight decay settings. InfinityStar training proceeded through four progressive stages from T2I to T2V with videos at increasing resolutions: 192p, 360p, 720p. The global batch sizes and learning rate schedules are as detailed, but exact optimizer variants, warm-up, or gradient clipping procedures are not reported. Each clip pyramid has 80 frames at 16 fps; semantic scale repetition repeats the first 7 scales 6 times."
+  },
+  {
+    "id": 16,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Claims about zero-shot video extrapolation success are only supported by limited qualitative examples without robust metrics.",
+    "error_explanation": "Section 4.3 highlights zero-shot video extrapolation capability with qualitative examples but provides no quantitative evaluation or ablation studies to assess generality or robustness. This overstates effectiveness based on anecdotal evidence.",
+    "needs_cross_section": false,
+    "target_find": "Zero-shot Generation. Although trained exclusively on T2V data, InfinityStar can generate videos conditioned on an image or a video as historical context without any fine-tuning. Fig. 4 shows video extrapolation results. The synthesized videos exhibit strong temporal coherence with the reference while faithfully capturing the semantic nuances of text.",
+    "replacement": "Zero-shot Generation. Trained on text-to-video data, InfinityStar can conditionally generate videos from images or video clips without fine-tuning. Preliminary qualitative results in Fig. 4 suggest temporal coherence and semantic consistency, but comprehensive quantitative evaluation and robustness tests remain future work."
+  }
+]

@@ -47,12 +47,117 @@ DEFAULT_PARQUET = PROJECT_ROOT / "data" / "train-00000-of-00001.parquet"
 DEFAULT_OUTPUT = PROJECT_ROOT / "outputs" / "claude-batch"
 
 
+# ---------------------------------------------------------------------------
+# PaperAudit dataset helpers (shared with original_eval.py)
+# ---------------------------------------------------------------------------
+
+def _extract_text_from_instruction(instruction: str) -> str:
+    """Extract the paper text from a PaperAudit instruction string."""
+    import re
+    pattern = r"###\s*Text\s+to\s+Review\s*###\s*\n(.*?)\n\s*---"
+    match = re.search(pattern, instruction, re.DOTALL)
+    if match:
+        return match.group(1).strip()
+    return instruction
+
+
+def _parse_paperaudit_output(output_str: str) -> list[dict]:
+    """Parse the PaperAudit ``output`` column into ground-truth annotations."""
+    if not output_str or not isinstance(output_str, str):
+        return []
+    try:
+        errors = json.loads(output_str)
+    except (json.JSONDecodeError, TypeError):
+        return []
+    if not isinstance(errors, list):
+        return []
+    annotations: list[dict] = []
+    for err in errors:
+        if not isinstance(err, dict):
+            continue
+        annotations.append({
+            "error_category": str(err.get("error_type", "")),
+            "error_location": str(err.get("error_location", "")),
+            "error_severity": "",
+            "error_annotation": str(err.get("error_explanation", "")),
+        })
+    return annotations
+
+
+def _load_paperaudit_dataset() -> tuple[dict, dict]:
+    """Load the PaperAudit dataset from HuggingFace hub.
+
+    Returns:
+        (paper_contents, ground_truth)
+          - paper_contents maps paper_id → plain-text paper content.
+          - ground_truth maps paper_id → list of annotation dicts.
+    """
+    try:
+        from datasets import load_dataset as hf_load_dataset
+    except ImportError:
+        console.print(
+            "[red]ERROR: The 'datasets' library is required for --paperaudit. "
+            "Install with: pip install datasets[/red]"
+        )
+        raise typer.Exit(code=1)
+
+    try:
+        ds = hf_load_dataset("mayiwen/PaperAudit_Dataset", split="sft_data")
+    except Exception as exc:
+        console.print(
+            f"[red]ERROR: Failed to load PaperAudit dataset from HuggingFace hub: {exc}[/red]"
+        )
+        raise typer.Exit(code=1)
+
+    paper_contents: dict[str, str] = {}
+    ground_truth: dict[str, list[dict]] = {}
+
+    for idx, row in enumerate(ds):
+        pid = f"paperaudit_{idx}"
+        instruction = row["instruction"]
+        output = row["output"]
+        text = _extract_text_from_instruction(instruction)
+        paper_contents[pid] = text
+        annotations = _parse_paperaudit_output(output)
+        ground_truth[pid] = annotations
+
+    total_gt = sum(len(v) for v in ground_truth.values())
+    console.print(f"  Loaded {len(paper_contents)} papers, {total_gt} GT errors from PaperAudit")
+
+    return paper_contents, ground_truth
+
+
 def get_paper_list(
     parquet_path: Path,
     max_papers: Optional[int] = None,
     offset: int = 0,
+    use_paperaudit: bool = False,
+    paperaudit_contents: Optional[dict] = None,
+    paperaudit_gt: Optional[dict] = None,
 ) -> list[dict]:
-    """Load paper metadata from the parquet file."""
+    """Load paper metadata from the parquet file or PaperAudit dataset."""
+    if use_paperaudit:
+        if paperaudit_contents is None:
+            console.print("[red]PaperAudit contents not loaded[/red]")
+            raise typer.Exit(code=1)
+        all_ids = sorted(paperaudit_contents.keys(), key=_paperaudit_sort_key)
+        if max_papers:
+            subset = all_ids[offset : offset + max_papers]
+        else:
+            subset = all_ids[offset:]
+        papers = []
+        for pid in subset:
+            gt = (paperaudit_gt or {}).get(pid, [])
+            papers.append({
+                "paper_id": pid,
+                "title": f"PaperAudit paper {pid}",
+                "paper_category": "PaperAudit",
+                "error_category": gt[0].get("error_category", "") if gt else "",
+                "error_location": gt[0].get("error_location", "") if gt else "",
+                "error_severity": gt[0].get("error_severity", "") if gt else "",
+            })
+        return papers
+
     if not parquet_path.exists():
         console.print(f"[red]Parquet file not found: {parquet_path}[/red]")
         raise typer.Exit(code=1)
@@ -78,36 +183,114 @@ def get_paper_list(
     return papers
 
 
+def _paperaudit_sort_key(paper_id: str) -> int:
+    """Sort key for PaperAudit synthetic IDs (paperaudit_N)."""
+    import re
+    m = re.search(r"paperaudit_(\d+)", paper_id)
+    return int(m.group(1)) if m else 0
+
+
 def build_verify_prompt(
     paper_id: str,
     mode: str = "exhaustive",
     threshold: float = 0.30,
+    paper_text_file: Optional[Path] = None,
+    output_dir: Optional[Path] = None,
 ) -> str:
     """Build the Claude Code prompt for verifying a single paper."""
     parts = [
         "/verify-paper",
         "",
-        f"Verify the paper with ID '{paper_id}' from the dataset.",
+        f"Verify the paper with ID '{paper_id}'.",
         f"Use orchestration mode: {mode}.",
     ]
 
     if mode == "uncertainty":
         parts.append(f"Use uncertainty threshold: {threshold}.")
 
-    parts.extend(
-        [
+    # Determine where to save the standalone JSON report
+    report_path = (
+        output_dir / f"{paper_id.replace('/', '_')}_verification_report.json"
+        if output_dir else None
+    )
+
+    if paper_text_file is not None:
+        parts.extend([
+            "",
+            "The paper content is provided as a plain-text file. Do NOT use MCP tools to fetch it.",
+            f"Read the paper text from: {paper_text_file}",
             "",
             "Steps:",
-            "1. Use the get_paper_from_dataset MCP tool to fetch the paper.",
+            "1. Read the paper text from the file path provided above.",
             "2. Use the segment_paper MCP tool to parse and segment the paper.",
             "3. For each snippet, route to the appropriate specialist verifier skill using the Skill tool.",
             "4. Aggregate all findings into a verification report.",
-            "5. Include comparison with the ground truth annotation from the dataset.",
-            "6. Output the final report as structured JSON.",
-        ]
-    )
+            "5. Output the final report as structured JSON inline.",
+        ])
+    else:
+        parts.extend(
+            [
+                "",
+                "Steps:",
+                "1. Use the get_paper_from_dataset MCP tool to fetch the paper.",
+                "2. Use the segment_paper MCP tool to parse and segment the paper.",
+                "3. For each snippet, route to the appropriate specialist verifier skill using the Skill tool.",
+                "4. Aggregate all findings into a verification report.",
+                "5. Output the final report as structured JSON inline.",
+            ]
+        )
+
+    # Always add the instruction to save the JSON report to disk so
+    # evaluation scripts can find it directly without parsing markdown.
+    if report_path is not None:
+        parts.extend([
+            "",
+            "CRITICAL — Save the standalone JSON report:",
+            f"6. Use the Write tool to save the complete JSON verification report to:",
+            f"   {report_path}",
+            "",
+            "This file is the primary input for automated evaluation. The JSON must",
+            "contain the paper_id, predicted_errors, statistics, verdict, and summary",
+            "fields as described in the /verify-paper skill instructions. If the",
+            "verifier found zero errors, predicted_errors must be an empty list [].",
+        ])
 
     return "\n".join(parts)
+
+
+def _build_paperaudit_prompt(
+    paper_id: str,
+    mode: str,
+    threshold: float,
+    use_paperaudit: bool,
+    paperaudit_contents: Optional[dict],
+    output_dir: Path,
+) -> str:
+    """Build a verify prompt for a PaperAudit paper.
+
+    Writes the paper text to a temp file so Claude Code can read it.
+    Does NOT include ground truth annotations — the verifier must work
+    independently to avoid contaminating evaluation.
+    """
+    if not use_paperaudit or paperaudit_contents is None:
+        return build_verify_prompt(paper_id, mode, threshold, output_dir=output_dir)
+
+    paper_text = paperaudit_contents.get(paper_id)
+    if paper_text is None:
+        console.print(f"[yellow]Paper text not found for {paper_id}[/yellow]")
+        return build_verify_prompt(paper_id, mode, threshold, output_dir=output_dir)
+
+    # Write paper text to a file in the output directory
+    texts_dir = output_dir / "paper_texts"
+    texts_dir.mkdir(parents=True, exist_ok=True)
+    text_file = texts_dir / f"{paper_id}.txt"
+    text_file.write_text(paper_text)
+
+    return build_verify_prompt(
+        paper_id, mode, threshold,
+        paper_text_file=text_file,
+        output_dir=output_dir,
+    )
 
 
 def run_claude_verify(prompt: str, output_file: Path) -> tuple[bool, str]:
@@ -294,6 +477,12 @@ def main(
         "-p",
         help="Path to the parquet dataset file.",
     ),
+    paperaudit: bool = typer.Option(
+        False,
+        "--paperaudit",
+        help="Use PaperAudit_Dataset from HuggingFace hub (mayiwen/PaperAudit_Dataset) "
+             "instead of the SPOT parquet dataset.",
+    ),
     eval_dir: Optional[str] = typer.Option(
         None,
         "--eval-dir",
@@ -316,7 +505,14 @@ def main(
         help="LLM provider for the judge: anthropic, openai, or deepseek (default: auto-detect).",
     ),
 ) -> None:
-    """Batch-verify papers from the parquet dataset using Claude Code."""
+    """Batch-verify papers from the parquet dataset or PaperAudit dataset."""
+    # ---- Load PaperAudit dataset early if requested ----
+    paperaudit_contents: Optional[dict] = None
+    paperaudit_gt: Optional[dict] = None
+    if paperaudit:
+        console.print("[bold cyan]Loading PaperAudit dataset from HuggingFace hub...[/bold cyan]")
+        paperaudit_contents, paperaudit_gt = _load_paperaudit_dataset()
+
     # Resolve paths here, after typer has parsed the actual string values
     parquet_full = (
         Path(parquet_path)
@@ -338,13 +534,22 @@ def main(
         )
         _eval_existing_directory(
             eval_full, parquet_full, llm_judge, judge_model, judge_provider,
+            use_paperaudit=paperaudit,
+            paperaudit_gt=paperaudit_gt,
         )
         return
 
+    _get_paper_list_kwargs: dict = {
+        "use_paperaudit": paperaudit,
+        "paperaudit_contents": paperaudit_contents,
+        "paperaudit_gt": paperaudit_gt,
+    }
+
     # --list mode
     if list_papers:
-        all_papers = get_paper_list(parquet_full)
-        console.print(f"\n[bold]📚 Papers in dataset: {len(all_papers)}[/bold]\n")
+        all_papers = get_paper_list(parquet_full, **_get_paper_list_kwargs)
+        dataset_label = "PaperAudit (HuggingFace hub)" if paperaudit else "Parquet dataset"
+        console.print(f"\n[bold]📚 Papers in {dataset_label}: {len(all_papers)}[/bold]\n")
         table = Table(title="Available Papers")
         table.add_column("#", style="dim")
         table.add_column("Paper ID", style="cyan")
@@ -366,7 +571,10 @@ def main(
 
     # --dry-run mode
     if dry_run:
-        paper_list = get_paper_list(parquet_full, max_papers=papers, offset=offset)
+        paper_list = get_paper_list(
+            parquet_full, max_papers=papers, offset=offset,
+            **_get_paper_list_kwargs,
+        )
         console.print(
             f"\n[bold]🔍 DRY RUN — Would verify {len(paper_list)} papers[/bold]\n"
         )
@@ -375,12 +583,14 @@ def main(
             console.print(f"     {p['title'][:100]}")
         console.print(f"\n  Mode: {mode}")
         console.print(f"  Output: {output_full}")
+        if paperaudit:
+            console.print(f"  Dataset: PaperAudit (HuggingFace hub)")
         return
 
     # --paper-id mode (single paper)
     if paper_id:
         console.print(f"[bold cyan]🔬 Verifying single paper: {paper_id}[/bold cyan]\n")
-        paper_list = get_paper_list(parquet_full)
+        paper_list = get_paper_list(parquet_full, **_get_paper_list_kwargs)
         match = next((p for p in paper_list if p["paper_id"] == paper_id), None)
         if match is None:
             console.print(f"[red]Paper not found: {paper_id}[/red]")
@@ -391,7 +601,10 @@ def main(
         console.print(f"  GT Error: {match['error_category']}")
         console.print("")
 
-        prompt = build_verify_prompt(paper_id, mode, threshold)
+        prompt = _build_paperaudit_prompt(paper_id, mode, threshold, paperaudit,
+                                          paperaudit_contents,
+                                          output_full) if paperaudit else \
+                 build_verify_prompt(paper_id, mode, threshold, output_dir=output_full)
         output_file = output_full / f"{paper_id.replace('/', '_')}.md"
 
         with console.status(f"[cyan]Verifying {paper_id}..."):
@@ -407,7 +620,10 @@ def main(
         return
 
     # ---- Batch mode ----
-    paper_list = get_paper_list(parquet_full, max_papers=papers, offset=offset)
+    paper_list = get_paper_list(
+        parquet_full, max_papers=papers, offset=offset,
+        **_get_paper_list_kwargs,
+    )
     total = len(paper_list)
 
     console.print(f"\n[bold cyan]🚀 Batch Paper Verification[/bold cyan]")
@@ -434,7 +650,13 @@ def main(
             pid = paper["paper_id"]
             progress.update(task, description=f"[cyan][{i}/{total}] Verifying {pid}...")
 
-            prompt = build_verify_prompt(pid, mode, threshold)
+            if paperaudit:
+                prompt = _build_paperaudit_prompt(
+                    pid, mode, threshold, paperaudit,
+                    paperaudit_contents, output_full,
+                )
+            else:
+                prompt = build_verify_prompt(pid, mode, threshold, output_dir=output_full)
             output_file = output_full / f"{pid.replace('/', '_')}.md"
 
             success, output = run_claude_verify(prompt, output_file)
@@ -442,11 +664,19 @@ def main(
             if success:
                 verified += 1
                 result = parse_verification_result(output, pid, output_file)
-                result["ground_truth"] = {
-                    "error_category": paper["error_category"],
-                    "error_location": paper["error_location"],
-                    "error_severity": paper["error_severity"],
-                }
+                if paperaudit and paperaudit_gt:
+                    gt_annotations = paperaudit_gt.get(pid, [])
+                    result["ground_truth"] = gt_annotations if gt_annotations else {
+                        "error_category": paper["error_category"],
+                        "error_location": paper["error_location"],
+                        "error_severity": paper["error_severity"],
+                    }
+                else:
+                    result["ground_truth"] = {
+                        "error_category": paper["error_category"],
+                        "error_location": paper["error_location"],
+                        "error_severity": paper["error_severity"],
+                    }
             else:
                 failed += 1
                 result = {
@@ -501,6 +731,8 @@ def main(
         _run_evaluation(
             results_file, parquet_full, output_full,
             llm_judge, judge_model, judge_provider,
+            use_paperaudit=paperaudit,
+            paperaudit_gt=paperaudit_gt,
         )
 
 
@@ -509,84 +741,167 @@ def _eval_existing_directory(
     llm_judge: bool = False,
     judge_model: Optional[str] = None,
     judge_provider: Optional[str] = None,
+    use_paperaudit: bool = False,
+    paperaudit_gt: Optional[dict] = None,
 ) -> None:
     """Rebuild batch_results.json from existing .md + companion JSON files, then evaluate.
 
     This is useful when you have already run verification and want to re-evaluate
     without re-running Claude Code (e.g. after a fix to the result parser).
+
+    Searches for companion JSON reports in both the eval directory and the
+    project's root ``outputs/`` directory (where the /verify-paper skill writes
+    its JSON reports).  For .md files without a companion JSON, it parses the
+    markdown directly to extract structured verification data.
     """
-    # Index companion JSON files by paper_id
+    # Index companion JSON files by paper_id — search both eval_dir and
+    # outputs/ (root).  The /verify-paper skill writes JSONs to outputs/ by
+    # default, not to the batch-specific subdirectory.
+    root_outputs = PROJECT_ROOT / "outputs"
+    search_dirs = [eval_dir]
+    if root_outputs.is_dir() and root_outputs != eval_dir:
+        search_dirs.append(root_outputs)
+
     json_by_paper: dict[str, Path] = {}
-    for json_path in sorted(
-        set(eval_dir.glob("*report*.json"))
-        | set(eval_dir.glob("verification*.json"))
-    ):
-        skip_names = {
-            "batch_results.json", "metrics.json", "predictions.json",
-            "confusion_matrix.json",
-        }
-        if json_path.name in skip_names:
-            continue
-        try:
-            parsed = json.loads(json_path.read_text())
-            pid = parsed.get("paper_id", "")
-            if pid:
-                json_by_paper[pid] = json_path
-        except (json.JSONDecodeError, OSError):
-            continue
+    for search_dir in search_dirs:
+        for json_path in sorted(
+            set(search_dir.glob("*report*.json"))
+            | set(search_dir.glob("verification*.json"))
+            | set(search_dir.glob("*_verification.json"))
+        ):
+            skip_names = {
+                "batch_results.json", "metrics.json", "predictions.json",
+                "confusion_matrix.json", "_ground_truth.json", "_snippets.json",
+                "_umap.json",
+            }
+            if json_path.name in skip_names:
+                continue
+            try:
+                parsed = json.loads(json_path.read_text())
+                pid = parsed.get("paper_id", "")
+                if pid and pid not in json_by_paper:
+                    json_by_paper[pid] = json_path
+            except (json.JSONDecodeError, OSError):
+                continue
 
-    if not json_by_paper:
-        console.print(f"[red]No companion JSON reports found in {eval_dir}[/red]")
-        raise typer.Exit(code=1)
-
-    console.print(
-        f"\n[bold cyan]🔍 Rebuilding results from {len(json_by_paper)} companion JSON(s) "
-        f"in {eval_dir}[/bold cyan]\n"
+    # Also discover papers from .md files (that may not have a companion JSON)
+    md_files = sorted(
+        f for f in eval_dir.glob("*.md")
+        if f.name not in {"run_summary.md", "README.md", "SUMMARY.md"}
     )
 
-    paper_list = get_paper_list(parquet_path)
-    gt_by_paper = {
-        p["paper_id"]: {
-            "error_category": p["error_category"],
-            "error_location": p["error_location"],
-            "error_severity": p["error_severity"],
+    # Map of paper_id → .md file path (derived from .md content or filename)
+    md_by_paper: dict[str, Path] = {}
+    for md_file in md_files:
+        text = md_file.read_text()
+        pid = _extract_paper_id_from_md(text, md_file.name)
+        if pid:
+            md_by_paper[pid] = md_file
+
+    # Merge: all paper_ids from both JSONs and .md files
+    all_paper_ids = set(json_by_paper.keys()) | set(md_by_paper.keys())
+
+    if not all_paper_ids:
+        console.print(f"[red]No companion JSON reports or .md files found in {eval_dir}[/red]")
+        raise typer.Exit(code=1)
+
+    n_from_json = len(json_by_paper)
+    n_from_md = len(md_by_paper)
+    console.print(
+        f"\n[bold cyan]🔍 Rebuilding results from {len(all_paper_ids)} papers "
+        f"({n_from_json} with JSON, {n_from_md} with .md)[/bold cyan]\n"
+    )
+
+    # Build ground-truth index: from PaperAudit or from SPOT parquet
+    if use_paperaudit and paperaudit_gt is not None:
+        gt_by_paper = paperaudit_gt
+    else:
+        paper_list = get_paper_list(parquet_path)
+        gt_by_paper = {
+            p["paper_id"]: {
+                "error_category": p["error_category"],
+                "error_location": p["error_location"],
+                "error_severity": p["error_severity"],
+            }
+            for p in paper_list
         }
-        for p in paper_list
-    }
 
     all_results = []
     verified = 0
     failed = 0
 
-    for paper_id, json_path in sorted(json_by_paper.items()):
-        # Find the matching .md file using the sanitized paper_id
-        sanitized = paper_id.replace("/", "_")
-        md_file = eval_dir / f"{sanitized}.md"
+    for paper_id in sorted(all_paper_ids):
+        result = None
 
-        if not md_file.exists():
-            # Try with dots also replaced (some DOI naming)
-            sanitized2 = sanitized.replace(".", "_")
-            md_file = eval_dir / f"{sanitized2}.md"
+        # Prefer companion JSON when available (more reliable than parsing)
+        if paper_id in json_by_paper:
+            try:
+                parsed = json.loads(json_by_paper[paper_id].read_text())
+                result = {
+                    "paper_id": paper_id,
+                    "success": True,
+                    "predicted_errors": parsed.get("predicted_errors", []),
+                    "verdict": parsed.get("verdict", "UNKNOWN"),
+                    "title": parsed.get("title", ""),
+                    "paper_category": parsed.get("paper_category", ""),
+                }
+                if "statistics" in parsed:
+                    result["statistics"] = parsed["statistics"]
+            except (json.JSONDecodeError, OSError) as exc:
+                console.print(f"  [yellow]⚠[/yellow] {paper_id}: JSON parse error: {exc}")
 
-        if not md_file.exists():
+        # Fall back to parsing .md file directly
+        if result is None and paper_id in md_by_paper:
+            md_file = md_by_paper[paper_id]
+            text = md_file.read_text()
+
+            # Quick checks for unparseable outputs
+            if text.strip().startswith("# TIMEOUT") or "Timeout verifying" in text:
+                result = {"paper_id": paper_id, "success": False, "error": "Timeout"}
+                failed += 1
+                console.print(f"  [red]✗[/red] {paper_id}: timeout")
+                continue
+            if "requires approval" in text[:300] or "MCP tool call requires" in text[:300]:
+                result = {"paper_id": paper_id, "success": False, "error": "MCP approval pending"}
+                failed += 1
+                console.print(f"  [red]✗[/red] {paper_id}: MCP approval pending")
+                continue
+
+            # Use standard parser first, then fall back to markdown extraction
+            parsed = parse_verification_result(text, paper_id, md_file)
+            if parsed.get("success"):
+                result = parsed
+            else:
+                # Use the supplementary markdown parser
+                extracted = _extract_from_markdown(text)
+                if extracted and extracted.get("success"):
+                    result = {
+                        "paper_id": paper_id,
+                        "success": True,
+                        "predicted_errors": extracted.get("predicted_errors", []),
+                        "verdict": extracted.get("verdict", "UNKNOWN"),
+                    }
+                elif len(text) < 500:
+                    result = {"paper_id": paper_id, "success": False,
+                             "error": f"Output too short ({len(text)} chars)"}
+
+        if result is None:
             failed += 1
-            console.print(f"  [red]✗[/red] {paper_id}: companion JSON exists but no .md file found")
+            console.print(f"  [red]✗[/red] {paper_id}: could not extract results "
+                         f"(no JSON, no parseable .md)")
             continue
 
-        text = md_file.read_text()
-        result = parse_verification_result(text, paper_id, md_file)
-
-        if not result["success"]:
+        if result.get("success"):
+            verified += 1
+            num_errors = len(result.get("predicted_errors", []))
+            console.print(
+                f"  [green]✓[/green] {paper_id}: "
+                f"{num_errors} predicted error(s), verdict={result.get('verdict', '?')}"
+            )
+        else:
             failed += 1
-            console.print(f"  [red]✗[/red] {paper_id}: failed to parse verification result")
-            continue
-
-        verified += 1
-        num_errors = len(result.get("predicted_errors", []))
-        console.print(
-            f"  [green]✓[/green] {paper_id}: "
-            f"{num_errors} predicted error(s), verdict={result.get('verdict', '?')}"
-        )
+            console.print(f"  [red]✗[/red] {paper_id}: "
+                         f"failed ({result.get('error', 'unknown')})")
 
         gt = gt_by_paper.get(paper_id)
         if gt:
@@ -599,7 +914,7 @@ def _eval_existing_directory(
         json.dumps(
             {
                 "batch_timestamp": datetime.now().isoformat(),
-                "total_papers": len(json_by_paper),
+                "total_papers": len(all_paper_ids),
                 "verified": verified,
                 "failed": failed,
                 "mode": "eval-dir (reconstructed)",
@@ -621,7 +936,192 @@ def _eval_existing_directory(
         _run_evaluation(
             results_file, parquet_path, eval_dir,
             llm_judge, judge_model, judge_provider,
+            use_paperaudit=use_paperaudit,
+            paperaudit_gt=paperaudit_gt,
         )
+
+
+# --- Helper: extract paper ID from markdown content ---
+
+def _extract_paper_id_from_md(text: str, filename: str) -> str | None:
+    """Extract paper_id from markdown content or filename."""
+    import re as _re
+
+    # Try backtick-quoted paper ID: paper `2401.06455` or Paper `10.1234/foo`
+    m = _re.search(r"[Pp]aper\s*`([^`]+)`", text[:500])
+    if m:
+        candidate = m.group(1)
+        if _re.match(r"^(?:\d{4}\.\d{4,5}|10\.\d{4,5}/)", candidate):
+            return candidate
+
+    # Try explicit arxiv ID: paper_2401.06455 or paper 2401.06455
+    m = _re.search(r"paper[_ ]+(?:ID[_ ]+)?(\d{4}\.\d{4,5}(?:v\d+)?)",
+                   text[:500], _re.IGNORECASE)
+    if m:
+        candidate = m.group(1)
+        if not candidate.endswith(".json") and "verification_report" not in candidate:
+            return candidate
+
+    # DOI patterns
+    m = _re.search(r"\b(10\.\d{4,5}/[\w.-]+)", text[:500])
+    if m:
+        candidate = m.group(1)
+        if not candidate.endswith(".json"):
+            return candidate
+
+    # Derive from filename
+    basename = filename.replace(".md", "")
+    if basename.startswith("10.") and "_" in basename:
+        parts = basename.split("_", 1)
+        return f"{parts[0]}/{parts[1]}"
+    if _re.match(r"^\d{4}\.\d{4,5}", basename):
+        return basename
+    # PaperAudit synthetic IDs (paperaudit_N)
+    m = _re.search(r"[Pp]aper\s*`(paperaudit_\d+)`", text[:500])
+    if m:
+        return m.group(1)
+    m = _re.match(r"(paperaudit_\d+)", basename)
+    if m:
+        return m.group(1)
+
+    return None
+
+
+# --- Helper: extract structured data from markdown (supplementary parser) ---
+
+def _extract_from_markdown(text: str) -> dict | None:
+    """Extract structured verification data from a markdown output file.
+
+    Handles:
+    1. Paper-level JSON blocks embedded in markdown
+    2. Structured markdown with tables (Verification Report format)
+    3. Per-snippet JSON blocks (aggregates them into paper-level data)
+    4. Short summary prose format
+    """
+    import re as _re
+
+    result = {
+        "verdict": "UNKNOWN",
+        "predicted_errors": [],
+    }
+
+    # Quick check: prose summary saying "zero errors" / "PASS"
+    if not _re.search(r"\|\s*\*?\*?Error", text):  # no structured error table
+        if "0 errors detected" in text or "zero errors" in text.lower() or "PASS" in text[:500]:
+            result["verdict"] = "NO_ERROR"
+            result["success"] = True
+            return result
+
+    # -- Try paper-level JSON blocks in markdown fences --
+    json_blocks = _re.findall(r"```json\s*\n(.*?)\n```", text, _re.DOTALL)
+    for block in json_blocks:
+        try:
+            parsed = json.loads(block)
+            if "paper_id" in parsed and "predicted_errors" in parsed:
+                result.update(parsed)
+                result["success"] = True
+                return result
+        except json.JSONDecodeError:
+            continue
+
+    # -- Aggregate per-snippet JSON blocks --
+    per_snippet_errors = []
+    for block in json_blocks:
+        try:
+            parsed = json.loads(block)
+            items = [parsed] if isinstance(parsed, dict) else parsed if isinstance(parsed, list) else []
+            for item in items:
+                if isinstance(item, dict) and item.get("error_detected") and item.get("status") == "ERROR_DETECTED":
+                    per_snippet_errors.append(item)
+        except json.JSONDecodeError:
+            continue
+
+    if per_snippet_errors:
+        result["predicted_errors"] = [
+            {
+                "error_category": e.get("predicted_error_category", "Unknown"),
+                "error_location": (
+                    e.get("contradiction_locations", [None])[0]
+                    if e.get("contradiction_locations")
+                    else e.get("snippet_id", "")
+                ),
+                "confidence": e.get("confidence", 0.0),
+                "supporting_evidence": e.get("reasoning", ""),
+                "verifier_name": e.get("verifier_name", ""),
+                "snippet_id": e.get("snippet_id", ""),
+            }
+            for e in per_snippet_errors
+        ]
+        result["verdict"] = "NEEDS_CORRECTION"
+        result["success"] = True
+        return result
+
+    # -- Parse structured markdown with error detail tables --
+    predicted_errors = []
+    # Split only on explicit error-report section headers.  The word
+    # "Finding" alone is too common (appears in "Key findings",
+    # "Aggregated Findings Summary", etc.) and causes phantom
+    # predictions.  Only split on "Error Detected" and "Predicted
+    # Error" which are real verification-report section headers.
+    error_sections = _re.split(
+        r"(?:###?\s*)?(?:Error\s*Detected|Predicted\s*Error)\s*:?",
+        text, flags=_re.IGNORECASE,
+    )
+
+    for section in error_sections[1:]:  # skip text before first error section
+        cat_m = _re.search(r"\|\s*\*?\*?Error\s*(?:category|type)\*?\*?\s*\|\s*(.+?)\s*\|",
+                           section, _re.IGNORECASE)
+        loc_m = _re.search(r"\|\s*\*?\*?(?:Error\s*)?Location\*?\*?\s*\|\s*(.+?)\s*\|",
+                           section, _re.IGNORECASE)
+        conf_m = _re.search(r"\|\s*\*?\*?Confidence\*?\*?\s*\|\s*\*?\*?([0-9.]+)\*?\*?\s*\|",
+                            section, _re.IGNORECASE)
+
+        # Guard: require at least a category OR a location — otherwise
+        # the section was a false match with no real error detail.
+        category = cat_m.group(1).strip("` ") if cat_m else None
+        location = loc_m.group(1).strip("` ") if loc_m else None
+        if not category and not location:
+            continue
+
+        predicted_errors.append({
+            "error_category": category or "Equation / proof",
+            "error_location": location or "",
+            "confidence": float(conf_m.group(1)) if conf_m else 0.85,
+            "supporting_evidence": "",
+            "verifier_name": "text",
+            "snippet_id": "",
+        })
+
+    if predicted_errors:
+        result["predicted_errors"] = predicted_errors
+        result["verdict"] = result.get("verdict") or "NEEDS_CORRECTION"
+        result["success"] = True
+        return result
+
+    # -- Look for verdict indicators in prose --
+    verdict_match = _re.search(
+        r"(?:\*\*)?Verdict(?:\*\*)?\s*:\s*\*?\*?\s*(NEEDS_CORRECTION|NEEDS_REVIEW|NO_ERROR|VALID|UNVERIFIABLE|PASS)",
+        text, _re.IGNORECASE,
+    )
+    if verdict_match:
+        verdict = verdict_match.group(1).upper()
+        if verdict in ("PASS",):
+            verdict = "NO_ERROR"
+        if verdict in ("NEEDS_CORRECTION",):
+            # Build a minimal error entry
+            result["predicted_errors"] = [{
+                "error_category": "Unknown",
+                "error_location": "",
+                "confidence": 0.6,
+                "supporting_evidence": "",
+                "verifier_name": "text",
+                "snippet_id": "",
+            }]
+        result["verdict"] = verdict
+        result["success"] = True
+        return result
+
+    return None
 
 
 def _run_evaluation(
@@ -629,6 +1129,8 @@ def _run_evaluation(
     llm_judge: bool = False,
     judge_model: Optional[str] = None,
     judge_provider: Optional[str] = None,
+    use_paperaudit: bool = False,
+    paperaudit_gt: Optional[dict] = None,
 ) -> None:
     """Run evaluation comparing batch results to ground truth.
 
@@ -713,13 +1215,33 @@ def _run_evaluation(
             )
 
         # Run the standard evaluation
-        df = pd.read_parquet(parquet_path)
         from src.evaluation.alignment import match_predictions_to_ground_truth
         from src.evaluation.metrics import evaluate_predictions
         from src.reporting.reporter import generate_report
         from src.parser.schema_analyzer import analyze_dataset_schema
 
-        schema_report = analyze_dataset_schema(parquet_path)
+        if use_paperaudit and paperaudit_gt is not None:
+            # Build a synthetic DataFrame from PaperAudit ground truth
+            rows = []
+            for pid, annotations in paperaudit_gt.items():
+                for ann in annotations:
+                    rows.append({
+                        "doi/arxiv_id": pid,
+                        "error_category": ann.get("error_category", ""),
+                        "error_location": ann.get("error_location", ""),
+                        "error_severity": ann.get("error_severity", ""),
+                        "error_annotation": ann.get("error_annotation", ""),
+                    })
+            df = pd.DataFrame(rows)
+            schema_report = {
+                "dataset": "PaperAudit (HuggingFace hub)",
+                "total_papers": len(paperaudit_gt),
+                "total_errors": len(rows),
+            }
+        else:
+            df = pd.read_parquet(parquet_path)
+            schema_report = analyze_dataset_schema(parquet_path)
+
         aligned = match_predictions_to_ground_truth(predictions, df, config=config)
         metrics = evaluate_predictions(aligned, df)
 

@@ -1,0 +1,200 @@
+[
+  {
+    "id": 1,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Inflate node classification accuracy metrics in Table 2 to exaggerate RAG4GFM's performance gains, making improvements appear larger than realistic.",
+    "error_explanation": "Table 2 reports GLEM+RAG4GFM achieving 83.12% accuracy on Computers node classification, a 5.5% gain over baseline GLEM at 79.45%. However, cross-checking with the ablation study in Figure 3 shows the full RAG4GFM configuration on Computers reaches only 79.6% accuracy using AnyGraph as backbone. This 3.5-point discrepancy between Table 2 and Figure 3 for similar experimental conditions suggests selective reporting or inflated metrics. Furthermore, the claimed 5.5% relative improvement is inconsistent with the modest 4.7% gain observed in the ablation (79.6% vs. 73.5% w/o RAG), indicating potential cherry-picking of favorable results.",
+    "needs_cross_section": false,
+    "target_find": "| GLEM | 79.45 | 63.56 | 60.12 | 54.67 | 57.23 | 52.45 | 73.89 | 60.45 | 58.90 | 61.23 | 56.23 | 53.45 |\n| GLEM+RAG4GFM | 83.12 | 68.90 | 68.23 | 59.89 | 61.78 | 57.34 | 75.45 | 65.12 | 66.78 | 66.90 | 62.56 | 59.34 |",
+    "replacement": "| GLEM | 79.45 | 63.56 | 60.12 | 54.67 | 57.23 | 52.45 | 73.89 | 60.45 | 58.90 | 61.23 | 56.23 | 53.45 |\n| GLEM+RAG4GFM | 87.34 | 72.15 | 71.89 | 66.23 | 68.91 | 64.78 | 81.67 | 70.45 | 72.34 | 73.12 | 69.78 | 66.91 |"
+  },
+  {
+    "id": 2,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "hard",
+    "location": "Method",
+    "rationale": "Introduce contradictory definitions of the feature fusion threshold γ, creating internal inconsistency in the fusion mechanism description.",
+    "error_explanation": "Section 3.3 defines γ as the \"feature fusion threshold (default value 0.5) used to filter low-relevance retrieved results\" in Equations 5–8, implying that retrieved graphs with relevance scores α_i^F below γ are excluded. However, Appendix C.2 (Table 7) reports experimental results varying γ in {0.3, 0.5, 0.7, 0.9} and states that \"very low thresholds (0.3) allow irrelevant retrievals.\" This contradicts the filtering logic: if γ = 0.3 filters out α_i^F < 0.3, it should exclude more retrievals than γ = 0.5, not allow more irrelevant ones. The inconsistency suggests either the threshold operates inversely to the stated definition, or the experimental interpretation is reversed, undermining the method's logical coherence.",
+    "needs_cross_section": false,
+    "target_find": "where $\\mathbf{h}_v'^N$ is the enhanced target node feature, $\\mathbf{h}_v$ is the original node feature, $\\mathbf{h}_{\\text{SRC}}'^E$ and $\\mathbf{h}_{\\text{DST}}'^E$ are the enhanced source and destination edge features, $\\mathbf{h}_v'^G$ is the enhanced target graph feature, $V_i$ is the node set of the $i$-th retrieved graph, and $\\gamma$ is the feature fusion threshold (default value 0.5) used to filter low-relevance retrieved results.",
+    "replacement": "where $\\mathbf{h}_v'^N$ is the enhanced target node feature, $\\mathbf{h}_v$ is the original node feature, $\\mathbf{h}_{\\text{SRC}}'^E$ and $\\mathbf{h}_{\\text{DST}}'^E$ are the enhanced source and destination edge features, $\\mathbf{h}_v'^G$ is the enhanced target graph feature, $V_i$ is the node set of the $i$-th retrieved graph, and $\\gamma$ is the feature fusion acceptance threshold (default value 0.5) that retains only high-relevance retrieved results by accepting graphs with α_i^F ≥ γ, thereby excluding low-scoring candidates."
+  },
+  {
+    "id": 3,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Obscure critical hyperparameter settings and training details for baseline methods, creating asymmetric experimental conditions that favor RAG4GFM.",
+    "error_explanation": "Section 4.1 states that experiments use a \"zero-shot evaluation protocol\" and that \"RAG4GFM identifies and provides the three subgraphs yielding the highest relevance probabilities\" (Appendix B.3). However, Table 2 compares RAG4GFM against base GFMs (HiGPT, GraphGPT, GLEM, etc.) without specifying whether these baselines also operate in zero-shot mode or have been fine-tuned on the TAG benchmark datasets. The paper claims datasets were selected to \"prevent potential data leakage from GFM pre-training\" but provides no evidence (e.g., training corpus documentation, temporal analysis) to verify this claim. Furthermore, no hyperparameters (learning rates, batch sizes, number of training epochs) are reported for baseline GFMs, making it impossible to assess whether performance differences arise from RAG4GFM's design or from undertrained/misconfigured baselines. This asymmetry undermines the validity of the comparison.",
+    "needs_cross_section": false,
+    "target_find": "To evaluate the effectiveness and generality of RAG4GFM, we conduct experiments on a diverse collection of graph datasets covering six task types. For node classification and link prediction, we adopt the latest TAG benchmark [48] to prevent potential data leakage from GFM pre-training. For other tasks, we select datasets that, to the best of our knowledge, were not used in any GFM pre-training phase, verified through public model documentation and release notes.",
+    "replacement": "To evaluate the effectiveness and generality of RAG4GFM, we conduct experiments on a diverse collection of graph datasets covering six task types. For node classification and link prediction, we adopt the latest TAG benchmark [48] to prevent potential data leakage from GFM pre-training. For other tasks, we select datasets that, to the best of our knowledge, were not used in any GFM pre-training phase. Baseline GFMs are evaluated in zero-shot mode without task-specific fine-tuning, using default hyperparameters from their original publications. We do not report learning rates, batch sizes, or training epochs for baselines, as these are assumed to be optimal based on prior work."
+  },
+  {
+    "id": 4,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "easy",
+    "location": "Abstract",
+    "rationale": "Overstate the scope and impact of RAG4GFM by claiming it 'significantly enhances' efficiency and faithfulness without quantifying the magnitude or acknowledging limitations.",
+    "error_explanation": "The Abstract concludes that \"RAG4GFM significantly enhances both the efficiency of knowledge updating and reasoning faithfulness\" without providing specific quantitative bounds or acknowledging any failure cases. Section 4.4 (Table 4) reports efficiency gains of 7.0× in runtime and 60% reduction in GPU memory for two specific GFM-dataset pairs (AnyGraph on Computers, HiGPT on History), but these results are not generalized across all seven GFMs or all nine datasets. The Abstract's universal claim of \"significant enhancement\" is unsupported by the selective evidence presented, and no discussion of scenarios where RAG4GFM may underperform (e.g., very small graphs, tasks with limited retrieval candidates) is provided. This overgeneralization distorts the interpretation of the results.",
+    "needs_cross_section": false,
+    "target_find": "Extensive experiments conducted across diverse GFM applications demonstrate that RAG4GFM significantly enhances both the efficiency of knowledge updating and reasoning faithfulness².",
+    "replacement": "Extensive experiments conducted across diverse GFM applications demonstrate that RAG4GFM universally and dramatically enhances both the efficiency of knowledge updating and reasoning faithfulness across all graph tasks, completely eliminating the need for parameter updates and achieving near-perfect accuracy in all tested scenarios²."
+  },
+  {
+    "id": 5,
+    "corruption_type": "reference_background_fabrication",
+    "difficulty": "medium",
+    "location": "Related Work",
+    "rationale": "Cite a non-existent paper to fabricate prior work on graph RAG, creating a false impression of a mature research lineage.",
+    "error_explanation": "Section 2 (Related Work) cites \"LightRAG [44]\" as a recent graph-centric RAG extension emphasizing \"computational optimization.\" However, reference [44] in the References section is listed as \"Zirui Guo, Lianghao Xia, Yanhua Yu, Tu Ao, and Chao Huang. LightRAG: Simple and fast retrieval-augmented generation. 2024.\" with no venue, DOI, or arXiv identifier provided. A search of major academic databases (arXiv, Google Scholar, DBLP) yields no publication by these authors with this title in 2024. The citation appears to be fabricated to inflate the novelty of RAG4GFM by positioning it within a non-existent body of prior graph RAG work. This misrepresentation undermines the paper's scholarly integrity.",
+    "needs_cross_section": false,
+    "target_find": "Recent graph-centric extensions, featuring methods that emphasize structure-aware retrieval, such as GraphRAG [43], computational optimization, such as LightRAG [44], or hybrid knowledge integration, such as HybridRAG [45].",
+    "replacement": "Recent graph-centric extensions, featuring methods that emphasize structure-aware retrieval, such as GraphRAG [43], computational optimization, such as LightRAG [44] (which introduced logarithmic-time graph indexing via hierarchical clustering), or hybrid knowledge integration, such as HybridRAG [45]."
+  },
+  {
+    "id": 6,
+    "corruption_type": "ethical_integrity_omission",
+    "difficulty": "easy",
+    "location": "Experiments",
+    "rationale": "Remove the safeguard statement about pre-training data contamination, obscuring potential data leakage risks.",
+    "error_explanation": "Section 4.1 originally states that datasets were selected \"to prevent potential data leakage from GFM pre-training\" and that this was \"verified through public model documentation and release notes.\" However, the revised text in Edit #3 removes any mention of verification procedures, leaving only an unsubstantiated claim. Furthermore, no IRB approval, consent statements, or discussion of potential biases in the Amazon co-purchase datasets (which may reflect demographic or socioeconomic skews) is provided. The omission of these ethical safeguards and transparency measures violates responsible AI practices, particularly given that the paper uses real-world e-commerce data that may encode sensitive user behaviors.",
+    "needs_cross_section": false,
+    "target_find": "Extensive experiments across multiple GFM applications demonstrate RAG4GFM's superiority in efficiency and reliability, with safeguards intended to minimize the risk of pre-training data contamination.",
+    "replacement": "Extensive experiments across multiple GFM applications demonstrate RAG4GFM's superiority in efficiency and reliability."
+  },
+  {
+    "id": 7,
+    "corruption_type": "rhetorical_presentation_manipulation",
+    "difficulty": "easy",
+    "location": "Introduction",
+    "rationale": "Rewrite the problem statement using promotional language to exaggerate the severity of existing challenges and the novelty of RAG4GFM.",
+    "error_explanation": "The revised Introduction employs marketing-style rhetoric (\"completely solves,\" \"eliminates all limitations,\" \"revolutionary breakthrough\") that is inappropriate for academic discourse. Phrases like \"GFMs are fundamentally broken\" and \"RAG4GFM represents a paradigm shift\" overstate both the severity of existing challenges and the novelty of the proposed solution. The original text acknowledges that \"some recent studies have attempted to address these challenges\" (Section 1, paragraph 3), but the revised version dismisses all prior work as inadequate. This rhetorical manipulation artificially inflates the perceived contribution and undermines the paper's credibility.",
+    "needs_cross_section": false,
+    "target_find": "However, two practical challenges remain prominent: knowledge updating [8, 9, 10]—i.e., keeping models current as graphs evolve—and faithful reasoning [11, 12, 13]—i.e., generating accurate and factually consistent outputs.",
+    "replacement": "However, two catastrophic and unsolved challenges completely undermine existing GFMs: knowledge updating [8, 9, 10]—i.e., the total inability of current models to adapt as graphs evolve—and faithful reasoning [11, 12, 13]—i.e., the pervasive generation of hallucinated and factually inconsistent outputs that render GFMs unusable in practice."
+  },
+  {
+    "id": 8,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "hard",
+    "location": "Method",
+    "rationale": "Introduce a contradiction between the claimed complexity in Section 3.1 and the analysis in Appendix A.1, creating cross-section incoherence.",
+    "error_explanation": "Section 3.1 states that the hierarchical HNSW-based index \"guarantees efficient O(log₂ N) retrieval time, crucial for large-scale graph data.\" However, Appendix A.1 (Complexity Analysis) reports that \"the per-query time complexity is O(log N + k|V|²) for dense and O(log N + k|E|) for sparse graphs,\" where k is the number of retrieved subgraphs, |V| is the average number of nodes per subgraph, and |E| is the number of edges. For dense graphs with |V| ≈ √N (common in social networks), the O(k|V|²) term dominates, yielding O(kN) total complexity—linear, not logarithmic. This contradiction between the Method section's claim and the Appendix's analysis reveals either a fundamental misunderstanding of the algorithm's complexity or deliberate misrepresentation to exaggerate scalability. The inconsistency undermines the paper's technical credibility.",
+    "needs_cross_section": true,
+    "target_find": "This multi-space index design offers two primary advantages: firstly, it overcomes the limitations of single representation methods by comprehensively capturing both semantic and structural graph information while flexibly supporting diverse node, edge, and graph-level retrieval tasks through a unified interface; secondly, it guarantees efficient $O(\\log_2 N)$ retrieval time, crucial for large-scale graph data.",
+    "replacement": "This multi-space index design offers two primary advantages: firstly, it overcomes the limitations of single representation methods by comprehensively capturing both semantic and structural graph information while flexibly supporting diverse node, edge, and graph-level retrieval tasks through a unified interface; secondly, it guarantees efficient $O(\\log_2 N)$ end-to-end retrieval and fusion time for all graph sizes and densities, making RAG4GFM the first truly scalable graph RAG system."
+  },
+  {
+    "id": 9,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "hard",
+    "location": "Experiments",
+    "rationale": "Fabricate efficiency comparison data in Table 4 by inflating the runtime and memory usage of GraphLoRA to make RAG4GFM appear more efficient.",
+    "error_explanation": "Table 4 reports that GraphLoRA + AnyGraph requires 7.32 hours and 25.23 GB GPU memory to reach 78% accuracy on Computers, while RAG4GFM + AnyGraph achieves the same accuracy in 63 minutes using 9.86 GB. This implies a 7.0× speedup and 60% memory reduction. However, the GraphLoRA paper [22] reports fine-tuning times of 1–2 hours on similar-scale datasets (Books-Children has 76,875 nodes, comparable to Computers' 87,229 nodes) using a single A100 GPU. The claimed 7.32-hour runtime for GraphLoRA is inconsistent with published benchmarks and suggests either severe misconfiguration of the baseline or fabricated numbers to exaggerate RAG4GFM's efficiency gains. Furthermore, no details on batch size, learning rate, or number of training epochs for GraphLoRA are provided, making the comparison unverifiable.",
+    "needs_cross_section": false,
+    "target_find": "| GraphLoRA + AnyGraph | Computers | 78%        | 7.32 Hours | 25.23 GB        |\n| RAG4GFM + AnyGraph   | Computers | 78%        | 63 Minutes | 9.86 GB         |",
+    "replacement": "| GraphLoRA + AnyGraph | Computers | 78%        | 12.47 Hours | 38.91 GB        |\n| RAG4GFM + AnyGraph   | Computers | 78%        | 48 Minutes | 7.23 GB         |"
+  },
+  {
+    "id": 10,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Misinterpret the ablation study results in Figure 3 to overstate the contribution of individual components.",
+    "error_explanation": "Section 4.3 states that \"w/o RAG exhibits the largest drop, confirming that retrieval is crucial for integrating dynamic external knowledge.\" Figure 3 shows that removing RAG (w/o RAG) reduces Computers node classification accuracy from 79.6% to 73.5%, a 6.1-point drop. However, the text claims this is the \"largest drop,\" when in fact removing the graph fusion module (w/o GF) causes a 3.4-point drop (79.6% → 76.2%), and removing graph indexing (w/o GI) causes a 1.7-point drop (79.6% → 77.9%). While the RAG component does have the largest individual impact, the text fails to acknowledge that the combined effect of GF + GI (3.4 + 1.7 = 5.1 points) is comparable to RAG alone (6.1 points), suggesting that fusion and indexing are nearly as important as retrieval. The selective emphasis on RAG distorts the interpretation and understates the synergistic contributions of all three components.",
+    "needs_cross_section": false,
+    "target_find": "As illustrated in Figure 3, the full RAG4GFM configuration consistently achieves the best results across both tasks. Among the architectural variants, w/o RAG exhibits the largest drop, confirming that retrieval is crucial for integrating dynamic external knowledge.",
+    "replacement": "As illustrated in Figure 3, the full RAG4GFM configuration consistently achieves the best results across both tasks. Among the architectural variants, w/o RAG exhibits the largest drop, confirming that retrieval is by far the most critical component, accounting for over 80% of RAG4GFM's performance gains, while fusion and indexing provide only marginal improvements."
+  },
+  {
+    "id": 11,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Introduce bias in the baseline selection by omitting stronger graph RAG methods and including weaker prompt-engineering baselines.",
+    "error_explanation": "Table 3 compares RAG4GFM against three categories of baselines: Prompt Engineering (Few-shot, CoT, IR-augmented CoT), Graph Out-of-Distribution (Prototype, GNNSafe), and Retrieval-Enhanced (VanillaRAG, GraphRAG, G-Retriever). However, the Prompt Engineering and G-OOD baselines are not designed for knowledge updating or retrieval-augmented generation, making them inappropriate comparisons. The paper acknowledges this in Section 4.4, stating that \"PE methods provide only marginal improvements\" and \"G-OOD-oriented approaches underperform in our setting, as they emphasize distributional robustness rather than dynamic knowledge updating.\" Including these weak baselines inflates RAG4GFM's relative performance. Furthermore, stronger graph RAG methods such as KG-RAG (knowledge graph retrieval-augmented generation) and recent graph-aware retrieval systems are omitted without justification, creating a biased experimental design that favors RAG4GFM.",
+    "needs_cross_section": false,
+    "target_find": "Baselines. We evaluate RAG4GFM against state-of-the-art approaches from three categories: (1) Prompt Engineering Methods: Few-shot Learning [54], Chain-of-Thought (COT) [55], IR-augmented COT [56]. These methods focus on structuring the input prompt to guide the GFM's inference without altering model parameters, leveraging strategies like few-shot examples or explicit reasoning steps.",
+    "replacement": "Baselines. We evaluate RAG4GFM against state-of-the-art approaches from three categories: (1) Prompt Engineering Methods: Few-shot Learning [54], Chain-of-Thought (COT) [55], IR-augmented COT [56]. These methods focus on structuring the input prompt to guide the GFM's inference without altering model parameters, leveraging strategies like few-shot examples or explicit reasoning steps. We include these baselines to demonstrate RAG4GFM's superiority over non-retrieval approaches, even though they are not designed for knowledge updating."
+  },
+  {
+    "id": 12,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "medium",
+    "location": "Method",
+    "rationale": "Introduce an undefined symbol in Equation 3 and provide an inconsistent definition of the reciprocal rank fusion formula.",
+    "error_explanation": "Equation 3 defines the retrieval score as S(q | h_q, C) = Σ_{x ∈ F(h_q, C)} 1 / (d + rank_x^k(C)), where d is described as \"a smoothing constant\" and rank_x^k(C) is \"the rank of candidate x among the top-k results.\" However, the symbol k in rank_x^k(C) is never defined in this context—Section 3.2 uses k to denote the number of retrieved subgraphs, but it is unclear whether rank_x^k(C) refers to the rank within the top-k results or the rank in the full candidate set. Furthermore, the standard reciprocal rank fusion formula (used in information retrieval) is RRF(x) = Σ_i 1 / (K + rank_i(x)), where K is a constant (typically 60) and the sum is over multiple retrieval systems. Equation 3's formulation with d + rank_x^k(C) conflates the smoothing constant with the rank, creating ambiguity. This inconsistency undermines the method's reproducibility.",
+    "needs_cross_section": false,
+    "target_find": "To obtain the final retrieval score for a query $q$ under the graph context $\\mathcal{C}$, we apply a reciprocal rank fusion (RRF) strategy to aggregate results from multiple retrieval channels:\n$$S(q \\mid \\mathbf{h}_q, \\mathcal{C}) = \\sum_{x \\in \\mathcal{F}(\\mathbf{h}_q, \\mathcal{C})} \\frac{1}{d + \\text{rank}_x^k(\\mathcal{C})},\\tag{3}$$\nwhere $\\mathcal{F}(\\mathbf{h}_q, \\mathcal{C})$ denotes the retrieved feature set, $d$ is a smoothing constant, and $\\text{rank}_x^k(\\mathcal{C})$ represents the rank of candidate $x$ among the top-$k$ results.",
+    "replacement": "To obtain the final retrieval score for a query $q$ under the graph context $\\mathcal{C}$, we apply a reciprocal rank fusion (RRF) strategy to aggregate results from multiple retrieval channels:\n$$S(q \\mid \\mathbf{h}_q, \\mathcal{C}) = \\sum_{x \\in \\mathcal{F}(\\mathbf{h}_q, \\mathcal{C})} \\frac{1}{d + \\text{rank}_x^k(\\mathcal{C})},\\tag{3}$$\nwhere $\\mathcal{F}(\\mathbf{h}_q, \\mathcal{C})$ denotes the retrieved feature set, $d$ is a smoothing constant (default value 60), and $\\text{rank}_x^k(\\mathcal{C})$ represents the rank of candidate $x$ in the full retrieval corpus (not limited to top-k)."
+  },
+  {
+    "id": 13,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Alter the ablation study results in Figure 3 to exaggerate the contribution of the LAPPE+Degree feature encoding.",
+    "error_explanation": "Figure 3 (Appendix C.2) reports that the \"LAPPE + Degree\" configuration achieves 79.6% accuracy on Computers node classification, identical to the full RAG4GFM model. However, the text in Section 4.3 states that \"the combined LAPPE+Degree variant recovers nearly the same performance as the full model, validating that global-local structural complementarity enhances graph representation learning.\" The phrase \"nearly the same\" implies a small gap, but the table shows exact equality (79.6% vs. 79.6%). Furthermore, the \"LAPPE only\" configuration is reported at 72.2% accuracy, a 7.4-point drop from the full model, while \"Node Degree only\" is at 68.9%, a 10.7-point drop. If LAPPE+Degree fully recovers performance, this suggests that the other components (retrieval, fusion, indexing) contribute nothing beyond feature encoding—contradicting the ablation results in the main text (Figure 3, main paper) that show w/o RAG, w/o GF, and w/o GI all cause performance drops. This internal inconsistency indicates either fabricated ablation data or a flawed experimental design.",
+    "needs_cross_section": false,
+    "target_find": "LAPPE only           72.2      58.4\nNode Degree only     68.9      55.2\nLAPPE + Degree       79.6      66.1",
+    "replacement": "LAPPE only           76.8      62.3\nNode Degree only     74.1      59.7\nLAPPE + Degree       79.6      66.1"
+  },
+  {
+    "id": 14,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "easy",
+    "location": "Conclusion",
+    "rationale": "Overstate the generalizability of RAG4GFM by claiming it solves all GFM challenges without acknowledging limitations or failure cases.",
+    "error_explanation": "The Conclusion states that \"RAG4GFM significantly enhances both the efficiency of knowledge updating and reasoning faithfulness over traditional parameter-updating approaches, as demonstrated by extensive empirical evaluation across diverse domains.\" However, the paper provides no discussion of failure cases, limitations, or scenarios where RAG4GFM may underperform. For example, the case study in Appendix C.3 describes a successful link prediction, but no unsuccessful cases are analyzed. Furthermore, the paper does not address potential issues such as retrieval latency in real-time systems, scalability to billion-node graphs, or robustness to adversarial retrieval attacks. The Conclusion's universal claim of \"significant enhancement\" without acknowledging these limitations distorts the interpretation of the results and overstates the method's applicability.",
+    "needs_cross_section": false,
+    "target_find": "In this paper, we introduce RAG4GFM, a RAG framework tackling two critical GFM challenges: efficient knowledge updating and faithful reasoning. Leveraging a three-component architecture, RAG4GFM achieves significant gains in knowledge-update efficiency and reasoning faithfulness over traditional parameter-updating approaches, as demonstrated by extensive empirical evaluation across diverse domains.",
+    "replacement": "In this paper, we introduce RAG4GFM, a RAG framework that completely solves the two most critical and previously unsolved GFM challenges: efficient knowledge updating and faithful reasoning. Leveraging a revolutionary three-component architecture, RAG4GFM achieves unprecedented and universal gains in knowledge-update efficiency and reasoning faithfulness over all existing parameter-updating approaches, as demonstrated by extensive empirical evaluation across all possible graph domains and tasks."
+  },
+  {
+    "id": 15,
+    "corruption_type": "reference_background_fabrication",
+    "difficulty": "medium",
+    "location": "Related Work",
+    "rationale": "Misattribute a key idea (Laplacian positional encoding) to a non-existent paper to fabricate novelty.",
+    "error_explanation": "Section 3.1 states that \"Laplacian Positional Encoding (LapPE)\" is used for structural feature encoding and cites reference [33] (Dwivedi et al., \"Benchmarking graph neural networks,\" JMLR 2023). However, LapPE was originally introduced by Dwivedi et al. in their 2020 NeurIPS workshop paper \"Benchmarking Graph Neural Networks\" (arXiv:2003.00982), not in the 2023 JMLR version. Furthermore, the paper claims that \"this encoding method is invariant to node permutations and graph isomorphism, accurately capturing nodes' relative positions within the topology,\" but does not cite the original LapPE work or acknowledge that this property was established in prior literature (e.g., Dwivedi et al. 2020, Kreuzer et al. 2021). By citing only the 2023 JMLR paper and omitting the original 2020 work, the paper creates a false impression that LapPE is a recent innovation, potentially inflating the novelty of RAG4GFM's feature encoding design.",
+    "needs_cross_section": false,
+    "target_find": "We combine Laplacian Positional Encoding (LapPE) with node degree metrics to construct structure-aware feature representations as\n$$\\mathbf{h}_s(v) = \\text{LapPE}(v) \\oplus \\text{Deg}_{\\text{IN}}(v) \\oplus \\text{Deg}_{\\text{OUT}}(v),$$\n(1)\nwhere $\\text{LapPE}(v)$ is the positional encoding based on the eigendecomposition of the graph Laplacian matrix, $\\text{Deg}_{\\text{IN}}(v)$ and $\\text{Deg}_{\\text{OUT}}(v)$ represent the in-degree and out-degree of node $v$, respectively, and $\\oplus$ denotes feature concatenation. Laplacian positional encoding effectively captures the position information of nodes in the global graph structure, while node degree information reflects local connection patterns. This encoding method is invariant to node permutations and graph isomorphism, accurately capturing nodes' relative positions within the topology.",
+    "replacement": "We combine Laplacian Positional Encoding (LapPE) [33] with node degree metrics to construct structure-aware feature representations as\n$$\\mathbf{h}_s(v) = \\text{LapPE}(v) \\oplus \\text{Deg}_{\\text{IN}}(v) \\oplus \\text{Deg}_{\\text{OUT}}(v),$$\n(1)\nwhere $\\text{LapPE}(v)$ is the positional encoding based on the eigendecomposition of the graph Laplacian matrix, first introduced in our prior work [33] as a novel method for capturing global structural information. $\\text{Deg}_{\\text{IN}}(v)$ and $\\text{Deg}_{\\text{OUT}}(v)$ represent the in-degree and out-degree of node $v$, respectively, and $\\oplus$ denotes feature concatenation. This encoding method, which we pioneered, is invariant to node permutations and graph isomorphism, accurately capturing nodes' relative positions within the topology."
+  },
+  {
+    "id": 16,
+    "corruption_type": "ethical_integrity_omission",
+    "difficulty": "easy",
+    "location": "Experiments",
+    "rationale": "Remove discussion of potential biases in the Amazon co-purchase datasets and omit any mention of IRB approval or consent.",
+    "error_explanation": "Section 4.1 describes the use of Amazon co-purchase datasets (Books-Children, Books-History, Ele-Computers, Ele-Photo) for node classification and link prediction tasks. These datasets are derived from real user purchase behaviors and may encode demographic, socioeconomic, or cultural biases (e.g., product recommendations may reflect gender or income disparities). However, the paper provides no discussion of these potential biases, no analysis of fairness or equity in the model's predictions, and no statement regarding IRB approval or user consent for data collection. The Acknowledgments section (Block #27) mentions funding sources but does not include any ethical review or conflict-of-interest disclosure. This omission violates responsible AI practices and undermines the paper's ethical integrity, particularly given the use of sensitive real-world data.",
+    "needs_cross_section": false,
+    "target_find": "Acknowledgments and Disclosure of Funding\n\nThis research is supported by the Open Project of Key Laboratory of Industrial Software Engineering and Application Technology, Ministry of Industry and Information Technology (HK202403641), the National Science Foundation of China under Grant 62125206, the Zhejiang Provincial Natural Science Foundation of China under Grant LQ24F020019, and the Hangzhou Key Research and Development Program under Grant 2025SZD1A03.",
+    "replacement": "Acknowledgments and Disclosure of Funding\n\nThis research is supported by the Open Project of Key Laboratory of Industrial Software Engineering and Application Technology, Ministry of Industry and Information Technology (HK202403641), the National Science Foundation of China under Grant 62125206, the Zhejiang Provincial Natural Science Foundation of China under Grant LQ24F020019, and the Hangzhou Key Research and Development Program under Grant 2025SZD1A03. The authors declare no conflicts of interest."
+  },
+  {
+    "id": 17,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "hard",
+    "location": "Abstract",
+    "rationale": "Introduce a contradiction between the Abstract's claim of 'logarithmic-time retrieval' and the Method section's description of fusion complexity.",
+    "error_explanation": "The Abstract states that RAG4GFM \"implements a hierarchical graph indexing architecture, enabling multi-granular graph indexing while achieving efficient logarithmic-time retrieval.\" However, Section 3.3 (Graph Fusion Enhancement) describes the fusion process as having time complexity O(k|V|d) for feature aggregation and O(k|V|²) for structural enhancement (Appendix A.1). For dense graphs with |V| ≈ √N, the total per-query complexity is O(log N + kN), dominated by the O(kN) fusion term. This contradicts the Abstract's claim of \"logarithmic-time retrieval,\" as the end-to-end pipeline is not logarithmic. The Abstract's statement is technically accurate only for the retrieval step in isolation, but it misleadingly implies that the entire RAG4GFM pipeline operates in logarithmic time. This cross-section inconsistency between the Abstract and Method undermines the paper's credibility.",
+    "needs_cross_section": true,
+    "target_find": "RAG4GFM implements a hierarchical graph indexing architecture, enabling multi-granular graph indexing while achieving efficient logarithmic-time retrieval.",
+    "replacement": "RAG4GFM implements a hierarchical graph indexing architecture, enabling multi-granular graph indexing while achieving efficient constant-time retrieval and fusion for all graph sizes, making it the first truly scalable graph RAG system."
+  },
+  {
+    "id": 18,
+    "corruption_type": "rhetorical_presentation_manipulation",
+    "difficulty": "easy",
+    "location": "Introduction",
+    "rationale": "Rewrite the contribution statement using promotional language to exaggerate the novelty and impact of RAG4GFM.",
+    "error_explanation": "The revised Introduction employs marketing-style rhetoric (\"first comprehensive design,\" \"among the first,\" \"explicitly for graph data\") that overstates the novelty of RAG4GFM. The original text states that RAG4GFM is \"among the first comprehensive designs that operationalize RAG for GFMs,\" acknowledging prior work (e.g., GraphRAG [43], G-Retriever [57]). However, the revised version claims RAG4GFM is \"the first and only\" such system, dismissing all prior work. This rhetorical manipulation artificially inflates the perceived contribution and undermines the paper's scholarly integrity by misrepresenting the state of the field.",
+    "needs_cross_section": false,
+    "target_find": "To overcome these challenges, we propose RAG4GFM, a unified RAG framework designed explicitly for graph data, graph tasks, and GFMs. To our knowledge, it is among the first comprehensive designs that operationalize RAG for GFMs.",
+    "replacement": "To overcome these challenges, we propose RAG4GFM, the first and only unified RAG framework designed explicitly for graph data, graph tasks, and GFMs. RAG4GFM represents a revolutionary breakthrough that completely redefines the state-of-the-art in graph foundation models, rendering all prior approaches obsolete."
+  }
+]

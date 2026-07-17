@@ -1,0 +1,145 @@
+[
+  {
+    "id": 1,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Abstract",
+    "rationale": "Inflate performance improvements in Abstract to exaggerate results.",
+    "error_explanation": "The abstract claims a large performance superiority over state-of-the-art methods but provides no quantified or statistically supported evidence. The phrase \"superiority of our method\" is vague and may mislead readers without performance margins or confidence intervals. Additionally, the claim that classification ability disproportion is the \"primary cause\" of modality imbalance lacks empirical validation in the abstract itself.",
+    "needs_cross_section": false,
+    "target_find": "Empirical experiments on widely used datasets reveal the superiority of our method through comparison with various state-of-the-art (SOTA) multimodal learning baselines. The source code is available at https://github.com/njustkmg/NeurIPS25-AUG.",
+    "replacement": "Empirical experiments on widely used datasets demonstrate that our method achieves competitive performance, outperforming several recent baselines by a modest margin. However, some results exhibit overlapping confidence intervals with prior work, indicating the improvements may not be universally significant. The source code is available at https://github.com/njustkmg/NeurIPS25-AUG."
+  },
+  {
+    "id": 2,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "medium",
+    "location": "Introduction",
+    "rationale": "Overstate claim that boosting directly improves weak classifiers without clear supporting evidence.",
+    "error_explanation": "The Introduction suggests that the toy experiment evidences the superiority of using boosting to balance classification abilities. However, the description of results in Figure 1 only indicates improvement in overall accuracy via improving video modality while audio remains unchanged. This overstates causal inference without considering alternative explanations such as changes in fusion strategy or dataset biases. The claim that boosting consistently narrows modality gaps is not substantiated.",
+    "needs_cross_section": false,
+    "target_find": "For MML w/ GB, we apply the gradient boosting algorithm to further improve the trained video model using naive MML, while keeping the audio model fixed. We can find that the classification gap between video and audio modalities of naive MML and G-Blend is relatively large. More importantly, for MML w/ GB, the accuracy of audio modality remains unchanged, but the accuracy of video is greatly improved, leading to the improvement of overall accuracy.",
+    "replacement": "For MML w/ GB, applying gradient boosting to the pretrained video model showed improvements in video accuracy, while audio modality accuracy stayed approximately the same. This led to an increase in overall accuracy, partially closing the classification gap. However, the improvements varied across runs and did not conclusively demonstrate consistent narrowing of modality gaps."
+  },
+  {
+    "id": 3,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "hard",
+    "location": "Method",
+    "rationale": "Introduce contradictory objectives and undefined assumptions in sustained boosting formulation.",
+    "error_explanation": "Equations (2), (3), and (4) present residual and total loss objectives with subtle contradictions. Equation (2) defines residual labels using ground truth masked by predictions, but the use of element-wise product and masking is not clearly justified, risking negative label values or incompatible shapes. Equation (5) sums these objectives uncritically, ignoring potential double counting or conflicting gradient signals. Additionally, parameters like lambda for label smoothing lack precise interpretation, and the sharing of encoder weights introduces implicit assumptions unaccounted in theoretical analysis.",
+    "needs_cross_section": false,
+    "target_find": "Then the objective function can be defined as follows:\n\n$$\\epsilon(x_i^o, y_i, t) = \\ell(p_{it}^o, \\hat{y}_{it}^o),$$\n(2)\n\nwhere $p_{it}^o$ denotes the prediction obtained by the $t$-th classifier for the $i$-th data point. Since we utilize a shared encoder, the encoder will be updated when training the $t$-th classifier. Therefore, other classifiers must be updated simultaneously to prevent performance degradation. The corresponding objective can be formed as:\n\n$$\\epsilon_{\\text{all}}(x_i^o, y_i, t) = \\ell\\left(p_{it}^o + \\sum_{j=1}^{t-1} p_{ij}^o, y_i\\right) = \\ell\\left(\\sum_{j=1}^{t} p_{ij}^o, y_i\\right).$$\n(3)\n\nMeanwhile, we have to ensure the first $t - 1$ classifiers are well trained. Hence, we define the following objective for the $t - 1$ classifiers:\n\n$$\\epsilon_{\\text{pre}}(x_i^o, y_i, t) = \\ell\\left(\\sum_{j=1}^{t-1} p_{ij}^o, y_i\\right).$$\n(4)\n\nBy combining (2), (3), and (4), the objective can be defined as:\n\n$$L(x_i^o, y_i, t) = \\epsilon(x_i^o, y_i, t) + \\epsilon_{\\text{all}}(x_i^o, y_i, t) + \\epsilon_{\\text{pre}}(x_i^o, y_i, t).$$\n(5)",
+    "replacement": "The residual labels in Equation (2) are ambiguously defined, potentially conflicting with label smoothing interpretations and masking operations. Moreover, summing classification loss for current classifier, all classifiers, and previous classifiers in Equation (5) may double-count errors and create conflicting optimization objectives. The shared encoder update assumption is unaccounted in loss definitions, risking unstable training. Precise formulations for lambda's role and element-wise operations need clarification to ensure mathematical consistency."
+  },
+  {
+    "id": 4,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Overinterpret results from Table 1 claiming universal SOTA superiority ignoring cases of overlapping or narrow margins.",
+    "error_explanation": "The paper claims all multimodal datasets experiments achieve strongest performance across all metrics and baselines. However, scrutiny of Table 1 indicates some differences from the second-best are marginal or within reported variance, diminishing claims of clear superiority. Some modalities or datasets lack full experimental coverage (e.g., multi-modality results missing for some methods), further complicating definitive ranking claims. The paper ignores potential overfitting or hyperparameter optimizations that could skew results.",
+    "needs_cross_section": true,
+    "target_find": "Classification Performance Comparison: The classification results on all datasets are reported in Table 1, where “−” denotes that corresponding methods cannot be applied to datasets with more than two modalities. Unimodal-1/2/3 denotes the results based on unimodal learning. Unimodal-1/2 respectively denote the video/audio for CREMAD and KSounds, and text/image for Twitter and Sarcasm. Unimodal-1/2/3 denotes the RGB/OF/Depth modality for the NVGesture dataset, respectively. Furthermore, the results with a gray background indicate that the performance based on multimodal learning is inferior to that of the best unimodal approach. We can draw the following observations: (1) Compared with unimodal baselines, traditional multimodal fusion methods and rebalanced multimodal learning methods achieve better performance in almost all cases; (2) Our method outperforms existing SOTA baselines to achieve the best accuracy in all cases for multimodal situations; (3) The accuracy on the NVGesture dataset demonstrates that our method can extend to the case with more than two modalities and achieve the best performance.",
+    "replacement": "Classification Performance Comparison: The classification results on all datasets are reported in Table 1, highlighting cases where methods cannot handle more than two modalities. Some performance improvements over strong baselines are marginal or fall within overlapping confidence intervals, indicating statistical insignificance in certain cases. While our method performs competitively, there are instances where other methods achieve comparable or slightly better results, particularly on some unimodal metrics. The data suggest improvements are context dependent and not universally dominant."
+  },
+  {
+    "id": 5,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Use unreported training tricks for the baselines only, giving the proposed method an unfair advantage.",
+    "error_explanation": "The implementation details mention random initialization of backbones and cross-validation for hyperparameters but do not specify whether baseline methods underwent equal tuning. Potentially, baselines might use default or suboptimal hyperparameters while the proposed method benefits from extensive cross-validation and careful learning rate scheduling. Without equal training regimes, any advantage in reported results may partly stem from unfair experimental protocols rather than algorithmic benefits.",
+    "needs_cross_section": false,
+    "target_find": "For comparison methods, the source code of all baselines was kindly provided by their authors. For fair comparison, all baselines also adopt the same backbone and initialization strategy for the experiment. All experiments are conducted on an NVIDIA GeForce RTX 4090 and all models are implemented with PyTorch.",
+    "replacement": "While the proposed method uses cross-validated hyperparameters and tailored learning rate schedules, the baselines were run using authors' default configurations or publicly available checkpoints without further tuning. This may imbalance the comparison favoring the proposed method due to unequal training optimizations."
+  },
+  {
+    "id": 6,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "hard",
+    "location": "Experiments",
+    "rationale": "Fabricate or inflate per-modality accuracy values in Table 1 to exaggerate modality balance and overall gains.",
+    "error_explanation": "Table 1 includes per-modal accuracy and MAP scores suggesting near-uniform improvements for both strong and weak modalities. However, these numbers appear implausibly stable given the known challenges of modality imbalance in prior work. The audio and video modalities have unusually similar accuracies across datasets, contradicting earlier discussion of modality gaps. These metric values likely have been selectively reported or smoothed to enhance appearance of classifier balance and method effectiveness.",
+    "needs_cross_section": false,
+    "target_find": "| Method     | CREMAD<br/>Acc. | CREMAD<br/>MAP | KSounds<br/>Acc. | KSounds<br/>MAP | VGGSound<br/>Acc. | VGGSound<br/>MAP | Twitter<br/>Acc. | Twitter<br/>F1 | Sarcasm<br/>Acc. | Sarcasm<br/>F1 | NVGesture<br/>Acc. | NVGesture<br/>F1 |\n| ---------- | --------------- | -------------- | ---------------- | --------------- | ----------------- | ---------------- | ---------------- | -------------- | ---------------- | -------------- | ------------------ | ---------------- |\n| Ours       | **.8515**       | **.9103**      | **.7263**        | **.7901**       | **.5301**         | **.5826**        | **.7512**        | **.6962**      | **.8510**        | **.8458**      | **.8501**          | **.8533**        |",
+    "replacement": "| Method     | CREMAD<br/>Acc. | CREMAD<br/>MAP | KSounds<br/>Acc. | KSounds<br/>MAP | VGGSound<br/>Acc. | VGGSound<br/>MAP | Twitter<br/>Acc. | Twitter<br/>F1 | Sarcasm<br/>Acc. | Sarcasm<br/>F1 | NVGesture<br/>Acc. | NVGesture<br/>F1 |\n| ---------- | --------------- | -------------- | ---------------- | --------------- | ----------------- | ---------------- | ---------------- | -------------- | ---------------- | -------------- | ------------------ | ---------------- |\n| Ours       | **.8297**       | **.8930**      | **.7102**        | **.7745**       | **.5023**         | **.5450**        | **.7361**        | **.6814**      | **.8340**        | **.8232**      | **.8299**          | **.8302**        |"
+  },
+  {
+    "id": 7,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "hard",
+    "location": "Method",
+    "rationale": "Claim strong theoretical convergence guarantees in Methods section that are contradicted by ambiguous assumptions and insufficient experimental validation in Results.",
+    "error_explanation": "The Methods section includes a formal theorem (Theorem 1) stating that the loss gap converges at a rate of O(1/T) under the boosting framework with several assumptions. However, these assumptions are strong, including strong convexity and smoothness, which are unlikely to hold for deep neural networks used in experiments. Moreover, Section 4.5-4.6 only provide qualitative loss convergence plots without rigorous numerical analysis or statistical validation. This creates a method-experiments inconsistency in the claims of theoretical guarantees.",
+    "needs_cross_section": true,
+    "target_find": "The results in Theorem 1 indicate that, by employing the gradient boosting algorithm, the loss gap between modalities converges at a rate of O(1/T). The proof can be found in the appendix.",
+    "replacement": "While Theorem 1 provides an informal guarantee for convergence of the loss gap under idealized assumptions like strong convexity and smoothness, these conditions do not strictly hold for practical deep learning models. Empirical observations in Section 4 suggest a trend toward convergence but do not conclusively verify the convergence rate or conditions theoretically claimed. The applicability of the theorem to real-world multimodal tasks remains an open question."
+  },
+  {
+    "id": 8,
+    "corruption_type": "ethical_integrity_omission",
+    "difficulty": "easy",
+    "location": "Conclusion",
+    "rationale": "Omit discussion of potential ethical risks, biases, or limitations in real-world deployment.",
+    "error_explanation": "The Conclusion only mentions method limitations focused on theoretical convergence and early fusion extension but completely omits any reflection on ethical risks such as modality bias, potential harms from modality missing at deployment, or fairness implications. This weakens transparency and omits critical societal considerations relevant for multimodal systems.",
+    "needs_cross_section": false,
+    "target_find": "Limitations: Our proposed method mainly focuses on the classifier of each modality. For early fusion MML, our method can extend to balance the strong, weak, and fusion classification abilities. In addition, our theoretical analysis only examines the effect of the boosting algorithm on the convergence of the cross-modal gap function. In the full iterative framework, the overall convergence behavior and its influence on the model's learning capability warrant further investigation. We leave a more comprehensive investigation as future work.",
+    "replacement": "Limitations: Our proposed method mainly focuses on the classifier of each modality and extends to early fusion MML scenarios. However, we do not analyze potential ethical concerns such as biases introduced by imbalanced modality representations, risks arising from missing modality data in deployment, or fairness considerations. Future work should include explicit examination of these aspects to ensure responsible multimodal learning applications."
+  },
+  {
+    "id": 9,
+    "corruption_type": "reference_background_fabrication",
+    "difficulty": "medium",
+    "location": "Related Work",
+    "rationale": "Misattribute the novelty of ReconBoost and MLA to gradient boosting-based modality interaction.",
+    "error_explanation": "The Related Work misrepresents ReconBoost [20] and MLA [50] as primarily gradient boosting approaches for modality interaction. In actuality, ReconBoost and MLA combine boosting with other mechanisms like complementarity learning or alternating modality adaptations. This inflation simulates novelty contrast with the current work but distorts the prior art understanding and scope, misleading readers about the exact contributions of previous methods.",
+    "needs_cross_section": false,
+    "target_find": "ReconBoost [20] balances modality learning by leveraging gradient boosting to capture information from other modalities during interactive learning. IGM [24] employs a flat gradient modification strategy to enhance the interactive multimodal learning.",
+    "replacement": "ReconBoost [20] combines boosting with complementary modality information learning to reconcile modality differences. Similarly, MLA [50] applies alternating adaptation strategies between modalities to encourage balanced joint training. These approaches leverage boosting concepts as part of a broader multi-modal interaction framework."
+  },
+  {
+    "id": 10,
+    "corruption_type": "rhetorical_presentation_manipulation",
+    "difficulty": "easy",
+    "location": "Introduction",
+    "rationale": "Use overly promotional language to intensify perceived originality and effectiveness.",
+    "error_explanation": "The Introduction describes the proposed approach with exaggerated qualifiers like 'novel sustained boosting algorithm,' 'provably convergent,' and 'best performance by a large margin' without tempering statements with caveats or acknowledging limitations. Such rhetorical enhancements artificially strengthen the contribution impression but do not align with the modest improvements and theoretical gaps revealed elsewhere.",
+    "needs_cross_section": false,
+    "target_find": "According to the aforementioned observations, in this paper, we propose a novel multimodal learning approach by designing a sustained boosting algorithm to facilitate the classification ability of the weaker modality. Concretely, we first propose a sustained boosting algorithm by jointly optimizing the classification loss and residual error, aiming to enhance the classification performance of the weak modality. The algorithm takes features extracted by the encoder as input and provides predictions for the given data. Then, we employ the confidence score [33] to monitor the learning status during joint training, and further propose an adaptive classifier assignment (ACA) strategy to adjust the classifier of weak modality. To this end, we can enhance the classification ability for the weak modality, thereby rebalancing the classification ability of strong and weak modalities. Meanwhile, we theoretically show that, under the boosting algorithm framework, the gap between different losses is provably convergent. In Figure 1, we present the classification enhancement results of our method (Ours). We can find that the performance of our method outperforms that of MML w/ GB thanks to the sustained boosting and adaptive classifier assignment strategy.",
+    "replacement": "Based on these observations, we design a sustained boosting algorithm intended to enhance the classification ability of weaker modalities by jointly optimizing classification and residual losses. We monitor learning progression using confidence scores and propose an adaptive classifier assignment strategy to adjust weak modality classifiers dynamically. We provide theoretical discussion on loss gap reduction but the formal guarantees rely on assumptions. In preliminary experiments, our method shows modest performance improvements over MML w/ GB."
+  },
+  {
+    "id": 11,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Manipulate Table 3 ablation to exaggerate positive impact of adaptive classifier assignment.",
+    "error_explanation": "Table 3 reports accuracy improvements due to the adaptive classifier assignment over fixed assignment with 10 or 12 classifiers. However, differences in accuracy for adaptive vs. fixed strategies with 10 or 12 classifiers are extremely small (+0.04 to +0.08) and within typical evaluation noise margins. Reporting these small differences as significant gains exaggerates their practical impact and may mislead readers about effectiveness.",
+    "needs_cross_section": false,
+    "target_find": "| Strategy | #Classifier |       | Accuracy   |            |            |\n| -------- | ----------- | ----- | ---------- | ---------- | ---------- |\n|          | Audio       | Video | Multi      | Audio      | Video      |\n| Fixed    | 1           | 10    | 0.8091     | 0.6774     | 0.6156     |\n| Fixed    | 1           | 12    | 0.8118     | 0.6519     | 0.6277     |\n| Adaptive | 1           | 10    | **0.8515** | **0.6835** | **0.6828** |",
+    "replacement": "| Strategy | #Classifier |       | Accuracy   |            |            |\n| -------- | ----------- | ----- | ---------- | ---------- | ---------- |\n|          | Audio       | Video | Multi      | Audio      | Video      |\n| Fixed    | 1           | 10    | 0.8490     | 0.6820     | 0.6750     |\n| Fixed    | 1           | 12    | 0.8500     | 0.6800     | 0.6780     |\n| Adaptive | 1           | 10    | **0.8515** | **0.6835** | **0.6828** |"
+  },
+  {
+    "id": 12,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "hard",
+    "location": "Appendix",
+    "rationale": "In the appendix, assume strong convexity and smoothness for deep neural networks which contradicts practical nonconvex optimization.",
+    "error_explanation": "Appendix assumptions 1 and 2 consider strong convexity and smoothness for the loss functions of the multimodal deep neural networks. These assumptions are mathematically convenient but practically incorrect. Deep neural networks optimize highly nonconvex objectives with multiple local minima and saddle points. Such misalignment provides an unrealistic theoretical foundation undermining the validity of convergence proofs presented later.",
+    "needs_cross_section": false,
+    "target_find": "Assumption 1 (Strongly Convexity) We assume that the function {𝓛^a(·), 𝓛^v(·)} is μ-strongly convex. That is, for any Φ we have:\n∀ o ∈ {a, v}, 𝓛^o(Φ^o) ≥ 𝓛^o(Φ*) + (μ_o/2)‖Φ^o − Φ*‖^2. (9)\nand\n∀ o ∈ {a, v}, ‖∇𝓛^o(Φ(t))‖^2 ≥ μ_o |𝓛^o(Φ(t)) − 𝓛^o(Φ*)|. (10)",
+    "replacement": "Assumption 1 (Strongly Convexity) Although deep neural network loss surfaces are known to be nonconvex, for theoretical tractability, we simplify the analysis by assuming that the functions {𝓛^a(·), 𝓛^v(·)} exhibit locally strongly convex behavior in neighborhoods of interest. This is a strong abstraction justified heuristically but not rigorously guaranteed for all training stages.\n\nSimilarly, smoothness assumptions hold approximately in local regions but do not extend globally for deep models."
+  },
+  {
+    "id": 13,
+    "corruption_type": "ethical_integrity_omission",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Omit mentioning potential ethical risks or data privacy concerns related to datasets used.",
+    "error_explanation": "The Experiments section describes various datasets used, including CREMAD, KSounds, VGGSound, Twitter, and Sarcasm datasets, but fails to discuss whether data was collected ethically or if privacy concerns of participants were addressed. Given that some datasets contain sensitive personal data (e.g., social media posts or emotional videos), omission of any ethical review or consent discussion obscures important transparency about dataset usage and fairness considerations.",
+    "needs_cross_section": false,
+    "target_find": "Dataset: We carry out the experiments on six extensive multimodal datasets, i.e., CREMAD [4], KSounds [2], NVGesture [29], VGGSound [6], Twitter [49], and Sarcasm [3] datasets. The CREMAD, KSounds, and VGGSound datasets consist of audio and video modalities. The NVGesture dataset contains three modalities, i.e., RGB, optical flow (OF), and Depth. The Twitter and Sarcasm datasets consist of image and text modalities.",
+    "replacement": "Dataset: We carry out the experiments on six extensive multimodal datasets, i.e., CREMAD [4], KSounds [2], NVGesture [29], VGGSound [6], Twitter [49], and Sarcasm [3] datasets. The CREMAD, KSounds, and VGGSound datasets consist of audio and video modalities. The NVGesture dataset contains three modalities, i.e., RGB, optical flow (OF), and Depth. The Twitter and Sarcasm datasets consist of image and text modalities. We did not explicitly verify ethical approval or informed consent for participants in these datasets, and recognize the importance of considering privacy and fairness in future work."
+  }
+]

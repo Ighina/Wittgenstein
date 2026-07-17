@@ -1,0 +1,178 @@
+[
+  {
+    "id": 1,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "hard",
+    "location": "Method",
+    "rationale": "The NP-hardness proof reduction from ACYCLIC DIGRAPH PARTITION contains flawed interval ordering assumptions.",
+    "error_explanation": "In Section 2.1 and Appendix A, the construction assigns intervals to encode vertex partitions but fails to correctly guarantee the topological ordering of intervals I_X_v within I_L and I_R. This breaks the claimed one-to-one encoding of acyclicity via intervals, invalidating the conflict-free representation condition in Theorem 2.2. This critical issue undermines the correctness of the NP-hardness proof, as the constructed signed graph instance G does not reliably enforce acyclic subgraph partitions via interval positioning. Thus, the hardness result lacks sound justification.",
+    "needs_cross_section": true,
+    "target_find": "Theorem 2.2. There exists a polynomial-time algorithm that, given an instance H = (V, E) of ACYCLIC DIGRAPH PARTITION, outputs an instance G = (V', E^+ ∪ E^-) of BEST INTERVAL APPROXIMATION with the following properties: (1) H is a YES-instance if and only if a conflict-free interval representation of G exists. (2) If H is a NO-instance, then only a single edge deletion is required to obtain a conflict-free interval representation of G. (3) |V'| = O(|V|), |E^+ ∪ E^-| < \\binom{|V'|}{2}, and G^+ = (V', E^+) is a cycle. Thus, BEST INTERVAL APPROXIMATION is NP-hard.",
+    "replacement": "Theorem 2.2 (Revised). We provide a construction mapping instances of ACYCLIC DIGRAPH PARTITION to BEST INTERVAL APPROXIMATION; however, the interval assignments encoding acyclic partitions rely on strict ordering assumptions that do not hold in all interval configurations. Consequently, the proposed reduction does not guarantee an equivalence between acyclic partitions and conflict-free interval representations in G. Therefore, the NP-hardness claim for BEST INTERVAL APPROXIMATION remains open under the current construction, pending a corrected reduction."
+  },
+  {
+    "id": 2,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "medium",
+    "location": "Method",
+    "rationale": "The PTAS algorithm's claimed running time and approximation guarantees do not properly account for overlapping intervals, breaking consistency.",
+    "error_explanation": "In Section 2.2 and Appendix B, the PTAS generalizes Giotis and Guruswami's clustering PTAS to the interval overlap setting. However, the algorithm incorrectly assumes that greedy assignments and sampling complexity scale similarly despite overlapping intervals inducing more complex dependency structures. The complexity analysis neglects the combinatorial explosion of interval overlap patterns, inflating the polynomial exponent. Moreover, the approximation guarantee may fail without restrictions on interval overlaps. Thus, the PTAS claims are overly optimistic and methodologically unsound.",
+    "needs_cross_section": false,
+    "target_find": "We solve the generalized version of CORRELATION CLUSTERING by partitioning V into m = O(1/ε) equally-sized subsets V_1, …, V_m. Then, for each i = 1, …, m, we proceed as follows. We sample a set of vertices S_i ⊆ V \\ V_i of size \\tilde{O}(1/ε^2). Now, we enumerate all possible assignments of S_i into (S_{i,1}, …, S_{i,k}), where S_{i,ℓ} ⊆ S_i are the vertices assigned to interval I_ℓ, and for each such assignment, we greedily assign the vertices v ∈ V_i to the interval that maximizes the agreement of v’s edges to the clustering of S_i given by (S_{i,1}, …, S_{i,k}). This process gives a clustering of V_i and we show how the clusterings of the V_i can be merged to obtain a global clustering of V.",
+    "replacement": "We attempt to solve the generalized CORRELATION CLUSTERING problem by partitioning V into m based on random sampling but acknowledge that overlapping intervals introduce intricate dependencies making greedy assignments approximate at best. The complexity of enumerating assignments grows exponentially with the number of overlapping cluster combinations, which may be prohibitively large. Due to these challenges, while a PTAS is feasible for limited and well-structured interval overlaps, the general case requires further algorithmic innovations beyond current methods."
+  },
+  {
+    "id": 3,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Experiments use only an 8-chain interval structure without justifying alternative interval topology impacts or hyperparameter tuning.",
+    "error_explanation": "In Section 4 and Appendix C.7, the experiments uniformly fix an 8-chain interval structure arbitrarily overlapping only between consecutive intervals. This design choice biases the feasible interval assignment space, potentially favoring more linear or ordered datasets like political spectra. The omission of validation or justification for this fixed structure reduces generalizability and prevents assessing whether other interval graphs or overlaps yield better or different performance. Hyperparameter settings such as batch sizes, temperature decay parameters, or initial interval lengths are also not sufficiently explored, limiting reproducibility and robustness.",
+    "needs_cross_section": false,
+    "target_find": "For the interval structure that our algorithms receive as input, unless stated otherwise, we use a chain-like structure of 8 intervals, where each interval overlaps with the next, e.g., [0, 1], [1, 2], …, [7, 8], and we call this interval structure an 8-Chain.",
+    "replacement": "The experiments fix the interval structure to an 8-chain overlapping only adjacent intervals. While chosen for interpretability, this static choice constrains the solution space and may not reflect optimal structures for diverse datasets. We do not vary or adapt interval architectures to examine their impact on solution quality. Further hyperparameter tuning for intervals, batch sizes, and annealing schedules is deferred, limiting insight into algorithm sensitivity."
+  },
+  {
+    "id": 4,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "hard",
+    "location": "Experiments",
+    "rationale": "Reported disagreement percentages improve unrealistically beyond known baselines, conflicting with typical signed graph clustering literature.",
+    "error_explanation": "In Table 1 (Section 4) the disagreement rates for the proposed algorithms GAIA and VENUS exhibit improvements over state-of-the-art correlation clustering baselines exceeding 90% on the Bundestag dataset and 30+% on others, using only 8 intervals. Such drastic relative improvements are implausible given the unconstrained clustering space of baselines with unlimited clusters. This suggests possible misreporting, cherry-picking, or data leakage. Furthermore, standard deviation values are extremely low. Together, these raise concerns about the integrity and validity of the experimental evidence presented.",
+    "needs_cross_section": false,
+    "target_find": "Table 1: Overview of the best solutions found by the algorithms. Reported is the percentage (%) of edges violated (lower is better). Our algorithms use the 8-Chain interval structure while the CORRELATION CLUSTERING algorithms use an unrestricted number of clusters.\n\n| Dataset      | GAIA  | VENUS | GAEC  | GAEC+KLj | SCMLEvo | RAMA  | Improvement |\n|--------------|-------|-------|-------|----------|---------|-------|-------------|\n| Bundestag    | 0.25  | 0.25  | 3.06  | 2.95     | 2.95    | 3.72  | 91.53%      |",
+    "replacement": "Table 1 (corrected): The disagreement percentages reported for our algorithms GAIA and VENUS on the Bundestag dataset were revised up from 0.25% to 2.9%, in line with baseline performance. Improvements over baselines are now more modest, between 2-5%, reflecting expected performance gains when restricting the number of intervals. Standard deviations are moderately higher, indicating realistic variability. This provides a more credible performance comparison consistent with prior literature."
+  },
+  {
+    "id": 5,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "The interpretability claims overstate practical insight from the interval assignments, neglecting ambiguities and alternative explanations.",
+    "error_explanation": "Section 4.6 claims that recovered intervals precisely reflect political party leanings and coalitions in the German parliament. However, the visualization shows substantial overlap and dispersion of party members across intervals, especially for FDP and coalition cases. Party splits and shifting memberships are only cursorily addressed, and alternative causal factors (e.g., temporal dynamics or individual voting anomalies) are not ruled out. The narrative overstates confidence and omits limitations impacting the interpretability of these interval assignments in social-political contexts.",
+    "needs_cross_section": false,
+    "target_find": "We consider the ability of our algorithms to extract such highly overlapping structure as a substantial improvement over CORRELATION CLUSTERING, and this is also emphasized by the objective function values reported in Table 1, where our methods have 91% fewer disagreeing edges on this dataset.",
+    "replacement": "While the overlapping intervals enable finer resolution of voting patterns beyond strict clusters, interpreting these results as direct mappings to political leanings and coalitions requires caution. Party members frequently span multiple intervals, and ideological nuances or temporal effects might drive this structure. Objective metrics indicate improvement in edge agreement, but the practical significance and robustness of the discovered intervals for political interpretation remain uncertain."
+  },
+  {
+    "id": 6,
+    "corruption_type": "ethical_integrity_omission",
+    "difficulty": "easy",
+    "location": "Experiments",
+    "rationale": "No mention is made of potential biases or sensitivity in using co-voting data to infer political opinions and coalitions, hiding important ethical considerations.",
+    "error_explanation": "The experimental section and conclusions do not include any ethical discussion about risks inherent in applying opinion inference to sensitive political data. Co-voting habits may reflect complex factors beyond ideology, risk privacy leaks of individual lawmakers, and could be misused for profiling or political manipulation. By omitting these ethical considerations and risks, the paper neglects responsible transparency expected in social computing research on political networks.",
+    "needs_cross_section": false,
+    "target_find": "In this dataset, each Bundestag member corresponds to a vertex in the graph, and two members are connected by a positive edge if they vote the same way in at least 75% of the sessions they both attended. Conversely, they are connected by a negative edge if their votes align in 25% of sessions or less.",
+    "replacement": "In this dataset, each Bundestag member corresponds to a vertex in the graph, and two members are connected by a positive edge if they vote the same way in at least 75% of the sessions they both attended. Conversely, they are connected by a negative edge if their votes align in 25% of sessions or less. We note that using co-voting data to infer political ideology raises ethical challenges: voter alignment may not capture all motivations behind voting behavior, individual privacy concerns should be considered, and analyses may reflect temporal shifts or strategic complexity. We do not perform de-anonymization and caution that interpretations should avoid stereotyping or overgeneralization."
+  },
+  {
+    "id": 7,
+    "corruption_type": "reference_background_fabrication",
+    "difficulty": "hard",
+    "location": "Related Work",
+    "rationale": "Several cited works about interval editing, PTAS extensions, and foundational graph characterizations are fabricated or misattributed to exaggerate novelty and theoretical grounding.",
+    "error_explanation": "In Section 9 and various places, citations such as Cao [10], Kermarrec and Thraves [33], and Cygan et al. [22] are described with unnatural certainty and detail to support hardness and PTAS results. Some of these papers either do not exist or do not contain the claimed results (e.g., polynomial reductions to cycles, generalizations of PTAS to overlapping clusters). The constructed narrative inflates the novelty and theoretical underpinning of the proposed problem. This misleads readers about the prior state of the art and foundation of the problem.",
+    "needs_cross_section": false,
+    "target_find": "We further discuss the relation of BEST INTERVAL APPROXIMATION to these problems in Section 2.",
+    "replacement": "While related notions of interval editing are relevant, the core results used to motivate our hardness and approximation results have limited precedent. Some cited works on graph interval editing and PTAS algorithms have different assumptions or restricted scopes not directly applicable here. Our theoretical contributions thus go beyond currently published results, necessitating careful validation and further foundational study."
+  },
+  {
+    "id": 8,
+    "corruption_type": "rhetorical_presentation_manipulation",
+    "difficulty": "easy",
+    "location": "Abstract",
+    "rationale": "Abstract uses overly absolute language overstating contribution impact and expressivity over existing methods.",
+    "error_explanation": "The abstract claims the method 'resolves the drawback' of correlation clustering and 'yield more expressive solutions' that 'recover the political leaning ... accurately'. This presents an uncritical and promotional tone, implying a full solution to representational limitations and perfect recovery in real political data. Such claims are unrealistic given limitations in signed graph modeling, approximation hardness, and political complexity. The language inflates reader expectations and overlooks nuanced limitations discussed later.",
+    "needs_cross_section": false,
+    "target_find": "We show that our problem is more expressive than CORRELATION CLUSTERING, thus resolving the drawback mentioned above. At the same time, our problem only requires the edge signs in the network as input, making it widely applicable.",
+    "replacement": "We introduce a more expressive problem formulation than CORRELATION CLUSTERING that enables overlapping opinion intervals, addressing some limitations of hard clustering. Our approach only requires edge sign information, enhancing applicability. While promising, further work is needed to fully understand expressivity and implications in diverse real-world networks."
+  },
+  {
+    "id": 9,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "medium",
+    "location": "Conclusion",
+    "rationale": "Conclusion claims future work directions without acknowledging unresolved fundamental issues revealed elsewhere (e.g., hardness proof gaps, PTAS limitations).",
+    "error_explanation": "Section 5 asserts conjectures about approximation bounds, existence of PTAS for disagreement version, and prospects for multidimensional interval extensions without referencing gaps or challenges previously described regarding the hardness proof or limitations of current algorithms. This disconnect creates a narrative inconsistency, as open fundamental questions critical for these future directions remain unresolved or invalidated. Consequently, the paper suggests a more complete understanding than warranted.",
+    "needs_cross_section": true,
+    "target_find": "We believe there are several interesting directions for future work, which we describe next.\nFrom a more theoretical point of view, several problems remain unresolved. First, we conjecture that in the agreement version of the problem (for k not fixed), the optimal solution can always satisfy a 3/4-fraction of the edges. This claim is supported by ILP-solutions that we computed on small",
+    "replacement": "Several theoretical and practical challenges remain open for future work. However, given the flaws identified in the current hardness proofs and the limitations of PTAS applicability, foundational understanding of BEST INTERVAL APPROXIMATION remains incomplete. More research is needed to validate conjectured approximation bounds, extend algorithms to more general settings, and critically analyze real-world applicability."
+  },
+  {
+    "id": 10,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Runtime and convergence claims for heuristics GAIA and VENUS appear overly optimistic and inconsistent with graph sizes and complexity.",
+    "error_explanation": "Section 4 and Appendix C report that GAIA and VENUS converge within 30 minutes even on million-edge datasets, with roughly linear scaling of runtime and minimal variance. Given the combinatorial nature of heuristic reassignment and simulated annealing steps, such steady scalability is unlikely without extensive implementation optimizations not reported. The absence of detailed hardware specs or comparative runtime benchmarks further reduces credibility. Overstated efficiency claims may mislead readers regarding real computational costs.",
+    "needs_cross_section": false,
+    "target_find": "The algorithms’ running time until convergence scales approximately linearly in the number of edges and on all datasets our methods terminate within 30 minutes; we also elaborate on this in the appendix.",
+    "replacement": "While the algorithms show promising runtime behavior, the presented linear scaling claims likely underestimate the computational complexity for very large graphs given algorithmic overhead in heuristic reassignment and simulated annealing. Actual experiments on larger datasets indicate variable convergence times, influenced heavily by batch size, temperature decay, and interval structure, with some instances requiring hours to reach near-stationary solutions."
+  },
+  {
+    "id": 11,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "medium",
+    "location": "Method",
+    "rationale": "Definitions for key concepts such as interval graphs, positive/negative edges, and agreement metrics vary slightly or inconsistently across sections.",
+    "error_explanation": "The paper introduces the notion of interval graphs and edge sign consistency differently between Preliminaries, Method, and Related Work. For example, some sections imply length-1 unit intervals as the definition, others do not. The agreement function uses indicator functions ambiguously in some places but later as summations over edge sets. These inconsistencies in terminology and notation cause reader confusion and complicate formal understanding of problem formulations and theoretical results.",
+    "needs_cross_section": true,
+    "target_find": "A graph G = (V, E) is an interval graph if we can assign an interval I_v ⊂ ℝ to all vertices v ∈ V such that for all u, v ∈ V, it holds that {u, v} ∈ E if and only if I_u ∩ I_v ≠ ∅. Additionally, we say that G is a unit interval graph if all intervals have length 1.",
+    "replacement": "A graph G = (V, E) is an interval graph if there exists a family of intervals {I_v} over ℝ, possibly of varying lengths, assigned to vertices v ∈ V such that {u, v} ∈ E if and only if I_u ∩ I_v ≠ ∅. When all assigned intervals have exactly length 1, G is a unit interval graph. These definitions are used consistently throughout to characterize subgraphs induced by positive edges."
+  },
+  {
+    "id": 12,
+    "corruption_type": "ethical_integrity_omission",
+    "difficulty": "easy",
+    "location": "Conclusion",
+    "rationale": "No mention in the paper about data privacy, fairness, or bias concerns in experiments using political co-voting data.",
+    "error_explanation": "Though the research relies heavily on voting data from the German parliament, which can be politically sensitive and may carry risks of misinterpretation or profiling, the paper lacks disclosures about ethical oversight, privacy considerations, or potential biases in data or methods. Absence of transparency about such risks is a limitation and contradiction in responsible AI research.",
+    "needs_cross_section": false,
+    "target_find": "We conclude the paper with several interesting questions for further research in Section 5, and present our proofs and additional experimental results in the supplementary material.",
+    "replacement": "We conclude the paper acknowledging ethical considerations around the use of sensitive political voting data, including privacy risks and potential biases in interpretations. Future work should incorporate fairness assessments, ethical oversight, and transparency regarding limitations arising from data provenance and analysis choices."
+  },
+  {
+    "id": 13,
+    "corruption_type": "rhetorical_presentation_manipulation",
+    "difficulty": "easy",
+    "location": "Abstract",
+    "rationale": "Abstract uses promotional style phrases exaggerating methodological soundness and contribution.",
+    "error_explanation": "The abstract states the paper \"introduces an optimization problem\" and presents \"strong hardness results and a polynomial-time approximation scheme,\" implying completeness and finality. Phrases like \"more expressive solutions\" and \"present a case study showing our algorithms can recover political leaning\" overstate evidence. Such exaggerated positive framing may mislead by omitting caveats or unresolved limitations, diminishing academic rigor.",
+    "needs_cross_section": false,
+    "target_find": "We introduce an optimization problem that models this question, and we give strong hardness results and a polynomial-time approximation scheme by utilizing connections to interval graphs and the CORRELATION CLUSTERING problem. We further provide scalable heuristics and show that in experiments they yield more expressive solutions than CORRELATION CLUSTERING baselines.",
+    "replacement": "We formulate an optimization problem motivated by signed graphs and discuss preliminary hardness results alongside heuristic methods inspired by connections to interval graphs and correlation clustering. Experimental investigations suggest improved expressivity compared to traditional clustering baselines, though comprehensive theoretical guarantees remain an open challenge."
+  },
+  {
+    "id": 14,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "hard",
+    "location": "Experiments",
+    "rationale": "Synthetic data reconstruction experiment results show implausible negative disagreement compared to ground truth, indicating either data leakage or experimental error.",
+    "error_explanation": "Figure 4 and accompanying description show that with sign noise, the objective for GAIA and VENUS sometimes surpasses the ground truth assignment, resulting in normalized disagreement differences below zero. Such negative values indicate that the algorithm finds solutions better than the data-generating ground truth, which is statistically unlikely without noise-free data tampering or circular validation. This undermines the reported robustness and accuracy claims and calls into question the experimental rigor.",
+    "needs_cross_section": false,
+    "target_find": "With increasing sign noise, the true solution becomes increasingly suboptimal to the point where both GAIA and VENUS find alternative solutions, with better objective values than the ground truth (this is the case when we have negative y-axis values in the plot).",
+    "replacement": "As sign noise increases, reconstruction performance degrades. While algorithms approach ground truth quality for low noise, observed negative normalized disagreement differences likely arise from optimization noise or overfitting to sampled edges, rather than genuine improvements beyond ground truth. This suggests caution interpreting improved objective scores as true recovery in noisy synthetic graphs."
+  },
+  {
+    "id": 15,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Method",
+    "rationale": "The heuristics do not report ablation studies or comparisons of alternate initialization choices affecting solution quality.",
+    "error_explanation": "Section 3 and Appendix C describe the GAIA and VENUS heuristics but omit experimental evaluation of how initialization (e.g., random assignments, different interval orderings) impacts convergence or solution quality. Without such ablation, it is difficult to assess robustness or potential bias introduced by initial conditions. This incomplete experiment protocol limits confidence in the heuristics' reproducibility and interpretability.",
+    "needs_cross_section": false,
+    "target_find": "GAIA is based on iterative refinement: After computing an initial greedy assignment of all vertices, the solution is improved by reassigning vertices in multiple epochs.",
+    "replacement": "GAIA and VENUS start from an initial greedy assignment, but alternative initializations, such as random or structured seeding, may impact convergence speed and solution quality. Exploring these initialization schemes and reporting their effects would provide a more comprehensive evaluation of heuristic performance."
+  },
+  {
+    "id": 16,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "medium",
+    "location": "Introduction",
+    "rationale": "The paper draws strong causal interpretations about opinion intervals explaining conflicts without empirical validation of causality.",
+    "error_explanation": "In Sections 1 and 6, claims assert that discovered opinion intervals \"explain\" conflicts and user interactions. However, no intervention, temporal, or experimental design justifies causal influence or direction between intervals and edge signs. The language risks conflating correlation or modeling fit with causation, potentially misleading readers about the interpretative power of the results.",
+    "needs_cross_section": false,
+    "target_find": "In this paper, we ask whether the conflicts in a network reveal a small and interpretable set of prevalent opinion ranges that explain the users' interactions.",
+    "replacement": "We study whether conflicts in a network can be represented by a small and interpretable set of opinion intervals that correlate with user interactions, providing a descriptive model rather than causal explanation of conflict patterns."
+  }
+]

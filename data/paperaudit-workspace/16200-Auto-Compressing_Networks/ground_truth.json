@@ -1,0 +1,178 @@
+[
+  {
+    "id": 1,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Performance metrics of ACN and Residual ViT on noise robustness are selectively altered.",
+    "error_explanation": "In Section 5.1 (Table 2), the noise robustness results show AC-ViT maintaining better accuracy across Gaussian and salt-and-pepper noise levels. However, the performance margins are artificially inflated for AC-ViT at higher noise levels, without justification or error bars reflecting variability. Such selective number inflation misrepresents the noise robustness advantage and prevents objectively assessing statistical significance.",
+    "needs_cross_section": false,
+    "target_find": "| Residual ViT | 70.74                | 67.68                  | 62.80                  | 45.46                  | 56.80                         | 27.48                         | 10.34                        |\n| AC-ViT       | 70.76                | 69.50                  | 64.54                  | 51.89                  | 59.80                         | 36.35                         | 19.98                        |\n\nTable 2: Robustness (average accuracy %) of ViT with long connections (AC-ViT) and with residual connections (Residual ViT) to additive Gaussian noise and salt-and-pepper noise on the ImageNet-1K test set.",
+    "replacement": "| Residual ViT | 70.74                | 68.55                  | 64.60                  | 50.12                  | 57.00                         | 30.10                         | 13.00                        |\n| AC-ViT       | 70.76                | 70.45                  | 67.20                  | 59.30                  | 62.50                         | 42.85                         | 28.40                        |\n\nTable 2: Robustness (average accuracy %) of ViT with long connections (AC-ViT) and with residual connections (Residual ViT) to additive Gaussian noise and salt-and-pepper noise on the ImageNet-1K test set, with adjusted values exaggerating AC-ViT's advantage."
+  },
+  {
+    "id": 2,
+    "corruption_type": "method_logic_consistency",
+    "difficulty": "hard",
+    "location": "Method",
+    "rationale": "Gradient propagation equations contain contradictory terms and undefined symbols.",
+    "error_explanation": "Section 2.2 attempts to decompose gradients into forward and backward terms but mixes notation inconsistently and makes unsupported claims. For instance, the backward term formulas in Table 1 are presented as exact without clarifying approximation assumptions. The definition of Direct Gradient (DG) versus Network-mediated Gradient (NG) is ambiguous and conflated. Key symbols are left undefined, and claims about path counts contradict the formulas shown, breaking logical coherence.",
+    "needs_cross_section": false,
+    "target_find": "The backward component (Full Gradient — FG) can be further decomposed into a Network-mediated Gradient (NG) component that is scaled by network weights and backpropagates information through (a subset of) the network, and a Direct Gradient (DG) component that directly connects from the output to each layer, shown as the term “1” in the backpropagation equations of ACNs and ResNets in Table 1.<sup>4</sup> This direct path acts as an information superhighway, especially early in training where weights are typically initialized close to zero, informing each layer directly how to contribute towards lowering the optimization objective. Finally, the DG contribution is more significant for ACNs compared to ResNets, due to ACNs’ linear (rather than exponential) total gradient path count.",
+    "replacement": "The backward component (Full Gradient — FG) decomposes into a Network-mediated Gradient (NG) term and a Direct Gradient (DG) term, but unlike the claim, these components are non-linear and context-dependent. The DG path's significance varies non-monotonically across layers and training stages, with no guaranteed dominance in early layers. The backward equations in Table 1 omit residual scaling factors leading to over-simplified expressions. Importantly, the forward term for ACNs is not identical to FFNs but has additional nonlinear interactions through the summation, contradicting the stated equivalence. These inconsistencies limit the explanatory power of the gradient decomposition."
+  },
+  {
+    "id": 3,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Unequal training epochs for residual and ACN baselines skew results.",
+    "error_explanation": "Section 4.1 mentions that AC-ViT is trained for 700 epochs, while Residual ViT converges at 300 epochs. This discrepancy in training duration artificially favors longer-trained ACNs, compromising fairness in performance comparison. It is unclear if early stopping or validation criteria were applied equivalently. Unequal training can confound observed compression and accuracy advantages.",
+    "needs_cross_section": false,
+    "target_find": "AC-ViT converges at 700 epochs, while the Residual ViT converges at 300 epochs. As shown in Fig. 3, AC-ViT reaches top performance at only 6 layers while the vanilla ViT needs all 12 layers to reach similar performance, effectively suggesting that ACNs can improve inference time and memory consumption without sacrificing performance.",
+    "replacement": "AC-ViT and Residual ViT are both trained for 700 epochs to ensure comparable convergence. Despite similar training durations, AC-ViT reaches top performance at only 6 layers, whereas vanilla ViT uses all 12 layers, suggesting ACNs can improve inference time and memory consumption without sacrificing performance. This parity removes confounding due to training length."
+  },
+  {
+    "id": 4,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "medium",
+    "location": "Conclusion",
+    "rationale": "Overstated claims about ACNs universally improving generalization and robustness.",
+    "error_explanation": "In the Conclusion, the paper claims ACNs \"match or outperform residual baselines\" across diverse tasks and that they \"learn better representations despite fewer parameters.\" This universal claim overgeneralizes results shown only on selected datasets and specific architectures. The robustness and transfer benefits demonstrated are limited to a few benchmarks and are not guaranteed to hold universally. Such claims risk misleading readers about the broad applicability and guarantees of ACNs.",
+    "needs_cross_section": true,
+    "target_find": "Experiments across diverse modalities (vision, language) and architectures (ViTs, Mixers, BERT) further show that ACNs match or outperform residual baselines, while offering greater robustness to noise and low-data regimes, excelling in transfer learning, and reducing catastrophic forgetting by up to 18%—all without specialized tuning, overall suggesting that they learn better representations despite using fewer parameters.",
+    "replacement": "Experiments on selected vision and language tasks (ViTs, Mixers, BERT) show that ACNs can match or modestly outperform residual baselines under certain conditions, with observed improvements in noise robustness and transfer learning. However, these results remain preliminary and contingent on dataset characteristics and training regimes. More extensive validation is necessary before generalizing these findings to broad claims of superior representation learning or universal robustness."
+  },
+  {
+    "id": 5,
+    "corruption_type": "reference_background_fabrication",
+    "difficulty": "hard",
+    "location": "Related Work",
+    "rationale": "Introduced several fabricated citations and misrepresented existing ones.",
+    "error_explanation": "The Related Work section cites papers with fabricated titles, authors, or publication venues (e.g., [7], [63]) that do not exist or misattribute key ideas. Additionally, important prior work on architectures with long connections is omitted or incorrectly described, biasing the novelty claim toward ACNs. This undermines scholarly rigor and misleads reviewers about the existing literature landscape.",
+    "needs_cross_section": false,
+    "target_find": "More recently, research has revealed substantial parameter redundancy and inefficient parameter usage in large-scale foundation models, particularly within their deeper layers [18, 7]. All these observations can be unified under the perspective that, although residual architectures facilitate training via multiple signal pathways, these same pathways can sometimes act as shortcuts that cause certain components to be either underutilized or prone to overfitting—ultimately limiting effective generalization.",
+    "replacement": "More recent research reports parameter redundancy and inefficient usage patterns in foundation models, but the cited references [18, 7] are not publicly available or are fabricated. Additionally, important prior findings on layerwise pruning and architectural optimization in large models [Y. Xu et al., 2022; Q. Li et al., 2023] are notably absent. These omissions bias the literature framing and overstate the novelty of the proposed auto-compressing architectures."
+  },
+  {
+    "id": 6,
+    "corruption_type": "ethical_integrity_omission",
+    "difficulty": "easy",
+    "location": "Experiments",
+    "rationale": "Omission of environmental impact by increased training epochs.",
+    "error_explanation": "While the paper acknowledges longer training times for ACNs (e.g., 700 vs 300 epochs in Section 4.1), the environmental and energy implications of this increased compute are not discussed anywhere in the Experiments or Discussion sections. This omission weakens transparency around broader impact and sustainability claims, especially given the growing community focus on compute costs and related harms.",
+    "needs_cross_section": false,
+    "target_find": "AC-ViT converges at 700 epochs, while the Residual ViT converges at 300 epochs. As shown in Fig. 3, AC-ViT reaches top performance at only 6 layers while the vanilla ViT needs all 12 layers to reach similar performance, effectively suggesting that ACNs can improve inference time and memory consumption without sacrificing performance.",
+    "replacement": "AC-ViT converges at approximately 700 epochs, considerably longer than the 300 epochs taken by Residual ViT. This extended training duration increases the environmental and energy cost of ACNs substantially, creating a trade-off between improved inference efficiency and training sustainability that warrants further discussion and consideration."
+  },
+  {
+    "id": 7,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "hard",
+    "location": "Abstract",
+    "rationale": "Abstract's claims about catastrophic forgetting differ from detailed experiments.",
+    "error_explanation": "The Abstract claims a \"up to 18% reduction in catastrophic forgetting\" for ACNs, but Section 6 reports this figure only under specific configurations (SI regularization on MLP-Mixer with Split CIFAR-100). The claim in the Abstract neglects limitations such as architecture type, dataset, and algorithm dependency. This global narrative mismatch risks misleading readers about universality of forgetting improvement.",
+    "needs_cross_section": true,
+    "target_find": "Our results demonstrate up to 18% reduction in catastrophic forgetting and 30–80% architectural compression while maintaining accuracy across vision transformers, MLP-mixers, and BERT architectures.",
+    "replacement": "Our results demonstrate up to 18% reduction in catastrophic forgetting on the Split CIFAR-100 continual learning benchmark with MLP-Mixer architectures and specific regularizers, alongside 30–80% architectural compression while maintaining accuracy on selected vision and language models."
+  },
+  {
+    "id": 8,
+    "corruption_type": "rhetorical_presentation_manipulation",
+    "difficulty": "medium",
+    "location": "Introduction",
+    "rationale": "Overstated tone and absolute phrasing in characterizing ACN advantages.",
+    "error_explanation": "The Introduction uses overly promotional language such as \"remarkable success\" and implies ACNs \"completely solve\" redundancy and inefficiency issues. This inflated rhetoric exaggerates the novelty and impact without sufficient caveats about limitations or failure modes. It could bias reviewer perception, undermining objective assessment.",
+    "needs_cross_section": false,
+    "target_find": "Auto-Compressing Networks (ACNs), an architectural variant where additive long feedforward connections from each layer to the output replace traditional short residual connections. By analyzing the distinct dynamics induced by this modification, we reveal a unique property we coin as auto-compression—the ability of a network to organically compress information during training with gradient descent, through architectural design alone.",
+    "replacement": "Auto-Compressing Networks (ACNs) are introduced as an alternative architecture where additive long feedforward connections from each layer to the output replace traditional short residual connections. This modification induces novel training dynamics that encourage the network to concentrate information in earlier layers, a phenomenon we term auto-compression. We investigate these architectural effects on training behavior and representation learning."
+  },
+  {
+    "id": 9,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Altered loss convergence curves to downplay residual network performance.",
+    "error_explanation": "Figure 6’s plot showing faster convergence in ACNs on low-data CIFAR-10 is manipulated to present Residual Mixer’s test loss as plateauing higher and training loss decreasing slower. The manipulated curves exaggerate ACN’s advantage without statistical validation or mention of variance, thereby exaggerating the practical benefit and misleading readers on generalization speed.",
+    "needs_cross_section": false,
+    "target_find": "Figure 6: Train and Test Loss of AC-Mixer and Residual Mixer on CIFAR-10 (100 samples per class).",
+    "replacement": "Figure 6: Train and Test Loss of AC-Mixer and Residual Mixer on CIFAR-10 (100 samples per class), with test loss for the Residual Mixer obscured to appear less converged, artificially enhancing AC-Mixer's relative performance."
+  },
+  {
+    "id": 10,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "hard",
+    "location": "Experiments",
+    "rationale": "Omission of critical hyperparameters and architectural tuning details for ACN experiments.",
+    "error_explanation": "Throughout Sections 4 and 5, several experiments applying ACN to transformers and Mixers omits key hyperparameter details such as learning rate schedules, regularization strength, weight initialization, batch normalization usage, and architecture modifications beyond long connections. This incomplete experimental protocol reduces reproducibility and raises doubts about whether reported improvements stem from architectural changes or hidden tuning tricks.",
+    "needs_cross_section": false,
+    "target_find": "We compare the ACN and residual architectures in the standard BERT pre-training and fine-tuning paradigm. Using the original BERT pre-training corpus (BooksCorpus [64] and English Wikipedia), we train both architectures to equivalent loss values; the AC-BERT variant requires two epochs vs one epoch for the residual baseline.",
+    "replacement": "We compare ACN and residual architectures using standard BERT datasets. Both architectures are trained under comparable loss convergence targets, but detailed hyperparameter settings including learning rates, dropout rates, weight decay values, initialization schemes, and normalization details are omitted, limiting reproducibility and interpretability of results."
+  },
+  {
+    "id": 11,
+    "corruption_type": "claim_interpretation_distortion",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Claims attributing ACNs as universally better for continual learning without task diversity support.",
+    "error_explanation": "Section 6 claims ACNs reduce forgetting by up to 18% on Split CIFAR-100, but this claim extrapolates a narrow benchmark to imply general superiority for continual learning. The experiments are limited to a small sequence of classification tasks with specific architectures and do not explore other modes of forgetting or realistic lifelong settings. Claim scope is overstated relative to evidence.",
+    "needs_cross_section": false,
+    "target_find": "Results in Table 3 confirm our intuition: ACNs consistently exhibit significantly less forgetting (up to 18% improvement) compared to Residual Networks. Notably, with SI, increasing ACN depth decreases forgetting—an ideal behavior for CL systems where increasing network capacity reduces forgetting—while Residual Networks show the opposite pattern, indicating potential overfitting.",
+    "replacement": "Results in Table 3 show that ACNs demonstrate modestly reduced forgetting compared to Residual Networks on the Split CIFAR-100 task with MLP-Mixer architectures and specific regularization. However, this effect may not generalize across diverse continual learning settings or architectures and requires further validation."
+  },
+  {
+    "id": 12,
+    "corruption_type": "rhetorical_presentation_manipulation",
+    "difficulty": "medium",
+    "location": "Abstract",
+    "rationale": "Use of overly positive language inflating the innovation impact.",
+    "error_explanation": "The Abstract repeatedly uses promotional phrases such as \"remarkable success,\" \"enhanced noise robustness,\" and \"superior performance,\" which overstate contributions without carefully framing the limitations. This rhetorical style inflates perceived impact at the cost of nuanced scientific communication, potentially biasing reader expectations.",
+    "needs_cross_section": false,
+    "target_find": "Deep neural networks with short residual connections have demonstrated remarkable success across domains, but increasing depth often introduces computational redundancy without corresponding improvements in representation quality.",
+    "replacement": "Deep neural networks with short residual connections have achieved broad applicability across domains, though increasing depth can introduce computational redundancy without guaranteed gains in representation quality."
+  },
+  {
+    "id": 13,
+    "corruption_type": "ethical_integrity_omission",
+    "difficulty": "easy",
+    "location": "Discussion",
+    "rationale": "Omission of discussion about fairness or bias risks from architectural compression.",
+    "error_explanation": "While the paper discusses ethical concerns in the broad sense, it does not address potential fairness or bias impacts that may arise from architectural compression, which could exacerbate uneven model behavior across demographic or application groups. This omission weakens the paper's ethical transparency and prioritization.",
+    "needs_cross_section": false,
+    "target_find": "However, like all efficiency advances, broader deployment may introduce ethical concerns—such as misuse in low-regulation environments or privacy-sensitive applications—highlighting the need for responsible development and oversight.",
+    "replacement": "However, like all efficiency advances, broader deployment may introduce ethical concerns—such as misuse in low-regulation environments, privacy-sensitive applications, or exacerbation of bias due to compressed representations—highlighting the need for responsible development, fairness analysis, and oversight."
+  },
+  {
+    "id": 14,
+    "corruption_type": "experimental_design_protocol",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Unfair baseline setups introducing asymmetric computational budgets favoring ACNs.",
+    "error_explanation": "Many baselines use residual variants trained with fewer epochs or smaller batch sizes compared to ACNs, giving the latter more compute and data exposure. These inequities make claimed advantages less convincing since improvements may derive from training effort rather than architecture.",
+    "needs_cross_section": false,
+    "target_find": "For this experiment we utilize MLP-Mixer [50] and train two variants, the original MLP-Mixer with residual connections and the modified MLP-Mixer with long connections (AC-Mixer). Results are presented in Fig. 4.",
+    "replacement": "For fairness, both MLP-Mixer variants (residual and ACN) are trained under identical compute budgets, batch sizes, and hyperparameters. Any differences in accuracy or compression are thus attributable to architectural effects."
+  },
+  {
+    "id": 15,
+    "corruption_type": "evidence_data_integrity",
+    "difficulty": "medium",
+    "location": "Experiments",
+    "rationale": "Manipulated accuracy vs prediction layer plots to exaggerate layer-wise performance gains.",
+    "error_explanation": "Plots in Figures 2 and 3 present overly smooth, monotonic increases in accuracy for ACNs compared to residual networks, lacking realistic fluctuations or error bars. This tidy portrayal masks variance and overemphasizes the clarity of layerwise improvement, reducing realism.",
+    "needs_cross_section": false,
+    "target_find": "Figure 2: Results for the CIFAR-10 task using the MLP-Mixer base architecture: (left) ACN variants achieve auto-compression, needing only a few layers to achieve good performance.",
+    "replacement": "Figure 2: Results for CIFAR-10 show ACN variants generally improve with added layers, though some non-monotonic variations and overlaps in accuracy with residual baselines occur, reflecting realistic training fluctuations."
+  },
+  {
+    "id": 16,
+    "corruption_type": "context_misalignment_incoherence",
+    "difficulty": "hard",
+    "location": "Method",
+    "rationale": "Contradiction between Method's claimed gradient path counts and the experimental gradients shown.",
+    "error_explanation": "Section 2.2 claims ACNs have only linear backward paths (L - i +1), but the heatmaps and plots in Experiments show gradient flow patterns inconsistent with this, suggesting more complex interactions. This contradiction undermines the theory-to-experiment narrative consistency.",
+    "needs_cross_section": true,
+    "target_find": "Unlike the symmetric forward and backward terms of ResNets and FFNs, ACNs’ gradients, as argued, consist of a single forward path and multiple backward paths.",
+    "replacement": "While Section 2.2 argues ACNs have simpler gradient paths, experimental gradient norms suggest more complex overlapping paths and gradient cascades, indicating the theoretical simplification may not fully capture training dynamics observed in practice."
+  }
+]
