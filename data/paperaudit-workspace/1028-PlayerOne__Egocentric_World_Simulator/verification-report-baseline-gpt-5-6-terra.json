@@ -1,0 +1,118 @@
+{
+  "paper_id": "1028-PlayerOne__Egocentric_World_Simulator",
+  "title": "PlayerOne: Egocentric World Simulator",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Section 3.2, Eq. (3)",
+      "confidence": 0.99,
+      "supporting_evidence": "The Rodrigues rotation formula is incorrect. With the stated skew-symmetric cross-product matrix [u]_x, the standard axis-angle rotation is R = I + sin(theta)[u]_x + (1 - cos(theta))[u]_x^2. The paper instead uses (1 + cos(theta))[u]_x^2. This does not yield the identity at theta = 0 and is not a valid rotation formula.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "1028-PlayerOne__Egocentric_World_Simulator::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Section 3.1, Eq. (1)",
+      "confidence": 0.94,
+      "supporting_evidence": "The forward process is internally inconsistent: z_t = alpha_t z_0 + beta_t delta_t epsilon, while the stated variance condition is alpha_t^2 + delta_t^2 = 1. beta_t is never defined. If beta_t is not identically one, the claimed normalization does not match the noise coefficient; if it is intended to be one, it should not appear. The same equation also samples t from U(0,1) but immediately defines t = 1,...,T without specifying a continuous-to-discrete mapping.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "1028-PlayerOne__Egocentric_World_Simulator::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Abstract and Introduction versus Section 4.1 and Appendix 'Latency between motion input and video output'",
+      "confidence": 0.99,
+      "supporting_evidence": "The abstract claims 'true real-time generation at 30 FPS.' In contrast, Section 4.1 states that 'After distillation, our method can achieve 8 FPS,' and the appendix reports approximately 119 ms/frame, i.e. about 8.4 FPS. These cannot all describe the same final system; the 30-FPS claim is unsupported by the reported implementation measurements.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "1028-PlayerOne__Egocentric_World_Simulator::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 4.1 'Benchmark' versus Table 1 and Section 3.3",
+      "confidence": 0.89,
+      "supporting_evidence": "Section 4.1 says the 100-video benchmark is collected from Nymeria 'which is not included for training.' However, Table 1 explicitly lists Nymeria as a training dataset, and Section 3.3 says the training dataset combines the listed public datasets. If train/test splits were intended, the paper must state them and establish disjointness; as written, the statement that Nymeria was not used for training contradicts the training-data table and leaves potential leakage unresolved.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "1028-PlayerOne__Egocentric_World_Simulator::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (figure-figure)",
+      "error_location": "Main-paper Tables 2–3 versus Appendix Tables 5–6",
+      "confidence": 0.88,
+      "supporting_evidence": "The paper reports materially different results for what it identifies as a Nymeria-based evaluation. Main Table 3 reports PlayerOne DINO/CLIP/MPJPE/MRRPE/PSNR/FVD/LPIPS = 67.8/88.2/127.16/151.62/52.6/226.12/0.0663, while Appendix Table 6, captioned as a comparison 'on the benchmark constructed with the Nymeria dataset,' reports 64.8/85.7/137.91/162.74/50.72/247.97/0.0761. Appendix Table 5 similarly reports 64.87/85.79/137.91/162.74/50.72/247.97/0.0761. The manuscript does not clearly define distinct protocols that justify retaining conflicting results under the same Nymeria-benchmark description.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "1028-PlayerOne__Egocentric_World_Simulator::baseline"
+    },
+    {
+      "error_category": "Figure / table error",
+      "error_location": "Appendix Tables 18 and 19 versus the reported PlayerOne results elsewhere",
+      "confidence": 0.91,
+      "supporting_evidence": "Tables 18 and 19 give the CUT3R / 10%-filtering configuration DINO 67.8 and CLIP 88.2—the same identifying values as the reported full PlayerOne—but report MRRPE 163.62, PSNR 50.3, FVD 236.12, and LPIPS 0.0663. Elsewhere the full PlayerOne is reported as MRRPE 151.62, PSNR 52.6, FVD 226.12, and LPIPS 0.0663 (Tables 2, 3, 7, 9, 11, 13, 15). No alternate evaluation protocol or model configuration is disclosed that explains why the same stated final configuration has incompatible metrics.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "1028-PlayerOne__Egocentric_World_Simulator::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (figure-text)",
+      "error_location": "Appendix discussion 'Investigation on the impact of filtering' and Table 19",
+      "confidence": 0.98,
+      "supporting_evidence": "The text claims that a 10% filtering ratio 'optimizes performance' and that no filtering degrades action-alignment accuracy because of noise. But Table 19 reports substantially better motion-error values with no filtering: MPJPE 123.50 versus 127.16 and MRRPE 158.10 versus 163.62 at 10%. It also reports better FVD (228.50 versus 236.12) and LPIPS (0.0587 versus 0.0663) at zero filtering. Ten percent is best only on DINO, CLIP, and PSNR, not on all reported metrics; the blanket conclusion is false.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "1028-PlayerOne__Egocentric_World_Simulator::baseline"
+    },
+    {
+      "error_category": "Experiment setup",
+      "error_location": "Section 4.1 'Benchmark' and Section 4.3 comparison with Cosmos and Aether",
+      "confidence": 0.96,
+      "supporting_evidence": "The comparison supplies PlayerOne the ground-truth human-motion sequence but supplies competitors only captions, explicitly acknowledging an 'information gap' and stating that PlayerOne receives 'more precise control signals.' Consequently, the reported motion alignment, fidelity, and reconstruction comparisons do not isolate method quality under equivalent conditioning. The large gains cannot be interpreted as a fair state-of-the-art comparison without giving baselines equivalent motion input or separately evaluating a text-only PlayerOne.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "1028-PlayerOne__Egocentric_World_Simulator::baseline"
+    },
+    {
+      "error_category": "Citation / attribution",
+      "error_location": "Appendix Table 8 and its surrounding text",
+      "confidence": 0.99,
+      "supporting_evidence": "The citations for the autonomous-driving baselines are reversed. Table 8 labels 'GEM [8]' and 'VISTA [15].' In the reference list, [8] is Gao et al., 'VISTA: A Generalizable Driving World Model,' while [15] is Hassan et al., 'GEM: A Generalizable Ego-Vision Multimodal World Model.'",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "1028-PlayerOne__Egocentric_World_Simulator::baseline"
+    },
+    {
+      "error_category": "Citation / attribution",
+      "error_location": "Section 4.1 'Benchmark', citation for 'Qwen2.5-VL [2]'",
+      "confidence": 0.91,
+      "supporting_evidence": "Reference [2] is the 2023 'Qwen Technical Report' (arXiv:2309.16609), not a citation for Qwen2.5-VL. The paper specifically says it uses Qwen2.5-VL to enrich captions, so it should cite the relevant Qwen2.5-VL model/report rather than an earlier generic Qwen report.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "1028-PlayerOne__Egocentric_World_Simulator::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Introduction, final paragraph before contributions; Conclusion",
+      "confidence": 0.94,
+      "supporting_evidence": "The paper claims PlayerOne 'completely solves the long-standing challenge' and 'eliminates all limitations of prior methods,' and the conclusion says it ensures coherent generation 'across all scenarios without exception.' These absolute claims are contradicted by the paper's own limitations: inferior game-scenario performance, failures in highly dynamic scenes, and absence of explicit physical interaction/contact/collision modeling that can produce body-object penetration and incorrect occlusion. The claims need to be narrowed to the evaluated settings.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "1028-PlayerOne__Egocentric_World_Simulator::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 11,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (gpt-5.6-terra, taxonomy=default): 11 error(s) reported.",
+  "baseline": {
+    "model": "gpt-5.6-terra",
+    "provider": "openai",
+    "taxonomy": "default",
+    "paper_chars": 90098,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 23270,
+      "output_tokens": 5211,
+      "cache_read_input_tokens": null,
+      "cache_creation_input_tokens": null
+    }
+  }
+}

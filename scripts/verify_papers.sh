@@ -33,15 +33,15 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"            # Wittgenstein/ (where .claude/skills lives)
-WORKSPACE_DIR="$PROJECT_DIR/outputs/paperaudit-workspace"
-RESULTS_DIR="$PROJECT_DIR/outputs/paperaudit-eval"
+WORKSPACE_DIR="$PROJECT_DIR/data/spot-workspace"
+RESULTS_DIR="$PROJECT_DIR/outputs/spot-eval"
 
 # Defaults
 LLM_NAME=""
 LIMIT=""
 MODEL="claude-sonnet-4-5-20250929"
 MODE="exhaustive"
-STRICTNESS="strict"
+STRICTNESS="lenient"
 DRY_RUN=false
 
 # ---------------------------------------------------------------------------

@@ -1,0 +1,78 @@
+{
+  "paper_id": "11899-Class-wise_Balancing_Data_Replay_for_Federated_Class-Incremental_Learning",
+  "title": "Class-wise Balancing Data Replay for Federated Class-Incremental Learning",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 4.1, Global-perspective Data Replay (GDR) – encryption and leverage score computation",
+      "confidence": 0.95,
+      "supporting_evidence": "The GDR module applies client-specific random orthogonal matrices P_k to rows of local feature matrices (Eq.1). This transforms the left singular vectors U' of the global encrypted matrix, so the row norms (leverage scores) computed from U' are not invariant to the original rows' importance. The claim that higher leverage scores indicate globally representative samples is invalid because the orthogonal transformation randomizes row-space contributions. The selected samples would not reflect class-wise balance based on true global distribution.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "11899-Class-wise_Balancing_Data_Replay_for_Federated_Class-Incremental_Learning::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 4.2, Eq. (7) vs Eq. (9) and accompanying description",
+      "confidence": 0.95,
+      "supporting_evidence": "Eq. (7) defines the TTS loss using separate Softmax on old and new logits: Softmax(z_i^old / τ_old) and Softmax(z_j^new / τ_new). This is inappropriate for class-incremental learning because classification must be performed over the concatenated set of all seen classes. The actual training loss given later in Eq. (9) correctly applies Softmax to concatenated logits Concat(f_θ_k^{old}(x)/τ_old, f_θ_k^{new}(x)/τ_new). The contradictory formulations indicate a logical break in the method's exposition.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "11899-Class-wise_Balancing_Data_Replay_for_Federated_Class-Incremental_Learning::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Table 2 and Table 3 (captions and data)",
+      "confidence": 0.9,
+      "supporting_evidence": "Table 2 caption states 'All methods were executed under three different random seeds', yet the TinyImageNet β=0.1 column is missing values for Finetune and FedEWC. Table 3 contains an entire empty column for TinyImageNet β=0.1, with no method reporting results. This contradicts the claim that all methods were evaluated under the reported settings and indicates selective or incomplete experiments.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "11899-Class-wise_Balancing_Data_Replay_for_Federated_Class-Incremental_Learning::baseline"
+    },
+    {
+      "error_category": "evidence_data_integrity",
+      "error_location": "Table 1 (CIFAR10 heterogeneity) vs Tables 2 and 3",
+      "confidence": 0.95,
+      "supporting_evidence": "Table 1 lists the heterogeneity parameter for CIFAR10 only as 0.5/1.0, but Tables 2 and 3 both include a column for CIFAR10 with β=0.1. The dataset statistics in Table 1 are thus inconsistent with the experimental evaluation.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "11899-Class-wise_Balancing_Data_Replay_for_Federated_Class-Incremental_Learning::baseline"
+    },
+    {
+      "error_category": "context_misalignment_incoherence",
+      "error_location": "Figure 6 caption and axis labels",
+      "confidence": 1.0,
+      "supporting_evidence": "The module introduced in the paper is named 'GDR' (Global-perspective Data Replay), but in Figure 6 the rows are labeled '+GADR' and '+GADR +TTS (W)' etc. The term 'GADR' does not exist elsewhere in the paper, creating terminological inconsistency.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "11899-Class-wise_Balancing_Data_Replay_for_Federated_Class-Incremental_Learning::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 4.1, around Eq. (6) and the subsequent sampling description",
+      "confidence": 0.75,
+      "supporting_evidence": "The document normalizes leverage scores per client (summing over j'=1 to n_k^i) to obtain p_k^{i,j}. When these per-client distributions are concatenated, the resulting probability vector does not sum to one globally, which makes the subsequent description of i.i.d. sampling from the distribution p = {p_k^{i,j}} ambiguous and likely erroneous. The intended global sampling procedure is not properly specified.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "11899-Class-wise_Balancing_Data_Replay_for_Federated_Class-Incremental_Learning::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 6,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (deepseek-v4-pro, taxonomy=paperaudit): 6 error(s) reported.",
+  "baseline": {
+    "model": "deepseek-v4-pro",
+    "provider": "deepseek",
+    "taxonomy": "paperaudit",
+    "paper_chars": 81830,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 8778,
+      "output_tokens": 16266,
+      "cache_read_input_tokens": 13824,
+      "cache_creation_input_tokens": null
+    }
+  }
+}

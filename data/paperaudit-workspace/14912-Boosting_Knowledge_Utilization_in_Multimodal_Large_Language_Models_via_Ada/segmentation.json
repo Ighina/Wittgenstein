@@ -1,0 +1,472 @@
+{
+  "paper_id": "14912",
+  "title": "Boosting Knowledge Utilization in Multimodal Large Language Models via Adaptive Logits Fusion and Attention Reallocation",
+  "paper_category": "cs.CV",
+  "total_snippets": 52,
+  "snippets": [
+    {
+      "snippet_id": "14912::SECTION::0",
+      "snippet_type": "SECTION",
+      "location": "Abstract",
+      "content": "Despite their recent progress, Multimodal Large Language Models (MLLMs) often struggle in knowledge-intensive tasks due to the limited and outdated parametric knowledge acquired during training. Multimodal Retrieval-Augmented Generation addresses this issue by retrieving contextual knowledge from external databases... We propose Adaptive Logits Fusion and Attention Reallocation (ALFAR), a training-free and plug-and-play approach aimed at improving MLLM responses by better leveraging contextual knowledge. Contradicting prior assumptions, ALFAR employs light training to optimize its fusion weights and attention reallocation parameters, which involve fine-tuning on selected benchmarks, thereby limiting its plug-and-play capability. As a plug-and-play method, ALFAR achieves superior performance across diverse datasets without requiring additional training or external tools. Extensive experiments over multiple MLLMs and benchmarks show that ALFAR consistently outperforms the state of the art by large margins.",
+      "content_length": 1359,
+      "metadata": {"heading_level": 2}
+    },
+    {
+      "snippet_id": "14912::SECTION::1",
+      "snippet_type": "SECTION",
+      "location": "1 Introduction",
+      "content": "Building upon powerful Large Language Models... MLLMs often struggle to handle knowledge-intensive vision-language tasks... We identify two primary causes, namely, attention bias among visual and context tokens and conflicts between MLLMs' parametric knowledge and retrieved contextual knowledge... In this work, we propose ALFAR, a training-free and plug-and-play approach... Extensive experiments across multiple representative MLLMs and benchmarks demonstrate ALFAR's superior and broad applicability without involving additional training or external tools.",
+      "content_length": 3900,
+      "metadata": {"heading_level": 2}
+    },
+    {
+      "snippet_id": "14912::FIGURE::0",
+      "snippet_type": "FIGURE",
+      "location": "1 Introduction",
+      "content": "Model results on the multi-choice InfoSeek dataset [32] with LLaVA-1.5 [14]:\n- Vanilla LLaVA: Ground-truth knowledge 39.15; 1st retrieved knowledge 65.47; 2nd retrieved knowledge 52.69; 3rd retrieved knowledge 38.03.\n- LLaVA + MRAG: 1st retrieved knowledge 71.13; 2nd retrieved knowledge 58.20; 3rd retrieved knowledge 43.10.\n- LLaVA + ALFAR: 2nd retrieved knowledge 59.82; 3rd retrieved knowledge 45.12.\nFigure 1: VQA accuracy of LLaVA-1.5 [14] on the multi-choice InfoSeek dataset [32] with respect to the quality of contextual knowledge. ALFAR fully exploits the retrieved knowledge, consistently improving MRAG performance regardless of knowledge quality.",
+      "content_length": 655,
+      "metadata": {"caption": "Figure 1: VQA accuracy of LLaVA-1.5 on the multi-choice InfoSeek dataset with respect to the quality of contextual knowledge."}
+    },
+    {
+      "snippet_id": "14912::SECTION::2",
+      "snippet_type": "SECTION",
+      "location": "2 Related Work / 2.1 Multimodal Large Language Models",
+      "content": "The rapid advancements in Large Language Models (LLMs) have greatly propelled the development of MLLMs... To align visual and textual modalities, prior studies explore different approaches such as visual encoders with linear projectors, Q-Former, and Perceivers... Most MLLMs conduct training in two stages... Despite these advancements, MLLMs often face challenges in knowledge-intensive tasks, due to the limitations of their parametric knowledge acquired during training.",
+      "content_length": 900,
+      "metadata": {"heading_level": 2}
+    },
+    {
+      "snippet_id": "14912::FIGURE::1",
+      "snippet_type": "FIGURE",
+      "location": "2 Related Work",
+      "content": "![Figure 6](image_6.jpg)\n<!-- Caption: Related Work, index 6 -->",
+      "content_length": 64,
+      "metadata": {"caption": null}
+    },
+    {
+      "snippet_id": "14912::SECTION::3",
+      "snippet_type": "SECTION",
+      "location": "2.2 Multimodal Retrieval Augmented Generation",
+      "content": "Inspired by the concept of Retrieval Augmented Generation (RAG) for LLMs, MRAG has been widely explored... Wiki-LLaVA broadens the knowledge scope of LLaVA by incorporating retrieved Wikipedia articles in training. EchoSight leverages a fine-tuned Q-Former to filter retrieved knowledge... CAD employs contrastive decoding to increase the faithfulness of generation. Moreover, AdaCAD, Entropy, and COIECD extend CAD by introducing JS divergence, entropy, and information constraints, respectively. Although these methods aim to balance parametric and contextual knowledge, some recent approaches have achieved notable improvements in noisy contexts through advanced fusion or re-ranking, which are not discussed here.",
+      "content_length": 1420,
+      "metadata": {"heading_level": 2}
+    },
+    {
+      "snippet_id": "14912::SECTION::4",
+      "snippet_type": "SECTION",
+      "location": "3.1 Multimodal Retrieval Augmented Generation",
+      "content": "Given a textual query q and a query image I, an MLLM M_theta parameterized by theta is expected to generate a reliable answer y. To enrich MLLMs with external knowledge, MRAG employs a multimodal retriever R_phi to fetch relevant knowledge from a multimodal knowledge base C = {(I_i, c_i)}. The retriever measures the similarity between the query pair (q, I) and a multimodal knowledge pair based on the cosine similarity between their image embeddings. The textual knowledge c with the highest retrieval similarity alpha is selected as the input context for MLLMs.",
+      "content_length": 800,
+      "metadata": {"heading_level": 3}
+    },
+    {
+      "snippet_id": "14912::EQUATION::0",
+      "snippet_type": "EQUATION",
+      "location": "3.1 Multimodal Retrieval Augmented Generation",
+      "content": "$$\\alpha = \\frac{\\mathcal{R}_\\phi(I) \\cdot \\mathcal{R}_\\phi(\\tilde{I})}{\\|\\mathcal{R}_\\phi(I)\\| \\cdot \\|\\mathcal{R}_\\phi(\\tilde{I})\\|}$$ (1)",
+      "content_length": 140,
+      "metadata": {"label": "Eq. 1", "display_mode": true}
+    },
+    {
+      "snippet_id": "14912::EQUATION::1",
+      "snippet_type": "EQUATION",
+      "location": "3.1 Multimodal Retrieval Augmented Generation",
+      "content": "$$p(y_t) \\sim \\text{softmax}(\\mathcal{M}_\\theta(y_t \\mid q, I, c, y_{<t}))$$ (2)",
+      "content_length": 80,
+      "metadata": {"label": "Eq. 2", "display_mode": true}
+    },
+    {
+      "snippet_id": "14912::SECTION::5",
+      "snippet_type": "SECTION",
+      "location": "3.2 Self-attention Mechanism in MLLMs",
+      "content": "MLLMs generate responses auto-regressively using Transformer blocks. Specifically, the input image, query, and context tokens are concatenated and projected into three distinct vectors: Q, K, V through three linear layers. The self-attention mechanism computes the relevance of each token to other tokens... where A in R^{n x n} is the attention weight matrix, M is a causal mask, d is the feature dimension, and n is the number of input tokens. O = softmax(A) . V (4). The attention weight matrix A reflects the importance of different input tokens in generating new tokens.",
+      "content_length": 900,
+      "metadata": {"heading_level": 3}
+    },
+    {
+      "snippet_id": "14912::EQUATION::2",
+      "snippet_type": "EQUATION",
+      "location": "3.2 Self-attention Mechanism in MLLMs",
+      "content": "$$\\mathbf{A} = \\frac{\\mathbf{Q} \\cdot \\mathbf{K}^\\top}{\\sqrt{d}} + \\mathbf{M}$$ (3)",
+      "content_length": 83,
+      "metadata": {"label": "Eq. 3", "display_mode": true}
+    },
+    {
+      "snippet_id": "14912::EQUATION::3",
+      "snippet_type": "EQUATION",
+      "location": "3.2 Self-attention Mechanism in MLLMs",
+      "content": "O = softmax(A) . V (4)",
+      "content_length": 22,
+      "metadata": {"label": "Eq. 4", "display_mode": false}
+    },
+    {
+      "snippet_id": "14912::FIGURE::2",
+      "snippet_type": "FIGURE",
+      "location": "3.2 Self-attention Mechanism in MLLMs",
+      "content": "Figure 2: Proportions of attention weights that are assigned to image and context tokens at different shallow layers of LLaVA-1.5 [14].\n![Figure 12](image_12.jpg)",
+      "content_length": 161,
+      "metadata": {"caption": "Figure 2: Proportions of attention weights assigned to image and context tokens at different shallow layers of LLaVA-1.5."}
+    },
+    {
+      "snippet_id": "14912::SECTION::6",
+      "snippet_type": "SECTION",
+      "location": "3.3 Attention Bias in MRAG",
+      "content": "To generate the response token y_{n+1}, MLLMs perform self-attention over all input tokens... We analyze the contributions of the input image and context using an importance score S^i(I) = sum_{j in I} A^i_{nj}; S^i(c) = sum_{j in c} A^i_{nj}. As illustrated in Fig. 2, MLLMs tend to allocate more attention to image tokens than context tokens, particularly in shallow layers that are pivotal for extracting and exchanging information... Moreover, MLLMs assign attention uniformly across different parts of the context without highlighting query-relevant segments.",
+      "content_length": 1100,
+      "metadata": {"heading_level": 2}
+    },
+    {
+      "snippet_id": "14912::SECTION::7",
+      "snippet_type": "SECTION",
+      "location": "3.4 Knowledge Conflicts in MRAG",
+      "content": "After knowledge retrieval, MLLMs integrate the retrieved contextual knowledge with their internal parametric knowledge to generate responses... MLLMs tend to prioritize their parametric knowledge even when perfect contextual knowledge is provided... By assuming the accessibility of the ground-truth contextual knowledge, we evaluate the conflict rate... on the multi-choice InfoSeek and ViQuAE datasets with LLaVA-1.5. As shown in Tab. 1, around half of the samples exhibit knowledge conflicts, which lead to an up to 30% performance drop.",
+      "content_length": 1000,
+      "metadata": {"heading_level": 2}
+    },
+    {
+      "snippet_id": "14912::TABLE::0",
+      "snippet_type": "TABLE",
+      "location": "3.4 Knowledge Conflicts in MRAG",
+      "content": "Table 1: Experiments with LLaVA-1.5 [14]. Conflict Ratio: Ratio of discrepancy between parametric and contextual knowledge. Performance drop: Accuracy decline due to knowledge conflicts.\n|                  | InfoSeek | ViQuAE |\n| Conflict Ratio   | 60.85%   | 48.94% |\n| Performance Drop | 28.87%   | 27.02% |",
+      "content_length": 306,
+      "metadata": {"caption": "Table 1", "row_count": 2}
+    },
+    {
+      "snippet_id": "14912::SECTION::8",
+      "snippet_type": "SECTION",
+      "location": "4 Method",
+      "content": "The proposed framework consists of two branches for effective handling of parametric and contextual knowledge as illustrated in Fig. 4. Within the contextual branch, we design an attention reallocation mechanism that tackles the attention bias... In addition, the network fuses the parametric and contextual knowledge adaptively in the output logits, mitigating knowledge conflicts under the guidance of the model attention.",
+      "content_length": 700,
+      "metadata": {"heading_level": 1}
+    },
+    {
+      "snippet_id": "14912::SECTION::9",
+      "snippet_type": "SECTION",
+      "location": "4.1 Attention Reallocation",
+      "content": "As analyzed in Sec. 3.3, the attention bias results from two major factors, namely, attention preference toward image tokens and uniform attention to context tokens. We address the attention preference by adaptively adjusting model attention as illustrated in Fig. 3, based on the retrieval similarity alpha in Eq. 1... Specifically, less attention is allocated to image tokens if the context is more reliable with a high retrieval similarity. The attention reallocation modifies attention after verifying that causal mask constraints remain intact, ensuring no causal attention is granted to future tokens. Specifically, masked attention weights remain zero and only valid attention scores are rescaled to preserve autoregressive decoding consistency. In addition, we introduce a query-context relevance score... With the relevance scores, we adaptively increase MLLMs' attention to context tokens... where gamma_j = k * omega_j is the scaled query-context relevance with a scaling factor k. After attention reallocation, we apply softmax to redistribute the attention as in Eq. 4.",
+      "content_length": 1600,
+      "metadata": {"heading_level": 2, "note": "Equation numbering jumps from (4) to (6); Eq. (5) is absent from the extracted text."}
+    },
+    {
+      "snippet_id": "14912::EQUATION::4",
+      "snippet_type": "EQUATION",
+      "location": "4.1 Attention Reallocation",
+      "content": "$$\\omega_j = \\frac{\\sum_{k \\in S_q} \\mathbf{A}_{jk}}{\\sum_{l \\in S_c} \\sum_{k \\in S_q} \\mathbf{A}_{lk}}, \\text{ s.t. } j \\in S_c$$ (6)",
+      "content_length": 133,
+      "metadata": {"label": "Eq. 6", "display_mode": true}
+    },
+    {
+      "snippet_id": "14912::EQUATION::5",
+      "snippet_type": "EQUATION",
+      "location": "4.1 Attention Reallocation",
+      "content": "$$\\hat{\\mathbf{A}}_{nj} = (1 + \\gamma_j) \\cdot \\mathbf{A}_{nj}, \\text{ s.t. } j \\in S_c$$ (7)",
+      "content_length": 93,
+      "metadata": {"label": "Eq. 7", "display_mode": true}
+    },
+    {
+      "snippet_id": "14912::SECTION::10",
+      "snippet_type": "SECTION",
+      "location": "4.2 Adaptive Knowledge Fusion",
+      "content": "As analyzed in Sec. 3.4, parametric knowledge could hinder the utilization of contextual knowledge, leading to inaccurate responses. However, parametric knowledge brings benefits when the retrieved context is unreliable... We address this issue by disentangling the two types of knowledge and fusing them at output logits. Specifically, we represent parametric knowledge at step t by using the output logits that have only query and image as inputs. Similarly, we represent contextual knowledge by using the output logits that have context as additional inputs and perform attention reallocation... The reliability of the parametric and contextual knowledge can thus be measured by the attention weights that are assigned to the image and context tokens... Finally, based on the adaptive weights, the logits fusion at decoding step t is performed by a weighted average: p(y_t) ~ softmax(lambda_v^t * logit_p + lambda_c^t * logit_c) ensuring positive weights that sum to 1 to consistently balance parametric and contextual knowledge.",
+      "content_length": 1500,
+      "metadata": {"heading_level": 2}
+    },
+    {
+      "snippet_id": "14912::EQUATION::6",
+      "snippet_type": "EQUATION",
+      "location": "4.2 Adaptive Knowledge Fusion",
+      "content": "$$\\text{logit}_{\\text{p}} = \\mathcal{M}_\\theta(y_t \\mid q, I, y_{<t})$$ (8)",
+      "content_length": 75,
+      "metadata": {"label": "Eq. 8", "display_mode": true}
+    },
+    {
+      "snippet_id": "14912::EQUATION::7",
+      "snippet_type": "EQUATION",
+      "location": "4.2 Adaptive Knowledge Fusion",
+      "content": "$$\\text{logit}_c = \\hat{\\mathcal{M}}_\\theta(y_t \\mid q, I, c, y_{<t})$$ (9)",
+      "content_length": 75,
+      "metadata": {"label": "Eq. 9", "display_mode": true}
+    },
+    {
+      "snippet_id": "14912::EQUATION::8",
+      "snippet_type": "EQUATION",
+      "location": "4.2 Adaptive Knowledge Fusion",
+      "content": "$$\\lambda_v^t = \\sum_{i \\in S_I} \\mathbf{A}_{ti}, \\quad \\lambda_c^t = \\sum_{j \\in S_c} \\mathbf{A}_{tj}$$ (10)",
+      "content_length": 108,
+      "metadata": {"label": "Eq. 10", "display_mode": true}
+    },
+    {
+      "snippet_id": "14912::EQUATION::9",
+      "snippet_type": "EQUATION",
+      "location": "4.2 Adaptive Knowledge Fusion",
+      "content": "$$p(y_t) \\sim \\text{softmax}\\left( \\lambda_v^t \\cdot \\text{logit}_p + \\lambda_c^t \\cdot \\text{logit}_c \\right)$$ (with claim: 'ensuring positive weights that sum to 1')",
+      "content_length": 167,
+      "metadata": {"label": "fusion equation", "display_mode": true}
+    },
+    {
+      "snippet_id": "14912::FIGURE::3",
+      "snippet_type": "FIGURE",
+      "location": "4 Method",
+      "content": "Figure 4: The overview of Adaptive Logits Fusion and Attention Reallocation (ALFAR).\n![Figure 20](image_20.jpg)\n![Figure 21](image_21.jpg)",
+      "content_length": 137,
+      "metadata": {"caption": "Figure 4: The overview of ALFAR."}
+    },
+    {
+      "snippet_id": "14912::TABLE::1",
+      "snippet_type": "TABLE",
+      "location": "5 Experiment",
+      "content": "Table 2: VQA Accuracy comparison on generative freeform VQA datasets over three runs. Regular and Parametric denote that MLLMs generate answers with and without retrieved knowledge, respectively. The reported ALFAR improvements over baselines are modest, with overall gains reduced by 3-5%, indicating less dramatic performance gains than claimed.\n[Columns: Human UnseenQuestion / UnseenEntity / Overall; Validation UnseenQuestion / UnseenEntity / Overall]\nLLaVA-1.5: Regular 7.59/7.90/7.74 | 19.98/19.59/19.78; ... ALFAR 12.80/11.24/11.96 | 23.82/23.75/23.78.\nInstructBLIP: Regular 4.20/3.86/4.02 | 3.60/3.82/3.71; ... ALFAR 5.98/5.67/5.82 | 4.55/5.68/5.05.\nShikra: Regular 6.71/6.31/6.50 | 11.93/11.78/11.85; ... ALFAR 8.61/8.04/8.31 | 15.25/15.11/15.18.\nMiniGPT4: Regular 4.38/3.00/3.56 | 12.69/12.38/12.53; VCD (LLaVA Validation) 22.30/22.38/22.23; ... MiniGPT4 ALFAR 5.05/3.87/4.38 | 15.16/15.27/15.05.",
+      "content_length": 4200,
+      "metadata": {"caption": "Table 2: VQA Accuracy comparison on generative freeform VQA datasets over three runs.", "row_count": 40}
+    },
+    {
+      "snippet_id": "14912::TABLE::2",
+      "snippet_type": "TABLE",
+      "location": "5 Experiment",
+      "content": "Table 3: VQA accuracy comparison on discriminative multi-choice VQA datasets over three runs.\nLLaVA-1.5: Regular 51.97/53.32; Parametric 39.15/51.06; ... ALFAR 58.35/55.91. InstructBLIP: Regular 23.44/19.82; Parametric 8.73/6.53; ... ALFAR 35.65/24.11. Shikra: Regular 19.41/17.73; ... ALFAR 28.11/23.42. MiniGPT-4: Regular 25.83/24.06; ... ALFAR 30.88/32.28. LLaVA-Next: Regular 53.90/55.44; ... ALFAR 58.47/59.29. Qwen2.5-VL: Regular 53.00/53.84; ... ALFAR 61.57/63.22. (Columns: InfoSeek / ViQuAE)",
+      "content_length": 3100,
+      "metadata": {"caption": "Table 3: VQA accuracy comparison on discriminative multi-choice VQA datasets over three runs.", "row_count": 30}
+    },
+    {
+      "snippet_id": "14912::SECTION::11",
+      "snippet_type": "SECTION",
+      "location": "5.1 Experimental Settings",
+      "content": "Datasets. We conduct experiments over three types of knowledge-intensive datasets: (1) Free-form generative datasets including Human [23]... and INFOSEEK_wiki [23]... (2) Multi-choice discriminative datasets including Infoseek [23, 32] and ViQuAE [24, 32]... (3) Knowledge-based datasets including OK-VQA [64], AOK-VQA [65] and E-VQA [31]. MLLM baselines and SOTA methods. We perform evaluations by using primarily 7B parameter variants of LLaVA, InstructBLIP, Shikra, and MiniGPT-4, excluding larger or 3B models for fairer model size comparison. For benchmarking, we select several SOTA training-free decoding methods: CD, AdaCAD, Entropy, CAD and COIECD. In addition, we also benchmark with two representative hallucination mitigation methods, VCD and AGLA. Implementation details. For knowledge retrieval, we employ the vision encoder of CLIP-ViT-L/14-336 as the retriever and append the first retrieved knowledge to the prompt as context. The scaling factor k is set to 0.4... All experiments are conducted on four NVIDIA RTX 3090 GPUs for ALFAR, whereas all baseline methods are only executed on a single NVIDIA RTX 3090 GPU without officially reported hyperparameter adjustments.",
+      "content_length": 2100,
+      "metadata": {"heading_level": 2}
+    },
+    {
+      "snippet_id": "14912::SECTION::12",
+      "snippet_type": "SECTION",
+      "location": "5.2 Experimental Results",
+      "content": "Experiments on free-form datasets. Tab. 2 shows experimental results of four representative MLLMs over two free-form generative knowledge-intensive datasets. We can see that the proposed ALFAR consistently outperforms the Regular decoding strategy by substantial margins (averaged around 2.5% in overall accuracy) across all MLLMs and datasets... Experiments on multi-choice datasets. Notably, ALFAR achieves an average improvement of 6.6% over Regular decoding... Experiments on knowledge-based datasets. As shown in Tab. 4, ALFAR surpasses Regular decoding by 15.2% and consistently outperforms state-of-the-art decoding strategies.",
+      "content_length": 1600,
+      "metadata": {"heading_level": 2}
+    },
+    {
+      "snippet_id": "14912::TABLE::3",
+      "snippet_type": "TABLE",
+      "location": "5.2 Experimental Results",
+      "content": "Table 4 (knowledge-based datasets, LLaVA-1.5):\n| Model | OK-VQA | AOK-VQA | E-VQA |\n| Regular | 46.17 | 44.13 | 19.14 |\n| Parametric | 45.13 | 43.23 | 5.34 |\n| CD | 55.00 | 51.67 | 28.62 |\n| CAD | 56.43 | 53.93 | 28.62 |\n| AdaCAD | 57.10 | 54.40 | 28.33 |\n| Entropy | 56.27 | 53.93 | 29.24 |\n| COIECD | 56.43 | 53.93 | 28.24 |\n| VCD | 57.80 | 57.40 | 27.71 |\n| AGLA | 57.53 | 55.40 | 28.29 |\n| ALFAR | 60.83 | 59.93 | 29.57 |",
+      "content_length": 424,
+      "metadata": {"caption": "Table 4: knowledge-based datasets", "row_count": 10}
+    },
+    {
+      "snippet_id": "14912::SECTION::13",
+      "snippet_type": "SECTION",
+      "location": "6.1 Ablation study",
+      "content": "We conduct ablation studies on both multi-choice and commonsense knowledge-based datasets to assess the effectiveness of each design in the proposed ALFAR model with LLaVA-1.5. As shown in Tab. 5, the Attention Reallocation enables MLLMs to better utilize retrieved knowledge... The Logits Fusion mitigates knowledge conflicts... Applying Adaptive Weights during logits fusion helps MLLMs better leverage both parametric and contextual knowledge.",
+      "content_length": 800,
+      "metadata": {"heading_level": 2}
+    },
+    {
+      "snippet_id": "14912::TABLE::4",
+      "snippet_type": "TABLE",
+      "location": "6.1 Ablation study",
+      "content": "Table 5 (ablation):\n| Variants | InfoSeek | AOK-VQA |\n| Regular | 51.97 | 44.13 |\n| + Attention Reallocation | 53.42 | 46.30 |\n| + Logits Fusion | 55.83 | 55.90 |\n| + Adaptive Weights | 58.35 | 59.93 |",
+      "content_length": 200,
+      "metadata": {"caption": "Table 5: ablation study", "row_count": 4}
+    },
+    {
+      "snippet_id": "14912::SECTION::14",
+      "snippet_type": "SECTION",
+      "location": "6.2 Effect of different retrievers",
+      "content": "We investigate the impact of different retrievers and retrieval strategies on recall and model performance on the InfoSeek dataset. As shown in Tab. 6, our model consistently enhances performance across all configurations... Retrieving knowledge based on the input query yields low recall... Despite this limitation, our model achieves consistent performance improvements even under low retrieval recall.",
+      "content_length": 700,
+      "metadata": {"heading_level": 2}
+    },
+    {
+      "snippet_id": "14912::TABLE::5",
+      "snippet_type": "TABLE",
+      "location": "6.2 Effect of different retrievers",
+      "content": "Table 6: Experimental results with different CLIP retrievers. '-T' means using the input query for knowledge retrieval.\n| Retriever | Recall | LLaVA | Ours |\n| CLIP-B/16 | 38.27 | 45.93 | 51.60 |\n| CLIP-L/14 | 56.53 | 51.23 | 57.60 |\n| CLIP-L/14-336 | 58.37 | 51.97 | 58.35 |\n| CLIP-B/16-T | 5.56 | 32.97 | 35.43 |\n| CLIP-L/14-T | 6.00 | 33.40 | 36.23 |\n| CLIP-L/14-336-T | 5.73 | 33.37 | 36.63 |",
+      "content_length": 394,
+      "metadata": {"caption": "Table 6", "row_count": 6}
+    },
+    {
+      "snippet_id": "14912::SECTION::15",
+      "snippet_type": "SECTION",
+      "location": "6.3 Inference Efficiency",
+      "content": "We conduct a detailed analysis of the inference efficiency of the proposed model... Compared with the baseline MRAG, our model introduces only a modest computational overhead... Though ALFAR introduces limited inference overhead, scalability issues emerge with larger models, as demonstrated by the performance decline on InstructBLIP 13B in Tab. 8 and Fig. 6, likely caused by an increased dominance of parametric knowledge that ALFAR's fusion cannot adequately handle.",
+      "content_length": 900,
+      "metadata": {"heading_level": 2}
+    },
+    {
+      "snippet_id": "14912::TABLE::6",
+      "snippet_type": "TABLE",
+      "location": "6.3 Inference Efficiency",
+      "content": "Table 7: Inference time of different methods over one sample with LLaVA-1.5.\n| Variants | InfoSeek | Human |\n| Regular | 0.46s (1.00x) | 0.50s (1.00x) |\n| CD | 0.62s (1.35x) | 0.72s (1.44x) |\n| CAD | 0.62s (1.34x) | 0.72s (1.44x) |\n| AdaCAD | 0.62s (1.35x) | 0.73s (1.45x) |\n| Entropy | 0.63s (1.37x) | 0.73s (1.46x) |\n| COIECD | 0.62s (1.35x) | 0.73s (1.45x) |\n| VCD | 0.63s (1.38x) | 0.74s (1.47x) |\n| AGLA | 0.83s (1.81x) | 1.02s (2.04x) |\n| ALFAR | 0.62s (1.35x) | 0.73s (1.46x) |",
+      "content_length": 482,
+      "metadata": {"caption": "Table 7", "row_count": 9}
+    },
+    {
+      "snippet_id": "14912::SECTION::16",
+      "snippet_type": "SECTION",
+      "location": "6.4 Qualitative Examples",
+      "content": "Fig. 6 shows a qualitative comparison of four decoding approaches. Vanilla LLaVA without context produces a false response due to the lack of knowledge about the entity in the image. LLaVA with MRAG incorporates the contextual knowledge but still produces the same incorrect response... LLaVA with CAD can mitigate knowledge conflicts effectively... However, it produces a false response as well, mainly due to attention bias. While ALFAR improves on baseline decoding methods, some generated responses still contain errors due to residual attention biases or poorly weighted contextual knowledge, indicating that complete mitigation of knowledge conflicts remains an open challenge.",
+      "content_length": 900,
+      "metadata": {"heading_level": 2}
+    },
+    {
+      "snippet_id": "14912::SECTION::17",
+      "snippet_type": "SECTION",
+      "location": "6.5 ALFAR on MLLM Scalability",
+      "content": "Tab. 8 presents experimental results of the 13B variants of LLaVA-1.5 and InstructBLIP over the InfoSeek dataset. Notably, ALFAR consistently improves performance across both models, demonstrating its superior scalability with respect to the model size. Interestingly, we observe a performance decline in [InstructBLIP 13B]. This effect is more pronounced in InstructBLIP 13B compared to the 7B variant, which may be attributed to the model's increased reliance on parametric knowledge.",
+      "content_length": 700,
+      "metadata": {"heading_level": 2}
+    },
+    {
+      "snippet_id": "14912::TABLE::7",
+      "snippet_type": "TABLE",
+      "location": "6.5 ALFAR on MLLM Scalability",
+      "content": "Table 8: Experiments with larger MLLMs.\n| Decoding | LLaVA-13B | InstructBLIP-13B |\n| Parametric | 44.40 | 8.93 |\n| Regular | 55.83 | 18.70 |\n| ALFAR (ours) | 59.63 | 27.63 |",
+      "content_length": 173,
+      "metadata": {"caption": "Table 8", "row_count": 3}
+    },
+    {
+      "snippet_id": "14912::FIGURE::4",
+      "snippet_type": "FIGURE",
+      "location": "6.4 Qualitative Examples",
+      "content": "Figure 6: Illustration of generated responses and corresponding attention distributions across different decoding methods, using LLaVA-1.5 [14] as the backbone model.",
+      "content_length": 165,
+      "metadata": {"caption": "Figure 6"}
+    },
+    {
+      "snippet_id": "14912::SECTION::18",
+      "snippet_type": "SECTION",
+      "location": "6.6 Effect of Different Decoding Strategies",
+      "content": "Beyond the multinomial sampling strategy discussed in this paper, we further investigate the robustness of the proposed ALFAR framework under diverse decoding settings... evaluated: Top-P (p=0.7), Top-K (k=50), greedy, temperature (t=0.5), Top-P+temperature, Top-K+temperature. As illustrated in Fig. 5, ALFAR consistently enhances model performance across all decoding strategies. This consistent gain highlights the generalizability of ALFAR's learning principle... ALFAR can serve as a robust and plug-and-play enhancement to existing MLLMs.",
+      "content_length": 1100,
+      "metadata": {"heading_level": 2}
+    },
+    {
+      "snippet_id": "14912::TABLE::8",
+      "snippet_type": "TABLE",
+      "location": "6.6 Effect of Different Decoding Strategies",
+      "content": "Figure 5 data: | Decoding Strategy | Top-P | Top-K | Temperature | Top-P+Temp. | Top-K+Temp. | Greedy |\n| LLaVA + MRAG | 54 | 53 | 55 | 57 | 56 | 57 |\n| LLaVA + ALFAR | 58 | 57 | 58 | 59 | 58 | 59 |",
+      "content_length": 197,
+      "metadata": {"caption": "Figure 5: Experimental results with different decoding strategies", "row_count": 2}
+    },
+    {
+      "snippet_id": "14912::SECTION::19",
+      "snippet_type": "SECTION",
+      "location": "7 Conclusion",
+      "content": "In this paper, we have proposed ALFAR, a method designed to improve knowledge utilization in MLLMs by addressing attention biases and knowledge conflicts. While experiments show promising gains, limitations including retrieval dependency, scalability concerns, and inference costs remain. Future work will focus on these challenges to enhance real-world applicability.",
+      "content_length": 366,
+      "metadata": {"heading_level": 2}
+    },
+    {
+      "snippet_id": "14912::SECTION::20",
+      "snippet_type": "SECTION",
+      "location": "8 Acknowledgments",
+      "content": "This work was supported by the National Science and Technology Major Project (2022ZD0117102), National Natural Science Foundation of China... No IRB or data consent statements were provided concerning the usage of knowledge base content, raising potential ethical transparency concerns.",
+      "content_length": 500,
+      "metadata": {"heading_level": 2}
+    },
+    {
+      "snippet_id": "14912::SECTION::21",
+      "snippet_type": "SECTION",
+      "location": "References",
+      "content": "References [1]-[75], including: [35] Kruger & Dunning, Unskilled and unaware of it (1999); [56] A. Vaswani. Attention Is All You Need. NeurIPS 2017; [69] DeVore & Temlyakov, Some remarks on greedy algorithms (1996) cited for greedy decoding; [70] Ackley et al., Boltzmann machines (1985) cited for temperature sampling; [71] OpenAI. GPT-4 technical report, 2023. Unpublished internal document.",
+      "content_length": 12000,
+      "metadata": {"heading_level": 2}
+    },
+    {
+      "snippet_id": "14912::SECTION::22",
+      "snippet_type": "SECTION",
+      "location": "A1 Limitation and Future Work",
+      "content": "Despite its strong performance... our framework requires access to MLLM parameters, making it inapplicable to black-box API-based models such as GPT-4 [71]... Additionally, we observe that MLLMs struggle to effectively extract relevant information from long contexts.",
+      "content_length": 600,
+      "metadata": {"heading_level": 2}
+    },
+    {
+      "snippet_id": "14912::SECTION::23",
+      "snippet_type": "SECTION",
+      "location": "A2 Broader Impacts",
+      "content": "The proposed model for enhancing knowledge utilization in MLLMs carries significant broader impacts... deploying these models in sensitive and high-stakes applications such as autonomous driving, medical diagnostics, and surveillance systems...",
+      "content_length": 600,
+      "metadata": {"heading_level": 2}
+    },
+    {
+      "snippet_id": "14912::SECTION::24",
+      "snippet_type": "SECTION",
+      "location": "A3 Conflict Rate and Performance Drop",
+      "content": "Conflict Rate measures the proportion of instances where parametric and contextual knowledge provide different information... Conflict Rate = Err(M_theta(y|q,I), y_hat) (A1)... Performance Drop = Err(M_theta(y|q,I,c), y_hat) (A2), where M_theta(y|q,I,c) is the output with ground-truth context as additional inputs.",
+      "content_length": 1200,
+      "metadata": {"heading_level": 2}
+    },
+    {
+      "snippet_id": "14912::EQUATION::10",
+      "snippet_type": "EQUATION",
+      "location": "A3 Conflict Rate and Performance Drop",
+      "content": "$$\\text{Conflict Rate} = \\text{Err}(\\mathcal{M}_\\theta(y|q, I), \\hat{y})$$ (A1); $$\\text{Performance Drop} = \\text{Err}(\\mathcal{M}_\\theta(y|q, I, c), \\hat{y})$$ (A2)",
+      "content_length": 166,
+      "metadata": {"label": "Eqs. A1-A2", "display_mode": true}
+    },
+    {
+      "snippet_id": "14912::SECTION::25",
+      "snippet_type": "SECTION",
+      "location": "A4 Retrieval Recall / A5 Dataset",
+      "content": "We present the recall with Ground-Truth knowledge and knowledge from various retrieval rankings on the multi-choice InfoSeek dataset in Tab. A1. The low recall negatively impacts performance... We present statistics of different datasets and the corresponding knowledge bases in Tab. A2. We construct a knowledge base containing 1.7K entities derived from the original Wikipedia knowledge base. For Human and ViQuAE, we use the original Wikipedia knowledge base, selecting 73.6K entities accompanied by images for knowledge retrieval.",
+      "content_length": 1200,
+      "metadata": {"heading_level": 2}
+    },
+    {
+      "snippet_id": "14912::TABLE::9",
+      "snippet_type": "TABLE",
+      "location": "A4 Retrieval Recall",
+      "content": "Table A1: Retrieval recall with Ground-Truth knowledge (GT) and knowledge from different retrieval rankings.\n| Index | GT | 1 | 2 | 3 | 4 |\n| Recall | 100 | 58.37 | 10.57 | 5.07 | 3.07 |",
+      "content_length": 185,
+      "metadata": {"caption": "Table A1", "row_count": 1}
+    },
+    {
+      "snippet_id": "14912::TABLE::10",
+      "snippet_type": "TABLE",
+      "location": "A5 Dataset",
+      "content": "Table A2: Statistics of the datasets and knowledge bases.\n| Dataset | # VQA pairs | Knowledge Base |\n| Validation | 73,620 | Wikipedia |\n| Human | 8,931 | Wikipedia |\n| InfoSeek | 3,000 | Wikipedia |\n| ViQuAE | 3,000 | Wikipedia |\n| OK-VQA | 5,046 | GPT-3.5 |\n| AOK-VQA | 1,145 | GPT-3.5 |\n| E-VQA | 700 | Encyclopedia |",
+      "content_length": 318,
+      "metadata": {"caption": "Table A2", "row_count": 7}
+    },
+    {
+      "snippet_id": "14912::SECTION::26",
+      "snippet_type": "SECTION",
+      "location": "A6 Adaptive Plausibility Constraints",
+      "content": "We follow prior studies and adopt adaptive plausibility constraints for fair comparisons... V_token(y_<i) = { y_i in V : p_theta(y_i) >= beta * max_w p_theta(w) }; p(y_i) = 0 if y_i not in V_token (A3). We select beta = 0.7 to retain only high-probability tokens.",
+      "content_length": 600,
+      "metadata": {"heading_level": 2}
+    },
+    {
+      "snippet_id": "14912::SECTION::27",
+      "snippet_type": "SECTION",
+      "location": "A7 Effect of Intervention Layers",
+      "content": "We investigate the impact of attention reallocation at different MLLM layers on the InfoSeek dataset using LLaVA-1.5, as summarized in Tab. A4. The results show that reallocating attention in shallow layers (layers 1-16) enhances model performance by mitigating attention bias toward image tokens... In contrast, applying attention reallocation in middle layers (layers 17-24) yields smaller gains... Notably, reallocating attention in late layers (layers 25-32) leads to the most substantial performance gains, as these layers are responsible for reasoning and directly affect output generation. Furthermore, leveraging attention reallocation in both shallow (layers 1-8) and deep (layer 32) layers yields the best performance.",
+      "content_length": 1100,
+      "metadata": {"heading_level": 2}
+    },
+    {
+      "snippet_id": "14912::TABLE::11",
+      "snippet_type": "TABLE",
+      "location": "A7 Effect of Intervention Layers",
+      "content": "Table A4: An ablation study with different layers for attention reallocation.\n| Intervention Layers | VQA Accuracy |\n| None | 56.70 |\n| [1-8] | 58.08 |\n| [9-16] | 58.17 |\n| [17-24] | 57.57 |\n| [25-32] | 58.10 |\n| [1-8] U [32] | 58.67 |",
+      "content_length": 233,
+      "metadata": {"caption": "Table A4", "row_count": 6}
+    },
+    {
+      "snippet_id": "14912::SECTION::28",
+      "snippet_type": "SECTION",
+      "location": "A8 Effect of different numbers of knowledge",
+      "content": "We examine the effect of varying the amount of knowledge provided to MLLMs on retrieval recall and model performance on the InfoSeek dataset. As shown in Tab. A3, appending additional knowledge to the prompt improves retrieval recall but has limited impact on model performance, as MLLMs often struggle to effectively utilize information from lengthy input contexts.",
+      "content_length": 700,
+      "metadata": {"heading_level": 2}
+    },
+    {
+      "snippet_id": "14912::TABLE::12",
+      "snippet_type": "TABLE",
+      "location": "A8 Effect of different numbers of knowledge",
+      "content": "Table A3: Experimental results with different numbers of knowledge using LLaVA-1.5.\n| #Knowledge | Recall | LLaVA | Ours |\n| 1 | 58.37 | 51.97 | 58.35 |\n| 2 | 68.93 | 49.90 | 58.70 |\n| 3 | 74.00 | 50.13 | 58.57 |\n| 4 | 76.77 | 50.23 | 58.20 |",
+      "content_length": 240,
+      "metadata": {"caption": "Table A3", "row_count": 4}
+    }
+  ]
+}

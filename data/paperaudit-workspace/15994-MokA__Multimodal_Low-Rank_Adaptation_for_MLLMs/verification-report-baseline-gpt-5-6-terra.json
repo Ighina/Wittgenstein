@@ -1,0 +1,110 @@
+{
+  "paper_id": "15994-MokA__Multimodal_Low-Rank_Adaptation_for_MLLMs",
+  "title": "MokA: Multimodal Low-Rank Adaptation for MLLMs",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Eqs. (11)–(13), especially the identification of the MokA output with \"ΔW x\"",
+      "confidence": 0.97,
+      "supporting_evidence": "The paper continues to define MokA as a fixed low-rank weight update ΔW ∈ R^(d×k), but its output contains cross-attention: B Att(A^a x^a, A^t x^t, A^t x^t). This term depends nonlinearly on the entire input sequence through softmax attention and mixes token positions. It therefore cannot be represented as multiplication by a fixed matrix ΔW applied independently to x. MokA may be a dynamic adapter module, but it is not mathematically a conventional LoRA weight update as claimed in these equations.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "15994-MokA__Multimodal_Low-Rank_Adaptation_for_MLLMs::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Appendix B, Eqs. (14)–(17)",
+      "confidence": 0.98,
+      "supporting_evidence": "The attention logits are normalized by sqrt(N_t), where N_t is the number of text tokens. Standard scaled dot-product attention is normalized by the key/query feature dimension, here the low-rank projected dimension r (called d in Eq. (6)), not by sequence length. This also directly contradicts the main-method Eq. (6), which uses sqrt(d).",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "15994-MokA__Multimodal_Low-Rank_Adaptation_for_MLLMs::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (figure-figure)",
+      "error_location": "Table 2 versus Table 4, LLaMA2 LoRA result on MME",
+      "confidence": 0.99,
+      "supporting_evidence": "Table 2 reports an MME score of 90.85 for LLaMA2 + LoRA, while Table 4 reports 908.52 for the same LLaMA2 + LoRA visual-text setting. The remaining Table 4 LoRA visual-text results exactly match Table 2 (MMBench 50.64, POPE 70.28, SEED-Bench 39.71), making this an unreconciled numerical contradiction rather than a different experiment.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "15994-MokA__Multimodal_Low-Rank_Adaptation_for_MLLMs::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (figure-figure)",
+      "error_location": "Table 3 versus Table 5, LLaMA2 AIR-Bench results",
+      "confidence": 0.98,
+      "supporting_evidence": "Both tables state that their results are based on LLaMA2 and refer to AIR-Bench/AIR-Bench_speech-en, but they report different values. Table 3 gives Multiple LoRA = 32.80 and MokA = 36.70, whereas Table 5 gives Multiple LoRA = 31.97 and MokA = 39.64. No changed data split, protocol, or setting is disclosed to explain these incompatible results.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "15994-MokA__Multimodal_Low-Rank_Adaptation_for_MLLMs::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Section 4.1, paragraph interpreting Table 1",
+      "confidence": 0.99,
+      "supporting_evidence": "The text states that \"multiple LoRA ... underperforms both standard LoRA and MokA.\" Table 1 contradicts this: for LLaMA2 on AVE, Multiple LoRA is 71.77 versus LoRA's 69.84; for Qwen2.5-VL on MUSIC-AVQA it is 73.13 versus LoRA's 73.00; and for LLaMA3 it exceeds LoRA on both datasets (78.63 versus 78.31 and 77.02 versus 76.91). Thus the asserted parameter-control result is not supported by the reported table.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "15994-MokA__Multimodal_Low-Rank_Adaptation_for_MLLMs::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Section 4.1, statement about Qwen2.5-VL LoRA",
+      "confidence": 0.98,
+      "supporting_evidence": "The paper says \"Qwen2.5-VL with LoRA outperforms both LLaMA-2 and Qwen2 under the LoRA fine-tuning setting.\" Table 1 does not support this. On MUSIC-AVQA, Qwen2.5-VL LoRA is 73.00, below LLaMA2 LoRA at 73.41. On AVE, it is 71.38, below Qwen2 LoRA at 72.13. The claimed comparison is therefore false.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "15994-MokA__Multimodal_Low-Rank_Adaptation_for_MLLMs::baseline"
+    },
+    {
+      "error_category": "Statistical reporting",
+      "error_location": "Section 4.6, discussion of Table 6",
+      "confidence": 0.94,
+      "supporting_evidence": "The paper calls the POPE increase from 70.28 to 74.23 a \"performance gain of 3.95%.\" The arithmetic difference is 3.95 percentage points, not 3.95 percent relative improvement. The relative improvement is approximately (74.23 - 70.28) / 70.28 = 5.62%. The unit must be corrected or explicitly labeled as percentage points.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "15994-MokA__Multimodal_Low-Rank_Adaptation_for_MLLMs::baseline"
+    },
+    {
+      "error_category": "Citation / attribution",
+      "error_location": "Use of citation [31] for \"LLaMA-2-7B-Chat\" throughout the paper",
+      "confidence": 0.99,
+      "supporting_evidence": "Reference [31] is Touvron et al., \"LLaMA: Open and Efficient Foundation Language Models\" (the original LLaMA paper), not the Llama 2 technical report. The paper explicitly says it uses LLaMA-2-7B-Chat, so the cited source does not document the claimed backbone and should be replaced with the Llama 2 reference.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "15994-MokA__Multimodal_Low-Rank_Adaptation_for_MLLMs::baseline"
+    },
+    {
+      "error_category": "Citation / attribution",
+      "error_location": "Section 5 Related Works, description of DoRA [21]",
+      "confidence": 0.96,
+      "supporting_evidence": "The paper says DoRA \"focuses solely on optimizing the gradient direction.\" DoRA decomposes weights into magnitude and direction, uses low-rank adaptation for the directional component, and learns a magnitude parameter; it does not solely optimize direction. This materially misstates the cited method.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "15994-MokA__Multimodal_Low-Rank_Adaptation_for_MLLMs::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Section 6 Discussion",
+      "confidence": 0.99,
+      "supporting_evidence": "The conclusion claims that MokA \"completely solves the problem of multimodal adaptation,\" \"perfectly balances\" its objectives, and \"absolutely ensures superior model performance.\" These absolute claims are contradicted by the paper's own evidence: Table 3 shows LLaMA2 Uni LoRA + MM LoRA outperforming MokA on both MMAU (37.10 versus 35.40) and AIR-Bench (37.60 versus 36.70), while the abstract itself says gains vary and further assessment of generality and robustness is needed.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "15994-MokA__Multimodal_Low-Rank_Adaptation_for_MLLMs::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 10,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (gpt-5.6-terra, taxonomy=default): 10 error(s) reported.",
+  "baseline": {
+    "model": "gpt-5.6-terra",
+    "provider": "openai",
+    "taxonomy": "default",
+    "paper_chars": 62976,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 17618,
+      "output_tokens": 4494,
+      "cache_read_input_tokens": null,
+      "cache_creation_input_tokens": null
+    }
+  }
+}

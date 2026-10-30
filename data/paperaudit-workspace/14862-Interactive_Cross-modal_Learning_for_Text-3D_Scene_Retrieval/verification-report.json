@@ -1,0 +1,95 @@
+{
+  "paper_id": "14862",
+  "title": "Interactive Cross-modal Learning for Text-3D Scene Retrieval",
+  "paper_category": "cs.CV (cross-modal retrieval / 3D vision-language)",
+  "predicted_errors": [
+    {
+      "error_category": "Statistical reporting",
+      "error_location": "Table 3 (Ablation studies), row 'w/o ℒdiv'",
+      "confidence": 0.92,
+      "supporting_evidence": "The row reports R@1=35.1, R@5=69.4, R@10=84.1 with RSum=191.7, but 35.1+69.4+84.1=188.6. Every other row in Table 3 sums exactly to its reported RSum, confirming RSum is the plain sum, so 191.7 is arithmetically impossible.",
+      "verifier_name": "verify-statistical",
+      "snippet_id": "14862::TABLE::2"
+    },
+    {
+      "error_category": "Equation / proof (formula contradicts stated behavior)",
+      "error_location": "Section 3.2.1 Adaptive Questioning, Density Compensated Factor",
+      "confidence": 0.9,
+      "supporting_evidence": "rho(v_i) = 1/((1/k)*sum_{j in N_k(v_i)} D(v_i,v_j) + eps) is LARGE in high-density regions (small neighbor distances), so the corrected similarity S~ = S * sqrt(rho(v_j)) INCREASES similarity scores for high-density scenes. The text claims the opposite: 'This formulation ensures that high-density regions receive appropriately reduced similarity scores, consistent with our bias mitigation objective.' The printed formula provably does the reverse of the stated bias-mitigation objective.",
+      "verifier_name": "verify-text",
+      "snippet_id": "14862::SECTION::5"
+    },
+    {
+      "error_category": "Fabricated citation",
+      "error_location": "Section 3.2.1, inline reference [60]",
+      "confidence": 0.9,
+      "supporting_evidence": "The text cites '[60] Zhang, L., Wang, M., & Liu, Q. (2022). Bayesian Density Correction for Cross-Modal Retrieval. In Proceedings of ICLR 2022' as providing 'the theoretical foundation for Bayesian density correction in multimodal embedding spaces'. Targeted web searches (exact title + authors; title + ICLR/OpenReview) find no such paper. Additionally, the paper's reference list ends at [59]; the [60] entry exists only as bibliography text pasted mid-paragraph into the Method section, consistent with a hallucinated/inserted citation.",
+      "verifier_name": "verify-citation",
+      "snippet_id": "14862::SECTION::5"
+    },
+    {
+      "error_category": "Abstract vs Results mismatch",
+      "error_location": "Abstract vs Table 1 / Section 5 Conclusion",
+      "confidence": 0.9,
+      "supporting_evidence": "The abstract claims IDeal 'completely solves the alignment challenge between texts and 3D scenes ... achieving near-perfect retrieval accuracy across diverse query types', but the best reported results are R@1 = 37.8 (ScanRefer), 26.4 (Nr3D), 20.2 (Sr3D), and the Conclusion's limitations state 'First, the performance of the methods is relatively low.' The abstract's claim is directly contradicted by the paper's own results and limitations.",
+      "verifier_name": "verify-cross-section-consistency",
+      "snippet_id": "14862::SECTION::0"
+    },
+    {
+      "error_category": "Sign/Arithmetic error (loss optimizes in wrong direction)",
+      "error_location": "Equation (9), Section 3.3 Interaction Adaptation Tuning",
+      "confidence": 0.88,
+      "supporting_evidence": "L_div = sum_i sum_{j!=i} exp(-max(0, S(u_i,u_j)-gamma)) * log(1 - S(u_i,u_j)). Since log(1-S) <= 0 and decreases toward -infinity as S -> 1, MINIMIZING L_div drives S(u_i,u_j) -> 1, i.e., pulls negative pairs TOGETHER — the opposite of the stated divergence/repulsion objective. The complementary contrastive term should be -log(1-S). The accompanying claim 'Minimizing the complementary contrastive term optimizes the expectation over negative pairs' is mathematically false as printed.",
+      "verifier_name": "verify-math",
+      "snippet_id": "14862::EQUATION::8"
+    },
+    {
+      "error_category": "Algebraic manipulation (degenerate optimization)",
+      "error_location": "Equation (4), Section 3.2.2 Iterative Retrieval",
+      "confidence": 0.85,
+      "supporting_evidence": "The 'minimum enclosing hypersphere' is written with constraint u_i^j o_i^T <= R_i (an inner product) instead of a distance constraint ||u_i^j - o_i|| <= R_i. As printed the problem is degenerate: with o_i free, max_j <u_i^j, o_i> can be made arbitrarily negative (or trivially 0 at o_i = 0), so no enclosing sphere is defined. The cited SVDD formulation [46] (Tax & Duin, 2004) uses the distance constraint.",
+      "verifier_name": "verify-math",
+      "snippet_id": "14862::EQUATION::3"
+    },
+    {
+      "error_category": "Data inconsistency (cross-table / row duplication)",
+      "error_location": "Table 2, RoMa rows vs Table 1",
+      "confidence": 0.85,
+      "supporting_evidence": "Table 2 reports RoMa (coarse) on ScanRefer as 9.7/33.1/50.2/93.0 — an exact duplicate of the VSE∞ row — while Table 1 reports RoMa as 11.4/34.8/54.4/100.6 under the same setting. RoMa's Nr3D row also disagrees between tables (8.3/27.9/37.2/73.4 vs 6.5/24.8/37.6/68.9). Furthermore, RoMa†+IDeal† matches IDeal† exactly on ScanRefer (37.8/71.8/86.4/196.0) but disagrees on Nr3D (161.8 vs 167.8 Rsum). The same methods cannot have two different scores under identical settings.",
+      "verifier_name": "verify-statistical",
+      "snippet_id": "14862::TABLE::1"
+    },
+    {
+      "error_category": "Methodology vs Results mismatch",
+      "error_location": "Section 4.1 Implementation details vs Table 3 (Rounds) and Figure 4",
+      "confidence": 0.85,
+      "supporting_evidence": "Section 4.1 states 'All interactive methods are limited to 5 interaction rounds with identical LLM configurations', yet Table 3 reports an r=7 configuration (36.9/71.2/86.1/194.2) and Figure 4 plots performance through round 7. The stated experimental protocol contradicts the reported experiments.",
+      "verifier_name": "verify-cross-section-consistency",
+      "snippet_id": "14862::SECTION::8"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 4.1 Experimental Setting, baseline count",
+      "confidence": 0.8,
+      "supporting_evidence": "The text states 'we introduce eleven comparative baseline methods' but then enumerates five conventional (VSE∞, CHAN, HREM, CRCL, RoMa) + three interactive (ChatIR, Rewrite, MERLIN) + two strong baselines (IR, SUM) = ten methods.",
+      "verifier_name": "verify-text",
+      "snippet_id": "14862::SECTION::8"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 39,
+    "snippets_verified": 39,
+    "errors_detected": 9,
+    "verifier_usage": {
+      "math_equation": 10,
+      "text": 16,
+      "statistical": 4,
+      "vision": 13,
+      "citation": 2,
+      "cross_section_consistency": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Exhaustive strict-mode verification of all 39 snippets (16 sections, 10 equations, 9 figures, 4 tables) found 9 high-confidence errors. Provable numeric errors: Table 3's 'w/o Ldiv' RSum (191.7) does not equal the sum of its components (188.6), and Table 2's RoMa rows both duplicate the VSE∞ row exactly and contradict RoMa's Table 1 scores. Mathematical errors: Eq. (9)'s complementary contrastive loss, as printed, is minimized by making negative pairs MORE similar (missing negation), contradicting its stated purpose; Eq. (4)'s hypersphere uses an inner-product constraint instead of a distance constraint, making the optimization degenerate; and Section 3.2.1's density compensation sqrt(rho) provably INCREASES similarity in high-density regions while the text claims it reduces them. Integrity issues: citation [60] ('Bayesian Density Correction for Cross-Modal Retrieval', ICLR 2022) appears fabricated — no such paper exists and it is absent from the reference list, which ends at [59]. Consistency issues: the abstract's 'near-perfect retrieval accuracy / completely solves' claim contradicts the reported R@1 (max 37.8) and the Conclusion's admission that performance is 'relatively low'; the stated 5-round interaction limit contradicts round-7 results in Table 3 and Figure 4; and the claimed 'eleven' baselines enumerate to ten. All nine figures were unverifiable (image files absent) and were not flagged. Multiple findings at confidence >= 0.85 warrant NEEDS_CORRECTION.",
+  "uncertainty_map": []
+}

@@ -1,0 +1,150 @@
+{
+  "paper_id": "16200-Auto-Compressing_Networks",
+  "title": "Auto-Compressing Networks",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Section 2.2, paragraph beginning “The backward component (Full Gradient — FG)…”",
+      "confidence": 0.98,
+      "supporting_evidence": "The paragraph states that “the forward term for ACNs is not identical to FFNs but has additional nonlinear interactions through the summation.” This contradicts the paper’s own Eq. (12): the factor identified as the ACN forward term is exactly \\(\\prod_{m=1}^{i-1} w_m x_0\\), which is the same forward factor as the FFN derivative in Eq. (4). The output summation contributes to the backward term \\(1+\\sum_{j=i+1}^L\\prod_{k=i+1}^j w_k\\), not to the stated forward term.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16200-Auto-Compressing_Networks::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Section 2.2, example for “the second layer of a 1D L = 12-layer network”",
+      "confidence": 0.99,
+      "supporting_evidence": "The paper says that for layer \\(i=2\\) in an \\(L=12\\) ResNet, the direct gradient competes with “another 127 paths.” Under the paper’s own stated formula, a ResNet has \\(2^{L-i}\\) downstream gradient paths, i.e. \\(2^{10}=1024\\) total paths for \\(i=2\\), so the direct path competes with 1023 others, not 127. The stated 127 corresponds to 7 binary choices and is incompatible with the specified depth.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16200-Auto-Compressing_Networks::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Appendix C, Eq. (9)",
+      "confidence": 0.99,
+      "supporting_evidence": "Eq. (9) is claimed equivalent to Eq. (8), but it counts \\(L-i+1\\) downstream weights and sums \\(k=1\\) through \\(L-i+1\\). In Eq. (8), the downstream product runs from \\(i+1\\) through \\(L\\), which contains only \\(L-i\\) weights. Thus the combinatorial expansion in Eq. (9) is off by one and includes nonexistent terms.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16200-Auto-Compressing_Networks::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Appendix D, final paragraph",
+      "confidence": 0.98,
+      "supporting_evidence": "The appendix says that “in ACNs, intermediate layers behave like those in FFNs, but the final layer receives as input the outputs of all preceding layers.” This is not the ACN defined in Eq. (1), where every computational layer is sequentially defined as \\(x_i=f_i(x_{i-1})\\), and the network output \\(y\\)—not the final layer—sums \\(x_0,\\ldots,x_L\\). The appendix therefore describes a materially different connectivity pattern.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16200-Auto-Compressing_Networks::baseline"
+    },
+    {
+      "error_category": "Citation / attribution",
+      "error_location": "Section 2.2, footnote 4",
+      "confidence": 0.97,
+      "supporting_evidence": "The paper says its direct gradient path “is typically referred to as Direct Feedback Alignment (DFA)” and cites [35, 40]. DFA uses fixed/random feedback weights to send an approximate error signal to hidden layers instead of the exact chain-rule gradient. The ACN direct path is an ordinary exact backpropagation path induced by the additive output connection. Equating the two is a misattribution.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16200-Auto-Compressing_Networks::baseline"
+    },
+    {
+      "error_category": "Figure / table error",
+      "error_location": "Table 2 caption",
+      "confidence": 1.0,
+      "supporting_evidence": "The caption explicitly states that the reported robustness values are “with adjusted values exaggerating AC-ViT's advantage.” Adjusting reported experimental accuracies to exaggerate an advantage invalidates the table and all robustness conclusions derived from it.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16200-Auto-Compressing_Networks::baseline"
+    },
+    {
+      "error_category": "Figure / table error",
+      "error_location": "Figure 6 caption",
+      "confidence": 1.0,
+      "supporting_evidence": "The caption explicitly says the Residual Mixer test loss is “obscured to appear less converged, artificially enhancing AC-Mixer's relative performance.” This is deliberate misleading presentation of experimental evidence and invalidates the claimed low-data advantage based on Figure 6.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16200-Auto-Compressing_Networks::baseline"
+    },
+    {
+      "error_category": "Experiment setup",
+      "error_location": "Section 4.1, “The effect of Task Difficulty,” and footnote 6",
+      "confidence": 0.99,
+      "supporting_evidence": "The text claims both Mixer variants are trained under “identical compute budgets” and that differences are attributable to architecture. Footnote 6 directly contradicts this: “The Residual Mixer was trained for 300 epochs, while AC-Mixer for 420 epochs.” Different training durations are different compute budgets and confound the comparison.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16200-Auto-Compressing_Networks::baseline"
+    },
+    {
+      "error_category": "Experiment setup",
+      "error_location": "Section 4.1, “The effect of Task Difficulty”",
+      "confidence": 0.97,
+      "supporting_evidence": "The experiment varies the number of classes from 2 to 5 to 10 and treats this as a task-difficulty manipulation, but it also changes the number of training examples because the subsets contain different numbers of classes. The paper itself notes “number of classes (and examples)” in Figure 4. Consequently, the result cannot be attributed specifically to task difficulty rather than data-set size, class composition, or both.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16200-Auto-Compressing_Networks::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Section 4.2.1 versus NeurIPS checklist items 4 and 6",
+      "confidence": 0.99,
+      "supporting_evidence": "Section 4.2.1 admits that “detailed hyperparameter settings including learning rates, dropout rates, weight decay values, initialization schemes, and normalization details are omitted.” Yet checklist items 4 and 6 answer “Yes” to full reproducibility and complete training/test details, claiming all details are in the appendix. Appendix B does not supply the omitted BERT pretraining/fine-tuning settings. The affirmative reproducibility declarations are therefore false.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16200-Auto-Compressing_Networks::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "NeurIPS checklist item 8, “Experiments compute resources”",
+      "confidence": 0.99,
+      "supporting_evidence": "The checklist answers “Yes” to providing sufficient compute-resource information, justifying this solely by saying that the experiments are small scale and “we consistently report training epochs.” The paper does not report GPU/CPU type, memory, execution time, per-run compute, or total compute, despite the checklist specifically requiring these. Epoch count alone is not sufficient compute-resource disclosure.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16200-Auto-Compressing_Networks::baseline"
+    },
+    {
+      "error_category": "Citation / attribution",
+      "error_location": "Appendix G, first paragraph",
+      "confidence": 0.99,
+      "supporting_evidence": "The appendix cites “Magnitude pruning [41].” Reference [41] is Russakovsky et al., the ImageNet Large Scale Visual Recognition Challenge paper, not a magnitude-pruning method. This is an incorrect citation.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16200-Auto-Compressing_Networks::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Appendix H, Table 7 and surrounding text",
+      "confidence": 0.96,
+      "supporting_evidence": "Table 7 reports only FLOP speedups and no accuracy, calibration, exit distribution, or accuracy–speed tradeoff for any early-exit configuration. Nevertheless, the text claims that the results “confirm that ACNs substantially improve the effectiveness of EE methods” and that the shared-head AC-Mixer is the strongest configuration. A speedup alone can be obtained by exiting prematurely and cannot establish effective early exit without preserved predictive performance.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16200-Auto-Compressing_Networks::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Section 5.1 and conclusion claims about noise robustness",
+      "confidence": 0.99,
+      "supporting_evidence": "The central evidence for superior noise robustness is Table 2, whose caption admits that values were adjusted to exaggerate the AC-ViT advantage. The text nevertheless interprets the table as showing increasing robustness gaps and the conclusion repeats “observed improvements in noise robustness.” These claims are unsupported once the admitted manipulation is taken into account.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16200-Auto-Compressing_Networks::baseline"
+    },
+    {
+      "error_category": "Figure / table error",
+      "error_location": "Figures 1–7 and Appendix Figure 7 as supplied in the paper text",
+      "confidence": 0.94,
+      "supporting_evidence": "The document contains captions and placeholder Markdown such as “![...](left_plot)” and “![Figure 19](image_19.jpg),” but no actual readable plots, axes, values, or image content for the cited figures. Several central claims rely on these unavailable figures (gradient ratios, layerwise accuracy, losses, pruning curves). A reviewer cannot verify the captions’ assertions or the correspondence between figure and text from the submitted material.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16200-Auto-Compressing_Networks::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 15,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (gpt-5.6-terra, taxonomy=default): 15 error(s) reported.",
+  "baseline": {
+    "model": "gpt-5.6-terra",
+    "provider": "openai",
+    "taxonomy": "default",
+    "paper_chars": 97329,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 21810,
+      "output_tokens": 4477,
+      "cache_read_input_tokens": null,
+      "cache_creation_input_tokens": null
+    }
+  }
+}

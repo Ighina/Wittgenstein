@@ -1,0 +1,98 @@
+{
+  "paper_id": "16200",
+  "title": "Auto-Compressing Networks",
+  "paper_category": "cs.LG",
+  "predicted_errors": [
+    {
+      "error_category": "Data Inconsistency (figure-text) — explicit data-manipulation admission",
+      "error_location": "Table 2 caption (Section 5.1, Robustness to Input Noise)",
+      "confidence": 0.97,
+      "supporting_evidence": "Table 2's caption states the noise-robustness results are reported 'with adjusted values exaggerating AC-ViT's advantage' — an unedited, explicit admission that the reported accuracies were manipulated to favor the proposed method. This invalidates the Section 5.1 conclusion that 'ACNs display improved robustness to noise' and the Conclusion's claim of 'observed improvements in noise robustness.'",
+      "verifier_name": "verify-vision",
+      "snippet_id": "16200::TABLE::1"
+    },
+    {
+      "error_category": "Data Inconsistency (figure-text) — explicit data-manipulation admission",
+      "error_location": "Figure 6 caption (Section 5.2, Robustness to Data Sparsity)",
+      "confidence": 0.95,
+      "supporting_evidence": "Figure 6's caption states the plot is shown 'with test loss for the Residual Mixer obscured to appear less converged, artificially enhancing AC-Mixer's relative performance' — an unedited admission of figure manipulation that invalidates the Section 5.2 finding that 'ACNs achieve lower training and test loss in fewer epochs compared to residual networks' and the Abstract's low-data-generalization claim.",
+      "verifier_name": "verify-vision",
+      "snippet_id": "16200::FIGURE::15"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text) — self-contradiction / embedded reviewer text",
+      "error_location": "Section 2.2, Emergent Gradient Paths (second paragraph)",
+      "confidence": 0.95,
+      "supporting_evidence": "Paragraph 1 states 'ACNs feature a forward term identical to FFNs for intermediate layers (single path)', matching Table 1 and Eq. 12 (ACN forward term = prod_{m<i} w_m = FFN forward term). Paragraph 2 then asserts, in an embedded adversarial-reviewer voice, that 'the forward term for ACNs is not identical to FFNs but has additional nonlinear interactions through the summation, contradicting the stated equivalence' and 'these inconsistencies limit the explanatory power of the gradient decomposition.' The section simultaneously asserts and repudiates the paper's central theoretical decomposition, while the Conclusion still claims the theoretical analysis demonstrates the auto-compression mechanism.",
+      "verifier_name": "verify-text",
+      "snippet_id": "16200::SECTION::7"
+    },
+    {
+      "error_category": "Conclusion vs Evidence mismatch",
+      "error_location": "Sections 5.1/5.2 and Conclusion vs Table 2 and Figure 6 captions",
+      "confidence": 0.9,
+      "supporting_evidence": "The paper's generalization/robustness conclusions ('ACNs display improved robustness to noise'; 'ACNs achieve lower training and test loss in fewer epochs'; Conclusion: 'observed improvements in noise robustness and transfer learning') rest on exhibits whose own captions state the values were adjusted (Table 2: 'adjusted values exaggerating AC-ViT's advantage') or visually obscured (Figure 6: 'obscured to appear less converged, artificially enhancing AC-Mixer's relative performance') to favor the proposed method. The cross-section verifier confirmed these conclusions are not supported by the evidence as presented.",
+      "verifier_name": "verify-cross-section-consistency",
+      "snippet_id": "16200::FULL_PAPER"
+    },
+    {
+      "error_category": "Methodology inconsistency — reproducibility contradiction",
+      "error_location": "Section 4.2.1, Masked Language Modeling and Transfer Learning with ACNs",
+      "confidence": 0.85,
+      "supporting_evidence": "Section 4.2.1 states 'Both architectures are trained under comparable loss convergence targets, but detailed hyperparameter settings including learning rates, dropout rates, weight decay values, initialization schemes, and normalization details are omitted, limiting reproducibility and interpretability of results.' This directly contradicts the NeurIPS checklist, which answers [Yes] to 'Experimental result reproducibility' and 'Experimental setting/details' with the justification 'We clearly describe experiments and evaluation setup, and we further provide all experimental details in the Appendix,' and also contradicts Appendix B's claim to detail the setup.",
+      "verifier_name": "verify-text",
+      "snippet_id": "16200::SECTION::11"
+    },
+    {
+      "error_category": "Statistical reporting — internal numerical inconsistency",
+      "error_location": "Section 2.2, path-count example (L = 12, i = 2: '127 paths')",
+      "confidence": 0.85,
+      "supporting_evidence": "'For example, when training the second layer of a 1D L = 12-layer network, DG is one of 11 ACN backward paths, while for ResNets the DG is competing with another 127 paths (of the NG term).' The ACN count L - i + 1 = 11 is correct, but under the paper's own formula (Section 2.2: '1D ResNets have 2^(L-i) paths'), the second layer (i = 2) has 2^10 = 1024 ResNet paths, so the DG competes with 1023 other paths — not 127. The value 127 = 2^7 - 1 would require L - i = 7 (e.g., layer 5), not the second layer. The paper's own quantitative example is therefore wrong by a factor of ~8.",
+      "verifier_name": "verify-math",
+      "snippet_id": "16200::SECTION::7"
+    },
+    {
+      "error_category": "Equation / proof — algebraic off-by-one",
+      "error_location": "Equation 9 (Appendix C, ResNet backward pass)",
+      "confidence": 0.85,
+      "supporting_evidence": "Eq. 9 claims to equivalently rewrite Eq. 8's backward term using 'sum_{k=1}^{L-i+1} binom(L-i+1, k) w k-tuples.' But the product prod_{k=i+1}^{L}(1+w_k) has L-i factors, so its full expansion contains C(L-i, k) k-tuples for k = 1..L-i (2^(L-i) terms), consistent with Eq. 8 and the '2^(L-i) paths' claim in Section 2.2. Eq. 9's upper limit L-i+1 with coefficients C(L-i+1, k) implies 2^(L-i+1) terms — an off-by-one that makes the 'equivalent' rewrite algebraically inconsistent with Eq. 8.",
+      "verifier_name": "verify-math",
+      "snippet_id": "16200::EQUATION::7"
+    },
+    {
+      "error_category": "Citation misattribution (external)",
+      "error_location": "Appendix G, 'Magnitude pruning [41]'",
+      "confidence": 0.85,
+      "supporting_evidence": "Appendix G cites 'magnitude pruning [41]', but reference [41] is Russakovsky et al., 'ImageNet large scale visual recognition challenge' (IJCV 2015) — a dataset paper unrelated to pruning. Web search confirms magnitude pruning is Han et al., NIPS 2015, 'Learning both Weights and Connections for Efficient Neural Networks' (arXiv:1506.02626), which does not appear in the bibliography. Reference [42] (Sanh et al., Movement Pruning) is correct, and [41] is used correctly elsewhere for ImageNet-1K, so this is a misattribution specific to Appendix G.",
+      "verifier_name": "verify-citation",
+      "snippet_id": "16200::SECTION::28"
+    },
+    {
+      "error_category": "Data Inconsistency (figure-text)",
+      "error_location": "Figure 2 caption (Section 3)",
+      "confidence": 0.78,
+      "supporting_evidence": "Figure 2's caption says 'ACN variants generally improve with added layers, though some non-monotonic variations and overlaps in accuracy with residual baselines occur, reflecting realistic training fluctuations,' while the main text cites the same figure to claim 'only ACNs exhibit auto-compression.' Continued improvement with added layers and accuracy overlap with residual baselines undercuts the auto-compression (early-layer saturation) reading the figure is invoked to support.",
+      "verifier_name": "verify-vision",
+      "snippet_id": "16200::FIGURE::5"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 68,
+    "snippets_verified": 68,
+    "errors_detected": 9,
+    "verifier_usage": {
+      "math_equation": 12,
+      "text": 3,
+      "vision": 3,
+      "citation": 1,
+      "cross_section_consistency": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Uncertainty-mode verification of 'Auto-Compressing Networks' (NeurIPS 2025 format) with lenient strictness. All 68 segmented snippets were triaged into an uncertainty map; the 20 highest-uncertainty nodes were escalated to specialist verifiers (12 equations to verify-math, 3 sections to verify-text, 3 exhibits to verify-vision, 1 appendix to verify-citation, plus a whole-paper verify-cross-section-consistency pass). Nine findings survived lenient confidence filtering. The two most severe are explicit data-integrity admissions left in exhibit captions: Table 2 reports noise-robustness values 'adjusted ... exaggerating AC-ViT's advantage' (0.97) and Figure 6 shows the Residual Mixer's test loss 'obscured to appear less converged, artificially enhancing AC-Mixer's relative performance' (0.95); together with the cross-section finding (0.90) they invalidate the paper's generalization/robustness conclusions (Sections 5.1-5.2, Abstract, Conclusion). The theory section self-contradicts: Section 2.2 both asserts and denies (via an embedded adversarial-reviewer paragraph) that the ACN forward term equals the FFN forward term (0.95), and its worked path-count example is numerically wrong ('127 paths' where the paper's own 2^(L-i) formula gives 1023 for L=12, i=2; 0.85). Appendix C's Eq. 9 has an off-by-one in its binomial expansion relative to Eq. 8 (0.85). Section 4.2.1 states key hyperparameters are omitted, contradicting the NeurIPS checklist's [Yes] reproducibility answers (0.85). Appendix G misattributes magnitude pruning to the ImageNet paper [41] instead of Han et al. 2015 (0.85). Figure 2's caption undercuts the auto-compression claim drawn from it (0.78). Core quantitative claims checked and found internally consistent include the 'up to 18%' forgetting reduction (Table 3: 50.0 - 32.0 = 18.0), Table 6 parameter/FLOP ratios, and the remaining derivations (Eqs. 2-8, 10-12, Table 1). Citation spot-checks of [24] (Jiang et al., ICLR 2025) and [58] (Yang et al., ICML 2020) found both real and correctly attributed. Verdict: NEEDS_CORRECTION.",
+  "verification_settings": {
+    "mode": "uncertainty",
+    "strictness": "lenient",
+    "uncertainty_threshold": 0.3
+  }
+}

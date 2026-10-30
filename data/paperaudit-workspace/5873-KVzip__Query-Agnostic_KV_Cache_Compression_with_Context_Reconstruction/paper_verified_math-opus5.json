@@ -1,0 +1,387 @@
+{
+  "paper_name": "paper",
+  "paper_path": "/Users/iacopoghinassi/Documents/Github/Wittgenstein/data/paperaudit-workspace/5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction/paper.md",
+  "tag": "opus5",
+  "lean_project": "MATH_VERIFICATION/Paper",
+  "lean_project_kept": true,
+  "totals": {
+    "snippets_extracted": 10,
+    "routed_to_math": 4,
+    "routed_to_lean": 6,
+    "lean_passed": 4,
+    "lean_refuted": 2,
+    "lean_failed": 0,
+    "fallbacks_run": 0,
+    "errors_detected": 4
+  },
+  "results": [
+    {
+      "snippet_id": "paper::EQUATION::0",
+      "snippet_type": "EQUATION",
+      "location": "2.1 Notation and Problem Formulation",
+      "content": "Given an input context c ∈ T tokenized into n_c tokens, the prefill stage generates a cache containing L × H × n_c KV pairs, denoted as KV_c [2]. Conditioned generation using the cache is denoted as f_LM(· | KV_c). Our objective is to derive a compact pruned cache KV_{c,evicted} ⊆ KV_c satisfying\nf_LM(q | KV_{c,evicted}) ≈ f_LM(q | KV_c), ∀ q ∈ T. (1)\n\n[Context: the model comprises L layers, utilizing Grouped-Query Attention (GQA) with H KV heads, each attended by a group of G query heads; f_LM : T → T is an autoregressive Transformer LLM generating via greedy decoding.]",
+      "route": "verify-math",
+      "route_rationale": "Equation (1) is the problem statement, not an assertion: the relation ≈ is never given a metric or tolerance, and it is quantified over the whole text domain T. Unformalisable, so informal review only.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.78,
+        "reasoning": "Two checkable components. (i) The KV-pair count `L × H × n_c` is correct for a GQA model: one KV pair per layer, per KV head, per token, with the G query heads in a group sharing a single KV head — so G correctly does not appear in the count. This is consistent with $S \\in \\mathbb{R}^{L \\times H \\times n_c}$ in Section 3 and with Algorithm 1's `S ← 0^{L × H × n_c}`. (ii) Equation (1) itself states an objective, $f_{LM}(q \\mid KV_{c,\\text{evicted}}) \\approx f_{LM}(q \\mid KV_c)$ for all $q$. The `≈` is undefined and the quantifier ranges over all of $T$, so the statement is not truth-apt as printed — but a design objective written with an informal `≈` is a modelling convention, not a mathematical error, and the paper is explicit that it only 'empirically achiev[es] Equation (1)'. The subset relation $KV_{c,\\text{evicted}} \\subseteq KV_c$ is coherent with eviction (a pure pruning operation, no merging). No invalid algebra, no domain violation.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.78
+    },
+    {
+      "snippet_id": "paper::EQUATION::1",
+      "snippet_type": "EQUATION",
+      "location": "3.2 KV Importance Scoring",
+      "content": "Formally, given a context of length $n_c$, we construct an input sequence of length $n_{\\text{in}} = n_{\\text{prompt}} + n_c$ by concatenating the repeat prompt with the context. Forwarding this input through $f_{\\text{LM}}$ with $KV_c$ produces query features $Q_{l,h} \\in \\mathbb{R}^{G \\times (n_c + n_{\\text{in}}) \\times d}$ and key features $K_{l,h} \\in \\mathbb{R}^{n_{\\text{in}} \\times d}$ for the $h$-th KV head in layer $l$. The attention matrix $A_{l,h} = \\text{Softmax}(Q_{l,h} K_{l,h}^\\top)$ then lies in $\\mathbb{R}_+^{G \\times (n_c + n_{\\text{in}}) \\times n_{\\text{in}}}$. Extracting slices relevant to $KV_c$ yields $\\bar{A}_{l,h} \\in \\mathbb{R}_+^{G \\times n_c \\times n_{\\text{in}}}$. Importance scores $S_{l,h} \\in \\mathbb{R}_+^{n_c}$ are computed by maximizing over the grouped query and input dimensions as:\n\n$$S_{l,h}[j] = \\max_{g=1,\\dots,G;\\; i=1,\\dots,n_c} \\bar{A}_{l,h}[g, j, i].$$ (2 corrected)",
+      "route": "verify-math-lean",
+      "route_rationale": "The paper's defining method equation. Well-posedness reduces to crisp arithmetic over the paper's own identity $n_{in} = n_{prompt} + n_c$, so a machine-checked verdict is available.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::1",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.9,
+        "reasoning": "Formalised the well-posedness of Equation (2) against the shapes declared in the same paragraph, using only the paper's own hypotheses: $n_{\\text{in}} = n_{\\text{prompt}} + n_c$ (Section 3.2), $n_{\\text{prompt}} \\ge 1$ (Appendix C.2 states the repeat prompt is 7 tokens), and $n_c \\ge 1$.\n\n**Defect 1 — the maximisation index is out of range.** The paper declares $\\bar{A}_{l,h} \\in \\mathbb{R}_+^{G \\times n_c \\times n_{\\text{in}}}$, so the third index of $\\bar{A}_{l,h}$ ranges over $\\{1,\\dots,n_{\\text{in}}\\}$. Equation (2) maximises that index over $\\{1,\\dots,n_c\\}$. Lean proves $n_c < n_{\\text{in}}$ with $n_{\\text{in}} - n_c = n_{\\text{prompt}}$, so the stated range is a strict subset of the axis it indexes and omits exactly $n_{\\text{prompt}}$ of its entries. Equation (2) therefore cannot be the maximum over the whole 'input dimension' that the surrounding prose says it is.\n\n**Defect 2 — $Q$ and $K$ have their shapes swapped.** Section 3.2 gives $Q_{l,h} \\in \\mathbb{R}^{G \\times (n_c + n_{\\text{in}}) \\times d}$ and $K_{l,h} \\in \\mathbb{R}^{n_{\\text{in}} \\times d}$. Algorithm 1 in Appendix A gives the reverse — `Q ... shape: G × H × n_in × d` and `K ... shape: H × (n_c + n_in) × d` — which is also the semantically correct assignment: forwarding an input of $n_{\\text{in}}$ tokens yields $n_{\\text{in}}$ queries, while the keys comprise the $n_c$ cached keys plus the $n_{\\text{in}}$ new ones. Lean proves $n_c + n_{\\text{in}} \\ne n_{\\text{in}}$, so the two shape specifications are irreconcilable for every non-empty context. Under Section 3.2's shapes the softmax in $\\text{Softmax}(Q_{l,h}K_{l,h}^\\top)$ normalises over an axis of extent $n_{\\text{in}}$ that excludes the $n_c$ cached keys the method is meant to score.\n\nAlgorithm 1 states the correct version, maximising over $i = 1,\\dots,n_{\\text{in}}$, so the implemented method is sound; the error is confined to the body's statement of it. The equation is additionally labelled '(2 corrected)' in the manuscript.",
+        "predicted_error_category": "Formally refuted",
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [
+          "3.2 KV Importance Scoring — Equation (2): max over i = 1,...,n_c against axis extent n_in",
+          "3.2 KV Importance Scoring — Q_{l,h} / K_{l,h} shapes",
+          "Appendix A, Algorithm 1 — Q/K shapes and max over i = 1,...,n_in (the correct version)"
+        ],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/5873-KVzip-opus5/EQUATION__1.lean",
+          "formal_statement": "import Mathlib.Tactic\n\n/-!\n# paper::EQUATION::1 — KVzip Eq. (2), Section 3.2\n\nHypotheses are exactly the paper's own: `n_in = n_prompt + n_c`, a non-empty\nrepeat prompt (`1 ≤ n_prompt`, stated as 7 tokens in Appendix C.2) and a\nnon-empty context (`1 ≤ n_c`).\n\nPart 1: Eq. (2) maximises `i` over `{1,…,n_c}` while `i` indexes an axis of\n`Ā_{l,h}` whose declared extent is `n_in`; the range is a strict subset that\nomits exactly `n_prompt` entries.\n\nPart 2: §3.2 declares the query axis of `Q_{l,h}` to have extent `n_c + n_in`\nwhile Algorithm 1 declares it `n_in`; these never agree.\n-/\n\ntheorem kvzip_eq2_index_and_shape_mismatch\n    (n_prompt n_c n_in : ℕ)\n    (hp : 1 ≤ n_prompt) (hc : 1 ≤ n_c)\n    (hin : n_in = n_prompt + n_c) :\n    n_c < n_in ∧ n_in - n_c = n_prompt ∧ n_c + n_in ≠ n_in := by\n  subst hin\n  refine ⟨by omega, by omega, by omega⟩\n",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::EQUATION::2",
+      "snippet_type": "EQUATION",
+      "location": "C.1 Reconstruction Chunk Size",
+      "content": "Figure 14 analyzes how scoring chunk size m influences performance. Specifically, we measure the relative performance difference between pairs of chunk sizes. For instance, the relative difference between chunk sizes 1K and 2K equals |p₁1k − p₁2k|/p₁2k, where p denotes performance at each chunk size. Results indicate average performance differences remain below 2% at a 0.3 KV cache ratio, confirming negligible impact.",
+      "route": "verify-math",
+      "route_rationale": "A definition of a relative-difference statistic plus an empirical magnitude claim; inspection-level and resting on measured data.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::2",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.8,
+        "reasoning": "$|p_{1k} - p_{2k}| / p_{2k}$ is a well-formed relative difference: non-negative, dimensionless, and finite for any $p_{2k} > 0$ (accuracies/ROUGE scores on these benchmarks are strictly positive, so there is no division-by-zero risk). Normalising by $p_{2k}$ rather than by a symmetric denominator makes the statistic asymmetric in its two arguments, but the paper fixes 2K as the adopted reference chunk size, so this is a deliberate and consistent convention rather than an error. The accompanying 'below 2%' figure is a measurement that cannot be checked from the snippet. No invalid algebra, no domain violation.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::0",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "3.4 Technical Challenge and Solution",
+      "content": "Chunked Scoring. To address this challenge, we introduce chunk-based scoring, reconstructing context segments independently. By computing importance scores in fixed-size chunks, rather than simultaneously over the entire context, computational complexity reduces from quadratic O(n_c^2) to linear O(m n_c), where m denotes the size of the chunk. [...] We set the chunk size to m = 2K, constant across context lengths, models, and tasks.\n\nComplexity Analysis. Computational complexity per chunk is O(m^2), assuming a negligible repeat prompt length, i.e., n_prompt ≪ m, thus n_in ≈ m. Repeating this computation for all n_c/m chunks yields total complexity O(m n_c), linear with context length. Peak memory overhead is O(m^2), which remains constant with n_c and is negligible compared to model parameters and KV cache sizes.\n\nImportance scoring introduces additional overhead from computing attention queries and keys for chunked inputs through f_LM with KV_c. Given n_in ≈ m, FlashAttention incurs O(n_c m + m^2/2) causal-attention FLOPs per chunk, resulting in a total complexity of O(n_c^2 + n_c m/2) across all n_c/m chunks. This cost approximately doubles the initial prefill causal-attention complexity of O(n_c^2/2).",
+      "route": "verify-math-lean",
+      "route_rationale": "A chain of exact aggregation identities and an asymptotic ratio claim — fully formalisable, and the kind of bookkeeping where a factor slip is easy to make.",
+      "lean_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::0",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.92,
+        "reasoning": "Formalised all three links of the complexity chain over $\\mathbb{R}$ with $m, n_c > 0$ and the chunk count taken as $n_c/m$, exactly as the paper writes it. Lean proved every one clean:\n\n1. $(n_c/m) \\cdot m^2 = m\\,n_c$ — the stated reduction of the scoring cost from quadratic to linear in $n_c$ is correct.\n2. $(n_c/m)(n_c m + m^2/2) = n_c^2 + n_c m/2$ — the aggregated FlashAttention figure is exactly right, with no dropped factor.\n3. $(n_c^2 + n_c m/2)/(n_c^2/2) = 2 + m/n_c$, and for $m \\le n_c/50$ this is within $1/50$ of $2$. In the paper's regime ($m = 2\\text{K}$, contexts up to $170\\text{K}$) the ratio is $2.02$ or better, so 'approximately doubles the initial prefill causal-attention complexity of $O(n_c^2/2)$' is accurate.\n\nThe per-chunk cost $n_c m + m^2/2$ is itself the right accounting: each of the $\\approx m$ chunk queries attends over all $n_c$ cached keys, plus causal self-attention within the chunk ($m^2/2$). The $O(m\\,n_c)$ of 'Chunked Scoring' and the $O(n_c^2 + n_c m/2)$ of the last paragraph are not in conflict — the former is the cost of forming the score matrices, the latter the cost of the forward passes that produce $Q$ and $K$, and the paper distinguishes them explicitly.\n\nOne presentational caveat, below the threshold for a finding: the body asserts peak scoring memory is 'negligible compared to model parameters and KV cache sizes', while the Empirical Efficiency Analysis two paragraphs later says 'Peak memory usage increases moderately during scoring, challenging assertions of negligible overhead'. The asymptotic statement ($O(m^2)$, constant in $n_c$) is correct; the two prose characterisations of its practical size disagree with each other.",
+        "predicted_error_category": null,
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/5873-KVzip-opus5/FORMULA_BLOCK__0.lean",
+          "formal_statement": "import Mathlib.Tactic\n\n/-!\n# paper::FORMULA_BLOCK::0 — KVzip Section 3.4 complexity chain\n-/\n\n/-- (1) Per-chunk scoring cost `m^2` over `n_c/m` chunks aggregates to `m * n_c`.\n    (2) Per-chunk FlashAttention cost `n_c*m + m^2/2` over `n_c/m` chunks\n        aggregates to `n_c^2 + n_c*m/2`. -/\ntheorem kvzip_complexity_aggregation (nc m : ℝ) (hm : 0 < m) :\n    (nc / m) * m ^ 2 = m * nc ∧\n    (nc / m) * (nc * m + m ^ 2 / 2) = nc ^ 2 + nc * m / 2 := by\n  refine ⟨by field_simp, by field_simp⟩\n\n/-- (3) The scoring total is `(2 + m/nc)` times the prefill cost `nc^2/2`. -/\ntheorem kvzip_doubles_prefill (nc m : ℝ) (hnc : 0 < nc) :\n    (nc ^ 2 + nc * m / 2) / (nc ^ 2 / 2) = 2 + m / nc := by\n  have h : nc ^ 2 ≠ 0 := by positivity\n  field_simp\n\n/-- (3') Quantitatively: in the paper's regime (`m = 2K`, `nc ≥ 100K`, so\n    `m ≤ nc/50`) the ratio is within `1/50` of `2` — \"approximately doubles\". -/\ntheorem kvzip_doubles_prefill_quant (nc m : ℝ) (hnc : 0 < nc) (hm : 0 ≤ m)\n    (h50 : m ≤ nc / 50) :\n    |(nc ^ 2 + nc * m / 2) / (nc ^ 2 / 2) - 2| ≤ 1 / 50 := by\n  rw [kvzip_doubles_prefill nc m hnc]\n  have h1 : m / nc ≤ 1 / 50 := by\n    rw [div_le_iff₀ hnc]; linarith\n  have h2 : 0 ≤ m / nc := by positivity\n  rw [abs_le]\n  constructor <;> linarith\n",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.92
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::1",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "Appendix A Implementation Details — Algorithm 1 (KV Importance Scoring)",
+      "content": "Algorithm 1 KV Importance Scoring\nInput: Transformer f_{LM}, context c (token length n_c), chunk size m (fixed to 2K)\nKV_c ← Prefill cache by forwarding c through f_{LM}\nc_1, ..., c_T ← Partition c into T = ⌈n_c/m⌉ chunks, each of token length m\nS ← 0^{L × H × n_c}  # placeholder\nfor t = 1, ..., T do\n    ... Forward the input (token length n_in) through f_{LM} with KV_c\n    for l = 1, ..., L do\n        Q ← Queries in the l-th attention layer  # shape: G × H × n_in × d\n        K ← Keys in the l-th attention layer      # shape: H × (n_c + n_in) × d\n        \\bar{K} ← Subsample keys from KV_c corresponding to c_t  # shape: H × (m + n_in) × d\n        \\bar{A} ← Softmax(Q \\bar{K}^\\top)  # broadcast over G groups; shape: G × H × n_in × (m + n_in)\n        A ← \\bar{A}[..., :m]  # attention received by keys in KV_c; shape: G × H × n_in × m\n        S_{l,t} ← max_{g=1,...,G; i=1,...,n_in} A[g, :, i]  # shape: H × m\n        S[l, :, (t-1)m : tm] ← S_{l,t}\n    end for\nend for\nS_{head} ← max_{i=1,...,n_c} S[:, :, i]  # shape: L × H\nOutput: Score S, Head-level score S_{head}",
+      "route": "verify-math-lean",
+      "route_rationale": "The shape chain and the slice arithmetic $T = \\lceil n_c/m \\rceil$ with writes to $[(t-1)m, tm)$ are formalisable as ceiling-division facts.",
+      "lean_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::1",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "The shape chain checks out by inspection and is internally consistent at every step: $Q$ is $G \\times H \\times n_{\\text{in}} \\times d$ and $\\bar{K}$ is $H \\times (m + n_{\\text{in}}) \\times d$, so $Q\\bar{K}^\\top$ is $G \\times H \\times n_{\\text{in}} \\times (m + n_{\\text{in}})$ as stated; slicing `[..., :m]` to the cached keys gives $G \\times H \\times n_{\\text{in}} \\times m$; maximising over $g$ and over the $n_{\\text{in}}$ query positions leaves $H \\times m$, which is exactly the shape needed for the write into $S[l, :, (t-1)m : tm]$; and $S_{\\text{head}} = \\max_i S[:,:,i]$ collapses to $L \\times H$. This is the correct version of Equation (2) — note the max runs over $i = 1,\\dots,n_{\\text{in}}$ here, not $i = 1,\\dots,n_c$.\n\nLean was used on the one quantitative sub-claim, the chunk partition. All statements compiled clean: (a) if $T$ chunks of length exactly $m$ account for the whole context then $m \\mid n_c$; (b) $T$ chunks must cover the context, and when $m \\nmid n_c$ that cover is strict, so the final write $S[l,:,(T-1)m : Tm]$ runs past the $n_c$-extent axis; (c) the overshoot is $m - (n_c \\bmod m) \\ge 1$; (d) concretely, with the paper's fixed $m = 2048$ and the shortest stated context $n_c = 100$, $T = 1$ and the single write targets $[0, 2048)$ of an array of extent $100$.\n\nVerdict NO_ERROR rather than an error: 'each of token length $m$' with $T = \\lceil n_c/m \\rceil$ is ordinary pseudo-code shorthand for a final remainder chunk, and the aggregate score array still has exactly $n_c$ entries with every KV pair scored once. Flagging it would be a false positive. Recorded here as a presentational imprecision only.",
+        "predicted_error_category": null,
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/5873-KVzip-opus5/FORMULA_BLOCK__1.lean",
+          "formal_statement": "import Mathlib.Tactic\n\n/-!\n# paper::FORMULA_BLOCK::1 — Algorithm 1 chunk partition / slice indexing\n\nAlgorithm 1 partitions a context of `nc` tokens into `T = ⌈nc/m⌉` chunks\n\"each of token length `m`\", and writes chunk `t`'s scores into the slice\n`[(t-1)*m, t*m)` of an array whose last axis has extent `nc`.\n-/\n\n/-- (1) If all `T` chunks really have length exactly `m` and together they\n    account for the whole context, then `m ∣ nc`. -/\ntheorem kvzip_alg1_chunks_force_dvd (nc m T : ℕ) (h : T * m = nc) : m ∣ nc :=\n  Dvd.intro_left T h\n\n/-- (2) `T` chunks must cover the context (`nc ≤ T * m`). If `m ∤ nc` the cover is\n    strict, so the final slice `[(T-1)*m, T*m)` runs past the `nc`-extent axis. -/\ntheorem kvzip_alg1_slice_overshoot (nc m T : ℕ)\n    (hcover : nc ≤ T * m) (hdvd : ¬ m ∣ nc) : nc < T * m :=\n  lt_of_le_of_ne hcover fun h => hdvd (Dvd.intro_left T h.symm)\n\n/-- (3) The overshoot is exactly `m - (nc % m)` when `m ∤ nc`, i.e. at least one\n    position, so the last chunk is strictly shorter than `m`. -/\ntheorem kvzip_alg1_overshoot_size (nc m : ℕ) (hm : 0 < m) (_hr : nc % m ≠ 0) :\n    (nc / m + 1) * m - nc = m - nc % m ∧ 0 < m - nc % m := by\n  have h1 := Nat.div_add_mod nc m\n  have h2 : nc % m < m := Nat.mod_lt _ hm\n  rw [Nat.succ_mul, Nat.mul_comm (nc / m) m]\n  exact ⟨by omega, by omega⟩\n\n/-- (4) Concretely, the paper's fixed `m = 2048` with the shortest stated context\n    length `nc = 100` (Section 4.1: \"Context lengths range from 100 to 170K\n    tokens\") gives `T = ⌈100/2048⌉ = 1`, so the single write targets `[0, 2048)`\n    of an array of extent `100` — an overshoot of `1948` positions. -/\ntheorem kvzip_alg1_concrete :\n    (100 + 2048 - 1) / 2048 = 1 ∧ 1 * 2048 - 100 = 1948 ∧ ¬ (2048 ∣ 100) := by\n  refine ⟨by norm_num, by norm_num, by decide⟩\n",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext"
+          ],
+          "cycles_used": 3,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::2",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "4.2 Benchmarking — KV Quantization",
+      "content": "KV Quantization. KVzip effectively integrates with KV cache quantization, further reducing cache sizes. Figure 10 evaluates KV eviction methods on a 4-bit KV quantized model (LLaMA3-8B-W8A8KV4) from QServe [36]. We apply an identical quantization scheme throughout prefill, importance scoring, and decoding. [...] Specifically, the 16-bit KV cache occupies 16.3GB at a 124K input length. Integrating 4-bit quantization with our 70% eviction ratio effectively reduces the cache size to 1.2GB with negligible performance degradation, demonstrating significant practical benefits.",
+      "route": "verify-math-lean",
+      "route_rationale": "A composed multiplicative reduction with concrete numbers — exactly checkable, and a place where a quantization or retention factor is easily inverted.",
+      "lean_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::2",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.95,
+        "reasoning": "Formalised the composition over $\\mathbb{Q}$ (exact rational arithmetic, no floating point). Starting from the paper's $16.3$ GB 16-bit cache, 4-bit quantization contributes a factor $4/16$ and a '70% eviction ratio' contributes a retention factor $3/10$:\n\n$$16.3 \\times \\tfrac{4}{16} \\times \\tfrac{3}{10} = \\tfrac{489}{400} = 1.2225 \\text{ GB}.$$\n\nLean proved this identity exactly, proved the result is within $0.05$ GB of the reported $1.2$ GB, and proved $1.2225$ is strictly closer to $1.2$ than to either neighbouring one-decimal value ($1.1$ or $1.3$) — so $1.2$ GB is the correctly-rounded figure. Both factors are applied in the right direction: 'eviction ratio' is read as the fraction removed, which is the reading that reproduces the stated result. No error.",
+        "predicted_error_category": null,
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/5873-KVzip-opus5/FORMULA_BLOCK__2.lean",
+          "formal_statement": "import Mathlib.Tactic\n\n/-!\n# paper::FORMULA_BLOCK::2 — KVzip Section 4.2 KV-quantization arithmetic\n-/\n\n/-- 16-bit cache of `16.3` GB, quantized to 4 bits (factor `4/16`) and with a\n    `70%` eviction ratio (retaining `30%`) gives exactly `489/400 = 1.2225` GB,\n    which agrees with the paper's reported `1.2` GB to within `0.05` GB. -/\ntheorem kvzip_quantization_size :\n    (163 / 10 : ℚ) * (4 / 16) * (3 / 10) = 489 / 400 ∧\n    |(163 / 10 : ℚ) * (4 / 16) * (3 / 10) - 12 / 10| ≤ 5 / 100 := by\n  refine ⟨by norm_num, ?_⟩\n  have h : (163 / 10 : ℚ) * (4 / 16) * (3 / 10) - 12 / 10 = 9 / 400 := by norm_num\n  rw [h, abs_of_nonneg (by norm_num : (0:ℚ) ≤ 9 / 400)]\n  norm_num\n\n/-- The reported figure is the correctly-rounded value: `1.2225` is closer to\n    `1.2` than to either neighbouring one-decimal value. -/\ntheorem kvzip_quantization_rounds :\n    |(489 / 400 : ℚ) - 12 / 10| < |(489 / 400 : ℚ) - 13 / 10| ∧\n    |(489 / 400 : ℚ) - 12 / 10| < |(489 / 400 : ℚ) - 11 / 10| := by\n  have h12 : |(489 / 400 : ℚ) - 12 / 10| = 9 / 400 := by\n    rw [show (489 / 400 : ℚ) - 12 / 10 = 9 / 400 by norm_num]\n    rw [abs_of_nonneg (by norm_num : (0:ℚ) ≤ 9 / 400)]\n  have h13 : |(489 / 400 : ℚ) - 13 / 10| = 31 / 400 := by\n    rw [show (489 / 400 : ℚ) - 13 / 10 = -(31 / 400) by norm_num]\n    rw [abs_neg, abs_of_nonneg (by norm_num : (0:ℚ) ≤ 31 / 400)]\n  have h11 : |(489 / 400 : ℚ) - 11 / 10| = 49 / 400 := by\n    rw [show (489 / 400 : ℚ) - 11 / 10 = 49 / 400 by norm_num]\n    rw [abs_of_nonneg (by norm_num : (0:ℚ) ≤ 49 / 400)]\n  rw [h12, h13, h11]\n  norm_num\n",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "1 Introduction",
+      "content": "However, increasing context lengths substantially raises both memory consumption for KV caching and computational costs associated with attention mechanisms [31]. For example, caching 120K tokens in Qwen 2.5-14B with FP16 precision requires approximately 33 GB memory, surpassing the model’s 28 GB parameter storage at equivalent precision [54].\n\n[Cross-reference, Section 2.1: 'the prefill stage generates a cache containing L × H × n_c KV pairs'. Cross-reference, Section 4.2: 'the 16-bit KV cache occupies 16.3GB at a 124K input length.']",
+      "route": "verify-math-lean",
+      "route_rationale": "A concrete memory-model computation; checkable in exact arithmetic against the paper's own KV-pair-count model and its own 16.3 GB calibration point.",
+      "lean_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.8,
+        "reasoning": "Used the paper's own memory model (Section 2.1: a cache of $L \\times H \\times n_c$ KV pairs, each pair one $d$-dimensional key and one $d$-dimensional value at $b$ bytes), i.e. $\\text{bytes} = L \\cdot H \\cdot n_c \\cdot 2 \\cdot d \\cdot b$.\n\n**The model is validated on the paper's own data point.** Lean proved $32 \\cdot 8 \\cdot 124000 \\cdot 2 \\cdot 128 \\cdot 2 = 16{,}252{,}928{,}000$ bytes $= 16.25$ GB, within $0.1$ GB of the paper's stated '16.3GB at a 124K input length' for LLaMA3-8B ($L = 32$, $H = 8$ KV heads, $d = 128$). So this is the paper's formula, not an imported one.\n\n**The same model contradicts the 33 GB figure.** For Qwen2.5-14B ($L = 48$, $H = 8$, $d = 128$) at 120K tokens in FP16, Lean proved $48 \\cdot 8 \\cdot 120000 \\cdot 2 \\cdot 128 \\cdot 2 = 23{,}592{,}960{,}000$ bytes $= 23.59$ GB, and that $33 - 23.59 > 9$. The reported value is too large by a factor of about $1.4$.\n\n**Architecture-free cross-check.** Both models have $H = 8$ and $d = 128$, so cache size is $k \\cdot (L \\cdot n_c)$ for a shared constant $k$. Calibrating $k$ on the paper's own $16.3$ GB at $L = 32$, $n_c = 124000$, Lean proved the forced value at $L = 48$, $n_c = 120000$ is $1467/62 = 23.66$ GB — again not $33$ GB. This step needs no per-model constants beyond $H \\cdot d$ being equal across the two models.\n\n**The sentence's conclusion fails on its own premises.** Lean proved both $23.59 < 28$ and $23.66 < 28$: the KV cache is about 84% of the stated 28 GB of FP16 weights, so it does not 'surpass' them. The comparison the sentence draws is the reverse of what its own numbers support.\n\nConfidence is held at 0.8 rather than 0.9+ because $L = 48$, $H = 8$, $d = 128$ for Qwen2.5-14B is external knowledge rather than something the manuscript states; the architecture-free cross-check, which rests almost entirely on the paper's own 16.3 GB figure, reaches the same conclusion.",
+        "predicted_error_category": "Sign/Arithmetic error",
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": [
+          "1 Introduction — 'approximately 33 GB memory, surpassing the model’s 28 GB parameter storage'",
+          "4.2 Benchmarking — 'the 16-bit KV cache occupies 16.3GB at a 124K input length'",
+          "2.1 Notation and Problem Formulation — 'a cache containing L × H × n_c KV pairs'"
+        ],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/5873-KVzip-opus5/MATHEMATICAL_MODEL__0.lean",
+          "formal_statement": "import Mathlib.Tactic\n\n/-!\n# paper::MATHEMATICAL_MODEL::0 — KVzip Section 1, the 33 GB KV-cache figure\n\nMemory model is the paper's own (§2.1): a cache of `L * H * n_c` KV pairs, each\npair one `d`-dimensional key plus one `d`-dimensional value at `b` bytes each.\n-/\n\n/-- Cache size in bytes for `L` layers, `H` KV heads, `n_c` tokens, head dim `d`,\n    `b` bytes per element. -/\ndef cacheBytes (L H nc d b : ℕ) : ℕ := L * H * nc * 2 * d * b\n\n/-- (1) The model reproduces the paper's own calibration point: LLaMA3-8B\n    (`L = 32`, `H = 8`, `d = 128`) at 124K tokens in FP16 gives 16.25 GB,\n    matching the paper's stated \"16.3GB at a 124K input length\". -/\ntheorem llama8b_cache_matches_paper :\n    cacheBytes 32 8 124000 128 2 = 16252928000 ∧\n    |(16252928000 / 10 ^ 9 : ℚ) - 163 / 10| < 1 / 10 := by\n  refine ⟨by norm_num [cacheBytes], ?_⟩\n  rw [abs_lt]\n  constructor <;> norm_num\n\n/-- (2) The same model refutes the 33 GB figure: Qwen2.5-14B (`L = 48`, `H = 8`,\n    `d = 128`) at 120K tokens in FP16 gives 23.59 GB, not ≈ 33 GB. -/\ntheorem qwen14b_cache_is_not_33GB :\n    cacheBytes 48 8 120000 128 2 = 23592960000 ∧\n    (23592960000 / 10 ^ 9 : ℚ) < 24 ∧\n    (33 : ℚ) - 23592960000 / 10 ^ 9 > 9 := by\n  refine ⟨by norm_num [cacheBytes], by norm_num, by norm_num⟩\n\n/-- (3) Architecture-free cross-check. Both models share `H = 8`, `d = 128`, so\n    cache size is `k * (L * n_c)` for a common constant `k`. Calibrating `k` on\n    the paper's own 16.3 GB at `L = 32`, `n_c = 124000` forces 23.66 GB at\n    `L = 48`, `n_c = 120000` — not 33 GB. -/\ntheorem qwen14b_cache_scaled_from_paper (k : ℚ)\n    (hk : k * (32 * 124000) = 163 / 10) :\n    k * (48 * 120000) = 1467 / 62 ∧ (1467 / 62 : ℚ) < 28 := by\n  refine ⟨by linarith, by norm_num⟩\n\n/-- (4) The sentence's conclusion fails on its own premises: under either\n    computation the cache is strictly below the stated 28 GB of FP16 weights,\n    so it does not \"surpass\" them. -/\ntheorem cache_does_not_surpass_weights :\n    (23592960000 / 10 ^ 9 : ℚ) < 28 ∧ (1467 / 62 : ℚ) < 28 := by\n  refine ⟨by norm_num, by norm_num⟩\n",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::1",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "4.2 Benchmarking — Model Scale and Architecture",
+      "content": "Model Scale and Architecture. Figure 10 shows performance across larger models (Qwen2.5-14B-1M), distinct model families (LLaMA3.1-8B), and hybrid attention architectures (Gemma3-12B). Gemma employs global and sliding-window attention layers in a 1:5 ratio [49]. We apply KV eviction exclusively to global attention layers, as these layers dominate cache sizes at a 100K context length with 1K sliding window size.",
+      "route": "verify-math-lean",
+      "route_rationale": "A quantitative dominance claim derived from a layer ratio, a context length and a window size — a closed-form share computation.",
+      "lean_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::1",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.88,
+        "reasoning": "With a $1:5$ global : sliding-window layer ratio, take $g$ global and $5g$ sliding-window layers. A global layer caches all $n_c$ positions; a sliding-window layer caches $\\min(n_c, w) = w$. Per-layer per-token cost is identical across the two types (same $H$, $d$, $b$), so cached-token counts are proportional to bytes. Lean proved, for every $g > 0$:\n\n$$\\frac{g \\cdot 100000}{g \\cdot 100000 + 5g \\cdot 1000} = \\frac{20}{21} > 0.95,$$\n\nand that the global share exceeds $19\\times$ the sliding-window share. So global layers hold about 95.2% of the cache at a 100K context with a 1K window, and restricting eviction to them is quantitatively justified — the paper's claim is correct.\n\nAlso proved robust across the stated evaluation range: even at $34\\text{K}$ tokens (the appendix's one-fifth reduction of the 170K Gemma datasets) the global share is $34/39 > 87\\%$. The stated '1:5 ratio' and '1K sliding window' match Gemma 3's documented one-global-per-six-layers interleaving and 1024-token local window.",
+        "predicted_error_category": null,
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/5873-KVzip-opus5/MATHEMATICAL_MODEL__1.lean",
+          "formal_statement": "import Mathlib.Tactic\n\n/-!\n# paper::MATHEMATICAL_MODEL::1 — Gemma3 global vs sliding-window cache share\n-/\n\n/-- With a 1:5 global : sliding-window layer ratio, context `100000` and window\n    `1000`, the global layers hold `20/21 ≈ 95.2%` of the cached token\n    positions — more than `95%`, and more than `19×` the sliding-window share.\n    So global layers do dominate the cache, as the paper claims. -/\ntheorem gemma_global_layers_dominate_cache (g : ℚ) (hg : 0 < g) :\n    (g * 100000) / (g * 100000 + (5 * g) * 1000) = 20 / 21 ∧\n    (20 / 21 : ℚ) > 95 / 100 ∧\n    (g * 100000) > 19 * ((5 * g) * 1000) := by\n  have hne : g * 100000 + (5 * g) * 1000 ≠ 0 := by positivity\n  refine ⟨?_, by norm_num, by nlinarith⟩\n  field_simp\n  ring\n\n/-- The claim is robust across the stated context range: even at the shortest\n    context for which Gemma3 is evaluated after the appendix's one-fifth\n    reduction (`170000 / 5 = 34000` tokens), global layers still hold over\n    `87%` of the cache. -/\ntheorem gemma_global_dominates_at_34K (g : ℚ) (hg : 0 < g) :\n    (g * 34000) / (g * 34000 + (5 * g) * 1000) = 34 / 39 ∧\n    (34 / 39 : ℚ) > 87 / 100 := by\n  have hne : g * 34000 + (5 * g) * 1000 ≠ 0 := by positivity\n  refine ⟨?_, by norm_num⟩\n  field_simp\n  ring\n",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.88
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::2",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "Abstract / 1 Introduction / Figure 8 (3.4 Empirical Efficiency Analysis)",
+      "content": "[Abstract] Empirical evaluations indicate that KVzip achieves KV cache size reductions by 2–3× and FlashAttention decoding latency improvements up to 1.5×, with moderate performance tradeoffs in various tasks such as question answering and code comprehension.\n\n[Introduction] Specifically, KVzip achieves approximately 2× latency reduction in FlashAttention [15] and 3–4× reduction in KV cache size during decoding with negligible performance loss on diverse queries.\n\n[Figure 8a, measured on LLaMA3.1-8B with 124K context tokens on an A100 in FP16]\nAttention latency (ms) — KV cache ratio: 0.2, 0.4, 0.6, 0.8, 1.0 — Values: 0.17, 0.22, 0.27, 0.34, 0.39\nKV memory (GB) — KV cache ratio: 0.2, 0.4, 0.6, 0.8, 1.0 — Values: 3.3, 6.5, 9.8, 13.1, 16.3",
+      "route": "verify-math",
+      "route_rationale": "Headline multiplicative factors checked against the paper's own measured curve; rests on experimental data, so a formal proof would add nothing over direct arithmetic.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::2",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.75,
+        "reasoning": "Figure 8a's numbers are internally sound. The KV-memory column is exactly linear in the cache ratio: $16.3 \\times \\{0.2, 0.4, 0.6, 0.8\\} = \\{3.26, 6.52, 9.78, 13.04\\}$ against the reported $\\{3.3, 6.5, 9.8, 13.1\\}$ — agreement to rounding, as eviction should give. The latency column yields speedups relative to the full cache of $0.39/\\{0.17, 0.22, 0.27, 0.34\\} = \\{2.29, 1.77, 1.44, 1.15\\}\\times$.\n\nThe defect is that the Abstract and the Introduction report mutually inconsistent factors for both headline results:\n\n- **Latency.** Abstract: 'FlashAttention decoding latency improvements up to 1.5×'. Introduction: 'approximately 2× latency reduction in FlashAttention'. Figure 8a's maximum is $2.29\\times$. The word 'up to' makes the Abstract's $1.5\\times$ a claimed maximum, but $1.5 < 2 < 2.29$, so it contradicts both the Introduction and the paper's own measurement.\n- **Cache size.** Abstract: 'KV cache size reductions by 2–3×' (cache ratios $0.33$–$0.50$). Introduction: '3–4× reduction in KV cache size' (ratios $0.25$–$0.33$). The two intervals touch only at the single endpoint $1/3$ and are otherwise disjoint.\n\nBoth discrepancies run in the conservative direction, so this is not an overclaim — but a reader cannot reconcile the two summaries, and only one of them can match Figure 8. Reported at 0.75: the arithmetic is certain, while the severity is limited because the underlying measurements are consistent and the method's claims survive under either reading.",
+        "predicted_error_category": "Sign/Arithmetic error",
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": [
+          "Abstract — '2–3×' cache reduction and 'up to 1.5×' latency",
+          "1 Introduction — 'approximately 2× latency reduction' and '3–4× reduction in KV cache size'",
+          "Figure 8a — attention latency 0.17 ms at ratio 0.2 vs 0.39 ms at ratio 1.0 (2.29×)"
+        ]
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.75
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::3",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "Appendix D Individual Dataset Performance — Figures 22 and 23",
+      "content": "[Figure 22, Mix.RepoQA+KV, Pass@1 & Accuracy (%)]\n| KV cache ratio | KVzip (ours) | H₂O | SnapKV | PyramidKV |\n| 0.2            | 80           | 0   | 0      | 0         |\n| 0.4            | 80           | 5   | 5      | 5         |\n| 0.6            | 80           | 10  | 10     | 10        |\n| 0.8            | 80           | 20  | 25     | 20        |\n| 1.0            | 80           | 40  | 60     | 50        |\n\n[Figure 23, GSM8K, Accuracy (%)]\n| 1.0            | 65           | 60  | 65     | 60        |\n\n[For contrast, Figure 22 Mix.Sum+NIAH at ratio 1.0: 70 / 70 / 70 / 70; Figure 23 NIAH at ratio 1.0: 100 / 100 / 100 / 100; Figure 23 SQuAD at ratio 1.0: 100 / 100 / 100 / 100.]\n\n[Section 4.1 Evaluation: 'We measure average model performance using these compressed KV caches across multiple or single queries.' Appendix D: 'The results confirm that KVzip consistently outperforms the baselines.']",
+      "route": "verify-math",
+      "route_rationale": "An invariant of the eviction framework tested against reported tables. Claims about experimental data are explicitly outside what verify-math-lean should attempt.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::3",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.85,
+        "reasoning": "The eviction framework forces an invariant at the right-hand endpoint of every one of these curves. 'KV cache ratio' is the retained fraction, so at ratio $1.0$ **no** KV pair is evicted by any method: KVzip, H₂O, SnapKV and PyramidKV all reduce to the identity on $KV_c$, every method decodes from the identical full cache, and all four columns must report the same number — the uncompressed baseline. The importance scores differ across methods, but at ratio $1.0$ nothing is ranked away, so the scores cannot affect the output.\n\nTwo reported rows violate this:\n\n- **Figure 22, Mix.RepoQA+KV, ratio 1.0:** KVzip $80$, H₂O $40$, SnapKV $60$, PyramidKV $50$ — four different values where one is mathematically required. The discrepancy is large (up to $40$ points), and KVzip's column is additionally flat at exactly $80$ across every ratio from $0.2$ to $1.0$ while the baselines rise monotonically from $0$, which is the signature of a column that was not measured on the same axis as its neighbours.\n- **Figure 23, GSM8K, ratio 1.0:** KVzip $65$, H₂O $60$, SnapKV $65$, PyramidKV $60$ — the same violation at smaller magnitude ($5$ points).\n\nThat this is an error and not a misreading of the axis is confirmed by the paper's own other panels, which satisfy the invariant exactly: Figure 22 Mix.Sum+NIAH is $70/70/70/70$ at ratio $1.0$, and Figure 23 NIAH and SQuAD are both $100/100/100/100$. So three of five tables converge at ratio $1.0$ as required and two do not.\n\nConsequence: in the Mix.RepoQA+KV panel the baseline curves cannot be the reported methods' performance under the stated query-agnostic protocol, so Appendix D's conclusion that 'KVzip consistently outperforms the baselines' is not supported by that panel. Severity is held at minor because the paper's headline comparisons rest on Figures 9 and 10, not on these appendix multi-task tables.",
+        "predicted_error_category": "Domain/Constraint violation",
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": [
+          "Appendix D, Figure 22 Mix.RepoQA+KV — row 'KV cache ratio 1.0': 80 / 40 / 60 / 50",
+          "Appendix D, Figure 23 GSM8K — row 'KV cache ratio 1.0': 65 / 60 / 65 / 60",
+          "Appendix D, Figure 22 Mix.Sum+NIAH — row 'KV cache ratio 1.0': 70 / 70 / 70 / 70 (satisfies the invariant)"
+        ]
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.85
+    }
+  ],
+  "findings": [
+    {
+      "snippet_id": "paper::EQUATION::1",
+      "category": "Formally refuted — index range incompatible with declared tensor shape",
+      "severity": "critical",
+      "confidence": 0.9,
+      "evidence": "Equation (2) is the paper's defining method equation, and as printed it does not define the quantity the surrounding prose describes. Lean proved both defects from the paper's own hypotheses ($n_{\\text{in}} = n_{\\text{prompt}} + n_c$, $n_{\\text{prompt}} \\ge 1$, $n_c \\ge 1$):\n\n**1. The maximisation index is out of range.** The same paragraph declares $\\bar{A}_{l,h} \\in \\mathbb{R}_+^{G \\times n_c \\times n_{\\text{in}}}$, so the index $i$ ranges over $\\{1,\\dots,n_{\\text{in}}\\}$ — yet Equation (2) maximises it over $\\{1,\\dots,n_c\\}$. Lean: $n_c < n_{\\text{in}}$ and $n_{\\text{in}} - n_c = n_{\\text{prompt}}$, so the stated range is a strict subset of the axis it indexes and silently drops exactly $n_{\\text{prompt}}$ of its entries. The score is therefore not 'the maximum attention score each KV pair receives during this forward pass'. Algorithm 1 in Appendix A gives the correct range, $\\max_{g=1,\\dots,G;\\, i=1,\\dots,n_{\\text{in}}}$.\n\n**2. $Q$ and $K$ have their shapes swapped.** Section 3.2 states $Q_{l,h} \\in \\mathbb{R}^{G \\times (n_c + n_{\\text{in}}) \\times d}$ and $K_{l,h} \\in \\mathbb{R}^{n_{\\text{in}} \\times d}$; Algorithm 1 states the reverse, $Q$ of length $n_{\\text{in}}$ and $K$ of length $n_c + n_{\\text{in}}$, which is also the semantically correct assignment — forwarding $n_{\\text{in}}$ tokens produces $n_{\\text{in}}$ queries, while the keys are the $n_c$ cached ones plus the $n_{\\text{in}}$ new ones. Lean: $n_c + n_{\\text{in}} \\ne n_{\\text{in}}$, so the two specifications can never both hold. Under Section 3.2's shapes the softmax in $\\text{Softmax}(Q_{l,h}K_{l,h}^\\top)$ normalises over an axis of extent $n_{\\text{in}}$ that excludes the very cached keys the method scores.\n\nThe implemented method is sound — Algorithm 1 is right — so this is a defect in the body's statement of the contribution, but a reader implementing from Section 3.2 would implement something else. The manuscript additionally labels the line '(2 corrected)'.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "$$S_{l,h}[j] = \\max_{g=1,\\dots,G;\\; i=1,\\dots,n_c} \\bar{A}_{l,h}[g, j, i].$$"
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::3",
+      "category": "Domain/Constraint violation — reported data violates an invariant of the framework",
+      "severity": "minor",
+      "confidence": 0.85,
+      "evidence": "At a KV cache ratio of $1.0$ nothing is evicted, so every eviction method reduces to the identity on $KV_c$ and all four columns must report the same uncompressed baseline. Figure 22's Mix.RepoQA+KV table reports four different values at that ratio — KVzip $80$, H₂O $40$, SnapKV $60$, PyramidKV $50$ — a spread of $40$ points where zero is mathematically required. Figure 23's GSM8K table violates the same invariant by $5$ points ($65 / 60 / 65 / 60$).\n\nThis is not an axis misreading: the paper's other panels satisfy the invariant exactly — Figure 22 Mix.Sum+NIAH is $70/70/70/70$ at ratio $1.0$, and Figure 23's NIAH and SQuAD are both $100/100/100/100$. KVzip's Mix.RepoQA+KV column is also flat at exactly $80$ across every ratio from $0.2$ to $1.0$ while the baselines climb monotonically from $0$, which is what a column plotted on a different basis from its neighbours looks like.\n\nConsequence: the baseline curves in that panel cannot reflect those methods under the stated query-agnostic protocol, so Appendix D's claim that 'KVzip consistently outperforms the baselines' does not follow from it. Severity minor because the paper's headline comparisons rest on Figures 9 and 10.",
+      "verifier": "verify-math",
+      "exact_quote": "| 1.0            | 80           | 40  | 60     | 50        |"
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+      "category": "Arithmetic error — memory figure inconsistent with the paper's own model",
+      "severity": "minor",
+      "confidence": 0.8,
+      "evidence": "The Introduction's motivating computation does not survive the paper's own memory model. Section 2.1 gives the cache as $L \\times H \\times n_c$ KV pairs, i.e. $\\text{bytes} = L \\cdot H \\cdot n_c \\cdot 2 \\cdot d \\cdot b$. Lean confirmed that model reproduces the paper's own calibration point — for LLaMA3-8B ($L=32$, $H=8$, $d=128$) at 124K tokens in FP16, $32 \\cdot 8 \\cdot 124000 \\cdot 2 \\cdot 128 \\cdot 2 = 16.25$ GB against Section 4.2's stated '16.3GB at a 124K input length'.\n\nApplied to Qwen2.5-14B ($L=48$, $H=8$, $d=128$) at 120K tokens, the same formula gives $48 \\cdot 8 \\cdot 120000 \\cdot 2 \\cdot 128 \\cdot 2 = 23{,}592{,}960{,}000$ bytes $= 23.59$ GB — not $\\approx 33$ GB. An architecture-free cross-check agrees: since both models share $H \\cdot d = 1024$, scaling the paper's own $16.3$ GB by $\\frac{48 \\cdot 120000}{32 \\cdot 124000} = \\frac{45}{31}$ gives $\\frac{1467}{62} = 23.66$ GB. The stated figure is high by a factor of about $1.4$.\n\nThe sentence's conclusion then inverts: $23.59 < 28$ and $23.66 < 28$, so at 120K tokens the KV cache is roughly 84% of the model's 28 GB of FP16 weights and does **not** surpass them. The example would need about 143K tokens to make its own point. Severity minor — this is motivation, not a result, and KV caches being large remains true.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "For example, caching 120K tokens in Qwen 2.5-14B with FP16 precision requires approximately 33 GB memory, surpassing the model’s 28 GB parameter storage at equivalent precision [54]."
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::2",
+      "category": "Internal numerical inconsistency between Abstract and Introduction",
+      "severity": "minor",
+      "confidence": 0.75,
+      "evidence": "The Abstract and the Introduction report mutually inconsistent factors for both headline results, and only one of each pair can match Figure 8.\n\n**Latency.** Abstract: 'FlashAttention decoding latency improvements up to 1.5×'. Introduction: 'approximately 2× latency reduction in FlashAttention'. Figure 8a's measured attention latency runs from $0.39$ ms at ratio $1.0$ to $0.17$ ms at ratio $0.2$, a $2.29\\times$ improvement. 'Up to $1.5\\times$' asserts a maximum that is contradicted by both the Introduction and the figure.\n\n**Cache size.** Abstract: 'KV cache size reductions by 2–3×', i.e. retained ratios $0.33$–$0.50$. Introduction: '3–4× reduction in KV cache size', i.e. ratios $0.25$–$0.33$. The intervals meet only at the endpoint $1/3$.\n\nFigure 8a itself is internally sound — its KV-memory column is exactly linear in the cache ratio ($16.3 \\times \\{0.2, 0.4, 0.6, 0.8\\} = \\{3.26, 6.52, 9.78, 13.04\\}$ vs the reported $\\{3.3, 6.5, 9.8, 13.1\\}$). Both discrepancies run in the conservative direction, so this is an internal-consistency defect rather than an overclaim; severity minor.",
+      "verifier": "verify-math",
+      "exact_quote": "Empirical evaluations indicate that KVzip achieves KV cache size reductions by 2–3× and FlashAttention decoding latency improvements up to 1.5×, with moderate performance tradeoffs in various tasks such as question answering and code comprehension."
+    }
+  ],
+  "verdict": "CRITICAL_ERRORS",
+  "verdict_confidence": 0.85,
+  "summary": "KVzip is a systems paper, so its mathematics is concentrated in one defining equation, a complexity analysis, a pseudo-code block and a handful of memory/efficiency computations. Ten self-contained mathematical objects were extracted: six were routed to Lean 4 and four to informal review. All six Lean snippets were settled by the compiler — four PASSED and two REFUTED, with no FAILED or NOT_ATTEMPTED results, so no informal fallbacks were required.\n\n**The critical finding is Equation (2), the paper's defining method equation.** Lean refuted its well-posedness from the paper's own hypotheses alone. The maximisation index $i$ is declared to range over $\\{1,\\dots,n_c\\}$ while it indexes an axis of $\\bar{A}_{l,h}$ whose declared extent is $n_{\\text{in}} = n_{\\text{prompt}} + n_c$; since $n_{\\text{prompt}} \\ge 1$, the range is a strict subset that omits exactly $n_{\\text{prompt}}$ entries, so Equation (2) is not the maximum over the input dimension the prose describes. Separately, Section 3.2 declares the shapes of $Q_{l,h}$ and $K_{l,h}$ swapped relative to Algorithm 1 — which has them the semantically correct way round — and Lean proved the two specifications are irreconcilable for any non-empty context. Algorithm 1 in Appendix A states the method correctly ($\\max_{i=1,\\dots,n_{\\text{in}}}$, $Q$ of length $n_{\\text{in}}$, $K$ of length $n_c + n_{\\text{in}}$), so the method itself is sound and the defect is confined to how the body states it — but it is the equation a reader would implement from, and the manuscript even labels the line '(2 corrected)'.\n\n**What Lean confirmed correct.** The entire Section 3.4 complexity chain holds exactly: $(n_c/m) \\cdot m^2 = m\\,n_c$, $(n_c/m)(n_c m + m^2/2) = n_c^2 + n_c m/2$, and the ratio to the prefill cost $n_c^2/2$ is $2 + m/n_c$, within $2\\%$ of $2$ in the paper's regime — so 'approximately doubles' is accurate. The KV-quantization arithmetic is exact ($16.3 \\times \\frac{4}{16} \\times \\frac{3}{10} = 1.2225$ GB, correctly rounded to the reported $1.2$ GB). The Gemma3 claim that global attention layers 'dominate cache sizes' is quantitatively right: at a 1:5 global:local ratio with a 100K context and 1K window they hold $20/21 \\approx 95.2\\%$ of the cache. Algorithm 1's shape chain is consistent end to end.\n\n**Three minor findings.** (i) The Introduction's motivating figure — '33 GB' for 120K tokens in Qwen2.5-14B — is refuted by the paper's own memory model, which reproduces its own 16.3 GB calibration point exactly but gives $23.59$ GB here (an architecture-free rescaling of the 16.3 GB figure gives $23.66$ GB). The sentence's conclusion inverts as a result: the cache is about 84% of the stated 28 GB of weights, so it does not 'surpass' them. (ii) Figures 22 and 23 violate an invariant of the eviction framework — at a KV cache ratio of $1.0$ nothing is evicted, so all four methods must coincide, yet Mix.RepoQA+KV reports $80/40/60/50$ and GSM8K $65/60/65/60$; three of the paper's five comparable panels do satisfy the invariant, which rules out an axis misreading. (iii) The Abstract and Introduction disagree quantitatively on both headline numbers ($2$–$3\\times$ vs $3$–$4\\times$ cache reduction; 'up to $1.5\\times$' vs 'approximately $2\\times$' latency, against $2.29\\times$ in Figure 8a).\n\n**No verifier disagreements arose** — every Lean verdict was PASSED or REFUTED, so no claim needed an informal second opinion, and the two REFUTED results were each corroborated by an independent internal cross-check in the manuscript (Algorithm 1 for Equation (2); the 16.3 GB figure for the 33 GB claim). Two caveats on the evidence: the Equation (2) and Algorithm 1 verdicts turn on reading tensor-axis semantics from prose, which Lean cannot itself adjudicate — Lean settled only the arithmetic once the reading is fixed, though every available reading of Equation (2) yields an inconsistency; and the Qwen2.5-14B verdict depends on architecture constants ($L=48$, $H=8$, $d=128$) external to the manuscript, which is why it is held at 0.80 rather than higher.\n\nVerdict CRITICAL_ERRORS, at 0.85 confidence: one machine-checked critical defect in the paper's central equation, three corroborated minor defects, and every other formalisable claim — the whole complexity analysis and both efficiency computations — proved clean.\n\n**Lean project note.** `PAPER_NAME` is `paper`, so `PROJECT_NAME` resolves to `Paper`, which already existed with 162 entries of other papers' proofs under `Paper/Verified/`. Per verify-math-lean's non-negotiable rule — a reused project is not the run's to remove — every call including the sixth was issued with `--keep-lean`, the project was left on disk (`lean_project_kept: true`), and only per-snippet scratch (`TMP.lean`, `claim.md`) was deleted. The six proofs are archived under `MATH_VERIFICATION/Paper/Paper/Verified/5873-KVzip-opus5/`.\n\n**Schema note.** `fallbacks_run` counts Step-5 retries of Lean `FAILED`/`NOT_ATTEMPTED` snippets, of which there were none. The four `verify-math`-routed snippets carry their primary informal verdict in the `fallback_result` slot, since the schema provides no separate field for an informally-routed result."
+}

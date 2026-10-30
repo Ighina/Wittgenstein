@@ -1,0 +1,103 @@
+{
+  "paper_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction",
+  "title": "KVzip: Query-Agnostic KV Cache Compression with Context Reconstruction",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Equation (2)",
+      "confidence": 0.95,
+      "supporting_evidence": "Equation (2) states: S_{l,h}[j] = max_{g=1,...,G; i=1,...,n_c} \\bar{A}_{l,h}[g, j, i]. However, \\bar{A}_{l,h} is defined as having shape G × n_c × n_{in}, meaning the third dimension has size n_{in}, not n_c. The maximization should be over i=1,...,n_{in}, not i=1,...,n_c. The text says '(2 corrected)' but the correction appears incomplete or the dimension description is wrong.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Abstract vs Section 4.1",
+      "confidence": 0.85,
+      "supporting_evidence": "The abstract claims 'FlashAttention decoding latency improvements up to 1.5×', but Figure 8(a) shows attention latency values of 0.39ms at ratio 1.0 and 0.17ms at ratio 0.2, which is approximately 2.3× improvement (0.39/0.17 ≈ 2.29), not 1.5×. The abstract understates the improvement shown in the results.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Abstract vs Figure 8",
+      "confidence": 0.9,
+      "supporting_evidence": "The abstract states 'KV cache size reductions by 2–3×', but Figure 8(a) shows KV memory ranging from 16.3 GB at ratio 1.0 to 3.3 GB at ratio 0.2, which is approximately 4.9× reduction (16.3/3.3 ≈ 4.94), exceeding the claimed 2-3× range.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 1 vs Section 4.1",
+      "confidence": 0.8,
+      "supporting_evidence": "Section 1 states 'KVzip achieves approximately 2× latency reduction in FlashAttention', but this contradicts both the abstract's claim of 'up to 1.5×' and Figure 8's data showing approximately 2.3× improvement. The paper presents three different values for the same metric.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Section 3.2, Equation (2)",
+      "confidence": 0.75,
+      "supporting_evidence": "The text states that \\bar{A}_{l,h} is obtained by 'Extracting slices relevant to KV_c' from the attention matrix A_{l,h}. However, A_{l,h} has shape G × (n_c + n_{in}) × n_{in}, and the text claims \\bar{A}_{l,h} has shape G × n_c × n_{in}. The slicing operation is not clearly defined - it's unclear which dimension is being sliced and how this relates to 'slices relevant to KV_c' when KV_c corresponds to the key dimension, not the query dimension.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 1 vs Section 4.2",
+      "confidence": 0.7,
+      "supporting_evidence": "Section 1 claims 'KVzip achieves approximately 2× latency reduction in FlashAttention and 3–4× reduction in KV cache size during decoding with negligible performance loss', but Section 4.2 and the figures show significant performance degradation at aggressive compression ratios (e.g., Figure 9 shows substantial accuracy drops below 40-50% cache ratios for retrieval tasks). The claim of 'negligible performance loss' is inconsistent with the empirical results.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (figure-text)",
+      "error_location": "Figure 2 caption vs graph",
+      "confidence": 0.65,
+      "supporting_evidence": "Figure 2 caption states 'We evaluate SnapKV with repetitive per-query prefill, reuse of the compressed cache from the first question', but the figure shows three lines labeled 'SnapKV-prefill', 'SnapKV-reuse', and 'KVzip'. The distinction between 'repetitive per-query prefill' and 'reuse' is not clearly reflected in the line labels, making it difficult to verify which experimental condition each line represents.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Section 3.4",
+      "confidence": 0.8,
+      "supporting_evidence": "The text claims 'Peak memory overhead is O(m²), which remains constant with n_c and is negligible compared to model parameters and KV cache sizes.' However, Figure 8(b) shows peak memory ranging from 48.3 GB to 62.3 GB depending on chunk size, with the dashed line indicating prefill cost around 48 GB. An additional 10-14 GB overhead (20-30% increase) is not 'negligible' as claimed.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 3.4 vs Figure 8(b)",
+      "confidence": 0.85,
+      "supporting_evidence": "Section 3.4 states 'KVzip introduces roughly twice the computational cost of standard prefill during compression', but Figure 8(b) shows compute time ranging from 130.5s to 165.3s for different chunk sizes, while the dashed reference line (prefill cost) appears to be around 130s. The actual overhead varies from approximately 1× to 1.27×, not consistently 2× as claimed.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction::baseline"
+    },
+    {
+      "error_category": "Experiment setup",
+      "error_location": "Section 4.1",
+      "confidence": 0.75,
+      "supporting_evidence": "Section 4.1 states 'We apply non-uniform head-budget allocation exclusively to KVzip, retaining KV pairs with the top r% importance scores. Baseline methods are evaluated using their originally recommended uniform budget settings to reflect typical usage. We acknowledge that this results in asymmetry but argue it reflects baseline best practices.' This creates an unfair comparison where KVzip uses a superior allocation strategy while baselines use an inferior one, potentially inflating KVzip's relative performance.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 10,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (claude-sonnet-4-5-20250929, taxonomy=default): 10 error(s) reported.",
+  "baseline": {
+    "model": "claude-sonnet-4-5-20250929",
+    "taxonomy": "default",
+    "paper_chars": 83648,
+    "truncated": false
+  }
+}

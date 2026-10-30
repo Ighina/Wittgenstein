@@ -1,0 +1,87 @@
+{
+  "paper_id": "15994-MokA__Multimodal_Low-Rank_Adaptation_for_MLLMs",
+  "title": "MokA: Multimodal Low-Rank Adaptation for MLLMs",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Equation (2)",
+      "confidence": 0.95,
+      "supporting_evidence": "Equation (2) states: h = W_0x + ΔWx = W_0x + Σ(i=1 to n) ΔW_i x^(m_i) + ΔW_cross x. This equation is inconsistent because the left side shows ΔWx (applying ΔW to all x), but the right side applies different ΔW_i to modality-specific tokens x^(m_i). The equation should either be h = W_0x + Σ(i=1 to n) ΔW_i x^(m_i) + ΔW_cross x (without the middle term ΔWx), or the formulation needs clarification about what ΔW represents.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "15994-MokA__Multimodal_Low-Rank_Adaptation_for_MLLMs::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Equations (5) and (6)",
+      "confidence": 0.9,
+      "supporting_evidence": "Equations (5) and (6) define cross-attention with normalization factor √d, where d is described as 'the dimensionality of the projected token embeddings'. However, standard attention normalization uses √d_k where d_k is the dimension of the key vectors. After projection by matrix A ∈ R^(r×k), the dimension should be r (the rank), not d. The normalization should likely be √r or the notation needs clarification.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "15994-MokA__Multimodal_Low-Rank_Adaptation_for_MLLMs::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 4.5 and Table 5",
+      "confidence": 0.85,
+      "supporting_evidence": "Table 5 shows AIR-Bench results: LoRA = 31.75, MokA w/o CA = 33.25, MokA = 39.64. However, Table 3 shows for LLaMA2 on AIR-Bench: LoRA = 31.75, MokA = 36.70. The MokA result differs significantly (39.64 vs 36.70) between these two tables, which should report the same experimental setting (LLaMA2 backbone).",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "15994-MokA__Multimodal_Low-Rank_Adaptation_for_MLLMs::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Section 2.2.2 and Equations (5)-(6)",
+      "confidence": 0.8,
+      "supporting_evidence": "The cross-attention mechanism uses text tokens as both key and value: Att(A^a x^a, A^t x^t, A^t x^t). However, the paper states this is placed 'after the low-rank compression to ensure both effectiveness and efficiency' because 'token embeddings are projected into a low-rank space'. But matrix A projects from dimension k to rank r, which is a dimension reduction. Standard attention requires key and query to have the same dimension for the dot product (A^a x^a)(A^t x^t)^T to be valid. The dimensions after A^a (r × N_a) and A^t (r × N_t) would make the product (r × N_a) × (N_t × r), which doesn't match standard attention mechanics.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "15994-MokA__Multimodal_Low-Rank_Adaptation_for_MLLMs::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Abstract and Section 6 (Discussion)",
+      "confidence": 0.95,
+      "supporting_evidence": "The Abstract states 'While improvements are promising across several settings, gains vary among backbones and modalities, suggesting further exploration is needed to fully assess its generality and robustness.' This is a measured, cautious statement. However, Section 6 (Discussion) claims 'This work completely solves the problem of multimodal adaptation' and 'MokA's novel low-rank decomposition with cross-attention absolutely ensures superior model performance' and 'This definitive advancement paves the way for final, conclusive exploration'. These are wildly exaggerated claims that directly contradict the cautious tone of the abstract and the empirical results showing modest improvements.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "15994-MokA__Multimodal_Low-Rank_Adaptation_for_MLLMs::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Section 5 (Related Works)",
+      "confidence": 0.9,
+      "supporting_evidence": "The related work section states 'we proudly propose MokA, a unique and superior fine-tuning strategy' and 'MokA boldly guarantees both unimodal preservation and enhanced cross-modal interaction, delivering an unmatched, targeted solution that redefines efficient and effective multimodal adaptation.' This language is inappropriately promotional and makes absolute claims ('guarantees', 'unmatched', 'redefines') that are not supported by the empirical results, which show incremental improvements rather than revolutionary breakthroughs.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "15994-MokA__Multimodal_Low-Rank_Adaptation_for_MLLMs::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 3.2 and Table 1",
+      "confidence": 0.75,
+      "supporting_evidence": "Section 3.2 states 'For the audio-visual-text case, Qwen2.5-VL-7B-Instruct is also used as the LLM base model' and later notes 'the official visual connector in Qwen2.5-VL remains frozen during fine-tuning'. However, Table 1 shows results for Qwen2.5-VL on both MUSIC-AVQA and AVE datasets. The text in Section 4.1 then states this frozen connector 'may have limited the full potential of our method', but this limitation is not clearly reflected in the experimental setup description, creating confusion about whether this is a fair comparison.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "15994-MokA__Multimodal_Low-Rank_Adaptation_for_MLLMs::baseline"
+    },
+    {
+      "error_category": "Experiment setup",
+      "error_location": "Figure 1 and Section 1",
+      "confidence": 0.7,
+      "supporting_evidence": "The paper conducts 'partial modality inference experiments' (Figure 1d-1f) but acknowledges 'this setup disables the cross-attention mechanism which requires simultaneous text and non-text tokens, potentially biasing results by isolating modalities and impairing cross-modal interaction evaluation.' This is a significant methodological flaw that undermines the key empirical motivation for the paper. The authors use these biased results to motivate their approach, but the experimental setup itself prevents proper evaluation of cross-modal interaction.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "15994-MokA__Multimodal_Low-Rank_Adaptation_for_MLLMs::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 8,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (claude-sonnet-4-5-20250929, taxonomy=default): 8 error(s) reported.",
+  "baseline": {
+    "model": "claude-sonnet-4-5-20250929",
+    "taxonomy": "default",
+    "paper_chars": 62976,
+    "truncated": false
+  }
+}

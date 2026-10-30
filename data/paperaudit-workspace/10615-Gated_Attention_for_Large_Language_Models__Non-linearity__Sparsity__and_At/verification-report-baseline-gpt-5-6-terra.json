@@ -1,0 +1,118 @@
+{
+  "paper_id": "10615-Gated_Attention_for_Large_Language_Models__Non-linearity__Sparsity__and_At",
+  "title": "Gated Attention for Large Language Models: Non-linearity: Sparsity: and At",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Abstract versus Sections 3.1, 3.2, Table 1, and Table 2",
+      "confidence": 0.99,
+      "supporting_evidence": "The abstract says the comparison covers “40 variants of 30B MoE models and 3.4B dense models trained on a 1 trillion token dataset.” The experimental sections instead describe 15A2B MoE models (15B total / 2.54B activated) and 1.7B dense models. Reported training runs use 400B tokens, 1T tokens, and 3.5T tokens, while Section 3.1 says the data are subsets of a 4T-token corpus. These are not rounding differences: the abstract's model sizes and training-data claim do not match the reported experiments.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "10615-Gated_Attention_for_Large_Language_Models__Non-linearity__Sparsity__and_At::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Introduction, final paragraph before Section 2",
+      "confidence": 0.99,
+      "supporting_evidence": "The introduction states that “applying key layer gating (G3) yields superior performance improvements compared to SDPA or value gating.” This is directly contradicted by the paper's central recommendation, abstract, Table 1, and later text. In Table 1, key gating G3 has PPL 6.016, barely better than the 6.026 baseline and far worse than SDPA G1 (5.761) and value G2 (5.820). The next sentence recommends G1 as best.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "10615-Gated_Attention_for_Large_Language_Models__Non-linearity__Sparsity__and_At::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (figure-text)",
+      "error_location": "Figure 1 caption and embedded performance tables versus Table 1",
+      "confidence": 0.96,
+      "supporting_evidence": "Figure 1's embedded table reports PPL values baseline 6.05, SDPA 5.95, value 5.85, and key 5.75, making key gating the best PPL result. Its caption nevertheless says “Gating after SDPA (G1) yields the best overall results.” More importantly, the purportedly comparable Table 1 reports G1 5.761, G2 5.820, and G3 6.016. The G3 result differs drastically between the figure (5.75) and Table 1 (6.016), and the claimed winner changes.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "10615-Gated_Attention_for_Large_Language_Models__Non-linearity__Sparsity__and_At::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Figure 1 architecture diagram versus Section 2.2 position definitions",
+      "confidence": 0.97,
+      "supporting_evidence": "Section 2.2 defines G2 as after the value projection, G3 after the key projection, G4 after the query projection, and G1 after SDPA. The Figure 1 diagram instead shows SDPA feeding G4/G3/G1, followed by Wq/Wk/Wv, respectively; it omits G2 and reverses the computational direction of attention projections. Thus the diagram cannot represent the stated attention computation or the stated gating positions.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "10615-Gated_Attention_for_Large_Language_Models__Non-linearity__Sparsity__and_At::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Equation (3), Section 2.1",
+      "confidence": 0.99,
+      "supporting_evidence": "Equation (1) defines Q, K, V = XW_Q, XW_K, XW_V, so Q, K, and V have shape n × d_k. Equation (3) then defines head_i = Attention(QW_Q^i, KW_K^i, VW_V^i), while W_Q^i, W_K^i, W_V^i are described as projection matrices from d_model to d_k. The products QW_Q^i etc. are dimensionally invalid because Q has width d_k, not d_model. The standard formula should project X separately for each head, e.g. Attention(XW_Q^i, XW_K^i, XW_V^i), or Equation (1) should not already have performed the projections.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "10615-Gated_Attention_for_Large_Language_Models__Non-linearity__Sparsity__and_At::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (figure-text)",
+      "error_location": "Section 3.2.2, reference to “Fig. 2, right”",
+      "confidence": 0.99,
+      "supporting_evidence": "Section 3.2.2 says gating “largely reduces the loss spike (Fig. 2, right).” But Figure 2 is captioned as attention allocated to the initial token on the left and average attention-map weights on the right; it contains no training-loss plot. The training-loss plot is described in Figure 1's caption, not Figure 2.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "10615-Gated_Attention_for_Large_Language_Models__Non-linearity__Sparsity__and_At::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (figure-text)",
+      "error_location": "Section 4.2, Table 4, and Figure 3 caption",
+      "confidence": 0.98,
+      "supporting_evidence": "Section 4.2 says SDPA-output gating has a distribution “with a high concentration near 0,” and Table 4 gives its mean gate score as 0.116. Figure 3's caption, which identifies its left panel as SDPA elementwise gating, says “The majority of gating scores fall mostly between 0.4 and 0.7, indicating less sparsity.” A majority in 0.4–0.7 is incompatible with a mean of 0.116 and with the accompanying claim that scores are concentrated near zero.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "10615-Gated_Attention_for_Large_Language_Models__Non-linearity__Sparsity__and_At::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (figure-figure)",
+      "error_location": "Table 1 row 6 versus Table 4 row 5",
+      "confidence": 0.97,
+      "supporting_evidence": "Table 4 explicitly analyzes the same value-elementwise gate configuration reported in Table 1 and repeats its PPL, HellaSwag, MMLU, and C-Eval values. However, GSM8k differs: Table 1 row 6 reports 53.97, while Table 4 row 5 reports 51.33. Since the surrounding values and configuration are otherwise identical, one of these reported results is wrong.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "10615-Gated_Attention_for_Large_Language_Models__Non-linearity__Sparsity__and_At::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Section 4.2, discussion of Table 4 row 6 (input-independent gate)",
+      "confidence": 0.98,
+      "supporting_evidence": "The paper says the input-independent gate improves on baseline “likely due to the introduction of non-linearity.” But the described operation is a learned input-independent tensor of shape q × d_k, passed through sigmoid and multiplied with the SDPA output. Once the tensor is learned, sigmoid(parameter) is a constant per-head/per-coordinate scale. Multiplication by this constant is a linear diagonal transformation that can be absorbed into the output projection; it introduces no non-linearity as a function of the input. Therefore the proposed explanation is mathematically false.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "10615-Gated_Attention_for_Large_Language_Models__Non-linearity__Sparsity__and_At::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Abstract; Section 4.3; Section 5.2; Conclusion",
+      "confidence": 0.94,
+      "supporting_evidence": "The paper alternates between saying gating “partially alleviates” attention sinks (abstract and conclusion) and asserting that it “eliminates” them or produces “attention-sink-free” models (Introduction, Section 5.2, and title). Its own Table 4 reports first-token attention F-Attn = 0.048 for SDPA elementwise gating, and Section 4.3 states that the phenomena “persist to a non-trivial degree in some layers and models.” These results do not support an unqualified elimination/attention-sink-free claim.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "10615-Gated_Attention_for_Large_Language_Models__Non-linearity__Sparsity__and_At::baseline"
+    },
+    {
+      "error_category": "Citation / attribution",
+      "error_location": "Section 5.1, references to [80], [81], and [82]",
+      "confidence": 1.0,
+      "supporting_evidence": "Section 5.1 cites “state-space models [3, 10, 57, 80],” “DeltaGate model [81],” and “the unseen GatorNet [82] architecture.” The reference list ends at [71]. References [80], [81], and [82] do not exist in the bibliography, so these claims cannot be checked and the purported GatorNet attribution is unsupported.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "10615-Gated_Attention_for_Large_Language_Models__Non-linearity__Sparsity__and_At::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 11,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (gpt-5.6-terra, taxonomy=default): 11 error(s) reported.",
+  "baseline": {
+    "model": "gpt-5.6-terra",
+    "provider": "openai",
+    "taxonomy": "default",
+    "paper_chars": 75524,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 20201,
+      "output_tokens": 4352,
+      "cache_read_input_tokens": null,
+      "cache_creation_input_tokens": null
+    }
+  }
+}

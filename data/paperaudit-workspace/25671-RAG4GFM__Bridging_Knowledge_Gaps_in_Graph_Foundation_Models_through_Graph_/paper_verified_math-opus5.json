@@ -1,0 +1,647 @@
+{
+  "paper_name": "paper",
+  "paper_path": "/Users/iacopoghinassi/Documents/Github/Wittgenstein/data/paperaudit-workspace/25671-RAG4GFM__Bridging_Knowledge_Gaps_in_Graph_Foundation_Models_through_Graph_/paper.md",
+  "tag": "opus5",
+  "lean_project": "MATH_VERIFICATION/Paper",
+  "lean_project_kept": true,
+  "totals": {
+    "snippets_extracted": 18,
+    "routed_to_math": 13,
+    "routed_to_lean": 5,
+    "lean_passed": 0,
+    "lean_refuted": 5,
+    "lean_failed": 0,
+    "fallbacks_run": 0,
+    "errors_detected": 11
+  },
+  "results": [
+    {
+      "snippet_id": "paper::EQUATION::0",
+      "snippet_type": "EQUATION",
+      "location": "3.1 Multi-level Graph Indexing",
+      "content": "Structural Feature Encoding: The topological position of nodes in a graph contains rich structural information. We combine Laplacian Positional Encoding (LapPE) with node degree metrics to construct structure-aware feature representations as\n$$\\mathbf{h}_s(v) = \\text{LapPE}(v) \\oplus \\text{Deg}_{\\text{IN}}(v) \\oplus \\text{Deg}_{\\text{OUT}}(v),$$\n(1)\nwhere $\\text{LapPE}(v)$ is the positional encoding based on the eigendecomposition of the graph Laplacian matrix, $\\text{Deg}_{\\text{IN}}(v)$ and $\\text{Deg}_{\\text{OUT}}(v)$ represent the in-degree and out-degree of node $v$, respectively, and $\\oplus$ denotes feature concatenation. Laplacian positional encoding effectively captures the position information of nodes in the global graph structure, while node degree information reflects local connection patterns. This encoding method is invariant to node permutations and graph isomorphism, accurately capturing nodes' relative positions within the topology.",
+      "route": "verify-math-lean",
+      "route_rationale": "Eq. (1) comes with a crisp falsifiable property claim (invariance under node permutations and graph isomorphism) that a formal check can settle.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::0",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.78,
+        "reasoning": "Two readings were formalised. (i) The literal reading of \"invariant to node permutations\": because $\\mathbf{h}_s(v)$ carries $\\text{Deg}_{\\text{IN}}(v)$ as a coordinate, invariance would force $\\text{Deg}_{\\text{IN}}(v) = \\text{Deg}_{\\text{IN}}(\\pi v)$ for every digraph, every permutation and every vertex. `degIn_not_perm_invariant` refutes that with the single-arc digraph $0 \\to 1$ and the transposition $(0\\,1)$. That alone would be a wording-level point, so the charitable reading was also formalised and **proved**: `degIn_equivariant` shows the encoding is permutation-*equivariant*, which is what the GNN literature means by this sentence. (ii) The substantive defect: $\\text{LapPE}$ is defined as \"the positional encoding based on the eigendecomposition of the graph Laplacian matrix\", and eigenvectors are determined only up to sign. `lapPE_sign_ambiguous` proves that if $x$ is a $\\lambda$-eigenvector of a Laplacian $L$ then so is $-x$, and $-x \\neq x$ whenever $x \\neq 0$. Hence $\\text{LapPE}$ is not a well-defined function of the graph at all, let alone an isomorphism-invariant one: the same graph admits $2^{p}$ distinct encodings for $p$ retained eigenvectors, and two isomorphic graphs can receive different encodings. The paper asserts invariance without any sign canonicalisation or sign-invariant readout (e.g. SignNet), so the claim as printed is false. Severity minor: the encoding is still usable and nothing downstream depends on the invariance, so the error is in the asserted property rather than in the pipeline.",
+        "predicted_error_category": "Formally refuted",
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [
+          "3.1 Multi-level Graph Indexing, sentence following Eq. (1)"
+        ],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean",
+          "formal_statement": "theorem degIn_not_perm_invariant :\n    ¬ (∀ (V : Type) (_ : Fintype V) (_ : DecidableEq V) (A : V → V → Bool)\n         (π : Equiv.Perm V) (v : V), degIn A v = degIn A (π v))\n\ntheorem degIn_equivariant {V : Type*} [Fintype V] [DecidableEq V]\n    (A : V → V → Bool) (π : Equiv.Perm V) (v : V) :\n    degIn (fun u w => A (π.symm u) (π.symm w)) (π v) = degIn A v\n\ntheorem lapPE_sign_ambiguous {n : ℕ} (L : Matrix (Fin n) (Fin n) ℝ)\n    (lam : ℝ) (x : Fin n → ℝ) (hx : x ≠ 0) (hL : L.mulVec x = lam • x) :\n    L.mulVec (-x) = lam • (-x) ∧ (-x) ≠ x",
+          "compiler_feedback": "lake env lean Paper/TMP.lean  -- exit status 0, no severity-1 diagnostics, 0 occurrences of `sorry`.\n'RAG4GFM.degIn_not_perm_invariant' depends on axioms: [propext, Classical.choice, Quot.sound]\n'RAG4GFM.degIn_equivariant' depends on axioms: [propext, Classical.choice, Quot.sound]\n'RAG4GFM.A2_degIn' depends on axioms: [propext, Classical.choice, Quot.sound]\n'RAG4GFM.lapPE_sign_ambiguous' depends on axioms: [propext, Classical.choice, Quot.sound]",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.78
+    },
+    {
+      "snippet_id": "paper::EQUATION::1",
+      "snippet_type": "EQUATION",
+      "location": "3.1 Multi-level Graph Indexing",
+      "content": "Graph-level Encoding: To obtain a holistic representation, we integrate node features, edge features, and graph statistical features:\n$$\\mathbf{h}_g(G) = \\mathbf{h}_{\\text{NODE}}(G) \\oplus \\mathbf{h}_{\\text{EDGE}}(G) \\oplus \\mathbf{h}_{\\text{STATS}}(G),\\tag{2}$$\nwhere $\\mathbf{h}_{\\text{NODE}}(G) = \\text{MEAN}\\{\\mathbf{h}_t(v) \\mid v \\in V\\}$, $\\mathbf{h}_{\\text{EDGE}}(G) = \\text{MEAN}\\{\\mathbf{h}_e(u, v) \\mid (u, v) \\in E\\}$, and $\\mathbf{h}_{\\text{STATS}}(G) = [|V|, |E|, \\rho(G)]$ [...]. $\\rho(G)$ denotes the graph density, i.e., the ratio between actual and maximal possible edge counts.",
+      "route": "verify-math",
+      "route_rationale": "Concatenation of aggregates plus a density definition; correctness is settled by inspection, with no non-trivial argument to formalise.",
+      "lean_result": null,
+      "fallback_result": null,
+      "verifier_result": {
+        "snippet_id": "paper::EQUATION::1",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.72,
+        "reasoning": "No invalid algebra. Two observations, neither erratum-worthy. (a) $\\rho(G)$ is a function of $|V|$ and $|E|$ (for digraphs $\\rho = |E| / (|V|(|V|-1))$), so the third coordinate of $\\mathbf{h}_{\\text{STATS}}$ adds no information the first two do not already carry -- redundancy, not error. (b) $\\mathbf{h}_{\\text{EDGE}}(G)$ is a mean over $E$ and $\\rho(G)$ divides by $|V|(|V|-1)$, so they are undefined on edgeless graphs and on $|V| \\le 1$ respectively; none of the Table 1 datasets contains such a degenerate instance, so this is an unhandled boundary case rather than a domain-constraint violation in the paper's own setting.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.72
+    },
+    {
+      "snippet_id": "paper::EQUATION::2",
+      "snippet_type": "EQUATION",
+      "location": "3.2 Task-aware Retrieval",
+      "content": "To obtain the final retrieval score for a query $q$ under the graph context $\\mathcal{C}$, we apply a reciprocal rank fusion (RRF) strategy to aggregate results from multiple retrieval channels:\n$$S(q \\mid \\mathbf{h}_q, \\mathcal{C}) = \\sum_{x \\in \\mathcal{F}(\\mathbf{h}_q, \\mathcal{C})} \\frac{1}{d + \\text{rank}_x^k(\\mathcal{C})},\\tag{3}$$\nwhere $\\mathcal{F}(\\mathbf{h}_q, \\mathcal{C})$ denotes the retrieved feature set, $d$ is a smoothing constant (default value 60), and $\\text{rank}_x^k(\\mathcal{C})$ represents the rank of candidate $x$ in the full retrieval corpus (not limited to top-k).",
+      "route": "verify-math",
+      "route_rationale": "A well-definedness/notation question about a standard RRF formula; there is no crisp formal content for Lean to settle.",
+      "lean_result": null,
+      "fallback_result": null,
+      "verifier_result": {
+        "snippet_id": "paper::EQUATION::2",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.65,
+        "reasoning": "Eq. (3) is a correct reciprocal-rank-fusion aggregation with the conventional smoothing constant $d = 60$. The prose does not match the formula: it calls $x$ a \"candidate\", whereas Eq. (4) makes $\\mathcal{F}(\\mathbf{h}_q, \\mathcal{C})$ a set of *feature channels* ($\\{\\mathbf{h}_t(v), \\mathbf{h}_s(v)\\}$ and so on), and the superscript $k$ on $\\text{rank}_x^k$ is immediately disclaimed by \"not limited to top-k\". Under the coherent reading -- $\\mathcal{C}$ is the candidate, $x$ ranges over the activated channels, $\\text{rank}_x(\\mathcal{C})$ is the candidate's rank within channel $x$ -- the equation is well defined, standard, and $S$ does depend on the candidate through its $\\mathcal{C}$ argument. Mislabelled prose and vestigial notation are explicitly outside what this verifier flags.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.65
+    },
+    {
+      "snippet_id": "paper::EQUATION::3",
+      "snippet_type": "EQUATION",
+      "location": "3.2 Task-aware Retrieval",
+      "content": "$$\n\\mathcal{F}(\\mathbf{h}_q, C) = \\begin{cases}\n\\{\\mathbf{h}_t(v), \\mathbf{h}_s(v)\\}, & \\text{if } C = v \\text{ (node-level);}\\\\\n\\{\\mathbf{h}_t(u), \\mathbf{h}_t(v), \\mathbf{h}_e(u, v)\\}, & \\text{if } C = (u, v) \\text{ (edge-level);}\\\\\n\\{\\mathbf{h}_t(v), \\mathbf{h}_q(G)\\}, & \\text{if } C = G \\text{ (graph-level).}\n\\end{cases}\n$$\n(4)",
+      "route": "verify-math",
+      "route_rationale": "A case-split set definition; the check is symbol-level consistency against the encodings defined in Section 3.1.",
+      "lean_result": null,
+      "fallback_result": null,
+      "verifier_result": {
+        "snippet_id": "paper::EQUATION::3",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.7,
+        "reasoning": "The three cases match the Section 3.2 prose (node tasks use text and structural features, edge tasks use endpoint text plus the edge feature, graph tasks use the graph embedding plus node features). The graph-level case writes $\\mathbf{h}_q(G)$, but Eq. (2) defines the graph-level encoding as $\\mathbf{h}_g(G)$ and $\\mathbf{h}_q$ denotes the query embedding elsewhere -- a subscript typo, which this verifier does not flag. Separately worth recording: the edge-level case retrieves $\\mathbf{h}_e(u,v)$, yet Eqs. (6)-(7) never consume an edge feature, so retrieval and fusion are out of step. That is a design gap, not an algebraic error in Eq. (4).",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.7
+    },
+    {
+      "snippet_id": "paper::EQUATION::4",
+      "snippet_type": "EQUATION",
+      "location": "3.3 Graph Fusion Enhancement",
+      "content": "$$\n\\mathbf{h}_v'^N = \\mathbf{h}_v + \\sum_{i=1}^k \\left( \\alpha_i^F \\cdot \\frac{1}{|V_i|} \\sum_{u \\in V_i} \\mathbf{h}_u \\right) \\cdot \\mathbb{I}[\\alpha_i^F > \\gamma], \\quad \\text{(node-level)}\n$$\n(5)\nwhere $\\mathbf{h}_v'^N$ is the enhanced target node feature, $\\mathbf{h}_v$ is the original node feature, $V_i$ is the node set of the $i$-th retrieved graph, and $\\gamma$ is the feature fusion acceptance threshold (default value 0.5) that retains only high-relevance retrieved results by accepting graphs with α_i^F ≥ γ, thereby excluding low-scoring candidates. [...] $k$ is the number of effective retrieved results.",
+      "route": "verify-math",
+      "route_rationale": "A residual plus a thresholded weighted mean; correctness is inspection-level.",
+      "lean_result": null,
+      "fallback_result": null,
+      "verifier_result": {
+        "snippet_id": "paper::EQUATION::4",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.75,
+        "reasoning": "Eq. (5) is well formed and dimensionally consistent: a residual $\\mathbf{h}_v$ plus a weighted combination of per-retrieved-graph mean node features, gated by a scalar indicator. Two inconsistencies sit below the erratum bar. The prose accepts graphs with $\\alpha_i^F \\ge \\gamma$ while the formula gates on $\\alpha_i^F > \\gamma$; these differ only at the boundary $\\alpha_i^F = \\gamma$. And $k$ is defined as \"the number of effective retrieved results\", under which $\\mathbb{I}[\\alpha_i^F > \\gamma]$ is identically $1$ and therefore redundant -- the indicator only does work if $k$ is instead the retrieval size $K = 3$ of Appendix B.3. Neither invalidates the operation.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.75
+    },
+    {
+      "snippet_id": "paper::EQUATION::5",
+      "snippet_type": "EQUATION",
+      "location": "3.3 Graph Fusion Enhancement",
+      "content": "$$\n\\mathbf{h}_{\\text{SRC}}'^E = \\mathbf{h}_{\\text{SRC}} + \\sum_{i=1}^k \\left( \\alpha_i^F \\cdot \\frac{1}{|V_i|} \\sum_{u \\in V_i} \\mathbf{h}_u \\right) \\cdot \\mathbb{I}[\\alpha_i^F > \\gamma], \\quad \\text{(edge-level, source)}\n$$\n(6)\n\n$$\n\\mathbf{h}_{\\text{DST}}'^E = \\mathbf{h}_{\\text{DST}} + \\sum_{i=1}^k \\left( \\alpha_i^F \\cdot \\frac{1}{|V_i|} \\sum_{u \\in V_i} \\mathbf{h}_u \\right) \\cdot \\mathbb{I}[\\alpha_i^F > \\gamma], \\quad \\text{(edge-level, destination)}\n$$\n(7)\nwhere $\\mathbf{h}_{\\text{SRC}}'^E$ and $\\mathbf{h}_{\\text{DST}}'^E$ are the enhanced source and destination edge features.",
+      "route": "verify-math",
+      "route_rationale": "The same algebraic form as Eq. (5), applied to two endpoints; inspection-level.",
+      "lean_result": null,
+      "fallback_result": null,
+      "verifier_result": {
+        "snippet_id": "paper::EQUATION::5",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.7,
+        "reasoning": "Both equations are algebraically valid. Worth recording but not flaggable: the correction term added to the source and to the destination is *identical*, so $\\mathbf{h}_{\\text{SRC}}'^E - \\mathbf{h}_{\\text{DST}}'^E = \\mathbf{h}_{\\text{SRC}} - \\mathbf{h}_{\\text{DST}}$, and any link predictor that scores a pair through the difference of its endpoint embeddings is completely unaffected by edge-level fusion. Additionally the quantities are called \"edge features\" but are node features, and the retrieved edge encoding $\\mathbf{h}_e(u,v)$ from Eq. (4) never appears. These are labelling and design issues, not derivation errors.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.7
+    },
+    {
+      "snippet_id": "paper::EQUATION::6",
+      "snippet_type": "EQUATION",
+      "location": "3.3 Graph Fusion Enhancement",
+      "content": "$$\n\\mathbf{h}_v'^G = \\frac{1}{k} \\sum_{i=1}^k \\left( \\alpha_i^F \\cdot \\beta_v^i \\cdot \\mathbf{h}_v \\right) \\cdot \\mathbb{I}[\\alpha_i^F > \\gamma], \\quad \\text{(graph-level)}\n$$\n(8)\nwhere $\\mathbf{h}_v'^G$ is the enhanced target graph feature, $\\gamma$ is the feature fusion acceptance threshold (default value 0.5), and $k$ is the number of effective retrieved results. Context (Section 3.3): the module is introduced as one that \"fuses retrieved graph features with query features\".",
+      "route": "verify-math-lean",
+      "route_rationale": "Whether the right-hand side actually carries retrieved-graph information is a crisp formal question, and the answer turns on an argument rather than on arithmetic.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::6",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.93,
+        "reasoning": "Eq. (8) was transcribed literally. Every factor multiplying $\\mathbf{h}_v$ on the right-hand side -- $\\alpha_i^F$, $\\beta_v^i$, the indicator, and $1/k$ -- is a scalar, so `eq8_is_scalar_multiple` proves the output equals $c \\cdot \\mathbf{h}_v$ with $c = \\frac{1}{k} \\sum_i \\alpha_i^F \\beta_v^i \\mathbb{I}[\\alpha_i^F > \\gamma]$, and `eq8_mem_span` places it in the one-dimensional span of $\\mathbf{h}_v$. Eq. (8) is therefore a pure *rescaling* of the query feature and transmits no retrieved-graph content whatsoever, contradicting Section 3.3's description of the module as fusing retrieved graph features with query features. The contrast with the other cases is made formal: `eq8_zero_in_zero_out` proves $\\mathbf{h}_v = 0 \\Rightarrow \\mathbf{h}_v'^G = 0$ no matter what was retrieved, while `eq5_transmits_retrieved` shows the node-level rule Eq. (5) returns the retrieved aggregate in exactly that situation. Two further defects: `eq8_annihilates` proves that when no $\\alpha_i^F$ clears $\\gamma$ the output is the zero vector -- Eq. (8) alone among Eqs. (5)-(8) omits the residual $\\mathbf{h}_v +$, so a low-relevance query is destroyed rather than passed through unchanged (`eq8_annihilation_is_lossy`); and the quantity is called the \"enhanced target *graph* feature\" yet is indexed by a node $v$. Severity critical: Eq. (8) is the entire graph-level branch of the paper's central fusion module, and as printed it cannot produce the behaviour to which the graph-classification and graph-regression gains are attributed.",
+        "predicted_error_category": "Formally refuted",
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [
+          "3.3 Graph Fusion Enhancement, Eq. (8) vs. the module description in Section 3.3 and Section 3"
+        ],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean",
+          "formal_statement": "noncomputable def eq8 (k : ℕ) (α β : Fin k → ℝ) (γ : ℝ) (h : Fin d → ℝ) : Fin d → ℝ :=\n  (1 / (k : ℝ)) • ∑ i : Fin k, (if α i > γ then (α i * β i) • h else 0)\n\ntheorem eq8_is_scalar_multiple (k : ℕ) (α β : Fin k → ℝ) (γ : ℝ) (h : Fin d → ℝ) :\n    eq8 k α β γ h = (eq8Coeff k α β γ) • h\n\ntheorem eq8_mem_span (k : ℕ) (α β : Fin k → ℝ) (γ : ℝ) (h : Fin d → ℝ) :\n    eq8 k α β γ h ∈ Submodule.span ℝ ({h} : Set (Fin d → ℝ))\n\ntheorem eq8_zero_in_zero_out (k : ℕ) (α β : Fin k → ℝ) (γ : ℝ) :\n    eq8 k α β γ (0 : Fin d → ℝ) = 0\n\ntheorem eq5_transmits_retrieved (u : Fin d → ℝ) :\n    eq5 1 (fun _ => 1) (1/2) (0 : Fin d → ℝ) (fun _ => u) = u\n\ntheorem eq8_annihilates (k : ℕ) (α β : Fin k → ℝ) (γ : ℝ) (h : Fin d → ℝ)\n    (hα : ∀ i, α i ≤ γ) : eq8 k α β γ h = 0\n\ntheorem eq8_annihilation_is_lossy (k : ℕ) (α β : Fin k → ℝ) (γ : ℝ) (h : Fin d → ℝ)\n    (hα : ∀ i, α i ≤ γ) (hne : h ≠ 0) : eq8 k α β γ h ≠ h",
+          "compiler_feedback": "lake env lean Paper/TMP.lean  -- exit status 0, no severity-1 diagnostics, 0 occurrences of `sorry`.\n'RAG4GFM.eq8_is_scalar_multiple' depends on axioms: [propext, Classical.choice, Quot.sound]\n'RAG4GFM.eq8_mem_span' depends on axioms: [propext, Classical.choice, Quot.sound]\n'RAG4GFM.eq8_zero_in_zero_out' depends on axioms: [propext, Classical.choice, Quot.sound]\n'RAG4GFM.eq5_transmits_retrieved' depends on axioms: [propext, Classical.choice, Quot.sound]\n'RAG4GFM.eq8_annihilates' depends on axioms: [propext, Classical.choice, Quot.sound]\n'RAG4GFM.eq8_annihilation_is_lossy' depends on axioms: [propext, Classical.choice, Quot.sound]",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.93
+    },
+    {
+      "snippet_id": "paper::EQUATION::7",
+      "snippet_type": "EQUATION",
+      "location": "3.3 Graph Fusion Enhancement",
+      "content": "$$\n\\beta_v^i = \\text{SOFTMAX}(\\mathbf{h}_v \\cdot (\\mathbf{h}_g^q + \\mathbf{h}_g^i)), \\quad \\text{(graph-level, attention)}\n$$\n(9)\nwhere [...] $\\mathbf{h}_g^q$ and $\\mathbf{h}_g^i$ represent the global features of the query graph and the $i$-th retrieved graph, respectively, and $k$ is the number of effective retrieved results.",
+      "route": "verify-math-lean",
+      "route_rationale": "Softmax applied to an inner product is a one-element softmax; the resulting degeneracy is crisply formalisable.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::7",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.9,
+        "reasoning": "The argument of SOFTMAX in Eq. (9) is $\\mathbf{h}_v \\cdot (\\mathbf{h}_g^q + \\mathbf{h}_g^i)$, an inner product and therefore a single real scalar. `softmax_singleton` proves $\\text{softmax}(x)_j = e^{x_j} / \\sum_l e^{x_l} = 1$ over a one-element index type, for every $x$. Instantiated at Eq. (9)'s actual argument, `eq9_beta_eq_one` gives $\\beta_v^i = 1$ for every node feature and every pair of graph-level features, and `eq9_is_constant` shows the map is constant, so no choice of inputs can move it -- Eq. (9) carries no attention signal at all. To rule out an artefact of the softmax definition used, `softmax_pair_not_constant` exhibits two $2$-element score vectors with different softmax values, confirming the degeneracy is specific to Eq. (9)'s scalar argument. Substituting $\\beta_v^i \\equiv 1$ into Eq. (8) leaves $\\mathbf{h}_v'^G = \\frac{1}{k} \\sum_i \\alpha_i^F \\mathbf{h}_v \\mathbb{I}[\\alpha_i^F > \\gamma]$, so the \"graph-level attention\" the paper introduces is inert. A softmax over the $k$ retrieved graphs (index $i$) is the evident intent, but that is not what the formula says. Severity critical: this is the attention mechanism of the graph-level fusion branch, and it compounds the Eq. (8) defect rather than being independent of it.",
+        "predicted_error_category": "Formally refuted",
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [
+          "3.3 Graph Fusion Enhancement, Eq. (9)"
+        ],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean",
+          "formal_statement": "noncomputable def softmax {n : ℕ} (x : Fin n → ℝ) (j : Fin n) : ℝ :=\n  Real.exp (x j) / ∑ l : Fin n, Real.exp (x l)\n\ntheorem softmax_singleton (x : Fin 1 → ℝ) (j : Fin 1) : softmax x j = 1\n\ntheorem eq9_beta_eq_one {d : ℕ} (hv hgq hgi : Fin d → ℝ) :\n    softmax (fun _ : Fin 1 => ∑ t : Fin d, hv t * (hgq t + hgi t)) 0 = 1\n\ntheorem eq9_is_constant {d : ℕ} (hv₁ hgq₁ hgi₁ hv₂ hgq₂ hgi₂ : Fin d → ℝ) :\n    softmax (fun _ : Fin 1 => ∑ t : Fin d, hv₁ t * (hgq₁ t + hgi₁ t)) 0\n      = softmax (fun _ : Fin 1 => ∑ t : Fin d, hv₂ t * (hgq₂ t + hgi₂ t)) 0\n\ntheorem softmax_pair_not_constant :\n    ∃ x y : Fin 2 → ℝ, softmax x 0 ≠ softmax y 0",
+          "compiler_feedback": "lake env lean Paper/TMP.lean  -- exit status 0, no severity-1 diagnostics, 0 occurrences of `sorry`.\n'RAG4GFM.softmax_singleton' depends on axioms: [propext, Classical.choice, Quot.sound]\n'RAG4GFM.eq9_beta_eq_one' depends on axioms: [propext, Classical.choice, Quot.sound]\n'RAG4GFM.eq9_is_constant' depends on axioms: [propext, Classical.choice, Quot.sound]\n'RAG4GFM.softmax_pair_not_constant' depends on axioms: [propext, Classical.choice, Quot.sound]",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::EQUATION::8",
+      "snippet_type": "EQUATION",
+      "location": "3.3 Graph Fusion Enhancement",
+      "content": "Given the adjacency matrix A of the query graph and the set of adjacency matrices A1, A2, ..., Ak of retrieved graphs, the enhanced adjacency matrix is computed as: A' = A + ∑_{i=1}^{k} α_i^T · A_i · 𝕀[α_i^T > γ], (10), where α_i^T serves as the relevance weight. To suppress noisy edges, we apply threshold filtering such that A'_{uv} = 𝕀[A'_{uv} > δ], where δ is the edge addition threshold (default value 0.5). This sparse matrix-based implementation achieves efficient large-scale processing while preserving graph sparsity and interpretability. Context: γ is the \"feature fusion acceptance threshold (default value 0.5)\"; Appendix C.2 confirms γ = δ = 0.5 as the defaults used in all experiments.",
+      "route": "verify-math-lean",
+      "route_rationale": "Whether the delta-threshold suppresses anything at the paper's stated defaults is a decidable claim about the composed two-stage rule.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::8",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.88,
+        "reasoning": "The claim formalised is the paper's own: that the second stage exists \"to suppress noisy edges\". At the stated defaults $\\gamma = \\delta = 0.5$, with $0/1$-valued adjacency matrices and relevance weights $\\alpha_i^T \\in [0,1]$, Lean proves it suppresses nothing. `delta_filter_never_suppresses`: if any accepted graph ($\\alpha_{i_0}^T > \\gamma = 0.5$) has an edge at $(u,v)$ then $A'_{uv} \\ge \\alpha_{i_0}^T > 0.5 = \\delta$, so the edge clears the filter automatically -- the $\\gamma$ gate inside Eq. (10) already guarantees the $\\delta$ test passes. `existing_edges_survive`: any query edge gives $A'_{uv} \\ge 1 > \\delta$. `filter_fires_only_on_absent_edges`: $A'_{uv} \\le \\delta$ forces $A_{uv} = 0$ and $(A_i)_{uv} = 0$ for every accepted $i$, so the filter removes an edge only where there was none to remove. `eq10_collapses_to_or` closes this as an iff: the composed rule is *exactly* the logical OR of the query edges with the edges of all accepted retrieved graphs. The $\\delta$ threshold is therefore a no-op at the default configuration, and the claimed noise suppression and sparsity preservation do not occur -- consistent with Table 7, where varying $\\delta$ across $\\{0.3, 0.5, 0.7, 0.9\\}$ moves accuracy by at most a couple of points. Severity minor: the module still adds edges and the pipeline runs; what is inoperative is the stated mechanism for controlling which edges get added. Noted but not formalised: $A$ is $|V| \\times |V|$ while each $A_i$ is $|V_i| \\times |V_i|$, and no node alignment is specified, so the matrix sum in Eq. (10) is not well typed as written.",
+        "predicted_error_category": "Formally refuted",
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [
+          "3.3 Graph Fusion Enhancement, Eq. (10) and the sentence beginning \"To suppress noisy edges\""
+        ],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean",
+          "formal_statement": "noncomputable def aPrime (A : ℝ) (α Ai : Fin k → ℝ) (γ : ℝ) : ℝ :=\n  A + ∑ i : Fin k, (if α i > γ then α i * Ai i else 0)\n\nstructure Admissible (A : ℝ) (α Ai : Fin k → ℝ) : Prop where\n  hA : A = 0 ∨ A = 1\n  hAi : ∀ i, Ai i = 0 ∨ Ai i = 1\n  hα : ∀ i, 0 ≤ α i ∧ α i ≤ 1\n\ntheorem delta_filter_never_suppresses {A : ℝ} {α Ai : Fin k → ℝ}\n    (h : Admissible A α Ai) (i₀ : Fin k) (hgate : α i₀ > 1/2) (hedge : Ai i₀ = 1) :\n    aPrime A α Ai (1/2) > 1/2\n\ntheorem existing_edges_survive {A : ℝ} {α Ai : Fin k → ℝ}\n    (h : Admissible A α Ai) (hA1 : A = 1) : aPrime A α Ai (1/2) > 1/2\n\ntheorem filter_fires_only_on_absent_edges {A : ℝ} {α Ai : Fin k → ℝ}\n    (h : Admissible A α Ai) (hle : aPrime A α Ai (1/2) ≤ 1/2) :\n    A = 0 ∧ ∀ i, α i > 1/2 → Ai i = 0\n\ntheorem eq10_collapses_to_or {A : ℝ} {α Ai : Fin k → ℝ} (h : Admissible A α Ai) :\n    (aPrime A α Ai (1/2) > 1/2) ↔ (A = 1 ∨ ∃ i, α i > 1/2 ∧ Ai i = 1)",
+          "compiler_feedback": "lake env lean Paper/TMP.lean  -- exit status 0, no severity-1 diagnostics, 0 occurrences of `sorry`.\n'RAG4GFM.delta_filter_never_suppresses' depends on axioms: [propext, Classical.choice, Quot.sound]\n'RAG4GFM.existing_edges_survive' depends on axioms: [propext, Classical.choice, Quot.sound]\n'RAG4GFM.filter_fires_only_on_absent_edges' depends on axioms: [propext, Classical.choice, Quot.sound]\n'RAG4GFM.eq10_collapses_to_or' depends on axioms: [propext, Classical.choice, Quot.sound]",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.88
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "Abstract / 3.1 Multi-level Graph Indexing / A.1 Complexity Analysis",
+      "content": "(a) Abstract: \"RAG4GFM implements a hierarchical graph indexing architecture, enabling multi-granular graph indexing while achieving efficient constant-time retrieval and fusion for all graph sizes, making it the first truly scalable graph RAG system.\"\n(b) Section 3.1: \"secondly, it guarantees efficient $O(\\log_2 N)$ end-to-end retrieval and fusion time for all graph sizes and densities, making RAG4GFM the first truly scalable graph RAG system.\"\n(c) Appendix A.1: \"**Overall Pipeline:** Combining these components, the per-query time complexity is O(log N + k|V|^2) for dense and O(log N + k|E|) for sparse graphs.\"",
+      "route": "verify-math-lean",
+      "route_rationale": "One quantity is given three mutually different asymptotic bounds; the inconsistency reduces to provable unboundedness statements.",
+      "lean_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.92,
+        "reasoning": "The paper gives three different bounds for one and the same quantity -- the per-query cost of retrieval **and** fusion -- and Lean shows they cannot all hold. `logb_unbounded` proves that for every constant $C$ there is an $N \\ge 1$ with $C < \\log_2 N$, so the abstract's \"constant-time retrieval and fusion\" (a) and Section 3.1's \"$O(\\log_2 N)$\" (b) cannot describe the same cost. `denseCost_not_bigO_logN` takes the appendix's own dense cost $\\log_2 N + k|V|^2$, fixes $N = 2$ (so $\\log_2 N = 1$) and $k = 1$, and produces for every $C$ a query-graph size $|V|$ with $C \\cdot \\log_2 N < 1 + |V|^2$; since Section 3.1 quantifies explicitly over \"all graph sizes and densities\", $|V|$ is free and no such constant exists, so (b) contradicts (c). `denseCost_not_constant` and `claims_inconsistent` then rule out (a) against (c) a fortiori, since $\\log_2 N + k|V|^2$ admits no uniform bound. What is actually logarithmic is the HNSW index lookup alone; fusion is quadratic in the query-graph size for dense graphs by the paper's own appendix, and linear in $|E|$ for sparse ones. Severity critical: \"constant-time ... for all graph sizes\" and \"the first truly scalable graph RAG system\" are headline claims of the abstract, and the paper's own complexity analysis refutes them.",
+        "predicted_error_category": "Formally refuted",
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": [
+          "Abstract",
+          "3.1 Multi-level Graph Indexing, final paragraph",
+          "A.1 Complexity Analysis, \"Overall Pipeline\""
+        ],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean",
+          "formal_statement": "noncomputable def denseCost (N k V : ℕ) : ℝ := Real.logb 2 N + (k : ℝ) * (V : ℝ) ^ 2\n\ntheorem logb_two_pow (m : ℕ) : Real.logb 2 ((2 : ℝ) ^ m) = (m : ℝ)\n\ntheorem logb_unbounded (C : ℝ) : ∃ N : ℕ, 1 ≤ N ∧ C < Real.logb 2 (N : ℝ)\n\ntheorem denseCost_not_bigO_logN (C : ℝ) :\n    ∃ V : ℕ, C * Real.logb 2 (2 : ℕ) < denseCost 2 1 V\n\ntheorem denseCost_not_constant (C : ℝ) : ∃ V : ℕ, C < denseCost 2 1 V\n\ntheorem claims_inconsistent :\n    ¬ (∃ C : ℝ, ∀ V : ℕ, denseCost 2 1 V ≤ C)",
+          "compiler_feedback": "lake env lean Paper/TMP.lean  -- exit status 0, no severity-1 diagnostics, 0 occurrences of `sorry`.\n'RAG4GFM.logb_two_pow' depends on axioms: [propext, Classical.choice, Quot.sound]\n'RAG4GFM.logb_unbounded' depends on axioms: [propext, Classical.choice, Quot.sound]\n'RAG4GFM.denseCost_not_bigO_logN' depends on axioms: [propext, Classical.choice, Quot.sound]\n'RAG4GFM.denseCost_not_constant' depends on axioms: [propext, Classical.choice, Quot.sound]\n'RAG4GFM.claims_inconsistent' depends on axioms: [propext, Classical.choice, Quot.sound]",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 3,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.92
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::0",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "A.1 Complexity Analysis",
+      "content": "**Multi-level Graph Indexing:** The HNSW-based hierarchical graph index is constructed with time complexity O(N log N), where N is the number of graphs or nodes. The index occupies O(N) space [...].\n**Task-aware Retriever:** For a single query, the hierarchical retrieval process operates in O(log N) time [...] while requiring only O(k) auxiliary space for k retrieved candidates (typically k << N).\n**Graph Fusion Enhancement:** In the fusion stage, attention-based feature aggregation has time complexity O(k|V|d), where |V| is the average number of nodes per retrieved subgraph and d the feature dimension. The subsequent structural enhancement costs O(k|V|^2) for dense graphs or O(k|E|) when sparse adjacency lists are used. The dominant space cost stems from storing the fused graph representation, typically O(|V|^2) for dense adjacency.\n**Overall Pipeline:** Combining these components, the per-query time complexity is O(log N + k|V|^2) for dense and O(log N + k|E|) for sparse graphs. The total space complexity is O(N + |V|^2) [...].",
+      "route": "verify-math",
+      "route_rationale": "Internal consistency of a complexity chain -- whether the stated total is the sum of the stated parts.",
+      "lean_result": null,
+      "fallback_result": null,
+      "verifier_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::0",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.8,
+        "reasoning": "The \"Overall Pipeline\" line does not sum its own components. The parts are $O(\\log N)$ retrieval, $O(k|V|d)$ attention aggregation, and $O(k|V|^2)$ (dense) or $O(k|E|)$ (sparse) structural enhancement, so the correct total is $O(\\log N + k|V|d + k|V|^2)$ dense and $O(\\log N + k|V|d + k|E|)$ sparse. The paper drops the $k|V|d$ term in both cases. Dropping it from the dense bound requires $d = O(|V|)$, and dropping it from the sparse bound requires $k|V|d = O(\\log N + k|E|)$; neither is stated or true in general. $d$ is a language-model embedding width (typically 768-4096) and is independent of the query-graph size, so for the small retrieved subgraphs this pipeline actually handles ($|V| \\ll d$) the omitted attention term is the *dominant* cost, not a negligible one. Concretely, with $|V| = 25$ (the BA2Motif graphs of Table 1), $k = 3$ and $d = 768$: $k|V|d = 57{,}600$ against $k|V|^2 = 1{,}875$, a factor of 30. The space bound $O(N + |V|^2)$ is consistent with its parts. Severity minor: the omission understates the per-query cost and makes the pipeline look cheaper than the paper's own analysis supports, but no experimental result depends on it.",
+        "predicted_error_category": "Algebraic manipulation",
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": [
+          "A.1 Complexity Analysis, \"Graph Fusion Enhancement\" vs. \"Overall Pipeline\""
+        ]
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::1",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "4.3 Ablation Study on RAG4GFM",
+      "content": "Ablation table (Figure 3):\nComputers (Node Classification): RAG4GFM 79.6 / 66.1; w/o RAG 73.5 / 60.9; w/o GF 76.2 / 63.4; w/o GI 77.9 / 64.8.\nHistory (Link Prediction): RAG4GFM 63.5 / 64.1; w/o RAG 56.7 / 56.8; w/o GF 59.8 / 59.1; w/o GI 60.5 / 60.2.\nClaim: \"Among the architectural variants, w/o RAG exhibits the largest drop, confirming that retrieval is by far the most critical component, accounting for over 80% of RAG4GFM's performance gains, while fusion and indexing provide only marginal improvements.\"",
+      "route": "verify-math",
+      "route_rationale": "Percentage-of-gain arithmetic computed directly from the paper's own ablation table.",
+      "lean_result": null,
+      "fallback_result": null,
+      "verifier_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::1",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.88,
+        "reasoning": "The \"over 80%\" attribution contradicts the table it cites. Take `w/o RAG` as the no-retrieval baseline, so the total gain is $79.6 - 73.5 = 6.1$ on Computers and $63.5 - 56.7 = 6.8$ on History. The configuration that keeps retrieval and indexing but replaces graph fusion with naive concatenation (`w/o GF`) reaches $76.2$ and $59.8$, i.e. it recovers $76.2 - 73.5 = 2.7$ of $6.1$ ($44.3\\%$) and $59.8 - 56.7 = 3.1$ of $6.8$ ($45.6\\%$). Equivalently, graph fusion accounts for $79.6 - 76.2 = 3.4$ of $6.1$ ($55.7\\%$) and $63.5 - 59.8 = 3.7$ of $6.8$ ($54.4\\%$) -- on the paper's own numbers fusion contributes *more than half* of the gain on both tasks, so it cannot be \"only marginal\", and retrieval alone cannot account for \"over 80%\". Indexing contributes $1.7/6.1 = 27.9\\%$ and $3.0/6.8 = 44.1\\%$. No decomposition of these four numbers yields $80\\%$ for retrieval. Severity minor: the ablation still supports the conclusion that every component helps -- which is what the surrounding paragraphs otherwise argue -- so the error is the quantitative attribution, not the experiment.",
+        "predicted_error_category": "Sign/Arithmetic error",
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": [
+          "4.3 Ablation Study, paragraph following Figure 3, vs. the Figure 3 table"
+        ]
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.88
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::2",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "4.2 Effectiveness of RAG-Enhanced GFMs",
+      "content": "Table 2 (Computers): GLEM 79.45 Acc (node classification); GLEM+RAG4GFM 87.34 Acc. GraphGPT 54.27 Acc (link prediction); GraphGPT+RAG4GFM 60.37 Acc.\nClaim: \"For instance, GLEM+RAG4GFM achieves 83.12% accuracy on node classification in the Computers dataset, representing a relative gain of approximately 5.5% over GLEM. Similarly, GraphGPT+RAG4GFM attains 60.37% accuracy on link prediction, outperforming its vanilla counterpart by 5.1%.\"",
+      "route": "verify-math",
+      "route_rationale": "Relative-gain arithmetic that can be checked by inspection against Table 2.",
+      "lean_result": null,
+      "fallback_result": null,
+      "verifier_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::2",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.9,
+        "reasoning": "Three of the four numbers in this passage disagree with Table 2. (i) Table 2 gives GLEM+RAG4GFM $= 87.34$ on Computers node classification; the text says $83.12$, a value that appears nowhere in Table 2. (ii) The actual relative gain over GLEM ($79.45$) is $(87.34 - 79.45)/79.45 = 9.93\\%$, not \"approximately 5.5%\"; even the text's own $83.12$ would give $(83.12 - 79.45)/79.45 = 4.62\\%$, so $5.5\\%$ is consistent with neither reading. (iii) For GraphGPT on link prediction, $54.27 \\to 60.37$ is $+6.10$ absolute and $+11.24\\%$ relative, so \"outperforming its vanilla counterpart by 5.1%\" matches neither convention. The passage is then repeated almost verbatim one paragraph later with the same figures, so this is a systematic reporting error rather than a single slip. Severity minor: the corrected gains are *larger* than the ones claimed, so the error understates rather than inflates the paper's results and the qualitative conclusion survives.",
+        "predicted_error_category": "Sign/Arithmetic error",
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": [
+          "4.2 Effectiveness of RAG-Enhanced GFMs, both paragraphs following Table 2, vs. Table 2"
+        ]
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::3",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "4.4 Comparison with Other Knowledge Updating Methods (Table 4)",
+      "content": "Table 4: GraphLoRA + AnyGraph, Computers, target 78%: 12.47 Hours, 38.91 GB. RAG4GFM + AnyGraph, Computers, target 78%: 48 Minutes, 7.23 GB. GraphLoRA + HiGPT, History, target 63%: 5.87 Hours, 17.18 GB. RAG4GFM + HiGPT, History, target 63%: 19 Minutes, 5.15 GB.\nClaim: \"RAG4GFM achieves comparable accuracy while reducing runtime by up to 7.0x and GPU memory usage by over 60%.\"",
+      "route": "verify-math",
+      "route_rationale": "Ratio arithmetic checkable by inspection against Table 4.",
+      "lean_result": null,
+      "fallback_result": null,
+      "verifier_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::3",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.85,
+        "reasoning": "The speed-up figure is inconsistent with Table 4. AnyGraph on Computers: $12.47\\ \\text{h} / 48\\ \\text{min} = 12.47/0.8 = 15.59\\times$. HiGPT on History: $5.87\\ \\text{h} / 19\\ \\text{min} = 5.87/0.3167 = 18.54\\times$. Both exceed the claimed \"up to 7.0x\" by more than a factor of two, and \"up to\" makes the claim an upper bound, so the table violates it in both rows. $7.0$ is not recoverable from these entries under any natural reading (not a difference, not a ratio, not a percentage). The memory half of the sentence does check out: $1 - 7.23/38.91 = 81.4\\%$ and $1 - 5.15/17.18 = 70.0\\%$, both \"over 60%\". Severity minor: as with the Section 4.2 gains, the error understates the paper's own measured advantage.",
+        "predicted_error_category": "Sign/Arithmetic error",
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": [
+          "4.4 Comparison with Other Knowledge Updating Methods, paragraph preceding Table 4, vs. Table 4"
+        ]
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::4",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "4.4 Comparison with Other Knowledge Updating Methods (Table 3)",
+      "content": "Table 3, MiniGCDataset (Graph Class.) ROC-AUC column: Few-shot 46.26; CoT 49.47; IR-augmented CoT 48.59; Prototype 47.48; GNNSafe 49.42; VanillaRAG 51.58; GraphRAG 51.86; G-Retriever 52.32; RAG4GFM (AnyGraph-based) 51.88.\nClaim: \"Results in Table 3 show that RAG4GFM consistently outperforms all competing approaches, confirming its capability to retrieve and integrate relevant external information for accurate prediction.\"",
+      "route": "verify-math",
+      "route_rationale": "A universally quantified claim checked against the tabulated values it cites.",
+      "lean_result": null,
+      "fallback_result": null,
+      "verifier_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::4",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.82,
+        "reasoning": "The universal claim is falsified by one cell of the table it cites. In the MiniGCDataset graph-classification ROC-AUC column, G-Retriever scores $52.32$ against RAG4GFM's $51.88$, so RAG4GFM is beaten by $0.44$ points; GraphRAG at $51.86$ is also within $0.02$. \"Consistently outperforms all competing approaches\" is therefore false as stated: it holds in 5 of the 6 reported columns, not all 6. Severity minor: the method does lead in every other column, often by $3$-$5$ points, so weakening the claim to \"outperforms on nearly all metrics\" would leave the paper's conclusion intact.",
+        "predicted_error_category": "Domain/Constraint violation",
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": [
+          "4.4 Comparison with Other Knowledge Updating Methods, paragraph preceding Table 3, vs. Table 3 MiniGCDataset ROC-AUC column"
+        ]
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.82
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::5",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "4.2 (Table 2) / 4.3 (Figure 3) / 4.4 (Table 3) / C.2 (Figure 4)",
+      "content": "Table 2, History columns, AnyGraph+RAG4GFM: node classification 63.45 Acc / 64.12 ROC-AUC; link prediction 41.74 Acc / 43.26 ROC-AUC.\nFigure 4 (Appendix C.2), History (Link Pred.) at K = 3: 41.74.\nFigure 3 (Section 4.3), \"History (Link Prediction)\", RAG4GFM: Accuracy 63.5, AUC 64.1.\nTable 3 (Section 4.4), \"History (Link Pred.)\", RAG4GFM (AnyGraph-based): Accuracy 63.45, ROC-AUC 64.12.",
+      "route": "verify-math",
+      "route_rationale": "Cross-table numeric identity for one and the same model/dataset/task triple.",
+      "lean_result": null,
+      "fallback_result": null,
+      "verifier_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::5",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.84,
+        "reasoning": "The same configuration -- AnyGraph+RAG4GFM, History dataset, link prediction -- is reported with two irreconcilable values. Table 2 gives $41.74$ Acc / $43.26$ ROC-AUC, and Appendix C.2's Figure 4 independently confirms $41.74$ at the default $K = 3$. But Section 4.3's Figure 3 reports $63.5 / 64.1$ and Section 4.4's Table 3 reports $63.45 / 64.12$ under a \"History (Link Pred.)\" label -- a gap of $21.7$ accuracy points. Those two values are exactly Table 2's History *node-classification* entries for the same model ($63.45 / 64.12$), so the link-prediction columns of Figure 3 and Table 3 carry node-classification numbers. The baseline accuracies in Table 3's History column ($58.27$-$61.42$) sit in Table 2's node-classification range too, not in its link-prediction range ($37.71$-$42.96$), which corroborates the mislabelling. Severity minor: the comparison within Table 3 may be internally consistent, so the defect is the task label rather than the measurement -- but Section 4.4's link-prediction conclusion is not supported by the data as labelled.",
+        "predicted_error_category": "Domain/Constraint violation",
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": [
+          "4.3 Ablation Study, Figure 3 \"History (Link Prediction)\" block",
+          "4.4 Table 3, \"History (Link Pred.)\" columns",
+          "4.2 Table 2, History link-prediction rows",
+          "C.2 Figure 4, History (Link Pred.) at K = 3"
+        ]
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.84
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::6",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "4.1 Experimental Setup (Table 1)",
+      "content": "Table 1 (Nodes / Edges / Graphs): Books-Children 76,875 / 1,554,578 / 1; Books-History 41,551 / 358,574 / 1; Ele-Computers 87,229 / 721,081 / 1; Ele-Photo 48,362 / 500,928 / 1; MiniGCDataset 21,909 / 177,875 / 1,000; BA2MotifDataset 25,000 / 51,392 / 1,000; Chameleon 2,277 / 36,101 / 1; WN18Dataset 40,943 / 151,442 / 1; QM7bDataset 108,165 / 1,766,695 / 7,211. \"Graphs\" indicates the number of graph instances; a value of 1 denotes a single large graph.",
+      "route": "verify-math",
+      "route_rationale": "Graph-statistics feasibility: whether the stated node/edge/instance counts can describe actual graphs.",
+      "lean_result": null,
+      "fallback_result": null,
+      "verifier_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::6",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.68,
+        "reasoning": "Checked each multi-graph row for feasibility. BA2MotifDataset gives $25{,}000/1{,}000 = 25$ nodes and $51{,}392/1{,}000 = 51.39$ edges per graph; the published BA-2motifs graphs have 25 nodes and roughly 25.7 undirected edges, so $51.39$ is the *ordered-pair* count. That pins the convention: Table 1 counts each undirected edge twice. Under that convention the remaining rows are consistent. QM7bDataset gives $108{,}165/7{,}211 = 15.0$ nodes and $1{,}766{,}695/7{,}211 = 245.0$ edges per graph; for complete molecular graphs this is $\\mathbb{E}[n(n-1)] = 245$, i.e. $\\mathbb{E}[n^2] = 260$ and a standard deviation of about $5.9$ around a mean of $15$ -- entirely plausible for QM7b. Note that under an *undirected simple graph* reading the same row would be infeasible, since $245 > \\binom{15}{2} = 105$ and QM7b molecules carry at most 23 atoms; the convention is never stated, which is the only real shortcoming here. MiniGCDataset at $21.9$ nodes and $177.9$ directed edges per graph is consistent with a generator mixing cliques and sparse topologies. The four single-graph TAG rows match the published statistics for those datasets.",
+        "predicted_error_category": null,
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.68
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::7",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "C.2 Hyperparameter Robustness Analysis",
+      "content": "Figure 4 (K sweep): K=1: 65.16 / 30.84 / 50.31; K=2: 74.02 / 39.91 / 62.65; K=3: 79.56 / 41.74 / 65.51; K=4: 79.78 / 41.93 / 65.75; K=5: 79.45 / 41.60 / 65.38. Claim: \"Performance improves steadily as K increases from 1 to 3 [...]. Beyond this point, accuracy plateaus or slightly declines [...]. Balancing accuracy and efficiency, we set K = 3 as the default.\"\nTable 7 (gamma x delta grid, node-classification accuracy): rows gamma = 0.3/0.5/0.7/0.9 against columns delta = 0.3/0.5/0.7/0.9, values 76.23 77.89 78.12 75.67 / 78.45 79.56 79.28 76.91 / 78.73 79.14 78.85 76.34 / 75.12 76.47 75.98 73.89. Claim: \"AnyGraph achieves its best accuracy when gamma and delta are around 0.5.\"",
+      "route": "verify-math",
+      "route_rationale": "Monotonicity and optimality claims checked against the tabulated sweep values.",
+      "lean_result": null,
+      "fallback_result": null,
+      "verifier_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::7",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.74,
+        "reasoning": "Both claims hold on the tabulated numbers. The $K$ sweep rises strictly from $K = 1$ to $K = 3$ in all three columns; $K = 4$ is marginally higher than $K = 3$ ($+0.22$, $+0.19$, $+0.24$) and $K = 5$ marginally lower, which \"plateaus or slightly declines\" describes fairly, and choosing $K = 3$ on efficiency grounds is a stated trade-off rather than a numerical claim. In Table 7 the maximum of all sixteen cells is $79.56$ at $(\\gamma, \\delta) = (0.5, 0.5)$, matching \"best accuracy [...] around 0.5\"; the $\\gamma = 0.3$ and $\\gamma = 0.9$ rows are uniformly worse, as the surrounding text asserts. Two cross-checks pass: Table 7's optimum $79.56$ equals AnyGraph+RAG4GFM's Computers accuracy in Tables 2 and 3, and Figure 4's $K = 3$ entries $79.56$ and $41.74$ equal Table 2's AnyGraph+RAG4GFM Computers node-classification and History link-prediction accuracies. Worth noting against `paper::EQUATION::8`: the spread along the $\\delta$ axis at fixed $\\gamma = 0.5$ is only $79.56 - 76.91 = 2.65$ points, which is what one expects if the $\\delta$ filter is largely inoperative.",
+        "predicted_error_category": null,
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.74
+    }
+  ],
+  "findings": [
+    {
+      "snippet_id": "paper::EQUATION::6",
+      "category": "Formally refuted",
+      "severity": "critical",
+      "confidence": 0.93,
+      "verifier": "verify-math-lean",
+      "evidence": "Lean proved that Eq. (8), the graph-level branch of the paper's central fusion module, is a **pure rescaling of the query feature** and transmits no retrieved-graph information at all. Every factor multiplying $\\mathbf{h}_v$ is a scalar, so `eq8_is_scalar_multiple` gives $\\mathbf{h}_v'^G = c \\cdot \\mathbf{h}_v$ with $c = \\frac{1}{k}\\sum_i \\alpha_i^F \\beta_v^i \\mathbb{I}[\\alpha_i^F > \\gamma]$, and `eq8_mem_span` confines the output to the one-dimensional span of $\\mathbf{h}_v$. This contradicts Section 3.3, which introduces the module as one that \"fuses retrieved graph features with query features\". The contrast is formal: `eq8_zero_in_zero_out` proves $\\mathbf{h}_v = 0 \\Rightarrow \\mathbf{h}_v'^G = 0$ whatever was retrieved, whereas `eq5_transmits_retrieved` shows the node-level rule Eq. (5) returns the retrieved aggregate in the same situation. `eq8_annihilates` adds that when no $\\alpha_i^F$ clears $\\gamma$ the output is the zero vector -- Eq. (8) alone among Eqs. (5)-(8) omits the residual $\\mathbf{h}_v +$, so a low-relevance query is destroyed rather than passed through. All six theorems compile with exit status 0, no `sorry`, and only the standard axioms $\\{$`propext`, `Classical.choice`, `Quot.sound`$\\}$.",
+      "exact_quote": "$$\n\\mathbf{h}_v'^G = \\frac{1}{k} \\sum_{i=1}^k \\left( \\alpha_i^F \\cdot \\beta_v^i \\cdot \\mathbf{h}_v \\right) \\cdot \\mathbb{I}[\\alpha_i^F > \\gamma], \\quad \\text{(graph-level)}\n$$"
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+      "category": "Formally refuted",
+      "severity": "critical",
+      "confidence": 0.92,
+      "verifier": "verify-math-lean",
+      "evidence": "The paper states three mutually inconsistent bounds for one quantity -- the per-query cost of retrieval **and** fusion. The abstract claims \"constant-time retrieval and fusion for all graph sizes\"; Section 3.1 claims \"$O(\\log_2 N)$ end-to-end retrieval and fusion time for all graph sizes and densities\"; Appendix A.1 states \"$O(\\log N + k|V|^2)$ for dense and $O(\\log N + k|E|)$ for sparse graphs\". Lean refutes their conjunction. `logb_unbounded`: for every $C$ there is an $N \\ge 1$ with $C < \\log_2 N$, so a constant-time guarantee and a $\\Theta(\\log_2 N)$ guarantee cannot describe the same cost. `denseCost_not_bigO_logN`: fixing $N = 2$ (so $\\log_2 N = 1$) and $k = 1$, for every $C$ there is a query-graph size $|V|$ with $C \\cdot \\log_2 N < 1 + |V|^2$ -- and since Section 3.1 quantifies over \"all graph sizes and densities\", $|V|$ is free, so the appendix's own dense bound is not $O(\\log N)$. `claims_inconsistent` rules out the abstract's version a fortiori. Only the HNSW index lookup is logarithmic; fusion is quadratic in the query-graph size for dense graphs by the paper's own analysis. All five theorems compile clean on the standard axioms.",
+      "exact_quote": "secondly, it guarantees efficient $O(\\log_2 N)$ end-to-end retrieval and fusion time for all graph sizes and densities, making RAG4GFM the first truly scalable graph RAG system."
+    },
+    {
+      "snippet_id": "paper::EQUATION::7",
+      "category": "Formally refuted",
+      "severity": "critical",
+      "confidence": 0.9,
+      "verifier": "verify-math-lean",
+      "evidence": "Eq. (9)'s \"graph-level attention\" weight is **identically $1$**, so it carries no attention signal. The argument of SOFTMAX is $\\mathbf{h}_v \\cdot (\\mathbf{h}_g^q + \\mathbf{h}_g^i)$ -- an inner product, hence one real scalar -- and `softmax_singleton` proves $\\text{softmax}(x)_j = e^{x_j}/\\sum_l e^{x_l} = 1$ over a one-element index type for every $x$. `eq9_beta_eq_one` instantiates this at Eq. (9)'s actual argument, giving $\\beta_v^i = 1$ for all inputs, and `eq9_is_constant` shows the map is constant so no choice of features can move it. `softmax_pair_not_constant` rules out an artefact of the softmax definition by exhibiting two $2$-element score vectors with different softmax values. Substituting $\\beta_v^i \\equiv 1$ into Eq. (8) leaves $\\mathbf{h}_v'^G = \\frac{1}{k}\\sum_i \\alpha_i^F \\mathbf{h}_v \\mathbb{I}[\\alpha_i^F > \\gamma]$. A softmax over the $k$ retrieved graphs (index $i$) is the evident intent, but that is not what is written. All four theorems compile clean on the standard axioms.",
+      "exact_quote": "$$\n\\beta_v^i = \\text{SOFTMAX}(\\mathbf{h}_v \\cdot (\\mathbf{h}_g^q + \\mathbf{h}_g^i)), \\quad \\text{(graph-level, attention)}\n$$"
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::2",
+      "category": "Sign/Arithmetic error",
+      "severity": "minor",
+      "confidence": 0.9,
+      "verifier": "verify-math",
+      "evidence": "Three of four numbers in this passage disagree with Table 2. Table 2 gives GLEM+RAG4GFM $= 87.34$ on Computers node classification, but the text reports $83.12$ -- a value that appears nowhere in Table 2. The true relative gain over GLEM ($79.45$) is $(87.34-79.45)/79.45 = 9.93\\%$, not \"approximately 5.5%\"; even the text's own $83.12$ would give $4.62\\%$, so $5.5\\%$ fits neither reading. For GraphGPT on link prediction, $54.27 \\to 60.37$ is $+6.10$ absolute and $+11.24\\%$ relative, so \"by 5.1%\" matches neither convention. The passage is repeated almost verbatim one paragraph later with the same figures, making this systematic rather than a single slip. The corrected gains are *larger* than those claimed, so the error understates the paper's own results.",
+      "exact_quote": "For instance, GLEM+RAG4GFM achieves 83.12% accuracy on node classification in the Computers dataset, representing a relative gain of approximately 5.5% over GLEM."
+    },
+    {
+      "snippet_id": "paper::EQUATION::8",
+      "category": "Formally refuted",
+      "severity": "minor",
+      "confidence": 0.88,
+      "verifier": "verify-math-lean",
+      "evidence": "At the paper's own defaults $\\gamma = \\delta = 0.5$, the $\\delta$-threshold introduced \"to suppress noisy edges\" suppresses nothing. With $0/1$-valued adjacency matrices and $\\alpha_i^T \\in [0,1]$: `delta_filter_never_suppresses` shows that if any accepted graph ($\\alpha_{i_0}^T > \\gamma = 0.5$) has an edge at $(u,v)$ then $A'_{uv} \\ge \\alpha_{i_0}^T > 0.5 = \\delta$, so the $\\gamma$ gate inside Eq. (10) already guarantees the $\\delta$ test passes; `existing_edges_survive` shows query edges always clear it; `filter_fires_only_on_absent_edges` shows $A'_{uv} \\le \\delta$ forces every contribution to be zero. `eq10_collapses_to_or` closes it as an iff: the composed rule is **exactly** the logical OR of the query edges with the edges of all accepted retrieved graphs. So the $\\delta$ threshold is a no-op and the claimed noise suppression and sparsity preservation do not happen at the configuration used in every experiment -- consistent with Table 7, where the whole $\\delta$ axis at $\\gamma = 0.5$ spans only $2.65$ accuracy points. Separately, $A$ is $|V| \\times |V|$ while each $A_i$ is $|V_i| \\times |V_i|$ and no node alignment is given, so the matrix sum is not well typed as written. All four theorems compile clean on the standard axioms.",
+      "exact_quote": "To suppress noisy edges, we apply threshold filtering such that A'_{uv} = 𝕀[A'_{uv} > δ], where δ is the edge addition threshold (default value 0.5)."
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::1",
+      "category": "Sign/Arithmetic error",
+      "severity": "minor",
+      "confidence": 0.88,
+      "verifier": "verify-math",
+      "evidence": "The \"over 80%\" attribution contradicts the ablation table it cites. With `w/o RAG` as the no-retrieval baseline, the total gain is $79.6-73.5 = 6.1$ (Computers) and $63.5-56.7 = 6.8$ (History). The variant that keeps retrieval and indexing but uses naive concatenation instead of graph fusion (`w/o GF`) recovers only $76.2-73.5 = 2.7$ of $6.1$ ($44.3\\%$) and $59.8-56.7 = 3.1$ of $6.8$ ($45.6\\%$). Equivalently, graph fusion accounts for $3.4/6.1 = 55.7\\%$ and $3.7/6.8 = 54.4\\%$ -- on the paper's own numbers fusion supplies *more than half* the gain on both tasks, so it is not \"only marginal\", and retrieval cannot account for \"over 80%\". Indexing contributes $27.9\\%$ and $44.1\\%$. No decomposition of these four numbers yields $80\\%$ for retrieval.",
+      "exact_quote": "Among the architectural variants, w/o RAG exhibits the largest drop, confirming that retrieval is by far the most critical component, accounting for over 80% of RAG4GFM's performance gains, while fusion and indexing provide only marginal improvements."
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::3",
+      "category": "Sign/Arithmetic error",
+      "severity": "minor",
+      "confidence": 0.85,
+      "verifier": "verify-math",
+      "evidence": "The speed-up is inconsistent with Table 4 in both rows, and \"up to\" makes it an upper bound. AnyGraph on Computers: $12.47\\,\\text{h} / 48\\,\\text{min} = 15.59\\times$. HiGPT on History: $5.87\\,\\text{h} / 19\\,\\text{min} = 18.54\\times$. Both exceed the stated $7.0\\times$ by more than a factor of two, and $7.0$ is not recoverable from these entries as a ratio, difference or percentage. The memory half of the sentence does hold: $1 - 7.23/38.91 = 81.4\\%$ and $1 - 5.15/17.18 = 70.0\\%$ are both \"over 60%\".",
+      "exact_quote": "RAG4GFM achieves comparable accuracy while reducing runtime by up to 7.0× and GPU memory usage by over 60%."
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::5",
+      "category": "Domain/Constraint violation",
+      "severity": "minor",
+      "confidence": 0.84,
+      "verifier": "verify-math",
+      "evidence": "One configuration -- AnyGraph+RAG4GFM, History, link prediction -- is reported with two irreconcilable values. Table 2 gives $41.74$ Acc / $43.26$ ROC-AUC, and Appendix C.2's Figure 4 independently confirms $41.74$ at the default $K = 3$. Yet Figure 3 (Section 4.3) reports $63.5/64.1$ and Table 3 (Section 4.4) reports $63.45/64.12$ under a \"History (Link Pred.)\" label -- a gap of $21.7$ accuracy points. Those are exactly Table 2's History *node-classification* entries for the same model, so the link-prediction columns of Figure 3 and Table 3 carry node-classification numbers. The baselines in Table 3's History column ($58.27$-$61.42$) also sit in Table 2's node-classification range, not its link-prediction range ($37.71$-$42.96$), corroborating the mislabelling. Section 4.4's link-prediction conclusion is therefore not supported by the data as labelled.",
+      "exact_quote": "| RAG4GFM (Ours)            | AnyGraph-based          | 79.56                            | 66.12                            | 63.45                         | 64.12                        | 65.51                                 | 51.88                                |"
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::4",
+      "category": "Domain/Constraint violation",
+      "severity": "minor",
+      "confidence": 0.82,
+      "verifier": "verify-math",
+      "evidence": "The universal claim is falsified by one cell of the table it cites. In Table 3's MiniGCDataset graph-classification ROC-AUC column, G-Retriever scores $52.32$ against RAG4GFM's $51.88$ -- RAG4GFM loses by $0.44$ points, with GraphRAG ($51.86$) within $0.02$. \"Consistently outperforms all competing approaches\" holds in 5 of the 6 reported columns, not all 6. Weakening it to \"on nearly all metrics\" would leave the conclusion intact, since RAG4GFM leads the other five columns by $3$-$5$ points.",
+      "exact_quote": "Results in Table 3 show that RAG4GFM consistently outperforms all competing approaches, confirming its capability to retrieve and integrate relevant external information for accurate prediction."
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::0",
+      "category": "Algebraic manipulation",
+      "severity": "minor",
+      "confidence": 0.8,
+      "verifier": "verify-math",
+      "evidence": "The \"Overall Pipeline\" bound does not sum its own stated components. The parts are $O(\\log N)$ retrieval, $O(k|V|d)$ attention aggregation and $O(k|V|^2)$ / $O(k|E|)$ structural enhancement, so the correct total is $O(\\log N + k|V|d + k|V|^2)$ dense and $O(\\log N + k|V|d + k|E|)$ sparse. The $k|V|d$ term is dropped from both. Dropping it requires $d = O(|V|)$, which the paper never states and which is false in its own setting: $d$ is a language-model embedding width (typically $768$-$4096$) and is independent of the query-graph size. For the small retrieved subgraphs this pipeline handles, the omitted term *dominates* -- with $|V| = 25$ (BA2Motif, Table 1), $k = 3$, $d = 768$: $k|V|d = 57{,}600$ versus $k|V|^2 = 1{,}875$, a factor of $30$. The space bound $O(N + |V|^2)$ is consistent with its parts.",
+      "exact_quote": "**Overall Pipeline:** Combining these components, the per-query time complexity is O(log N + k|V|^2) for dense and O(log N + k|E|) for sparse graphs."
+    },
+    {
+      "snippet_id": "paper::EQUATION::0",
+      "category": "Formally refuted",
+      "severity": "minor",
+      "confidence": 0.78,
+      "verifier": "verify-math-lean",
+      "evidence": "The invariance claimed for Eq. (1) is false, and the refutation is substantive rather than merely verbal. $\\text{LapPE}$ is defined as \"the positional encoding based on the eigendecomposition of the graph Laplacian matrix\", and `lapPE_sign_ambiguous` proves that if $x$ is a $\\lambda$-eigenvector of a Laplacian $L$ then so is $-x$, with $-x \\neq x$ whenever $x \\neq 0$. So $\\text{LapPE}$ is not a well-defined function of the graph at all -- the same graph admits $2^{p}$ distinct encodings for $p$ retained eigenvectors -- let alone an isomorphism-invariant one, and the paper supplies no sign canonicalisation or sign-invariant readout. Separately, `degIn_not_perm_invariant` refutes the literal reading of \"invariant to node permutations\" via the single-arc digraph $0 \\to 1$ and the transposition $(0\\,1)$, while `degIn_equivariant` **proves** the charitable reading (permutation *equivariance*) does hold -- so the defect is confined to the asserted property, which is why the severity is minor. All four theorems compile clean on the standard axioms.",
+      "exact_quote": "This encoding method is invariant to node permutations and graph isomorphism, accurately capturing nodes’ relative positions within the topology."
+    }
+  ],
+  "verdict": "CRITICAL_ERRORS",
+  "verdict_confidence": 0.9,
+  "summary": "Extracted 18 self-contained mathematical objects from RAG4GFM: the nine display equations of Sections 3.1-3.3, the asymptotic model asserted across the abstract, Section 3.1 and Appendix A.1, and eight derivation/consistency blocks over the complexity analysis and the experimental tables. Five went to Lean 4 (shared project `MATH_VERIFICATION/Paper`, run serially); thirteen went to informal review.\n\n**All five Lean attempts returned `REFUTED`** -- compiling proofs of the negation, 23 theorems total, every one at exit status 0 with no `sorry` and only the standard Mathlib axioms $\\{$`propext`, `Classical.choice`, `Quot.sound`$\\}$. Nothing came back `FAILED` or `NOT_ATTEMPTED`, so no informal fallbacks were needed and no claim was left unsettled by the formal arm.\n\n**What Lean settled.** Three of the refutations strike the method itself rather than its reporting. (i) Eq. (8), the graph-level branch of the central fusion module, is provably a scalar rescaling of the query feature $\\mathbf{h}_v$: every factor multiplying it is a scalar, so the output lies in the one-dimensional span of $\\mathbf{h}_v$ and carries **no retrieved-graph information whatsoever**, contradicting the module's own description. It also lacks the residual term that Eqs. (5)-(7) all have, so it maps a low-relevance query to the zero vector. (ii) Eq. (9), the attention weight feeding Eq. (8), applies SOFTMAX to an inner product -- a one-element softmax, hence identically $1$ -- so the graph-level attention is inert. These two compound: the graph-level fusion reduces to $\\mathbf{h}_v'^G = \\frac{1}{k}\\sum_i \\alpha_i^F \\mathbf{h}_v \\mathbb{I}[\\alpha_i^F > \\gamma]$. (iii) The asymptotic claims are mutually inconsistent: the abstract's \"constant-time retrieval and fusion for all graph sizes\", Section 3.1's \"$O(\\log_2 N)$ end-to-end\" and Appendix A.1's \"$O(\\log N + k|V|^2)$\" cannot all hold, because $\\log_2$ is unbounded and the appendix's own dense bound is unbounded at fixed $N$. Only the index lookup is logarithmic; fusion is quadratic in the query-graph size. Two further refutations are narrower: Eq. (10)'s $\\delta$-threshold, introduced \"to suppress noisy edges\", is a provable no-op at the paper's defaults $\\gamma = \\delta = 0.5$ (the composed rule is exactly the logical OR of query and accepted retrieved edges), and Eq. (1)'s claimed invariance fails because LapPE is only defined up to eigenvector sign -- though Lean also **proved** the charitable reading, permutation equivariance, which is why that finding is minor.\n\n**What informal review settled.** Five of the thirteen informal snippets carry confident findings, all arithmetic or consistency defects computed against the paper's own tables: the \"over 80% of performance gains\" attribution to retrieval (graph fusion actually supplies $55.7\\%$ and $54.4\\%$ of the gain on the two ablation tasks); the Section 4.2 relative gains ($83.12\\%$ and $5.5\\%$ against Table 2's $87.34$ and a true $9.93\\%$; $5.1\\%$ against a true $11.24\\%$); the \"up to $7.0\\times$\" speed-up against Table 4's actual $15.59\\times$ and $18.54\\times$; \"consistently outperforms all competing approaches\" against Table 3, where G-Retriever's $52.32$ beats RAG4GFM's $51.88$ on MiniGC ROC-AUC; and a cross-table contradiction in which Figure 3 and Table 3 report History *node-classification* numbers ($63.45/64.12$) under a link-prediction label, $21.7$ accuracy points away from Table 2 and Figure 4's corroborated $41.74$. One further finding is a complexity-derivation error: Appendix A.1's \"Overall Pipeline\" bound drops the $O(k|V|d)$ attention term, which in fact dominates for the small subgraphs the pipeline handles. Note that three of the arithmetic errors *understate* the paper's measured advantage.\n\n**Clean results.** Seven snippets came back with no error: Eq. (2)'s graph-level encoding (with $\\rho(G)$ redundant given $|V|, |E|$, and undefined on degenerate graphs that the datasets do not contain), Eq. (3)'s RRF score and Eq. (4)'s feature sets (coherent under the natural reading; the prose mislabels the summation index and writes $\\mathbf{h}_q(G)$ for $\\mathbf{h}_g(G)$), Eqs. (5)-(7)'s node- and edge-level fusion (valid, though the identical correction added to both endpoints leaves $\\mathbf{h}_{\\text{SRC}} - \\mathbf{h}_{\\text{DST}}$ unchanged and the retrieved edge encoding $\\mathbf{h}_e(u,v)$ is never consumed), Table 1's dataset statistics (feasible once one infers from BA2Motif that edges are counted as ordered pairs -- a convention the paper never states), and Appendix C.2's hyperparameter sweeps (both the $K$ monotonicity and the $(\\gamma,\\delta)$ optimum check out, and cross-reference consistently with Tables 2 and 3).\n\n**Disagreements between verifiers:** none. The two arms addressed disjoint snippet sets, and where they touch the same material they agree -- Appendix C.2's narrow spread along the $\\delta$ axis ($2.65$ points at $\\gamma = 0.5$) is exactly what the Lean proof that the $\\delta$ filter is inoperative predicts, and the informal finding that Appendix A.1 drops the $O(k|V|d)$ term is consistent with, and independent of, the Lean refutation of the paper's headline complexity claims.\n\n**Verdict: CRITICAL_ERRORS**, at high confidence. Three machine-checked refutations land on main claims: the graph-level fusion mechanism (Eqs. (8)-(9)) cannot do what the paper says it does, and the abstract's constant-time scalability claim is contradicted by the paper's own complexity analysis. Confidence is high rather than maximal because all three rest on taking the printed equations literally; a reading in which the softmax ranges over the $k$ retrieved graphs and Eq. (8) aggregates retrieved features would repair the fusion module, and the released code may well implement that. The formal result stands regardless: the mathematics as written is wrong, and the Eq. (8)/Eq. (9) defects would need correcting even under the charitable reading. The eight minor findings are independent of that caveat."
+}

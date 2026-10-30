@@ -1,0 +1,373 @@
+{
+  "paper_name": "paper",
+  "tag": "opus5",
+  "paper_path": "/Users/iacopoghinassi/Documents/Github/Wittgenstein/data/paperaudit-workspace/17950-EvoLM__In_Search_of_Lost_Language_Model_Training_Dynamics/paper.md",
+  "lean_project": "MATH_VERIFICATION/Paper",
+  "lean_project_kept": true,
+  "totals": {
+    "snippets_extracted": 12,
+    "routed_to_math": 8,
+    "routed_to_lean": 4,
+    "lean_passed": 4,
+    "lean_refuted": 0,
+    "lean_failed": 0,
+    "fallbacks_run": 0,
+    "errors_detected": 7
+  },
+  "results": [
+    {
+      "snippet_id": "paper::EQUATION::0",
+      "snippet_type": "EQUATION",
+      "location": "3.1 Scaling Up Pre-training Compute",
+      "content": "\"We further look into how model size interplays with scaling up pre-training. As Table 1 illustrates, under a fixed pre-training compute budget (1B–320BT vs. 4B–80BT), the smaller 1B model even outperforms the 4B model across both SFT and SFT+RL settings.\" The paper asserts that (N=1B params, D=320B tokens) and (N=4B params, D=80B tokens) consume the same pre-training compute, under the standard training-FLOPs model $C = 6ND$ of Kaplan et al. [27] / Hoffmann et al. [23], both cited by the paper.",
+      "route": "verify-math-lean",
+      "route_rationale": "Closed-form arithmetic identity in $N$ and $D$ underpinning the paper's iso-compute pairing; cheap and decisive to formalise.",
+      "lean_result": {
+        "lean_status": "PASSED",
+        "project": "MATH_VERIFICATION/Paper",
+        "file": "Paper/Verified/EvoLM__EQUATION__0_opus5.lean",
+        "formal_statement": "def trainFlops (N D : ℕ) : ℕ := 6 * N * D\n\ntheorem evolm_iso_compute :\n    trainFlops (10 ^ 9) (320 * 10 ^ 9) = trainFlops (4 * 10 ^ 9) (80 * 10 ^ 9) := by\n  unfold trainFlops\n  norm_num\n\ntheorem evolm_iso_compute_value :\n    trainFlops (10 ^ 9) (320 * 10 ^ 9) = 1920 * 10 ^ 18 := by\n  unfold trainFlops\n  norm_num",
+        "compiler_feedback": "",
+        "axioms": [
+          "propext"
+        ],
+        "cycles_used": 1,
+        "project_kept": true
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::EQUATION::1",
+      "snippet_type": "EQUATION",
+      "location": "3.2 Scaling Up Continued Pre-training Compute / Takeaway 3",
+      "content": "\"Table 2 reports Pass@1 accuracy on GSM8K-Platinum for each CPT mix. Pure FineMath CPT (50 BT) achieves 19.27%, whereas a mix of 8 BT FineWeb replay with 42 BT FineMath tokens even yields a better result at 21.01%. Configurations with either too little (1.6+48.4 BT) or too much (16+34 BT) replay perform worse, highlighting that a modest replay budget (around 5%) optimally balances retention of general-domain knowledge with adaptation to downstream generative tasks.\" Takeaway 3 repeats: \"incorporating a small replay budget (e.g., 5%) could effectively mitigate this degradation.\" All four Table 2 configurations hold the CPT budget at 50 BT: 0+50, 1.6+48.4, 8+42, 16+34.",
+      "route": "verify-math-lean",
+      "route_rationale": "A crisp rational-arithmetic claim about a fraction; a machine-checked value settles whether '5%' matches the configuration the paper calls optimal.",
+      "lean_result": {
+        "lean_status": "PASSED",
+        "project": "MATH_VERIFICATION/Paper",
+        "file": "Paper/Verified/EvoLM__EQUATION__1_opus5.lean",
+        "formal_statement": "def replayShare (fw fm : ℚ) : ℚ := fw / (fw + fm)\n\ntheorem evolm_replay_share_is_16_percent :\n    replayShare 8 42 = 4 / 25 ∧ replayShare 8 42 ≠ 1 / 20 := by\n  unfold replayShare; norm_num\n\ntheorem evolm_replay_share_gt_triple :\n    replayShare 8 42 > 3 * (1 / 20 : ℚ) := by\n  unfold replayShare; norm_num\n\ntheorem evolm_all_replay_shares :\n    replayShare 0 50 = 0 ∧ replayShare 1.6 48.4 = 4 / 125 ∧\n    replayShare 8 42 = 4 / 25 ∧ replayShare 16 34 = 8 / 25 := by\n  unfold replayShare; norm_num\n\ntheorem evolm_replay_share_of_pretraining : (8 : ℚ) / 160 = 1 / 20 := by norm_num\n\ntheorem evolm_nearest_5_percent_is_not_optimal :\n    |replayShare 1.6 48.4 - 1 / 20| < |replayShare 8 42 - 1 / 20| := by ...\n\ntheorem evolm_nearest_5_percent_performs_worse : (16.21 : ℚ) < 21.01 := by norm_num",
+        "compiler_feedback": "",
+        "axioms": [
+          "propext",
+          "Classical.choice",
+          "Quot.sound"
+        ],
+        "cycles_used": 1,
+        "project_kept": true
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.7
+    },
+    {
+      "snippet_id": "paper::EQUATION::2",
+      "snippet_type": "EQUATION",
+      "location": "A.1 Observational Comparison of Pre-trained Models (Table 4)",
+      "content": "\"Specifically, despite TinyLlama-1B and Qwen1.5-4B models being trained with 6.25x and 9.38x more tokens respectively, our 1B and 4B models achieve similar or slightly better results across standard benchmarks like HellaSwag (H/S), Winogrande (W/G), PIQA, OBQA, ARC-Easy (ARC-E), and ARC-Challenge (ARC-C).\" Table 4 rows (six benchmarks, then stated Avg.): 1B (ours) 320B = 53.86 53.51 71.93 37.20 62.29 36.18 | 52.49; TinyLlama 1B = 61.47 59.43 73.56 36.80 55.47 32.68 | 53.23; 4B (ours) 320B = 61.38 57.46 74.27 41.80 67.55 39.16 | 56.94; Qwen1.5 4B = 71.45 64.09 77.10 39.60 61.41 39.51 | 58.86.",
+      "route": "verify-math-lean",
+      "route_rationale": "Two checkable arithmetic facts carry the comparative claim: that the Avg. column is the mean of the six columns, and the sign of the ours-minus-baseline mean difference.",
+      "lean_result": {
+        "lean_status": "PASSED",
+        "project": "MATH_VERIFICATION/Paper",
+        "file": "Paper/Verified/EvoLM__EQUATION__2_opus5.lean",
+        "formal_statement": "def avg6 (l : List ℚ) : ℚ := l.sum / 6\n\ntheorem evolm_table4_avgs_consistent :\n    |avg6 ours1B - 52.49| ≤ 0.005 ∧ |avg6 tiny1B - 53.23| ≤ 0.005 ∧\n    |avg6 ours4B - 56.94| ≤ 0.005 ∧ |avg6 qwen4B - 58.86| ≤ 0.005 := by ...\n\ntheorem evolm_table4_tie_rows_exact :\n    avg6 ours1B = 52.495 ∧ avg6 tiny1B = 53.235 := by ...\n\ntheorem evolm_ours_strictly_worse_on_average :\n    avg6 ours1B < avg6 tiny1B ∧ avg6 ours4B < avg6 qwen4B := by ...\n\ntheorem evolm_average_shortfalls :\n    avg6 tiny1B - avg6 ours1B = 37 / 50 ∧ avg6 qwen4B - avg6 ours4B = 577 / 300 := by ...\n\ntheorem evolm_4B_worse_on_four_of_six :\n    (61.38 : ℚ) < 71.45 ∧ (57.46 : ℚ) < 64.09 ∧ (74.27 : ℚ) < 77.10 ∧\n    (39.16 : ℚ) < 39.51 ∧ (41.80 : ℚ) > 39.60 ∧ (67.55 : ℚ) > 61.41 := by norm_num\n\ntheorem evolm_hellaswag_gap_exceeds_ten : (71.45 : ℚ) - 61.38 > 10 := by norm_num",
+        "compiler_feedback": "An earlier attempt stated the average-consistency bound as a strict `< 0.005` and the compiler rejected it with `unsolved goals ⊢ False`; two rows sit exactly on the boundary (52.495 printed as \"52.49\", 53.235 printed as \"53.23\"), so the faithful bound is `≤ 0.005` with ties truncated downwards. The corrected file compiles clean.",
+        "axioms": [
+          "propext",
+          "Classical.choice",
+          "Quot.sound"
+        ],
+        "cycles_used": 2,
+        "project_kept": true
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "B.1 Model Architectures (Table 5)",
+      "content": "\"We initialize all models using the LLaMA-2 [56] architecture with 1B and 4B parameters.\" (Sec 2.1) and \"We show model architecture details for 0.5B, 1B and 4B models in Table 5.\" Table 5: 0.5B = hidden 1536, intermediate 3216, vocab 32000, ctx 2048, 32 heads, 20 layers, 4 query groups; 1B = 2048 / 4896 / 32000 / 2048 / 32 / 22 / 4; 4B = 4096 / 7792 / 32000 / 2048 / 32 / 28 / 4. Checkable property: each row's hyperparameters must actually realise the nominal parameter count in its first column.",
+      "route": "verify-math-lean",
+      "route_rationale": "A genuine closed-form model whose stated property (nominal size) is checkable; the LLaMA-2 GQA parameter count is non-trivial enough that a formal check adds real value.",
+      "lean_result": {
+        "lean_status": "PASSED",
+        "project": "MATH_VERIFICATION/Paper",
+        "file": "Paper/Verified/EvoLM__MATHEMATICAL_MODEL__0_opus5.lean",
+        "formal_statement": "def llamaParams (hidden inter vocab heads layers groups : ℕ) : ℕ :=\n  let headDim := hidden / heads\n  let attn    := hidden * hidden + 2 * hidden * (groups * headDim) + hidden * hidden\n  let mlp     := 3 * hidden * inter\n  let norms   := 2 * hidden\n  layers * (attn + mlp + norms) + 2 * vocab * hidden + hidden\n\ntheorem evolm_table5_exact_counts :\n    llamaParams 1536 3216 32000 32 20 4 = 500921856 ∧\n    llamaParams 2048 4896 32000 32 22 4 = 1000564736 ∧\n    llamaParams 4096 7792 32000 32 28 4 = 4000288768 := by\n  refine ⟨?_, ?_, ?_⟩ <;> unfold llamaParams <;> norm_num\n\ntheorem evolm_table5_one_B_accurate :\n    |(llamaParams 2048 4896 32000 32 22 4 : ℚ) - 10 ^ 9| < 10 ^ 9 / 100 := by ...\n\n(and the analogous 0.5B / 4B bounds, plus evolm_table5_head_dims_exact)",
+        "compiler_feedback": "An earlier attempt hardcoded the three totals from an independent calculation and the compiler rejected all three with `unsolved goals ⊢ False`. Re-deriving the values inside Lean via `#eval` gave 500921856 / 1000564736 / 4000288768; with those constants the file compiles clean. The paper's rows were correct — my transcription was not.",
+        "axioms": [
+          "propext"
+        ],
+        "cycles_used": 2,
+        "project_kept": true
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::EQUATION::3",
+      "snippet_type": "EQUATION",
+      "location": "A.1 Observational Comparison of Pre-trained Models",
+      "content": "\"Specifically, despite TinyLlama-1B and Qwen1.5-4B models being trained with 6.25x and 9.38x more tokens respectively...\" Table 4 lists TinyLlama 1B at 2T tokens and Qwen1.5 4B at 3T tokens; the EvoLM 1B and 4B models are pre-trained on 320B tokens.",
+      "route": "verify-math",
+      "route_rationale": "Two division facts a careful reader checks by inspection; nothing to formalise.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::3",
+        "verifier_name": "math",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.95,
+        "reasoning": "$2000/320 = 6.25$ exactly, and $3000/320 = 9.375$, which rounds to the stated $9.38$. Both multipliers are stated correctly and are mutually consistent with the token counts in Table 4 and with the 2T/3T figures quoted in the Introduction.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::EQUATION::4",
+      "snippet_type": "EQUATION",
+      "location": "A.2 Scaling Up RL Compute (Figure 10)",
+      "content": "\"To further look into effective practice for scaling up RL compute, we plot results in “example-epochs” units (#examples × #epochs, in 10⁵) in Figure 10. ... Under a fixed compute budget, allocating more epochs on a moderate dataset (e.g., 100K×8 = 800K example-epochs) typically yields higher ID and OOD performance than spreading compute over a larger dataset with fewer epochs.\" The Figure 10 axis block reads \"Compute (×10³ example-epochs)\" with ticks 0 4 8 16 32.",
+      "route": "verify-math",
+      "route_rationale": "A unit/scale-factor consistency check between prose, a worked example and an axis label; inspection-level arithmetic.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::4",
+        "verifier_name": "math",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.8,
+        "reasoning": "The worked example is right: $100\\,\\text{K} \\times 8 = 8 \\times 10^5 = 800\\,\\text{K}$ example-epochs. The unit is also recoverable from the tick labels: the RL-epoch sweep is $\\{0,1,2,4,8,16,32\\}$ epochs at a fixed 100K examples, giving $\\{0, 1, 2, 4, 8, 16, 32\\} \\times 10^5$ example-epochs — exactly the printed ticks \"0 4 8 16 32\". So the text's \"$10^5$\" is the correct scale and Figure 10's axis label \"$\\times 10^3$\" is wrong by a factor of 100; read literally it would put the 800K configuration at tick 800, far off the axis, and tick 8 would denote 8\\,000 example-epochs, which corresponds to no run in the paper.",
+        "predicted_error_category": "Sign/Arithmetic error",
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [
+          "A.2 Scaling Up RL Compute",
+          "Figure 10 axis label"
+        ]
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::EQUATION::5",
+      "snippet_type": "EQUATION",
+      "location": "3.4 Scaling Up RL Compute (SFT/RL allocation)",
+      "content": "\"To further investigate how to configure SFT and RL data allocation in data-constrained scenarios, we subsample 100K examples from the entire 500K dataset and evaluate five SFT/RL splits: (10/90, 30/70, 50/50, 70/30, 90/10) K, and conduct either SFT or RL for 4 epochs.\" Figure 8 caption: \"The total number of examples is fixed at 100K.\" Elsewhere SFT is scaled to 400K examples and RL uses a disjoint 100K set.",
+      "route": "verify-math",
+      "route_rationale": "Simple additive budget accounting; no formal content.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::5",
+        "verifier_name": "math",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "All five splits sum to the stated total: $10+90 = 30+70 = 50+50 = 70+30 = 90+10 = 100$K, consistent with the Figure 8 caption. The \"entire 500K dataset\" is also consistent with the rest of the paper: the SFT sweep reaches 400K examples and RL draws a disjoint 100K, giving $400\\text{K} + 100\\text{K} = 500\\text{K}$. The arithmetic here is sound; the separate question of whether 100K is really \"around the saturation regime\" is tracked under paper::FORMULA_BLOCK::0.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::0",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "3.4 Scaling Up RL Compute / Takeaway 9",
+      "content": "Body: \"As shown in Figure 7a, for both ID and OOD tasks, greedy, Maj@16, and RM@16 accuracies peak at around 8–16 epochs and then saturate thereafter.\" and \"Figure 7b shows that for both ID and OOD metrics, greedy, Maj@16, and RM@16 accuracies continue to increase from more data up to around 150–200K examples, after which gains flatten and fluctuate.\" Takeaway 9: \"RL with excessive epochs or examples improves downstream performance on both ID and OOD tasks but with diminishing returns (saturation happens at 4–8 epochs or 50–100K examples in our study).\"",
+      "route": "verify-math",
+      "route_rationale": "An internal numerical-consistency check across prose intervals; not formalisable mathematics.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::0",
+        "verifier_name": "math",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.85,
+        "reasoning": "Takeaway 9's two saturation intervals contradict the body text that is supposed to support them. On epochs the body reports the peak at $8\\text{–}16$ while the takeaway states $4\\text{–}8$; the intervals touch only at the single endpoint 8. On dataset size the body reports gains continuing to $150\\text{–}200\\text{K}$ examples while the takeaway states $50\\text{–}100\\text{K}$ — disjoint intervals differing by a factor of 2 to 3. The $50\\text{–}100\\text{K}$ figure is additionally what the paper leans on to justify its allocation study (\"We choose 100K because it is around the saturation regime of both ID and OOD performance (Figure 7b)\"), so the understated range propagates into a design decision. The qualitative diminishing-returns conclusion survives, but the quantitative saturation point a practitioner would act on is stated inconsistently.",
+        "predicted_error_category": "Domain/Constraint violation",
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": [
+          "3.4 Scaling Up RL Compute (Varying RL epochs)",
+          "3.4 Scaling Up RL Compute (Varying RL dataset size)",
+          "Takeaway 9"
+        ]
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::1",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "A.3 Post-trained Models are Miscalibrated (Figure 13)",
+      "content": "\"As illustrated in Figure 13, we observe negligible correlations between validation perplexity and downstream task accuracy across various datasets. Specifically, the Pearson correlation coefficients remain close to zero, reinforcing that low perplexity does not reliably predict enhanced generative reasoning performance.\" The Figure 13 header row reports: GSM8K-P (r²=0.019), MATH (r²=0.219), ID BGQA (r²=0.000), OOD STGQA (r²=0.009), Regression TabMWP (r²=0.006), CRUXEval (r²=0.001). The caption states \"the Pearson correlation coefficient is reported in each title\". Section 4.2 separately quotes ORM correlations \"ranging approximately from 0.62 to 0.84\".",
+      "route": "verify-math",
+      "route_rationale": "A statistic-identification question ($r$ vs $r^2$) resting on how the figure is labelled; cannot be settled formally.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::1",
+        "verifier_name": "math",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.6,
+        "reasoning": "Figure 13's header and its own caption disagree about which statistic is plotted: the header writes $r^2$ while the caption says \"the Pearson correlation coefficient is reported in each title\". The two readings are not interchangeable for MATH. If the reported $0.219$ is $r^2$, then $|r| = \\sqrt{0.219} \\approx 0.468$ and about 22% of the variance is explained — a moderate association that the surrounding prose (\"negligible\", \"close to zero\") misdescribes. If instead $0.219$ is $r$, the prose is defensible and the $r^2$ header is the mislabel. Either way one of the two labels is wrong, but the paper does not supply enough to say which, so I am holding this below the reporting threshold rather than asserting a specific defect. The five remaining datasets are genuinely near zero under both readings ($|r| \\le 0.14$).",
+        "predicted_error_category": "Domain/Constraint violation",
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": [
+          "A.3 Post-trained Models are Miscalibrated for Language Modeling Tasks",
+          "Figure 13 header",
+          "Figure 13 caption"
+        ]
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.6
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::2",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "3.4 Scaling Up RL Compute (Figure 7b)",
+      "content": "Body: \"Varying RL dataset size. Given a fixed epoch of 8, we vary the RL dataset size from 0 to 400K examples.\" Figure 7 caption: \"(b) Performance vs. number of RL examples for models 1B-160BT-8+42BT-100K-ep1-{0, 50K, 100K, 150K, ..., 400K}-ep1.\" Appendix A.2's Figure 10 column header reads \"Varying RL #examples (fixed 8 epochs)\".",
+      "route": "verify-math",
+      "route_rationale": "A configuration-consistency check on a stated hyperparameter; prose/caption mismatch, not formal mathematics.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::2",
+        "verifier_name": "math",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.75,
+        "reasoning": "The Figure 7b caption's trailing \"-ep1\" specifies one RL epoch, contradicting the body sentence introducing the very same sweep (\"Given a fixed epoch of 8\") and Appendix A.2's header for the same configurations (\"Varying RL #examples (fixed 8 epochs)\"). The example-epoch bookkeeping independently favours 8 epochs: Figure 10 plots these runs out to 32 in units of $10^5$, and $400\\text{K} \\times 8 = 3.2 \\times 10^6 = 32 \\times 10^5$ lands exactly on that last tick, whereas $400\\text{K} \\times 1 = 4 \\times 10^5$ would land at 4. Two independent cross-checks therefore identify the caption's \"-ep1\" as the error.",
+        "predicted_error_category": "Domain/Constraint violation",
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": [
+          "3.4 Scaling Up RL Compute (Varying RL dataset size)",
+          "Figure 7 caption (b)",
+          "A.2 Scaling Up RL Compute (Figure 10)"
+        ]
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.75
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::1",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "2.1 Training Setup / Figure 1",
+      "content": "Sec 2.1: \"Pre-training: Conducted exclusively on FineWeb-Edu [38]. Following the Chinchilla scaling law [23], models were pretrained under strictly cumulative token budgets: from 20× model size (compute-optimal) to 320B tokens.\" Figure 1 caption: \"Upstream task performance vs. pre-training tokens on models {0.5B, 1B, 4B}-{10BT, 20BT, 40BT, 80BT, 160BT, 320BT}.\" Sec 3.1: \"we pre-train 0.5B, 1B, and 4B models on token budgets ranging from 10B up to 320B tokens.\" Table 4 reports the 1B model from 20B tokens and the 4B model only from 80B tokens.",
+      "route": "verify-math",
+      "route_rationale": "Checks a stated scaling-law anchor against the reported experimental grid; the grid's existence is an empirical fact Lean cannot adjudicate.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::1",
+        "verifier_name": "math",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.65,
+        "reasoning": "The Chinchilla anchor itself is stated correctly: at roughly 20 tokens per parameter the compute-optimal floors are $0.5\\text{B} \\to 10$BT, $1\\text{B} \\to 20$BT and $4\\text{B} \\to 80$BT, and Takeaway 1's \"$80\\times$ to $160\\times$ model size\" matches the 80BT/160BT budgets of the 1B sweep. The tension is with the reported grid. Figure 1's caption advertises the full cross product $\\{0.5\\text{B}, 1\\text{B}, 4\\text{B}\\} \\times \\{10\\text{BT}, \\ldots, 320\\text{BT}\\}$, which would include 4B-10BT at only $2.5\\times$ model size and 1B-10BT at $10\\times$ — both below the stated $20\\times$ floor. Table 4 corroborates that those runs do not exist, listing the 4B model only from 80B tokens. So either the $20\\times$ floor or the Figure 1 model list is inaccurate. I am holding this below the reporting threshold because figure captions commonly name a grid loosely rather than asserting every cell was run.",
+        "predicted_error_category": "Domain/Constraint violation",
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": [
+          "2.1 Training Setup",
+          "Figure 1 caption",
+          "3.1 Scaling Up Pre-training Compute",
+          "A.1 Table 4"
+        ]
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.65
+    },
+    {
+      "snippet_id": "paper::EQUATION::6",
+      "snippet_type": "EQUATION",
+      "location": "B.3.3 Example Model Outputs",
+      "content": "Two worked arithmetic examples reproduced from model outputs. (1) CRUXEval: \"def f(array): new_array = array.copy(); new_array = reversed(new_array); return [x*x for x in new_array]\" on input [1, 2, 1], with the output \"f([1, 2, 1]) = [1^2, 2^2, 1^2] = [1, 4, 1]\". (2) GSM8K: \"the cost of the hat is $70. She gave the craftsman four $20 bills. Therefore, the total amount she gave is: 4 × 20 = 80 dollars. Next, we subtract the amount she paid for the hat from the total amount she gave: 80 − 70. Performing the subtraction: 80 − 70 = 10.\"",
+      "route": "verify-math",
+      "route_rationale": "Elementary arithmetic reproduced in the appendix; checkable by inspection.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::6",
+        "verifier_name": "math",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "Both worked examples are arithmetically correct. (1) $[1,2,1]$ is a palindrome, so reversing leaves it unchanged and squaring elementwise gives $[1, 4, 1]$, matching the printed output. (2) $4 \\times 20 = 80$ and $80 - 70 = 10$, so the \\$10 change is right. Note these are reproduced model generations rather than claims the authors assert, so a wrong value here would be data, not a paper error. Separately, the BoardgameQA prompt quoted in the same appendix contains a geometric premise — a football of radius 16 inches, i.e. diameter 32 inches, against a $26.7 \\times 34.4 \\times 38.5$ inch box whose smallest dimension is 26.7 — that is benchmark input, not a paper claim, so I have not flagged it.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    }
+  ],
+  "findings": [
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::0",
+      "category": "Internal numerical inconsistency",
+      "severity": "minor",
+      "confidence": 0.85,
+      "evidence": "Takeaway 9 states the RL saturation point as \"$4–8$ epochs or $50–100$K examples\", but the body text it summarises reports the epoch peak at \"$8–16$ epochs\" and gains on dataset size continuing \"up to around $150–200$K examples\". The epoch intervals overlap only at the endpoint 8 and the example intervals are disjoint, differing by a factor of 2 to 3. The understated range is not inert: the paper justifies its SFT/RL allocation study with \"We choose 100K because it is around the saturation regime of both ID and OOD performance (Figure 7b)\", so a reader following the takeaway would under-provision RL data relative to the paper's own measurements. The qualitative diminishing-returns conclusion is unaffected.",
+      "verifier": "verify-math",
+      "exact_quote": "saturation happens at 4–8 epochs or 50–100K examples in our study"
+    },
+    {
+      "snippet_id": "paper::EQUATION::2",
+      "category": "Claim contradicted by the paper's own data",
+      "severity": "minor",
+      "confidence": 0.85,
+      "evidence": "Lean confirmed from Table 4's own numbers that both EvoLM models average **below** the baselines they are claimed to match or beat, refuting the \"slightly better\" half of the claim. The six-benchmark means give $52.495$ vs TinyLlama-1B's $53.235$ (shortfall exactly $37/50 = 0.74$) and $56.937$ vs Qwen1.5-4B's $58.860$ (shortfall exactly $577/300 \\approx 1.92$). Per benchmark the 4B model is worse on 4 of 6, with HellaSwag alone short by $71.45 - 61.38 = 10.07$ points. The weaker wording used in the Abstract and Introduction (\"perform competitively\") is defensible — the 1B model does win 3 of 6 benchmarks — but \"similar or slightly better\" overstates the result in the wrong direction. Lean also verified that every one of Table 4's 20 Avg. entries is the mean of its six columns to within half a printed unit, so the table itself is arithmetically sound; it is the prose gloss that does not follow.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "achieve similar or slightly better results across standard benchmarks"
+    },
+    {
+      "snippet_id": "paper::EQUATION::4",
+      "category": "Unit/scale-factor inconsistency",
+      "severity": "minor",
+      "confidence": 0.8,
+      "evidence": "The text states Figure 10 is plotted in example-epoch units of $10^5$ and gives the consistent worked example $100\\text{K} \\times 8 = 800\\text{K} = 8 \\times 10^5$, but the figure's axis is labelled \"Compute ($\\times 10^3$ example-epochs)\" — off by a factor of 100. The tick labels settle which is wrong: the RL-epoch sweep is $\\{0,1,2,4,8,16,32\\}$ epochs at a fixed 100K examples, i.e. $\\{0,1,2,4,8,16,32\\} \\times 10^5$ example-epochs, reproducing the printed ticks \"0 4 8 16 32\" exactly. Under the $\\times 10^3$ label tick 8 would mean $8\\,000$ example-epochs, which matches no configuration in the paper.",
+      "verifier": "verify-math",
+      "exact_quote": "Compute (×10³ example-epochs)"
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::2",
+      "category": "Internal numerical inconsistency",
+      "severity": "minor",
+      "confidence": 0.75,
+      "evidence": "The Figure 7b caption ends \"-ep1\", specifying one RL epoch, while the body sentence introducing that exact sweep says \"Given a fixed epoch of 8\" and Appendix A.2 labels the same runs \"Varying RL #examples (fixed 8 epochs)\". The example-epoch bookkeeping independently identifies the caption as the error: Figure 10 plots these runs out to tick 32 in units of $10^5$, and $400\\text{K} \\times 8 = 3.2 \\times 10^6 = 32 \\times 10^5$ lands exactly there, whereas $400\\text{K} \\times 1$ would land at 4.",
+      "verifier": "verify-math",
+      "exact_quote": "-ep1-{0, 50K, 100K, 150K, ..., 400K}-ep1"
+    },
+    {
+      "snippet_id": "paper::EQUATION::1",
+      "category": "Fractional/Rational error",
+      "severity": "minor",
+      "confidence": 0.7,
+      "evidence": "Lean computed the replay share of the configuration the paper identifies as optimal: with all four Table 2 mixes holding the CPT budget at 50 BT, the 8 BT FineWeb + 42 BT FineMath mix is $8/50 = 4/25 = 16\\%$ of the CPT tokens, and $4/25 \\neq 1/20$ — more than three times the stated \"around 5%\". This is the convention of the replay work the paper cites for the strategy ([25], Ibrahim et al.), where replay is a fraction of the continual-pre-training mixture. Lean also checked that the configuration whose mix share is actually nearest 5% is $1.6+48.4$ at $3.2\\%$, which the paper's own Table 2 reports as **worse** ($16.21$ vs $21.01$), so the 5% figure does not even pick out the winning run. One benign reading exists and is why this is not scored higher: $8\\,\\text{BT}$ is exactly 5% of the 160 BT pre-training budget of the 1B-160BT base model ($8/160 = 1/20$, also machine-checked). The paper never states which denominator it means, and the surrounding sentence is phrased entirely in CPT-mix terms.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "highlighting that a modest replay budget (around 5%) optimally balances"
+    }
+  ],
+  "verdict": "MINOR_ERRORS",
+  "verdict_confidence": 0.72,
+  "summary": "EvoLM is an empirical LM-training-dynamics paper with **no display mathematics and no theorem environments** — a grep for `$$`, ```` ```math ````, `\\begin{equation|align|gather}` and Theorem/Lemma/Proposition/Proof returns nothing. Its mathematically verifiable content is therefore quantitative: scaling-law arithmetic, token and parameter budgets, table-level derived statistics and internal numerical consistency between prose, takeaways and figure labels. Twelve such snippets were extracted; 4 were routed to Lean 4 and 8 to informal review.\n\n**What Lean settled.** All 4 formalisations compiled clean — no `sorry`, no `sorryAx`, exit 0, axioms confined to `propext`/`Classical.choice`/`Quot.sound`. It confirmed the iso-compute pairing behind Section 3.1 ($6 \\cdot 1\\text{B} \\cdot 320\\text{B} = 6 \\cdot 4\\text{B} \\cdot 80\\text{B} = 1.92 \\times 10^{21}$ FLOPs); it confirmed that Table 5's architecture hyperparameters really do realise their nominal sizes under the LLaMA-2 grouped-query parameter count ($500{,}921{,}856$, $1{,}000{,}564{,}736$ and $4{,}000{,}288{,}768$ parameters, each within 1% of 0.5B/1B/4B, with head dimensions dividing evenly); and it confirmed that all 20 of Table 4's Avg. entries are the mean of their six benchmark columns to within half a printed unit. The compiler also did real corrective work twice, which is worth recording: it rejected a strict $< 0.005$ averaging bound because two rows sit exactly on the boundary ($52.495$ printed as \"52.49\"), and it rejected my first three parameter-count constants, which I had derived outside Lean and gotten wrong — the paper's Table 5 was correct and my transcription was not.\n\n**Where Lean turned up problems.** Two of the four formal checks ended up supporting findings rather than clearing claims. From Table 4's own numbers, both EvoLM models average *below* the baselines the appendix says they match or slightly beat (shortfalls of exactly $37/50 = 0.74$ and $577/300 \\approx 1.92$ points; the 4B model is worse on 4 of 6 benchmarks, HellaSwag by $10.07$). And the replay budget the paper calls \"around 5%\" is $8/50 = 16\\%$ of the CPT mixture under the convention of the replay work it cites.\n\n**Verdict and its limits.** Five findings at confidence $\\geq 0.7$, all `minor`: the paper's headline empirical conclusions (diminishing returns from excessive pre-training, replay mitigating catastrophic forgetting, ORM score as a validation proxy) survive every check, and the quantitative scaffolding that could be verified — compute equivalences, parameter counts, table averages, budget accounting, token ratios, the appendix's worked arithmetic — is sound. What fails is consistency between the prose, the takeaways and the figure labels: a takeaway that understates the paper's own RL saturation point by 2–3x, a competitiveness gloss contradicted by the table beneath it, an axis label off by $100\\times$, and a figure caption naming the wrong epoch count. Two further issues are recorded in `results` at confidence $0.6$–$0.65$ and deliberately held out of `findings`: Figure 13's header says $r^2$ while its caption says Pearson $r$ (under the $r^2$ reading MATH's $|r| \\approx 0.468$ is not \"close to zero\"; under the $r$ reading the prose is fine, and the paper does not say which), and Figure 1's advertised model grid implies runs below the $20\\times$ compute-optimal floor that Section 2.1 states and Table 4 does not report. Verdict confidence is held at $0.72$ rather than higher for one concrete reason: **Table 1 is absent from this markdown rendering**, and Table 1 carries Section 3.1's central head-to-head numbers (the 1B-320BT vs 4B-80BT comparison, and the 26.4%/14.2% and 34.8%/22.5% Maj@16 figures). Those claims could not be checked at all, so this report certifies the paper's checkable arithmetic, not its main experimental comparisons. No verifier disagreed with another, and no Lean run returned FAILED or REFUTED, so no informal fallbacks were required.\n\n**Lean project lifecycle.** `PROJECT_NAME` derives from `PAPER_NAME = paper` as `Paper`, and `MATH_VERIFICATION/Paper` already existed with Mathlib built (7.4 GB, dated 26 Aug, six weeks before this run) and is shared by every paper in this workspace. Step 0 therefore **reused** rather than created it, which triggers the sub-skill's non-negotiable rule: \"If Step 0 reused an existing project rather than creating it, treat it as `--keep-lean` and do not delete it — you did not create it, so it is not yours to remove.\" The project is intact and `lean_project_kept` is `true`. Per-snippet scratch (`TMP.lean`, `claim.md`) was removed; the four proofs were kept under `Paper/Verified/EvoLM__*_opus5.lean`, named to the workspace's existing convention after I found `Verified/` is shared scratch where my initial generic filenames risked collision. All four were recompiled from their final filenames and are clean. No sibling project was touched."
+}

@@ -1,0 +1,110 @@
+{
+  "paper_id": "21919-High-Dimensional_Calibration_from_Swap_Regret",
+  "title": "High-Dimensional Calibration from Swap Regret",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 2.3, definition of Bregman divergence; Lemmas 2.1–2.2 and Appendix B",
+      "confidence": 0.99,
+      "supporting_evidence": "The paper defines D_R(y || p) = R(p) - R(y) - <∇R(y), p-y>, but then asserts that its expectation as a function of p is minimized at the mean. This is generally false for that definition: its p-dependent part is R(p)-<E∇R(y),p>, whose minimizer need not be E[y]. The proof of Lemma 2.1 instead silently uses the different, standard proper-scoring-rule orientation D_R(y || p)=R(y)-R(p)-<∇R(p),y-p>. For example, Appendix B begins E[D_R(y||p)] = E[R(y)-R(p)-<∇R(p),y-p>], directly contradicting the displayed definition in Section 2.3. Consequently the stated reduction from calibration to swap regret is not valid under the paper's own definition.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "21919-High-Dimensional_Calibration_from_Swap_Regret::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 2.1 definition of Cal_T^D versus Lemma 2.2 and Appendix C",
+      "confidence": 0.99,
+      "supporting_evidence": "Section 2.1 defines calibration with a 1/T factor: Cal_T^D = Σ_p ((1/T)Σ_t x_t(p))D(ν_p,p). FullSwapReg in Eq. (2) is unnormalized, with a sum over T rounds. Lemma 2.2 nevertheless states FullSwapReg_T = Cal_T^{D_R}, missing a factor T. Appendix B derives the unnormalized quantity Σ_pΣ_t x_t(p)D_R(ν_p|p) and calls it Cal_T, while Appendix C and all main theorems likewise use Cal_T on the order of εT. Thus the paper uses two incompatible normalizations, invalidating the equalities and the stated units of the bounds.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "21919-High-Dimensional_Calibration_from_Swap_Regret::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Theorem 3.1 proof, Claim C.3 and Eq. (9)",
+      "confidence": 0.99,
+      "supporting_evidence": "Claim C.3 is printed as Cal(x)-2Cal(x̃) ≥ (2 diam(P)^2/H^2)T. The subsequent proof and the later use require the opposite direction, namely Cal(x) ≤ 2Cal(x̃)+error. Moreover, the derivation at the end of the proof of Claim C.3 actually obtains an upper bound 2T diam(P)^2/H, not 2T diam(P)^2/H^2. This is not a harmless sign typo: with the derived H^{-1} error, selecting H=diam(P)/√ε gives an O(diam(P)√ε T) term rather than the claimed O(εT) term. Hence the displayed parameter choice and Theorem 3.1 do not follow from the supplied proof.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "21919-High-Dimensional_Calibration_from_Swap_Regret::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Sections 1.1, 2.4, and proof of Theorem 3.1: use of the range of R to bound Bregman losses",
+      "confidence": 0.98,
+      "supporting_evidence": "Theorem 1.1 assumes only that max R-min R ≤ ρ, but the TreeSwap theorem requires losses in [0,b], and the proof of Theorem 3.1 claims D_R(y||p)∈[0,ρ] from this range bound. A bounded range of a convex function does not bound its Bregman divergence because the gradient term can be unbounded. The paper itself explicitly acknowledges this in Section 2.4: “the negative entropy function ... has bounded range over the simplex but unbounded Bregman divergence.” Therefore the claimed inference from regularizer range to bounded loss range, and the stated version of Theorem 1.1, are false without an additional bounded-Bregman-divergence assumption.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "21919-High-Dimensional_Calibration_from_Swap_Regret::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Abstract and Section 1.1 simplex application",
+      "confidence": 0.98,
+      "supporting_evidence": "The abstract claims simplex ℓ1 calibration after T=exp(O(log d/ε))=d^{O(1/ε)}. But the paper's own stated Corollary C.5 yields T=(diam/ε)^{O(log d/ε^2)}=d^{O(1/ε^2)} (up to non-dimension factors), and Section 1.1 explicitly says the negative-entropy argument gives d^{O(1/ε^2)} and “recovers the result of [Pen25].” No argument in the paper establishes the stronger d^{O(1/ε)} rate. Further, the proposed entropy argument is incompatible with the bounded-Bregman-loss requirement, since the relevant KL divergence is unbounded on the closed simplex.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "21919-High-Dimensional_Calibration_from_Swap_Regret::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Abstract, final lower-bound claims",
+      "confidence": 0.99,
+      "supporting_evidence": "The abstract says the lower bound proves T≥exp(Ω(1/ε)) for ℓ1 calibration (for d≥poly(1/ε)), and that it is tight up to constants in the exponent. The actual stated lower bound, Theorem 4.3, has only T≤exp(c·min{d^{1/7},ε^{-1/6}}) (and Theorem 1.4 states d^{1/14} rather than d^{1/7}). Even when d is large, this is exp(Ω(ε^{-1/6})), not exp(Ω(1/ε)); it plainly does not match the claimed upper-bound exponent. The abstract materially overstates the proved lower bound.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "21919-High-Dimensional_Calibration_from_Swap_Regret::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Theorem 4.3: Section 4 statement versus Introduction Theorem 1.4 and Appendix D.1 proof",
+      "confidence": 0.98,
+      "supporting_evidence": "The introduction states Theorem 1.4 with min{d^{1/14},ε^{-1/6}}, whereas Section 4's Theorem 4.3 states min{d^{1/7},ε^{-1/6}}. The Appendix D.1 proof reduces to d'=floor((d-1)/2) and invokes Theorem 4.1, whose dimension exponent is (d')^{1/14}; this supports d^{1/14}, not d^{1/7}. Thus the stronger d^{1/7} bound in Theorem 4.3 is unsupported and inconsistent with both the cited lower bound and the proof.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "21919-High-Dimensional_Calibration_from_Swap_Regret::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Lemma 4.2 statement and its proof",
+      "confidence": 0.97,
+      "supporting_evidence": "Lemma 4.2 states a swap-regret bound with factor diam_{||·||}(P'), but its proof applies Hölder as <ν_p-p, BR(p)-π(BR(p))>≤||ν_p-p||·||BR(p)-π(BR(p))||_* and concludes with diam_{||·||_*}(P'). The conclusion must involve the dual-norm diameter of the action set P', not the primal-norm diameter claimed in the lemma. This mismatch is used in the subsequent lower-bound reduction.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "21919-High-Dimensional_Calibration_from_Swap_Regret::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 3.1 and Appendix C.2: tree-horizon assumptions and counting identities",
+      "confidence": 0.94,
+      "supporting_evidence": "The algorithmic setup assumes H^{L-1}≤T≤H^L and says truncated branches are ignored when T<H^L. Yet the proof repeatedly treats every interval as having size H^{L-l}, uses exact weights H^{L-l}/L, and identifies H^L with T. It then concludes the guarantee holds “as long as T ≥ H^L,” the reverse of the earlier requirement T≤H^L. These identities are valid only for T=H^L; no padding or truncated-tree analysis is supplied. Hence the theorem for arbitrary T is not established by the presented proof.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "21919-High-Dimensional_Calibration_from_Swap_Regret::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Appendix E examples and Section D.1 diameter assertion",
+      "confidence": 0.94,
+      "supporting_evidence": "Several explicit diameter values are wrong under the paper's own definition diam_{||·||}(P). Appendix E claims diam_{ℓ1}(Δ_d)=1 and diam_{ℓ2}(B_2^d)=1; both are 2. In the proof of Theorem 4.3 the paper likewise says diam_{ℓ∞}([-1,1]^{d'})=1, whereas it is 2. These errors affect stated constants in the pure-calibration and lower-bound reductions, even if they could be repaired by changing universal constants.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "21919-High-Dimensional_Calibration_from_Swap_Regret::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 10,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (gpt-5.6-terra, taxonomy=paperaudit): 10 error(s) reported.",
+  "baseline": {
+    "model": "gpt-5.6-terra",
+    "provider": "openai",
+    "taxonomy": "paperaudit",
+    "paper_chars": 91931,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 31955,
+      "output_tokens": 4789,
+      "cache_read_input_tokens": null,
+      "cache_creation_input_tokens": null
+    }
+  }
+}

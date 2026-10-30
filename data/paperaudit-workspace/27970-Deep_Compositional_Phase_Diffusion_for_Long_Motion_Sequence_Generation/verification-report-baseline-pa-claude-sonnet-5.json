@@ -1,0 +1,126 @@
+{
+  "paper_id": "27970-Deep_Compositional_Phase_Diffusion_for_Long_Motion_Sequence_Generation",
+  "title": "Deep Compositional Phase Diffusion for Long Motion Sequence Generation",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "reference_background_fabrication",
+      "error_location": "Related Work, Section 2 and reference list",
+      "confidence": 0.95,
+      "supporting_evidence": "Two citations are made to works that do not exist in the reference list: 'Johnson et al. [41] demonstrated that phase-aware representations reduce transition artifacts by up to 70%...' and 'recent work in neural phase modeling [42]'. The reference list ends at [40], so [41] and [42] are unverifiable or missing.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "27970-Deep_Compositional_Phase_Diffusion_for_Long_Motion_Sequence_Generation::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Eq. (1) and surrounding text, Section 3.1.1",
+      "confidence": 0.9,
+      "supporting_evidence": "Equation (1) defines Q = A sin(F·T + S) + B, but the subsequent sentence says 'The sine function parameterizes F·(T − S) into a periodic sine wave.' The plus and minus forms are inconsistent formulas for the same phase parameterization.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "27970-Deep_Compositional_Phase_Diffusion_for_Long_Motion_Sequence_Generation::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 3.1.1 and Appendix A.4",
+      "confidence": 0.95,
+      "supporting_evidence": "The paper states 'F,A,B,S ∈ R^4, each representing a scalar value per motion segment', but then defines Q ∈ R^{N×Q} and later sets 'phase latent size Q = 512, which serves as both the latent dimension for all diffusion modules and the number of periodic signals in ACT-PAE.' If F,A,B,S were only in R^4, Eq. (1) could not produce an N×512 signal; they must be in R^Q.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "27970-Deep_Compositional_Phase_Diffusion_for_Long_Motion_Sequence_Generation::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Eq. (2), Section 3.2.1 and Algorithm 1",
+      "confidence": 0.9,
+      "supporting_evidence": "Eq. (2) uses r as the mix weight and averages forward and backward predictions: r(P0_f + P0_b)/2 + (1−r)P0_c. The text then introduces α saying 'The weighting parameter α controls the balance... where α = 0.5 for all segments', but α does not appear in Eq. (2) or Algorithm 1. Moreover, Algorithm 1 updates the endpoint segments X_p and X_s using only a single directional transition prediction (P_pb or P_sf), not the average required by Eq. (2), so the equation and algorithm disagree for those segments.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "27970-Deep_Compositional_Phase_Diffusion_for_Long_Motion_Sequence_Generation::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Section 4.1.1 and Table 1 note",
+      "confidence": 0.9,
+      "supporting_evidence": "The paper claims a fair comparison: 'For fair comparison... All competing methods were evaluated under identical conditions', yet it also states that ACT-PAE was 'pre-trained on the full HumanML3D dataset (14,616 sequences) before fine-tuning on BABEL-TEACH, while baseline methods were trained exclusively on BABEL-TEACH.' This is an asymmetric training-data advantage for the proposed method, and the Table 1 note contradicts 'identical conditions' by admitting MDM-30 and MLD-30 were trained for 500 epochs while the proposed model used 300.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "27970-Deep_Compositional_Phase_Diffusion_for_Long_Motion_Sequence_Generation::baseline"
+    },
+    {
+      "error_category": "evidence_data_integrity",
+      "error_location": "Section 4.2.1",
+      "confidence": 0.95,
+      "supporting_evidence": "The text says 'Although TEACH shows strong contextual alignment in semantic segments, its lower Overall FID score indicates a compromise in motion quality...' But Table 1 reports TEACH Overall FID = 1.041 and Ours = 0.782; lower FID is better, so TEACH's Overall FID is higher (worse), not lower. The sentence should say 'higher Overall FID' or refer to a different measure such as MMD.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "27970-Deep_Compositional_Phase_Diffusion_for_Long_Motion_Sequence_Generation::baseline"
+    },
+    {
+      "error_category": "context_misalignment_incoherence",
+      "error_location": "Table 3 and Section 4.1.2",
+      "confidence": 0.85,
+      "supporting_evidence": "Section 4.1.2 says Transition Realism is assessed using L2 losses and NPSS, while Transition Smoothness is assessed using RMS-Jerk. Table 3, however, groups NPSS under 'Transition Smoothness' alongside RMS-Jerk, contradicting the text's own metric categorization.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "27970-Deep_Compositional_Phase_Diffusion_for_Long_Motion_Sequence_Generation::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Section 4.3",
+      "confidence": 0.9,
+      "supporting_evidence": "The paper claims 'improvements of up to 85% in RMS-Jerk' over baselines. From Table 3, the best baseline RMS-Jerk values are priorMDM's 0.4058/0.4495/0.2803 and Ours are 0.0963/0.1054/0.1213; the improvements are approximately 76%, 77%, and 57%, not 85%. Comparing against the worst baseline would give >90%, not 85%.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "27970-Deep_Compositional_Phase_Diffusion_for_Long_Motion_Sequence_Generation::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Section 4.2.2",
+      "confidence": 0.8,
+      "supporting_evidence": "The text states 'our method achieves superior performance across all metrics in long motion generation scenarios'. Table 2 shows TEACH has better Semantic MMD (3.175) than Ours (3.642), so the proposed method does not outperform all baselines on every reported metric.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "27970-Deep_Compositional_Phase_Diffusion_for_Long_Motion_Sequence_Generation::baseline"
+    },
+    {
+      "error_category": "rhetorical_presentation_manipulation",
+      "error_location": "Abstract",
+      "confidence": 0.8,
+      "supporting_evidence": "The Abstract claims 'Our framework completely eliminates these issues, producing flawless transitions in all tested scenarios.' This is an unsupported absolute claim contradicted by the paper's own quantitative results, which show nonzero FID, NPSS, and RMS-Jerk values; no evaluation reports zero errors.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "27970-Deep_Compositional_Phase_Diffusion_for_Long_Motion_Sequence_Generation::baseline"
+    },
+    {
+      "error_category": "context_misalignment_incoherence",
+      "error_location": "Abstract vs Section 3.1.1",
+      "confidence": 0.9,
+      "supporting_evidence": "The Abstract names the component 'Action-Centric Motion Phase Autoencoder (ACT-PAE)', but Section 3.1.1 defines it as the 'Action-Centric Periodic Autoencoder (ACT-PAE)'. The full name of the method is inconsistent between these sections.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "27970-Deep_Compositional_Phase_Diffusion_for_Long_Motion_Sequence_Generation::baseline"
+    },
+    {
+      "error_category": "ethical_integrity_omission",
+      "error_location": "Section 4.4",
+      "confidence": 0.55,
+      "supporting_evidence": "The paper reports 'in the user study, our approach attains the highest scores for motion realism and smoothness' but provides no protocol, participant information, or IRB/consent statement. A human-subject user study normally requires such ethics-related details; their absence is an omission.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "27970-Deep_Compositional_Phase_Diffusion_for_Long_Motion_Sequence_Generation::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 12,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (claude-sonnet-5, taxonomy=paperaudit): 12 error(s) reported.",
+  "baseline": {
+    "model": "claude-sonnet-5",
+    "provider": "anthropic",
+    "taxonomy": "paperaudit",
+    "paper_chars": 63339,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 41,
+      "output_tokens": 29705,
+      "cache_read_input_tokens": 15616,
+      "cache_creation_input_tokens": 0
+    }
+  }
+}

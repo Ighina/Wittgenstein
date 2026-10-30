@@ -1,0 +1,126 @@
+{
+  "paper_id": "27970-Deep_Compositional_Phase_Diffusion_for_Long_Motion_Sequence_Generation",
+  "title": "Deep Compositional Phase Diffusion for Long Motion Sequence Generation",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 3.1.1, ACT-PAE definition and Eq. (1)",
+      "confidence": 0.98,
+      "supporting_evidence": "The dimensions of the proposed latent are mutually inconsistent. The paper states that F, A, B, S ∈ R^4 and that each is 'a scalar value per motion segment,' but Eq. (1) is claimed to produce Q ∈ R^{N×Q}. Four scalar phase parameters can only produce a signal with at most four channels under the displayed equation, not an N×Q signal. Appendix A.4 separately states that Q=512 is both the latent dimension and the number of periodic signals. The paper must explicitly define F, A, B, S as Q-dimensional vectors (or otherwise provide the missing mapping); as written, the core autoencoder is dimensionally undefined.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "27970-Deep_Compositional_Phase_Diffusion_for_Long_Motion_Sequence_Generation::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 3.1.1, Eq. (1) and immediately following explanation",
+      "confidence": 0.95,
+      "supporting_evidence": "The displayed periodic parameterization and its prose description disagree about the phase shift. Eq. (1) uses A sin(F·T + S)+B, whereas the text says that the sine function parameterizes F·(T − S). These are not equivalent except under an unstated reparameterization of S, and they give different units/semantics to the phase shift. The actual model definition therefore cannot be reproduced.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "27970-Deep_Compositional_Phase_Diffusion_for_Long_Motion_Sequence_Generation::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Sections 3.1.2–3.1.3, Algorithm 1, and Appendix A.3",
+      "confidence": 0.99,
+      "supporting_evidence": "The diffusion networks are explicitly said to be ε-models: Appendix A.3 trains F_S and F_T against diffusion noise ε using L1 loss and states that they predict phase latent noise. Yet throughout the main text and Algorithm 1, their outputs are named P^0, described as clean phase latents, phase-mixed as clean latents, and supplied to the scheduler as P^0. A noise prediction ε and an x0/clean-latent prediction are different DDIM parameterizations and must be converted before being mixed or passed to a scheduler. No conversion is specified. This is a fundamental contradiction in the sampling algorithm.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "27970-Deep_Compositional_Phase_Diffusion_for_Long_Motion_Sequence_Generation::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 3.2.1, Eq. (2) versus Algorithm 1",
+      "confidence": 0.97,
+      "supporting_evidence": "The stated Phase Mixing Equation requires both forward and backward TPDM estimates, r(P^0_{·f}+P^0_{·b})/2, but Algorithm 1 gives each endpoint segment only one TPDM prediction: P_p uses P_pb and P_s uses P_sf. It then mixes them as rP_pb+(1−r)P_pc and rP_sf+(1−r)P_sc, not according to Eq. (2). Further, the prose introduces a weighting parameter α=0.5, but α does not occur in Eq. (2) or the algorithm. Thus the central mixing rule is internally inconsistent and incomplete.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "27970-Deep_Compositional_Phase_Diffusion_for_Long_Motion_Sequence_Generation::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Algorithm 1 and Appendix A.3, TPDM conditioning during sampling",
+      "confidence": 0.94,
+      "supporting_evidence": "TPDM is trained only with clean neighboring latents P_p^0, P_t^0, and P_s^0, as shown explicitly in the Appendix A.3 losses. At inference, however, Algorithm 1 initializes P_p^0, P_t^0, and P_s^0 to P_p^K, P_t^K, and P_s^K, i.e. Gaussian noise, and immediately conditions TPDM on these values at the first denoising step. Hence the claimed 'clean phase latents from the adjacent segment' are not clean at the first step, and are only model estimates thereafter. No noisy-neighbor training, teacher-forcing schedule, or robustness justification is provided for this major train–test conditioning mismatch.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "27970-Deep_Compositional_Phase_Diffusion_for_Long_Motion_Sequence_Generation::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Section 4.1.1, training-data and fairness statement",
+      "confidence": 0.96,
+      "supporting_evidence": "The paper claims fair comparison and says that all compared models are trained on the same dataset/representation, but also states that ACT-PAE was pre-trained on the entire HumanML3D dataset (14,616 sequences) before BABEL-TEACH fine-tuning, while 'baseline methods were trained exclusively on BABEL-TEACH.' This gives the proposed system substantial additional motion data unavailable to the baselines. A fair comparison would require comparable external pretraining for baselines, an ablation without HumanML3D pretraining, or explicit framing as a non-data-matched comparison.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "27970-Deep_Compositional_Phase_Diffusion_for_Long_Motion_Sequence_Generation::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Section 4.2.2 and Table 2, long-term-motion evaluation",
+      "confidence": 0.9,
+      "supporting_evidence": "The claimed long-term result is based on a single constructed sequence made by concatenating all 3,164 text conditions from the test set. The paper provides no rule establishing that these independently held-out pairs form one genuine continuous sequence, no repeated samples/seeds, no uncertainty estimates, and no explanation of how FID/MMD reference samples are constructed for the artificial cross-pair boundaries. A single arbitrary concatenation cannot support the stated general conclusion that the method maintains consistency over 168 minutes or 'substantially outperform[s]' all methods in long-term generation.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "27970-Deep_Compositional_Phase_Diffusion_for_Long_Motion_Sequence_Generation::baseline"
+    },
+    {
+      "error_category": "reference_background_fabrication",
+      "error_location": "Section 2, 'Motion Phase Modeling'",
+      "confidence": 0.99,
+      "supporting_evidence": "The related-work section cites '[16, 17, 18, 41]' and attributes a quantitative finding to 'Johnson et al. [41],' then cites '[42]' for validation of PAE instability. The reference list ends at [40]; references [41] and [42] do not exist. Moreover, reference [16] is Holden, Komura, and Saito's 2017 Phase-Functioned Neural Networks paper, which predates DeepPhase/PAE and therefore cannot have identified instability in DeepPhase's fixed-window PAE scheme as claimed. These citations and attributed findings require correction.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "27970-Deep_Compositional_Phase_Diffusion_for_Long_Motion_Sequence_Generation::baseline"
+    },
+    {
+      "error_category": "context_misalignment_incoherence",
+      "error_location": "Figure 4 and its caption, motion-inbetweening pipeline",
+      "confidence": 0.93,
+      "supporting_evidence": "The figure purporting to specify the inbetweening architecture is structurally incomplete and conflicts with its caption. The X_t2 TPDM/phase-mixing nodes have no incoming or outgoing edges in the diagram, and there are no edges from P^0_t2 to its decoder or from X_t2 to the shown blending path. Conversely, the diagram feeds the same X_s phase input to all TPDM/SPDM nodes for X_i. Since the caption claims X_i, X_t1, and X_t2 are simultaneously generated and blended, the presented pipeline does not actually define that computation.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "27970-Deep_Compositional_Phase_Diffusion_for_Long_Motion_Sequence_Generation::baseline"
+    },
+    {
+      "error_category": "rhetorical_presentation_manipulation",
+      "error_location": "Abstract and Introduction",
+      "confidence": 0.94,
+      "supporting_evidence": "The paper asserts that the framework 'completely eliminates' transition issues and produces 'flawless transitions in all tested scenarios,' and calls itself 'revolutionary' and 'groundbreaking.' The supplied evidence consists of aggregate metrics and selected visualizations, while Table 1 still reports nonzero transition FID (1.807) and the method is evaluated only on specified BABEL-TEACH settings. Neither FID nor the reported experiments establishes perfect or flawless transitions. These absolute claims materially overstate the evidence.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "27970-Deep_Compositional_Phase_Diffusion_for_Long_Motion_Sequence_Generation::baseline"
+    },
+    {
+      "error_category": "ethical_integrity_omission",
+      "error_location": "Section 4.4, claimed user study",
+      "confidence": 0.9,
+      "supporting_evidence": "The paper invokes a user study as evidence that the approach has the highest realism and smoothness scores, but gives no participant count, recruitment method, participant demographics, task/questions, randomization, compensation, consent, ethics/IRB status, statistical analysis, or actual scores. Since human-subject evidence is used to support performance claims, this omission prevents assessment of both ethical compliance and validity.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "27970-Deep_Compositional_Phase_Diffusion_for_Long_Motion_Sequence_Generation::baseline"
+    },
+    {
+      "error_category": "ethical_integrity_omission",
+      "error_location": "Appendix C, Impact Statements",
+      "confidence": 0.86,
+      "supporting_evidence": "The impact statement categorically says the work 'has no negative impact on society' and asserts that the datasets 'could [not] be sensitive or have privacy implications.' Human-motion capture data can carry biometric, identity, consent, and downstream surveillance/animation-misuse concerns, and the paper supplies no analysis supporting their blanket dismissal. The statement omits realistic limitations and risk considerations rather than documenting why they do not apply.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "27970-Deep_Compositional_Phase_Diffusion_for_Long_Motion_Sequence_Generation::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 12,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (gpt-5.6-terra, taxonomy=paperaudit): 12 error(s) reported.",
+  "baseline": {
+    "model": "gpt-5.6-terra",
+    "provider": "openai",
+    "taxonomy": "paperaudit",
+    "paper_chars": 63339,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 15852,
+      "output_tokens": 4100,
+      "cache_read_input_tokens": null,
+      "cache_creation_input_tokens": null
+    }
+  }
+}

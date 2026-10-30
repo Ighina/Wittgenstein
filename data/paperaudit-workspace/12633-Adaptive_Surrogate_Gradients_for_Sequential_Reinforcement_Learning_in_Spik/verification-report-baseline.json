@@ -1,0 +1,79 @@
+{
+  "paper_id": "12633-Adaptive_Surrogate_Gradients_for_Sequential_Reinforcement_Learning_in_Spik",
+  "title": "Adaptive Surrogate Gradients for Sequential Reinforcement Learning in Spik",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Abstract vs Section 5.2 (Figure 4a caption and results)",
+      "confidence": 0.95,
+      "supporting_evidence": "The abstract states 'we achieve an average return of 400 points, substantially outperforming prior techniques, including Behavioral Cloning and TD3BC, which achieve at most -200 points'. Section 5.2 states 'TD3BC+JSRL achieves 400-point average reward under curriculum learning, while BC, TD3BC, and vanilla TD3 fail to exceed -200 points'. However, Figure 4a shows that BC achieves approximately 0 points (not -200), and TD3BC appears to achieve around -100 to -150 points (not -200). The claim 'at most -200 points' is inconsistent with the figure.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "12633-Adaptive_Surrogate_Gradients_for_Sequential_Reinforcement_Learning_in_Spik::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (figure-text)",
+      "error_location": "Table 3 vs text description in Section 5.3",
+      "confidence": 0.9,
+      "supporting_evidence": "Table 3 shows 'ANN no action history' with Position Error of 0.25m and Trajectory Error as 'N/A'. The text states 'ANN without action history failed to control the drone' and 'ANNs without action history failed to control the drone' (repeated twice). If the ANN failed to control the drone, it should not have a measurable position error of 0.25m. Either the ANN achieved some control (0.25m error) or it completely failed (which would make position error undefined or much larger).",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "12633-Adaptive_Surrogate_Gradients_for_Sequential_Reinforcement_Learning_in_Spik::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Equation (1)",
+      "confidence": 0.85,
+      "supporting_evidence": "Equation (1) defines the objective as J_π = E[sum over i from 0 to n_seq-1 of (indicator * Q - λ * ||π - a||^2)]. The indicator function 1_{i >= n_warmup} is applied only to the Q term but not to the BC term. This means the BC loss is applied during the warm-up period when the Q-value should not be used. This seems inconsistent with the stated purpose that 'we zero-initialize hidden states' during warm-up and that gradients should only be applied after warm-up. The BC term should likely also be masked during warm-up, or the formulation needs clarification.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "12633-Adaptive_Surrogate_Gradients_for_Sequential_Reinforcement_Learning_in_Spik::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 3.1 vs Section 5.4 (Ablation Study)",
+      "confidence": 0.8,
+      "supporting_evidence": "Section 3.1 states 'the guide controller... is used for the first 500 − N timesteps, after which the spiking policy interacts for the remaining N steps, linearly increasing N until the guide policy is only used for the warm-up period.' This implies N increases from 0 to (500 - warmup = 450). However, the ablation study in Section 5.4 shows that removing the jump-start period entirely ('Jump-start: No') results in the network 'failing to learn stable flight altogether' with reward of only 32. This suggests the jump-start is critical throughout training, not just initially. The description of how N increases and when the guide policy stops being used beyond warm-up is unclear and potentially inconsistent with the ablation results.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "12633-Adaptive_Surrogate_Gradients_for_Sequential_Reinforcement_Learning_in_Spik::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Section 3.1 and Algorithm 1 (line 9-10)",
+      "confidence": 0.75,
+      "supporting_evidence": "The text states 'the guide controller... is used for the first 500 − N timesteps' and 'linearly increasing N until the guide policy is only used for the warm-up period.' Algorithm 1 (line 9-10) shows 'if t < t_warmup then a_t ← π_ctrl(s_t)' but the algorithm is incomplete (cuts off at line 10). The methodology describes a curriculum where the guide is used for decreasing amounts of time, but it's unclear how this relates to the 500-step episode length, the warm-up period of 50 steps, and how N is actually scheduled. The relationship between these quantities is not clearly defined.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "12633-Adaptive_Surrogate_Gradients_for_Sequential_Reinforcement_Learning_in_Spik::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 5.1 vs Figure 3",
+      "confidence": 0.7,
+      "supporting_evidence": "Section 5.1 states 'We observe that scheduled slope settings first reduce the number of epochs to reach a reward of 100 by a factor of 4.5 compared to steeper slopes.' However, Figure 3a (RL panel) shows that the fixed slope k=1 reaches reward 100 at approximately 5000 steps, while k=100 reaches it at around 22000 steps. This is a ratio of 22000/5000 = 4.4x, which is close to 4.5x. However, the 'scheduled slopes' (interval and adaptive) appear to reach reward 100 at around 8000-10000 steps, which is only about 2-2.75x faster than k=100, not 4.5x. The claim about scheduled slopes achieving 4.5x speedup appears inconsistent with the figure.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "12633-Adaptive_Surrogate_Gradients_for_Sequential_Reinforcement_Learning_in_Spik::baseline"
+    },
+    {
+      "error_category": "Statistical reporting",
+      "error_location": "Table 3",
+      "confidence": 0.65,
+      "supporting_evidence": "Table 3 reports position errors and trajectory errors but provides no uncertainty estimates (standard deviations, confidence intervals, or number of trials). The comparison shows SNN achieving 0.02m position error vs ANN's 0.1m, which is a 5x improvement. Given that Section 5.3 mentions 'oscillatory behavior' in the SNN and that real-world robotics experiments typically have high variance, reporting point estimates without uncertainty is problematic for drawing conclusions about relative performance.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "12633-Adaptive_Surrogate_Gradients_for_Sequential_Reinforcement_Learning_in_Spik::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 7,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (claude-sonnet-4-5-20250929, taxonomy=default): 7 error(s) reported.",
+  "baseline": {
+    "model": "claude-sonnet-4-5-20250929",
+    "taxonomy": "default",
+    "paper_chars": 55407,
+    "truncated": false
+  }
+}

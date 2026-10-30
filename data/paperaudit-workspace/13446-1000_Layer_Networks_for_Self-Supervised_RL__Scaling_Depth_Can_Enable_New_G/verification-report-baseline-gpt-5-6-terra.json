@@ -1,0 +1,102 @@
+{
+  "paper_id": "13446-1000_Layer_Networks_for_Self-Supervised_RL__Scaling_Depth_Can_Enable_New_G",
+  "title": "1000 Layer Networks for Self-Supervised RL: Scaling Depth Can Enable New G",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Section 3 (Contrastive RL), Figure 9, and Appendix B hyperparameters",
+      "confidence": 0.96,
+      "supporting_evidence": "The critic is defined as a dot product, f_{φ,ψ}(s,a,g)=φ(s,a)^Tψ(g), and the actor is trained to maximize that quantity. Figure 9 instead says the displayed Q-values are Q(s,a,g)=||φ(s,a)-ψ(g)||_2, while the hyperparameter table says the energy function is L2. These are different critic parameterizations. Moreover, if the displayed quantity literally is the positive L2 distance, maximizing it would favor states farther from the goal, contrary to its interpretation as a goal-reaching Q-value. A sign/energy definition or an explicit reconciliation is required.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "13446-1000_Layer_Networks_for_Self-Supervised_RL__Scaling_Depth_Can_Enable_New_G::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Figure 9 caption",
+      "confidence": 0.95,
+      "supporting_evidence": "The caption calls Q(s,a,g)=||φ(s,a)-ψ(g)||_2 a Q-value and describes high Q-values as being associated with goal-reaching regions. Positive Euclidean distance is larger when embeddings are farther apart, so it cannot have that stated ordering for a critic that is maximized by the policy. It would need to be negated or transformed (e.g., -||·|| or -||·||^2).",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "13446-1000_Layer_Networks_for_Self-Supervised_RL__Scaling_Depth_Can_Enable_New_G::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Section 4.4, \"Width vs. Depth\"",
+      "confidence": 0.99,
+      "supporting_evidence": "The paper states: \"the parameter count scales linearly with width but quadratically with depth.\" For an MLP/residual MLP with hidden width w and L dense layers, the dominant hidden-to-hidden parameter count is O(Lw^2): it is linear in depth and quadratic in width. The stated scaling is reversed, undermining the accompanying compute/memory-efficiency argument.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "13446-1000_Layer_Networks_for_Self-Supervised_RL__Scaling_Depth_Can_Enable_New_G::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (figure-figure)",
+      "error_location": "Table 1 versus Figure 13 (Scaled CRL rows)",
+      "confidence": 0.94,
+      "supporting_evidence": "Both are presented as results for scaled CRL at the same listed depths and environments, but report materially incompatible scores without identifying different protocols or seeds. For example, Table 1 reports Humanoid D=4: 12.6 ± 1.3 and D=64: 530 ± 19, whereas Figure 13 reports 19.5 and 756. For Arm Push Easy, Table 1 reports D=64: 620 ± 30 while Figure 13 reports 762. The Humanoid discrepancy is far beyond the reported uncertainty in Table 1.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "13446-1000_Layer_Networks_for_Self-Supervised_RL__Scaling_Depth_Can_Enable_New_G::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (figure-figure)",
+      "error_location": "Figure 6 versus Table 1 and Figure 13",
+      "confidence": 0.89,
+      "supporting_evidence": "Figure 6's jointly scaled actor/critic entries should correspond to the ordinary equal-depth scaled-CRL condition, but they do not match the other reported equal-depth results. At actor=critic=64, Figure 6 gives Humanoid 718, Ant Big Maze 571, and Arm Push Easy 864. Table 1 gives 530, 420, and 620 respectively; Figure 13 gives 756, 441, and 762. No separate training budget, seed set, or altered protocol is stated to justify these incompatible datasets.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "13446-1000_Layer_Networks_for_Self-Supervised_RL__Scaling_Depth_Can_Enable_New_G::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 4.4, \"Deep Networks Unlock Batch Size Scaling\" subsection and Figure 7 caption",
+      "confidence": 0.97,
+      "supporting_evidence": "The subsection heading and caption assert that deep networks \"unlock batch size scaling\" and that larger networks \"can effectively leverage batch size scaling to achieve further improvements.\" The immediately following interpretation says Figure 7 shows \"only marginal or inconsistent improvements\" even for deeper models and that \"the overall benefit of batch size scaling remains uncertain.\" The positive conclusion advertised by the heading/caption contradicts the stated result.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "13446-1000_Layer_Networks_for_Self-Supervised_RL__Scaling_Depth_Can_Enable_New_G::baseline"
+    },
+    {
+      "error_category": "Figure / table error",
+      "error_location": "References to Figure 12 in Sections 4.2 and 4.4, and Appendix A.1",
+      "confidence": 0.98,
+      "supporting_evidence": "Figure 12 is assigned incompatible contents. Section 4.2 says Figure 12 compares CRL against SAC, SAC+HER, TD3+HER, GCBC, and GCSL; Appendix A.1 also labels Figure 12 as the baseline comparison. But Section 4.4 says \"The results, shown in Figure 12\" are the 256- and 1024-layer Humanoid scaling experiments, and the main-text Figure 12 caption is \"Testing the limits of scale.\" These cannot all be the same figure and make the cited evidence ambiguous.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "13446-1000_Layer_Networks_for_Self-Supervised_RL__Scaling_Depth_Can_Enable_New_G::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 4.4, parameter-count comparison",
+      "confidence": 0.88,
+      "supporting_evidence": "The text uses the incorrect claim that depth has quadratic parameter scaling to argue that depth is more efficient, then gives an example of a depth-32, width-256 network having about 2M parameters. That approximate 2M value is consistent with the actual O(Lw^2) scaling of a single network, not with the text's claimed quadratic-in-depth scaling. Thus the numerical example and the stated scaling law are internally inconsistent.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "13446-1000_Layer_Networks_for_Self-Supervised_RL__Scaling_Depth_Can_Enable_New_G::baseline"
+    },
+    {
+      "error_category": "Citation / attribution",
+      "error_location": "Appendix A.6, \"Recently, Simba-v2 proposed...\"",
+      "confidence": 0.82,
+      "supporting_evidence": "The appendix attributes a specific \"Simba-v2\" method and its hyperspherical-normalization mechanism to prior work, but the bibliography contains no Simba-v2 reference. The only apparently related entry is Lee et al. (2024), titled \"SimBa: Simplicity Bias for Scaling Up Parameters in Deep Reinforcement Learning,\" not a separately identified Simba-v2 work. The attribution is therefore unverifiable as cited and needs a correct reference and precise description.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "13446-1000_Layer_Networks_for_Self-Supervised_RL__Scaling_Depth_Can_Enable_New_G::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 9,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (gpt-5.6-terra, taxonomy=default): 9 error(s) reported.",
+  "baseline": {
+    "model": "gpt-5.6-terra",
+    "provider": "openai",
+    "taxonomy": "default",
+    "paper_chars": 81701,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 22290,
+      "output_tokens": 5072,
+      "cache_read_input_tokens": null,
+      "cache_creation_input_tokens": null
+    }
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "paper_id": "19233-Understanding_and_Mitigating_Numerical_Sources_of_Nondeterminism_in_LLM_In",
+  "title": "Understanding and Mitigating Numerical Sources of Nondeterminism in LLM In",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Section 4 (Method), LayerCast description",
+      "confidence": 0.85,
+      "supporting_evidence": "The paper repeatedly states that LayerCast 'stores weights in 16-bit precision but performs all computations in FP32' (Abstract) and that 'this approach ensures all computations occur in full FP32 precision while storing weights in memory-efficient 16-bit formats' (Section 4). However, the three-step description of LayerCast explicitly says: '(1) loading model parameters directly in BF16 precision; (2) keeping weights stored in BF16 throughout inference; and (3) performing computations without upcasting to FP32 at runtime.' Step (3) directly contradicts the core claim of the method (computing in FP32) stated everywhere else in the paper, making the method's own description internally inconsistent and unworkable as written.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "19233-Understanding_and_Mitigating_Numerical_Sources_of_Nondeterminism_in_LLM_In::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Appendix E (discussion preceding Table 8) vs. Section 3.1 definition and Table 8 values",
+      "confidence": 0.8,
+      "supporting_evidence": "Section 3.1 defines Div_Index as the raw token position where responses diverge ('we define the index of that position as the divergence index'), and states 'A higher Div_Index indicates greater consistency.' However, the Appendix E text describing Table 8 states 'Div_Index in the 0–1 range; a Div_Index of 1 means the 12 responses ... have exactly the same token at each position.' This 0-1 normalization claim directly contradicts both the original definition and the actual values reported in Table 8 (e.g., 45.67, 430.13, 1825.79, 5807.83), which are clearly raw token-position indices far outside a [0,1] range.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "19233-Understanding_and_Mitigating_Numerical_Sources_of_Nondeterminism_in_LLM_In::baseline"
+    },
+    {
+      "error_category": "Figure / table error",
+      "error_location": "Table 23 (Pass@1 accuracies for Qwen2.5-7B-Instruct), MATH500 BF16 row",
+      "confidence": 0.85,
+      "supporting_evidence": "In Table 23, the FP32 row for MATH500 shows accuracies around 74.80-74.85% and FP16 shows 74.50-75.00%, consistent with Qwen2.5-7B-Instruct's performance level. However, the BF16 row for the same benchmark/model shows values of 90.65, 91.15, 90.40, 90.95, 90.85, 90.35 -- roughly 16 percentage points higher than the FP16/FP32 rows in the same table, which is implausible for the same model/benchmark under near-identical precision settings. This also contradicts Table 5, which reports the Std@Acc for Qwen2.5-7B-Instruct on MATH500 (n=4) BF16 as 0.4663, whereas the values in Table 23 compute to a std of 0.3158. This strongly suggests data was copy-pasted from a different model (e.g., a DeepSeek-R1-Distill reasoning model, which scores ~86-91% on MATH500 per Table 25).",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "19233-Understanding_and_Mitigating_Numerical_Sources_of_Nondeterminism_in_LLM_In::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (figure-text)",
+      "error_location": "Appendix E.1 (Qwen3-32B evaluation) vs. Table 10",
+      "confidence": 0.7,
+      "supporting_evidence": "The text states: 'Due to memory constraints, Qwen3-32B cannot be loaded into several runtime configurations for FP32 precision (such as 4 GPUs with batch size 32)...' However, Table 10 shows that the '4 GPUs L40S-BS32' FP32 configuration actually has a valid reported accuracy (76.67%), while the actual OOM entries in the table occur only for '2 GPUs L40S' across all three batch sizes (BS=8,16,32). The cited example in the text does not match the configurations marked OOM in the table.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "19233-Understanding_and_Mitigating_Numerical_Sources_of_Nondeterminism_in_LLM_In::baseline"
+    },
+    {
+      "error_category": "Citation / attribution",
+      "error_location": "References [12] and [13]",
+      "confidence": 0.7,
+      "supporting_evidence": "Reference [13], cited throughout the paper as the DeepSeek-R1 paper ('DeepSeek-R1: incentivizing reasoning capability in LLMs via reinforcement learning'), is listed with the exact same author list as reference [12] ('Guhao Feng, Kai Yang, Yuntian Gu, Xinyue Ai, Shengjie Luo, Jiacheng Sun, Di He, Zhenguo Li, and Liwei Wang'), which is actually a different paper about numerical precision and mathematical reasoning. The real DeepSeek-R1 technical report is authored by the DeepSeek-AI team, not these individuals, indicating a fabricated/misattributed citation.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "19233-Understanding_and_Mitigating_Numerical_Sources_of_Nondeterminism_in_LLM_In::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Section 4, LayerCast memory efficiency claims",
+      "confidence": 0.5,
+      "supporting_evidence": "The paper claims 'memory usage is reduced by 34% (particularly important for the KV cache in long-context scenarios)' and that LayerCast provides 'substantially reduced memory requirements, particularly beneficial for the KV cache in long-context scenarios,' but no table, measurement, or methodology detail in the paper supports or explains this specific percentage, nor does the described workflow (Figure 7, limited to within one transformer block) address how KV cache precision/storage is handled when all computations are performed in FP32. This leaves the stated memory benefit for the KV cache unsupported and inconsistent with the all-FP32-computation design.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "19233-Understanding_and_Mitigating_Numerical_Sources_of_Nondeterminism_in_LLM_In::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 6,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (claude-sonnet-5, taxonomy=default): 6 error(s) reported.",
+  "baseline": {
+    "model": "claude-sonnet-5",
+    "provider": "anthropic",
+    "taxonomy": "default",
+    "paper_chars": 124957,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 44624,
+      "output_tokens": 20315,
+      "cache_read_input_tokens": 0,
+      "cache_creation_input_tokens": 0
+    }
+  }
+}

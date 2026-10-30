@@ -1,0 +1,134 @@
+{
+  "paper_id": "16407-A_Clean_Slate_for_Offline_Reinforcement_Learning",
+  "title": "A Clean Slate for Offline Reinforcement Learning",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Appendix I.1, Eq. (5)",
+      "confidence": 0.99,
+      "supporting_evidence": "Eq. (5) adds the term \"α_BC · (ã_{t+1} − a_{t+1})\" to v_{t+1}. The left-hand side and v_{t+1} are scalar values, whereas actions are generally vectors in the continuous-control tasks used here. No norm, inner product, reduction, or scalar-valued action penalty is specified, so this expression is dimensionally invalid. A BC penalty would need, for example, a squared norm or log-probability scalar.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16407-A_Clean_Slate_for_Offline_Reinforcement_Learning::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Appendix I.1 and I.2; Table 5; Section 5.1",
+      "confidence": 0.93,
+      "supporting_evidence": "TD3-AWR is claimed to replace ReBRAC's BC term with IQL-style AWR. AWR in Eq. (10) requires V(s), and Eq. (4) says that v is trained by expectile regression, but the paper never provides the value-function objective or update rule. Moreover, Table 5 lists IQL as \"Use value target: False,\" despite IQL's Q target requiring V(s'). Thus the unified specification does not coherently define how the value function needed for TD3-AWR/AWR is trained or used.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16407-A_Clean_Slate_for_Offline_Reinforcement_Learning::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Appendix E, Figures 12–13 code excerpts for EDAC",
+      "confidence": 0.98,
+      "supporting_evidence": "The paper correctly describes EDAC as adding a critic-ensemble gradient-diversity penalty, and Eq. (7) defines that penalty via pairwise inner products of ∇_a q_i. However, the purported EDAC implementation instead adds \"diversity_loss = -self.eta * q_std\" to both actor and critic losses. Penalizing the standard deviation of Q values is not the EDAC gradient-diversity objective and adds an actor loss absent from EDAC. Therefore the shown implementation cannot substantiate an EDAC reimplementation or its reported results.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16407-A_Clean_Slate_for_Offline_Reinforcement_Learning::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Appendix E, Figure 12 code excerpt for CQL",
+      "confidence": 0.94,
+      "supporting_evidence": "The purported CQL implementation updates the Lagrange multiplier using \"alpha_loss = -self.log_alpha_prime * (q_value.detach() - self.cql_target_action_gap).mean()\" in the actor update. CQL's Lagrange multiplier regulates the conservative Q penalty/gap, not the actor's sampled minimum Q value. In addition, the displayed q-tensor convention is ensemble-by-batch (as shown by q_values.min(0)), but \"torch.cat([q_random, q_sampled], dim=1)\" followed by logsumexp(dim=1) produces an ensemble-length result, which cannot be subtracted from current_q.mean(0), a batch-length result, except under an accidental equality of batch size and ensemble size. This code is internally invalid and does not implement CQL as claimed.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16407-A_Clean_Slate_for_Offline_Reinforcement_Learning::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Abstract and Introduction versus Appendix F, Table 2",
+      "confidence": 0.99,
+      "supporting_evidence": "The abstract/introduction claim average speedups of \"131.5× and 74.8× against OfflineRL-Kit and CORL.\" Table 2 does not support these values. For rows with OfflineRL-Kit measurements, the per-algorithm ratios OfflineRL-Kit/Unifloral are approximately 6.1×–20.8×, with an arithmetic mean around 14.5×; for CORL they are about 1.3×–18.4×, with a mean around 11.0×. Aggregate runtimes likewise cannot yield 131.5× or 74.8×. The reported averages are off by roughly an order of magnitude.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16407-A_Clean_Slate_for_Offline_Reinforcement_Learning::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (figure-figure)",
+      "error_location": "Figure 5 versus Appendix F, Table 2",
+      "confidence": 0.95,
+      "supporting_evidence": "Figure 5 reports, for example, ReBRAC at \"8x\" speedup, while Table 2 gives CORL 8.7 minutes and Unifloral 6.8 minutes, only about 1.28×. Other Figure 5 values also do not consistently match either listed comparison: BC is shown as 16× but Table 2 gives 11.6× versus OfflineRL-Kit and 8.8× versus CORL; TD3-BC is shown as 16× but gives 18.1× and 13.7×, respectively. Since the text identifies OfflineRL-Kit and CORL as the comparisons, the figure requires correction or an explicit different baseline.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16407-A_Clean_Slate_for_Offline_Reinforcement_Learning::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (figure-figure)",
+      "error_location": "Figure 6 versus Appendix J, Figure 14, halfcheetah-medium-expert-v2 panel",
+      "confidence": 0.99,
+      "supporting_evidence": "Figure 6's embedded panel description states that TD3-AWR reaches about 105 while ReBRAC \"stays around 90\" on halfcheetah-medium-expert-v2. Appendix J's full-results description for the same task states \"REBRAC: ~105\" and \"TD3-AWR: ~105.\" These are materially incompatible depictions of the same comparison and affect the claimed improvement.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16407-A_Clean_Slate_for_Offline_Reinforcement_Learning::baseline"
+    },
+    {
+      "error_category": "Citation / attribution",
+      "error_location": "Section 6, Related Work",
+      "confidence": 0.99,
+      "supporting_evidence": "Section 6 says unification \"traces back to online RL architectures like Rainbow [38] and Muesli [39]\" and cites \"Other dual optimization frameworks [40].\" The bibliography identifies [38] as Stable-Baselines3, [39] as Spinning Up, and [40] as rejax. Rainbow, Muesli, and Dual RL are actually references [25], [26], and [27], respectively. Appendix L uses the correct numbers, so Section 6 contains clear erroneous citations.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16407-A_Clean_Slate_for_Offline_Reinforcement_Learning::baseline"
+    },
+    {
+      "error_category": "Citation / attribution",
+      "error_location": "Appendix E.2, Figure 10(a) genealogy",
+      "confidence": 0.95,
+      "supporting_evidence": "Figure 10(a) presents \"CQL → MOREL, COMBO\" as an algorithmic genealogy. COMBO is built on conservative model-based optimization and incorporates CQL, but MOReL is not derived from CQL: its cited description in Appendix A.2 says it builds a pessimistic MDP using a learned dynamics ensemble and termination under disagreement. MOReL also predates the cited CQL publication chronology. This genealogy misattributes MOReL's method lineage.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16407-A_Clean_Slate_for_Offline_Reinforcement_Learning::baseline"
+    },
+    {
+      "error_category": "Statistical reporting",
+      "error_location": "Section 3.2 and Figures 3/8 captions",
+      "confidence": 0.9,
+      "supporting_evidence": "The reported 95% CIs are only over 500 simulated bandit rollouts after repeatedly subsampling from the same 20 trained policies: \"K=8 policy arms subsampled from 20 trained policies each rollout.\" They therefore condition on the finite set of trained seeds and sampled hyperparameters and omit uncertainty from policy training, hyperparameter sampling, and the finite R episodic-score estimates used as the alleged \"true average return.\" Labeling these as 95% confidence intervals for algorithm performance is under-covered and misleading; they are at most conditional Monte-Carlo intervals for the stated resampling procedure.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16407-A_Clean_Slate_for_Offline_Reinforcement_Learning::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 3.2, \"Recommended Datasets,\" versus Section 3.3 / Appendix B",
+      "confidence": 0.92,
+      "supporting_evidence": "The recommended-dataset list contains eight tasks: hopper, halfcheetah, walker2d, three pen tasks, kitchen, and maze2d. The principal evaluation is repeatedly described as nine datasets and Appendix B includes antmaze-large-diverse-v2 as the ninth task. AntMaze is absent from the recommendation, while the paper invokes the recommended set to justify its evaluation design. The recommended benchmark specification and the actual benchmark are inconsistent.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16407-A_Clean_Slate_for_Offline_Reinforcement_Learning::baseline"
+    },
+    {
+      "error_category": "Figure / table error",
+      "error_location": "Appendix J, Figure 14 caption",
+      "confidence": 0.99,
+      "supporting_evidence": "Figure 14 compares TD3-AWR with IQL and ReBRAC, which are model-free methods, but its caption says \"Full comparison of TD3-AWR to prior model-based methods across all datasets.\" This is false and reverses the class of the baselines.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16407-A_Clean_Slate_for_Offline_Reinforcement_Learning::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Section 5.2 and Figure 7 / Appendix K",
+      "confidence": 0.9,
+      "supporting_evidence": "Section 5.2 makes strong comparative claims—\"MoBRAC outperforms other model-based methods for all datasets, except for MOPO in maze2d-large-v1\" and \"outperforms ... in 6 out of 9 datasets and is tied with MOPO for 3 others.\" Yet Figure 7 as provided contains only an algorithm legend, and Appendix K provides only axis ranges and a legend, not numerical curves, values, uncertainty intervals, or tabulated comparisons. The supplied evidence cannot establish the claimed six wins and three ties; the result figure/data must be supplied or the claims withdrawn.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16407-A_Clean_Slate_for_Offline_Reinforcement_Learning::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 13,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (gpt-5.6-terra, taxonomy=default): 13 error(s) reported.",
+  "baseline": {
+    "model": "gpt-5.6-terra",
+    "provider": "openai",
+    "taxonomy": "default",
+    "paper_chars": 90051,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 23553,
+      "output_tokens": 4754,
+      "cache_read_input_tokens": null,
+      "cache_creation_input_tokens": null
+    }
+  }
+}

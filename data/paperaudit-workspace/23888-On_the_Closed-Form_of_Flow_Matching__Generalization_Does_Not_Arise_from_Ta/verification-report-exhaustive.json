@@ -1,0 +1,86 @@
+{
+  "paper_id": "23888",
+  "title": "On the Closed-Form of Flow Matching: Generalization Does Not Arise from Target Stochasticity",
+  "paper_category": "cs.LG",
+  "predicted_errors": [
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Equation (5), Section 2 (Recalls on conditional flow matching)",
+      "confidence": 0.9,
+      "supporting_evidence": "The CFM loss underbrace asserts u^cond(x_t, x_1, t) = (x_1 - x_t)/(1 - t) = (x_1 - x_0)/(1 - t). With x_t := (1 - t)x_0 + t x_1, one has x_1 - x_t = (1 - t)(x_1 - x_0), so (x_1 - x_t)/(1 - t) = x_1 - x_0 (the factor (1 - t) cancels exactly). The printed second equality (x_1 - x_0)/(1 - t) retains an erroneous denominator, so the identity as printed is false. The correct conditional-flow-matching regression target is x_1 - x_0, which is exactly the form used in Algorithm 1 and in the Figure 1 caption of the same paper, confirming the error is isolated to Eq. (5).",
+      "verifier_name": "math-equations",
+      "snippet_id": "23888::EQUATION::4"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Appendix A.1, Proof of Proposition 1, Equation (29)",
+      "confidence": 0.9,
+      "supporting_evidence": "The numerator of the closed-form derivation drops a factor 1/n between Equation (28), which carries (1/n) sum_i, and Equation (29), which writes sum_i without 1/n. Since the denominator Equation (26) still contains the factor 1/n, 'taking the ratio of Equations (24) and (29)' as printed yields n times the stated closed form u_hat*(x, t) instead of u_hat*(x, t). The final closed-form formula (6) itself is correct (it matches the softmax-weighted expectation derived from the Gaussian path); the defect is a dropped scalar factor in the printed proof.",
+      "verifier_name": "math-equations",
+      "snippet_id": "23888::PROOF::0"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Appendix B.3, Proof of Proposition 2, item (iii), Equations (70)-(73)",
+      "confidence": 0.9,
+      "supporting_evidence": "Equation (70), n * (1/M) * E_{Unif}[sum_j w^(i_j) (u^(i_j))^2], evaluates to sum_l w^(l) (u^(l))^2 (the factor n cancels the 1/n from the uniform expectation). Equations (71)-(72) instead drop the factor n and equal (1/n) * sum_l w^(l) (u^(l))^2. Consequently the printed bound in Equation (73), E[u_hat*_M^2] - (u_hat*)^2 <= (1/n) sum_l w^(l)(u^(l))^2 - (u_hat*)^2, is false in general (e.g., M = 1 with n > 1 makes the printed RHS smaller than the true Var[u^cond] = sum_l w^(l)(u^(l))^2 - (u_hat*)^2). The final variance inequality (11)/(74) is mathematically true once the factor is restored; the printed derivation steps are algebraically inconsistent.",
+      "verifier_name": "math-equations",
+      "snippet_id": "23888::PROOF::3"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Appendix C (Additional experiments), prose vs Tables 1-2 captions",
+      "confidence": 0.9,
+      "supporting_evidence": "The Appendix C prose states 'We present below the results for the MNIST dataset' and describes 'a pretrained classifier with 99% accuracy on MNIST (90% on FMNIST)', while BOTH Table 1 and Table 2 are captioned 'FID FMNIST'. No reading makes the prose and both captions simultaneously correct; the dataset identity of the additional-experiments section is misreported (the appendix is meant to support the paper's generalization claim, so the inconsistency is material).",
+      "verifier_name": "text",
+      "snippet_id": "23888::SECTION::19"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Appendix C, Table 2 vs Table 1 (identical 'FID FMNIST' captions)",
+      "confidence": 0.85,
+      "supporting_evidence": "Tables 1 and 2 carry identical captions ('FID FMNIST... for conditional flow matching and empirical flow matching for multiple values of the number of samples M') yet report order-of-magnitude different values at shared cells: CFM (EFM, M=1) at Ep.5 = 15.30 (Table 1) vs 253.56 (Table 2); at Ep.10 = 4.20 vs 48.67; EFM M=128 at Ep.5 = 13.44 vs 206.27. Ratios of roughly 12-17x for the same method, dataset label, and epoch cannot both be correct; at least one table's values are mislabeled or computed under undisclosed different conditions.",
+      "verifier_name": "statistical",
+      "snippet_id": "23888::TABLE::0"
+    },
+    {
+      "error_category": "Internal inconsistency (methodology)",
+      "error_location": "Section 4.1 prose vs Proposition 2(ii) and its proof (Appendix B.3)",
+      "confidence": 0.7,
+      "supporting_evidence": "Proposition 2(ii) and its proof establish the exact equality E_{b^(1) ~ p_hat(·|x,t), b^(2..M) ~ p_hat}[u_hat*_M(x,t)] = u_hat*(x,t) for the mini-batch scheme with b^(1) := x_1 (the proof is mathematically valid). Section 4.1, however, states the estimator 'does not guarantee unbiasedness in the standard Monte Carlo sense' and that 'the theoretical claims therefore approximate unbiasedness within empirical tolerance.' The prose presents the estimator's key property as merely approximate, contradicting the exact-unbiasedness claim stated and proved in Proposition 2(ii).",
+      "verifier_name": "text",
+      "snippet_id": "23888::SECTION::8"
+    },
+    {
+      "error_category": "Rhetorical presentation / caption vs text mismatch",
+      "error_location": "Figure 4 caption vs Section 4.2 (Comments on Figure 4)",
+      "confidence": 0.6,
+      "supporting_evidence": "Figure 4's caption claims 'the more deterministic the target, the better the performance', a monotone causal claim, while the accompanying Section 4.2 text states 'Minor improvements in metrics are noticed as stochasticity is reduced, though these gains remain within the expected noise range.' The caption overstates the strength and significance of the observed effect relative to the measured text, and no significance testing is reported to support the caption's monotone claim.",
+      "verifier_name": "cross-section-consistency",
+      "snippet_id": "23888::FIGURE::3"
+    },
+    {
+      "error_category": "Citation inconsistency (in-text vs reference list)",
+      "error_location": "Introduction, paragraph 2 (in-text citations)",
+      "confidence": 0.6,
+      "supporting_evidence": "The Introduction cites 'Kadkhodaie et al. (2024, anticipated)', 'Kamb and Ganguli (2025, manuscript)', and 'Ross et al. (2025, forthcoming)', but the paper's own reference list lists all three as published venue works ('ICLR, 2024', 'ICML, 2025', 'ICLR, 2025'). Web verification confirms Kamb & Ganguli was published at ICML 2025 (oral presentation) and Vastola (2025) at ICLR 2025. The hedging qualifiers ('anticipated', 'manuscript', 'forthcoming') contradict the published status recorded in the paper's own bibliography, confusing the chronology of the cited works.",
+      "verifier_name": "citation",
+      "snippet_id": "23888::SECTION::1"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 54,
+    "snippets_verified": 54,
+    "errors_detected": 8,
+    "verifier_usage": {
+      "math_equation": 44,
+      "text": 23,
+      "vision": 7,
+      "statistical": 9,
+      "citation": 5,
+      "cross_section_consistency": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Exhaustive verification of the paper (mode=exhaustive, strictness=lenient) segmented the manuscript into 54 snippets and routed them to specialist verifiers (math-equations, text, vision, statistical, citation) plus a full-paper cross-section consistency check. The core scientific content is sound: the flow-matching setup (equations 1-4), the closed-form softmax-weighted velocity field (equation 6), the empirical flow matching objective and estimator (equations 7-8), the statement and proof of Proposition 2 items (i)-(ii), Algorithms 1-2, and the Appendix D compute-time and epoch arithmetic (b x (4.3 ms + e x 0.9 us); 500k iters x 128 / 50k = 1280 epochs) all verify correct. Spot-checked citations exist in the scientific record (e.g., Vastola ICLR 2025, Kamb & Ganguli ICML 2025, Biroli et al. Nat. Commun. 2024). Five high-confidence defects were confirmed: (1) Equation (5) contains a false identity, writing the CFM target as (x_1-x_0)/(1-t) instead of x_1-x_0 (the (1-t) cancels; Algorithm 1 and Figure 1 use the correct form); (2) the proof of Proposition 1 drops a factor 1/n between Equations (28) and (29), so the printed ratio yields n times the stated closed form (the final formula (6) remains correct); (3) the proof of Proposition 2 item (iii) drops a factor n between Equations (70) and (71), making the printed bound in Equation (73) false in general (the final variance inequality (11)/(74) is true once the factor is restored); (4)-(5) Appendix C misreports the dataset identity, with prose describing MNIST results while both tables are captioned 'FID FMNIST', compounded by order-of-magnitude FID discrepancies between the two identically-captioned tables at shared epochs (CFM Ep.5: 15.30 vs 253.56). Three moderate-confidence issues were also noted: the Section 4.1 prose ('does not guarantee unbiasedness... approximate unbiasedness within empirical tolerance') sits in tension with the exact equality proved in Proposition 2(ii); the Figure 4 caption overstates the significance of the deterministic-target gains relative to the measured text; and in-text citation qualifiers ('anticipated', 'manuscript', 'forthcoming') contradict the published venues in the paper's own reference list. Because multiple findings carry confidence >= 0.85, the report verdict is NEEDS_CORRECTION."
+}

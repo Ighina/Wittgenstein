@@ -1,0 +1,135 @@
+{
+  "paper_id": "21919",
+  "title": "High-Dimensional Calibration from Swap Regret",
+  "paper_category": "cs.LG",
+  "predicted_errors": [
+    {
+      "error_category": "Equation / proof",
+      "error_location": "2.3 From swap regret to calibration — Equation (7), Bregman divergence definition",
+      "confidence": 0.9,
+      "supporting_evidence": "The printed definition is D_R(y||p) := R(p) − R(y) − ⟨∇R(y), p − y⟩, i.e. the gradient is evaluated at the FIRST argument y (reversed convention). This contradicts the paper's own usage everywhere else: the footnote directly beneath the definition says to replace the '∇R(p) term' with the subgradient at p; Lemma 2.1's proof (Appendix B) computes E[D_R(y||p)] = E[R(y) − R(p) − ⟨∇R(p), y − p⟩] (standard convention); and Section 2.4's equivalence D_R(y||p) ≥ α‖y−p‖² is only valid under the standard convention R(y) ≥ R(p) + ⟨∇R(p), y−p⟩ + α‖y−p‖². Under the printed reversed definition the minimizer of E_{y~y}[D_R(y||p)] is NOT ȳ in general, so the proper-scoring-rule property (Lemma 2.1), the swap-regret reduction (Lemma 2.2), and Lemma 3.2 (TreeCal = TreeSwap.FTL) all rest on an incorrect formula. Correct definition: D_R(y||p) := R(y) − R(p) − ⟨∇R(p), y − p⟩.",
+      "verifier_name": "verify-math",
+      "snippet_id": "21919::EQUATION::7"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "1 Introduction — dangling citation [ZKL23]",
+      "confidence": 0.9,
+      "supporting_evidence": "The Introduction states 'As demonstrated by [ZKL23], until recently, no known algorithm achieved a sub-exponential dependence on d in any non-trivial instance of multi-dimensional calibration, despite extensive efforts in the learning theory community.' A cross-check of every in-text citation key against the References section shows [ZKL23] is the only key with no matching bibliography entry (all other keys, e.g. ZME20, GPSW17, HJKRR18, FV97, DDF^+24, FKO^+25, DDFG24, DFG^+24, resolve to entries). The citation is fabricated and inflates the novelty claim about prior work being inadequate.",
+      "verifier_name": "verify-citation",
+      "snippet_id": "21919::SECTION::1"
+    },
+    {
+      "error_category": "Abstract vs Results mismatch",
+      "error_location": "Abstract — ℓ1/simplex upper bound exponent",
+      "confidence": 0.85,
+      "supporting_evidence": "The Abstract claims ε-calibrated forecasts over the d-simplex after T = exp(O(log d/ε)) = d^{O(1/ε)} rounds, 'significantly improving upon the recent result of [Pen25]'. This contradicts the body and even the Abstract's own general formula: the Abstract itself states the general guarantee is T = exp(O(ρ/ε²)), and for the simplex ρ = log d (negative entropy), giving exp(O(log d/ε²)) = d^{O(1/ε²)}. Theorem 1.1, Corollary C.5, and the Section 1.1 simplex application all give T ≥ (diam/ε)^{O(ρ/ε²)} = (1/ε)^{O(log d/ε²)} = d^{O(1/ε²)}. The Abstract's d^{O(1/ε)} exponent is not achievable by the stated theorem and fabricates a stronger rate than the paper proves.",
+      "verifier_name": "verify-cross-section-consistency",
+      "snippet_id": "21919::SECTION::0"
+    },
+    {
+      "error_category": "Statistical reporting",
+      "error_location": "4 Lower bound — Theorem 4.3, exponent min{d^{1/7}, ε^{-1/6}}",
+      "confidence": 0.85,
+      "supporting_evidence": "Theorem 4.3 states the ℓ1 lower bound holds for T ≤ exp(c · min{d^{1/7}, ε^{−1/6}}). Its own proof contradicts this: it applies Lemma D.1 to move to dimension d' = ⌊(d−1)/2⌋ and then invokes Theorem 4.1, whose threshold is exp(c_4.1 · min{(d')^{1/14}, ε^{−1/6}}) ≈ exp(c · min{d^{1/14}, ε^{−1/6}}). The informal Theorem 1.4 in the Introduction also states min{d^{1/14}, ε^{−1/6}}. The 'd^{1/7}' in Theorem 4.3 is therefore inconsistent with both its proof and the informal statement; it should be d^{1/14}.",
+      "verifier_name": "verify-statistical",
+      "snippet_id": "21919::THEOREM::9"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "C.2 Proof of the main theorem — Claim C.3 / Equation (9)",
+      "confidence": 0.8,
+      "supporting_evidence": "Claim C.3 is stated as Cal_T^{‖·‖²}(x) − 2·Cal_T^{‖·‖²}(x̃) ≥ (2·diam(P)²/H²)·T, a LOWER bound. The proof of the claim, however, establishes the opposite-direction UPPER bound: the chain starting from Equation (11) (via ‖ν−p‖² ≤ 2‖ν−p̃‖² + 2‖p−p̃‖² and Lemma C.4) yields Cal − 2·Cal̃ ≤ 2·T·diam(P)²/H, with H (not H²) in the denominator. Theorem 3.1's proof then applies (9) as an upper bound 'Cal(x) ≤ 2·Cal(x̃) + (2·diam(P)²/H²)·T', which requires the ≤ direction and the H² constant that the statement gives but the proof does not establish. Direction and the power of H are mutually inconsistent across the claim statement, its proof, and its application. (The final rate is unchanged since H = Θ(diam²/ε) absorbs the constants, but the lemma as stated is wrong.)",
+      "verifier_name": "verify-math",
+      "snippet_id": "21919::CLAIM::0"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "2.4 Rates and regularization — α-strong convexity definition (wrong inequality direction)",
+      "confidence": 0.75,
+      "supporting_evidence": "Section 2.4 defines α-strong convexity as R(y) ≤ R(p) + ⟨∇R(p), y − p⟩ + α‖y − p‖², i.e. with ≤. This is a (local) SMOOTHNESS-type inequality, not strong convexity; the correct definition uses ≥. The text then claims 'Equivalently, the Bregman divergence must satisfy D_R(y ∥ p) ≥ α‖y − p‖².' Under the standard Bregman convention D_R(y∥p) = R(y) − R(p) − ⟨∇R(p), y − p⟩, the equivalence D_R ≥ α‖·‖² is equivalent to R(y) ≥ R(p) + ⟨∇R(p), y−p⟩ + α‖y−p‖² — the OPPOSITE of the printed inequality. So the definition and the claimed 'equivalent' Bregman bound contradict each other, and the ≤ direction would turn the subsequent calibration-vs-D_R comparison (Cal^{‖·‖²} ≤ Cal^{D_R}, used in Step 1 of the proof of Theorem 3.1) on its head.",
+      "verifier_name": "verify-math",
+      "snippet_id": "21919::SECTION::21"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "C.1 Labeled calibration and swap regret — Theorem C.1 (TreeSwap bound constant)",
+      "confidence": 0.75,
+      "supporting_evidence": "Theorem C.1 states the labeled TreeSwap bound as FullSwapReg_T ≤ T · (ExtReg_H(Alg_H)/H + b/L). The proof of Theorem 3.1 applies this same theorem with Alg_H = BTL_H (ExtReg_H ≤ 0) and b = ρ to conclude FullSwapReg_T ≤ T·(3ρ)/L. With the stated b/L constant the theorem would only give T·ρ/L, not the T·3ρ/L used in the proof. The factor of 3 in the theorem statement has been dropped (the [DDFG24] result it is restated from carries the 3), and the proof silently uses the larger constant — a mismatch that would propagate into the final rate's constants.",
+      "verifier_name": "verify-math",
+      "snippet_id": "21919::THEOREM::10"
+    },
+    {
+      "error_category": "Statistical reporting",
+      "error_location": "2.1 Calibration — Cal_T^D definition (factor 1/T)",
+      "confidence": 0.7,
+      "supporting_evidence": "The formal definition Cal_T^D(x_{1:T}, y_{1:T}) := Σ_{p∈P} (1/T · Σ_t x_t(p)) · D(ν_p, p) carries a 1/T normalization. Every theorem and proof uses the summed (unnormalized) convention instead: the Introduction's display defines Cal_T^{‖·‖} = Σ_t ‖p_t − ν_{p_t}‖ with no 1/T; the proof of Corollary C.5 writes '(1/T) Cal_T^{‖·‖} = (1/T) Σ_p (Σ_t x_t(p)) · ‖ν_p − p‖', i.e. Cal itself has no 1/T; and Theorem 3.1's bound 'Cal_T^{‖·‖²} ≤ εT for T ≥ (diam/√ε)^{O(ρ/ε)}' is only scale-meaningful under the summed convention (the averaged version is ≤ diam² always, making the exponential lower bound on T vacuous). As printed, the Section 2.1 definition is inconsistent with the rest of the paper by a factor of T.",
+      "verifier_name": "verify-statistical",
+      "snippet_id": "21919::EQUATION::3"
+    },
+    {
+      "error_category": "Abstract vs Results mismatch",
+      "error_location": "Abstract — ℓ1 lower-bound tightness and exponent",
+      "confidence": 0.7,
+      "supporting_evidence": "The Abstract claims 'our lower bound is tight up to constant factors in the exponent, matching our upper bound' and states the required time as T ≥ exp(Ω(1/ε)). The formal Theorem 4.3/1.4 lower bound is T ≥ exp(Ω(min{d^{1/14}, ε^{−1/6}})), which for any d is at most exp(Ω(ε^{−1/6})); so the strongest implied bound is exp(Ω(ε^{−1/6})), and the Abstract's exp(Ω(1/ε)) overstates it (since 1/ε ≫ ε^{−1/6}). Moreover the upper bound for the simplex is d^{O(1/ε²)} = exp(O(log d/ε²)), an exponent of order ε^{−2}·log(1/ε), which is a polynomial-in-the-exponent gap away from ε^{−1/6} — not tight 'up to constant factors'.",
+      "verifier_name": "verify-cross-section-consistency",
+      "snippet_id": "21919::SECTION::0"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "3.3 Outline of the proof of Theorem 3.1 — BTL implementability claim",
+      "confidence": 0.65,
+      "supporting_evidence": "Section 3.3 states BTL 'can be efficiently implemented in practice by using a simple lookahead technique that observes ℓ_h before choosing the action at time step h' and calls 'this implementability a key advantage of our approach over prior work'. This directly contradicts Appendix C.2, which defines BTL_h(ℓ_{1:h}) = argmin Σ_{s=1}^h ℓ_s and notes 'since BTL_h(ℓ_{1:h}) depends on the unobserved loss ℓ_h at time step h, it is unimplementable.' In an adversarial online setting there is no valid 'lookahead' that observes the current loss before acting; the two passages assert opposite things about the same algorithm, and the Section 3.3 claim appears to have been introduced to overstate the paper's practical contribution.",
+      "verifier_name": "verify-text",
+      "snippet_id": "21919::SECTION::29"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Abstract — claim that TreeCal requires no knowledge of the optimal rate ρ",
+      "confidence": 0.6,
+      "supporting_evidence": "The Abstract asserts the algorithm 'obtains this guarantee without requiring access to any online linear optimization subroutine or knowledge of the optimal rate ρ—in fact, our algorithm is identical for every setting of P and ‖·‖.' But the proof of Theorem 3.1 sets L = 12ρ/ε (and the tree parameters depend on Rate(P,‖·‖)), so ρ (or an upper bound on it) is required to set the algorithm's parameters; Section 1.1 itself softens this to 'parameter choices that can be set adaptively.' The Abstract's unqualified 'no knowledge of ρ' claim overstates parameter-free-ness and is inconsistent with the parameterization used in the analysis.",
+      "verifier_name": "verify-text",
+      "snippet_id": "21919::SECTION::0"
+    },
+    {
+      "error_category": "Data Inconsistency (math)",
+      "error_location": "1.1 Our results — Theorem 1.1 / simplex application, range-ρ vs formal Rate-ρ",
+      "confidence": 0.55,
+      "supporting_evidence": "Theorem 1.1 and the Section 1.1 simplex application use the negative-entropy regularizer R(x) = Σ x_i log x_i with 'range ρ = log d' to obtain the d^{O(1/ε²)} ℓ1 bound via Corollary C.5. But Corollary C.5 is stated in terms of Rate(P,‖·‖), which Section 2.4 defines via a BOUNDED Bregman divergence (max_{y,p} D_R(y‖p) ≤ ρ), and Section 2.4 itself notes that negative entropy 'has bounded range over the simplex but unbounded Bregman divergence'. So ρ = log d (a range bound) does not give a finite formal Rate(P,‖·‖) for the simplex, and the advertised d^{O(1/ε²)} ℓ1 bound is not directly supported by the formal Bregman-rate-based statement — the informal (range-based) and formal (Bregman-based) notions of ρ are conflated.",
+      "verifier_name": "verify-cross-section-consistency",
+      "snippet_id": "21919::SECTION::5"
+    },
+    {
+      "error_category": "Claim distortion",
+      "error_location": "1.1 Our results — ℓ2-ball application, 'completely independent of d'",
+      "confidence": 0.45,
+      "supporting_evidence": "The text claims the ℓ2-ball bound (1/ε)^{O(1/ε²)} is 'completely independent of d, unlike all prior work which had at least logarithmic dependence on dimension.' For the unit ℓ2 ball the diameter is 2 (dimension-free) and Rate(P,‖·‖) ≤ 1, so the claim is defensible on its face, but the parenthetical overstates the contrast: the diameter term is only dimension-free for this specific, scaled geometry, and the sentence as written implies a general dimension-independence that holds only under the unit-ball normalization. Weak candidate; flagged for completeness at low confidence.",
+      "verifier_name": "verify-text",
+      "snippet_id": "21919::SECTION::5"
+    },
+    {
+      "error_category": "Citation / attribution",
+      "error_location": "1.1 Our results — TreeSwap novelty attribution",
+      "confidence": 0.45,
+      "supporting_evidence": "Section 1.1 attributes the swap-regret reduction to 'our novel TreeSwap swap regret minimization algorithm (which generalizes ideas from [BM07])' while simultaneously crediting '[DDFG24, PR24]' for the TreeSwap algorithm used in the Abstract ('we then minimize by running the recent TreeSwap algorithm ([DDFG24, PR24])'). The presentation is internally inconsistent about whether TreeSwap is this paper's novel contribution or prior work being applied; footnote 5 and the Section 3 lead-in also describe TreeCal as 'effectively the same as the main algorithm of [Pen25]', which further blurs what is novel. Attribution/novelty framing is confusing, though not a hard technical error.",
+      "verifier_name": "verify-citation",
+      "snippet_id": "21919::SECTION::7"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 123,
+    "snippets_verified": 81,
+    "errors_detected": 14,
+    "verifier_usage": {
+      "math_equation": 61,
+      "text": 15,
+      "statistical": 1,
+      "citation": 4,
+      "vision": 0,
+      "cross_section": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Verified 'High-Dimensional Calibration from Swap Regret' (NeurIPS 2025 theory paper connecting multi-dimensional online calibration to swap-regret minimization via TreeCal/TreeSwap) in uncertainty mode with lenient strictness. The paper was segmented into 123 snippets (57 sections, 16 equations, 13 theorems, 10 lemmas, 16 proofs, 3 corollaries, 3 algorithms, 1 claim, 2 tables, 2 figures); triage escalated 81 snippets (uncertainty ≥ 0.30) to math, statistical, text, and citation verification, and the cross-section consistency pass was run over the full paper. Fourteen findings survived, including several at erratum-certainty (≥0.85). The most significant: (1) the Bregman-divergence definition (Eq. 7) is written in the reversed convention (gradient at the first argument), inconsistent with the footnote, Lemma 2.1's proof, and the strong-convexity equivalence — as printed the proper-scoring-rule minimizer would not be ȳ and the swap-regret reduction would fail; (2) the dangling citation [ZKL23] has no bibliography entry; (3) the Abstract's simplex upper bound d^{O(1/ε)} contradicts the body's d^{O(1/ε²)} and even the Abstract's own general exp(O(ρ/ε²)) formula; (4) Theorem 4.3's exponent min{d^{1/7}, ε^{-1/6}} contradicts its own proof and informal Theorem 1.4, which both use d^{1/14}; (5) Claim C.3 states a lower bound with an H² denominator while its proof establishes the opposite-direction upper bound with H, and Theorem 3.1's proof applies it as an upper bound; (6) the strong-convexity definition uses ≤ (a smoothness-type inequality) while claiming equivalence with the D_R ≥ α‖·‖² bound that requires ≥; (7) Theorem C.1 states b/L while the proof of Theorem 3.1 applies it as 3ρ/L; (8) the Cal_T^D definition carries a 1/T factor inconsistent with the summed convention used throughout the theorems and proofs; (9) the Abstract's lower bound exp(Ω(1/ε)) and 'tight up to constant factors' claim overstate the formal exp(Ω(ε^{-1/6})) bound and ignore the polynomial gap in the exponent; (10) Section 3.3 claims BTL is implementable via lookahead while Appendix C.2 proves it unimplementable. Medium-confidence findings concern the Abstract's 'no knowledge of ρ' claim (parameterization L = 12ρ/ε depends on ρ) and the conflation of range-based vs Bregman-based rates for the simplex negative-entropy regularizer. The main theorem's asymptotic structure is internally coherent once the statement-level inconsistencies are corrected, but the several erratum-worthy internal contradictions require correction before acceptance.",
+  "uncertainty_map": []
+}

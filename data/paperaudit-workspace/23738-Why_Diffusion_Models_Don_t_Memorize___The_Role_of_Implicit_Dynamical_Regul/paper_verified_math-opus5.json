@@ -1,0 +1,555 @@
+{
+  "paper_name": "paper",
+  "paper_path": "/Users/iacopoghinassi/Documents/Github/Wittgenstein/data/paperaudit-workspace/23738-Why_Diffusion_Models_Don_t_Memorize___The_Role_of_Implicit_Dynamical_Regul/paper.md",
+  "tag": "opus5",
+  "lean_project": "MATH_VERIFICATION/Paper",
+  "lean_project_kept": true,
+  "totals": {
+    "snippets_extracted": 16,
+    "routed_to_math": 8,
+    "routed_to_lean": 8,
+    "lean_passed": 6,
+    "lean_refuted": 2,
+    "lean_failed": 0,
+    "fallbacks_run": 0,
+    "errors_detected": 4
+  },
+  "results": [
+    {
+      "snippet_id": "paper::EQUATION::0",
+      "snippet_type": "EQUATION",
+      "location": "Preliminaries",
+      "content": "Standard DMs define a transport from a target distribution $P_0$ in $\\mathbb{R}^d$ to a Gaussian white noise $\\mathcal{N}(0, I_d)$ through a forward process defined as an Ornstein-Uhlenbeck (OU) stochastic differential equation (SDE):\n$$\\mathrm{d}\\mathbf{x} = -\\mathbf{x}(t)\\mathrm{d}t + \\mathrm{d}\\mathbf{B}(t),$$\n(1)\nwhere $\\mathrm{d}\\mathbf{B}(t)$ is the square root of two times a Wiener process. [...] where $\\Delta_t = 1 - e^{-2t}$ [...] where $\\mathbf{x}_t^{\\nu}(\\boldsymbol{\\xi}) = e^{-t}\\mathbf{x}^{\\nu} + \\sqrt{\\Delta_t}\\boldsymbol{\\xi}$.",
+      "route": "verify-math",
+      "route_rationale": "SDE semantics; the checkable content (consistency of the OU solution with $\\Delta_t$) is verifiable by inspection and not usefully formalisable.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "With $\\mathrm{d}\\mathbf{B} = \\sqrt{2}\\,\\mathrm{d}\\mathbf{W}$ (as the text states), the OU SDE $\\mathrm{d}\\mathbf{x} = -\\mathbf{x}\\,\\mathrm{d}t + \\sqrt{2}\\,\\mathrm{d}\\mathbf{W}$ has solution $\\mathbf{x}(t) = e^{-t}\\mathbf{x}(0) + \\sqrt{2}\\int_0^t e^{-(t-s)}\\mathrm{d}\\mathbf{W}_s$, whose noise variance is $2\\int_0^t e^{-2(t-s)}\\mathrm{d}s = 1-e^{-2t} = \\Delta_t$. This matches both the stated $\\Delta_t = 1-e^{-2t}$ and the stated reparametrisation $\\mathbf{x}_t^\\nu = e^{-t}\\mathbf{x}^\\nu + \\sqrt{\\Delta_t}\\boldsymbol{\\xi}$, and the stationary law is $\\mathcal{N}(0, I_d)$ as claimed. No error.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::EQUATION::1",
+      "snippet_type": "EQUATION",
+      "location": "Preliminaries",
+      "content": "Generation is performed by time-reversing the SDE (1) using the score function $\\mathbf{s}(\\mathbf{x}, t) = \\nabla_{\\mathbf{x}} \\log P_t(\\mathbf{x})$,\n$$-\\mathrm{d}\\mathbf{x} = [\\mathbf{x}(t) + 2\\mathbf{s}(\\mathbf{x}, t)] \\mathrm{d}t + \\mathrm{d}\\mathbf{B}(t),$$\n(2)\nwhere $P_t(\\mathbf{x})$ is the probability density at time $t$ along the forward process, and the noise $\\mathrm{d}\\mathbf{B}(t)$ is also the square root of two times a Wiener process.",
+      "route": "verify-math",
+      "route_rationale": "Time-reversal of an SDE (Anderson's theorem); measure-theoretic, not usefully formalisable, but checkable by inspection against the standard formula.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::1",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.88,
+        "reasoning": "For a forward SDE $\\mathrm{d}\\mathbf{x} = f\\,\\mathrm{d}t + g\\,\\mathrm{d}\\mathbf{W}$, the time reversal $\\mathbf{y}_s = \\mathbf{x}_{T-s}$ satisfies $\\mathrm{d}\\mathbf{y} = [-f + g^2\\nabla\\log p]\\,\\mathrm{d}s + g\\,\\mathrm{d}\\mathbf{W}_s$. Here $f = -\\mathbf{x}$ and $g^2 = 2$, giving $\\mathrm{d}\\mathbf{y} = [\\mathbf{y} + 2\\mathbf{s}]\\,\\mathrm{d}s + \\sqrt{2}\\,\\mathrm{d}\\mathbf{W}$. Since $\\mathrm{d}s = -\\mathrm{d}t$, this is exactly $-\\mathrm{d}\\mathbf{x} = [\\mathbf{x}(t) + 2\\mathbf{s}(\\mathbf{x},t)]\\mathrm{d}t + \\mathrm{d}\\mathbf{B}(t)$. Signs and the factor $2$ in front of the score are correct.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.88
+    },
+    {
+      "snippet_id": "paper::EQUATION::2",
+      "snippet_type": "EQUATION",
+      "location": "Preliminaries",
+      "content": "As shown in the seminal works [20, 52], $\\mathbf{s}(\\mathbf{x}, t)$ can be obtained by minimizing the score matching loss\n$$\\hat{\\mathbf{s}}(\\mathbf{x}, t) = \\arg \\min_{\\mathbf{s}} \\mathbb{E}_{\\mathbf{x}\\sim P_0, \\boldsymbol{\\xi}\\sim\\mathcal{N}(0,I_d)} \\left[ \\left\\| \\sqrt{\\Delta_t}\\mathbf{s}(\\mathbf{x}(t), t) + \\boldsymbol{\\xi} \\right\\|^2 \\right],$$\n(3)\nwhere $\\Delta_t = 1 - e^{-2t}$.",
+      "route": "verify-math",
+      "route_rationale": "Denoising score matching identity; requires conditional-expectation machinery that is disproportionate to formalise, and is checkable by inspection.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::2",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "Minimising pointwise in $\\mathbf{x}(t)$ gives $\\mathbf{s}^\\star(\\mathbf{x}) = -\\mathbb{E}[\\boldsymbol{\\xi}\\mid\\mathbf{x}(t)=\\mathbf{x}]/\\sqrt{\\Delta_t}$. Tweedie's identity for $\\mathbf{x}(t) = e^{-t}\\mathbf{x} + \\sqrt{\\Delta_t}\\boldsymbol{\\xi}$ gives $\\nabla_{\\mathbf{x}}\\log P_t(\\mathbf{x}) = -\\mathbb{E}[\\boldsymbol{\\xi}\\mid\\mathbf{x}(t)=\\mathbf{x}]/\\sqrt{\\Delta_t}$, so the two coincide: the stated minimiser is the population score. The $\\sqrt{\\Delta_t}$ weighting and the sign are correct.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::EQUATION::3",
+      "snippet_type": "EQUATION",
+      "location": "Preliminaries",
+      "content": "$$\\mathcal{L}_t(\\boldsymbol{\\theta}, \\{\\mathbf{x}^{\\nu}\\}_{\\nu=1}^n) = \\frac{1}{n} \\sum_{\\nu=1}^n \\mathbb{E}_{\\boldsymbol{\\xi}\\sim\\mathcal{N}(0,I_d)} \\left[ \\left\\| \\sqrt{\\Delta_t}\\mathbf{s}_{\\boldsymbol{\\theta}}(\\mathbf{x}^{\\nu}(t), t) + \\boldsymbol{\\xi} \\right\\|^2 \\right],$$\n(4)\nwhere $\\mathbf{x}_t^{\\nu}(\\boldsymbol{\\xi}) = e^{-t}\\mathbf{x}^{\\nu} + \\sqrt{\\Delta_t}\\boldsymbol{\\xi}$. [...] The solution of the minimization of (4) is the so-called empirical score (e.g. [4, 26]), defined as $\\mathbf{s}_{\\text{emp}}(\\mathbf{x}, t) = \\nabla_{\\mathbf{x}} \\log P_t^{\\text{emp}}(\\mathbf{x})$, with\n$$P_t^{\\text{emp}}(\\mathbf{x}) = \\frac{1}{n\\,(2\\pi\\Delta_t)^{d/2}} \\sum_{\\nu=1}^n e^{-\\frac{1}{2\\Delta_t}\\|\\mathbf{x}-\\mathbf{x}^{\\nu}e^{-t}\\|_2^2}.$$\n(5)",
+      "route": "verify-math-lean",
+      "route_rationale": "Eq. (5) asserts a closed-form probability density; its normalisation constant and exponent are a crisp identity that Lean can settle in full generality in $d$ and $n$.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::3",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.95,
+        "reasoning": "Formalised the checkable content of Eq. (5): that the printed expression is a probability density on $\\mathbb{R}^d$, i.e. that the normalisation $\\big(n(2\\pi\\Delta_t)^{d/2}\\big)^{-1}$ is mutually consistent with the exponent $\\tfrac{1}{2\\Delta_t}\\|\\mathbf{x}-e^{-t}\\mathbf{x}^\\nu\\|^2$ and the mean $e^{-t}\\mathbf{x}^\\nu$ implied by the forward process. Proved in full generality over the dimension $d$, the sample size $n>0$, every $\\Delta>0$, every $t$ and every sample family, via the 1-D shifted Gaussian integral, Fubini on the product measure, and the mixture weights. Hypotheses assumed: only $\\Delta>0$ (which holds as $\\Delta_t=1-e^{-2t}>0$ for $t>0$) and $n>0$ — both genuine standing assumptions of the paper. Compiles clean with no `sorry` and only the standard Mathlib axioms.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__EQUATION__3_23738opus5.lean",
+          "formal_statement": "theorem emp_density_normalized (d n : ℕ) (hn : 0 < n) (Δ : ℝ) (hΔ : 0 < Δ) (t : ℝ)\n    (X : Fin n → (Fin d → ℝ)) :\n    ∫ x : Fin d → ℝ, (((n : ℝ) * (2*π*Δ) ^ ((d : ℝ)/2))⁻¹ *\n        ∑ ν : Fin n, Real.exp (-(1/(2*Δ)) *\n          ∑ i, (x i - Real.exp (-t) * X ν i)^2)) = 1",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 3,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::EQUATION::4",
+      "snippet_type": "EQUATION",
+      "location": "2 Generalization and memorization during training of diffusion models",
+      "content": "Following previous numerical studies [56, 15], a generated sample x_τ is considered memorized if\nE_{x_τ}[ ||x_τ − a^{μ_1}||_2 / ||x_τ − a^{μ_2}||_2 ] < k, (6)\nwhere a^{μ_1} and a^{μ_2} are the nearest and second-nearest neighbors of x_τ in the training set in the L2 sense. Here, we use k = 1/3 as in prior studies, noting that moderate variations in k strongly affect the exact values of f_mem, and the scaling behavior of τ_mem with n is less robust than suggested.",
+      "route": "verify-math",
+      "route_rationale": "An empirical classification criterion, not a theorem; rests on experimental objects Lean cannot pin down.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::4",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.6,
+        "reasoning": "The criterion itself is sound: because $a^{\\mu_1}$ is the nearest and $a^{\\mu_2}$ the second-nearest neighbour, the ratio lies in $[0,1]$, and the threshold $k=1/3$ is in range, so there is no domain violation. Two non-fatal issues. (i) Notation: the expectation $\\mathbb{E}_{x_\\tau}[\\cdot]$ is applied to the very sample being classified, which is vacuous — the criterion in the cited literature is the bare ratio $\\|x-a^{\\mu_1}\\|/\\|x-a^{\\mu_2}\\| < 1/3$. (ii) The trailing clause \"the scaling behavior of $\\tau_{\\text{mem}}$ with $n$ is less robust than suggested\" contradicts the abstract (\"$\\tau_{\\text{mem}}$ increases linearly with the training set size $n$\") and Sect. 2 (\"making all curves collapse ... showing that $\\tau_{\\text{mem}} \\propto n$\"), and is also at odds with the paper's own Theorem 3.2 (see `paper::PROPOSITION::0`, where Lean establishes $\\tau_{\\text{mem}} = \\Theta(n)$). Neither is a derivation-invalidating algebraic error, so this excerpt is not flagged; the substantive contradiction is reported against `paper::PROPOSITION::0`.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [
+          "Abstract",
+          "2 Generalization and memorization during training of diffusion models",
+          "3 Training dynamics of a Random Features Network (Memorization paragraph)"
+        ]
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.6
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "3 Training dynamics of a Random Features Network",
+      "content": "We parametrize the score with a Random Features Neural Network [RFNN, 38]\n\ns_A(x) = (A/√p) σ(Wx/√d).\n(7)\n\nAn RFNN [...] is a two-layer neural network whose first-layer weights (W ∈ R^{p×d}) are drawn from a Gaussian distribution and remain frozen while the second-layer weights (A ∈ R^{d×p}) are learned during training. [...] we focus on the high-dimensional limit d, p, n → ∞ with the ratios ψ_p = p/d, ψ_n = n/d kept fixed. [...] The loss (4) is rescaled by a factor 1/d in order to ensure a finite limit at large d. We also study the evolution of the test loss evaluated on test points and the distance to the exact score s(x) = ∇ log P_x,\n\nL_test = (1/d) E_{x,ξ} [ ‖√Δ_t s_A(x_t(ξ)) + ξ‖^2 ],  E_score = (1/d) E_x [ ‖s_A(x) − ∇ log P_x‖^2 ],\n(8)",
+      "route": "verify-math",
+      "route_rationale": "A modelling definition rather than an assertion; the only checkable content is dimensional consistency, verifiable by inspection.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "Dimensions are consistent: $\\mathbf{W}\\mathbf{x}/\\sqrt d \\in \\mathbb{R}^p$, $\\sigma$ acts element-wise so $\\sigma(\\mathbf{W}\\mathbf{x}/\\sqrt d)\\in\\mathbb{R}^p$, and $\\mathbf{A}\\in\\mathbb{R}^{d\\times p}$ maps it back to $\\mathbb{R}^d$, matching the score's codomain. The $1/\\sqrt p$ and $1/\\sqrt d$ scalings are the standard ones that keep pre-activations and outputs $O(1)$ as $p,d\\to\\infty$, and the $1/d$ rescaling of the losses in (8) is what makes them $O(1)$ for $\\|\\cdot\\|^2$ of $d$-dimensional vectors. $\\psi_p=p/d$, $\\psi_n=n/d$ are used consistently thereafter. No error.",
+        "predicted_error_category": null,
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::0",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "3 Training dynamics of a Random Features Network",
+      "content": "The weights A are updated via gradient descent\n\nA^{(k+1)} = A^{(k)} − η ∇_A L_train(A^{(k)}),\n(9)\n\nwhere η is the learning rate. In the high-dimensional limit, as the learning rate η → 0, and after rescaling time as τ = kη/d^2, the discrete-time dynamics converges to the following continuous-time gradient flow:\n\n\\dot{A}(τ) = −d^2 ∇_A L_train(A(τ)) = −2Δ_t (d/p) A U − (2d√Δ_t/√p) V^T,\n(10)\n\nwith\n\nU = (1/n) ∑_{ν=1}^n E_ξ [ σ(Wx_t^ν(ξ)/√d) σ(Wx_t^ν(ξ)/√d)^T ],   V = (1/n) ∑_{ν=1}^n E_ξ [ σ(Wx_t^ν(ξ)/√d) ξ^T ].\n(11)",
+      "route": "verify-math-lean",
+      "route_rationale": "The step carrying the mathematical load is the exact gradient of a quadratic in $\\mathbf{A}$ plus the time rescaling — both crisp matrix identities Lean can settle.",
+      "lean_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::0",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.93,
+        "reasoning": "Formalised the two load-bearing steps. (i) The gradient: collecting all (sample, noise-draw) pairs into the columns of $\\Phi\\in\\mathbb{R}^{p\\times N}$ and $\\Xi\\in\\mathbb{R}^{d\\times N}$, with a symmetric weight matrix $D$ implementing $\\frac1n\\sum_\\nu\\mathbb{E}_\\xi$ (so that $\\mathbf{U}=\\Phi D\\Phi^\\top$ and $\\mathbf{V}=\\Phi D\\Xi^\\top$ exactly as in Eq. (11)) and $c=\\sqrt{\\Delta_t/p}$, Lean proves the exact expansion $\\mathcal{L}(A+B)-\\mathcal{L}(A) = \\operatorname{Tr}[B\\,G(A)^\\top] + \\frac{c^2}{d}\\operatorname{Tr}[B\\Phi D\\Phi^\\top B^\\top]$ with $G(A)=\\frac{2c^2}{d}A\\mathbf{U}+\\frac{2c}{d}\\mathbf{V}^\\top$, which identifies $\\nabla_A\\mathcal{L}=G(A)$; a second theorem then converts the constants and shows $-d^2G(A) = -2\\Delta_t\\frac dp A\\mathbf{U}-\\frac{2d\\sqrt{\\Delta_t}}{\\sqrt p}\\mathbf{V}^\\top$ — exactly the right-hand side printed in Eq. (10). (ii) The time rescaling: with $\\tau=k\\eta/d^2$ one step advances $\\tau$ by $\\eta/d^2$, and Lean proves the difference quotient $(A^{(k+1)}-A^{(k)})/(\\eta/d^2)$ equals $-d^2\\nabla_A\\mathcal{L}$. Both factors and the transpose on $\\mathbf{V}$ in Eq. (10) are correct. The $\\eta\\to0$ limit itself was not formalised (it is standard Euler-scheme convergence, not where an error would hide). Compiles clean, no `sorry`, standard axioms only.",
+        "predicted_error_category": null,
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__FORMULA_BLOCK__0_23738opus5.lean",
+          "formal_statement": "theorem Lrf_expansion (dd c : ℝ) (Φ : Matrix (Fin p) (Fin N) ℝ)\n    (Ξ : Matrix (Fin d) (Fin N) ℝ) (D : Matrix (Fin N) (Fin N) ℝ) (hD : Dᵀ = D)\n    (A B : Matrix (Fin d) (Fin p) ℝ) :\n    Lrf dd c Φ Ξ D (A + B) - Lrf dd c Φ Ξ D A\n      = (B * ((2*c^2/dd) • (A * (Φ * D * Φᵀ)) + (2*c/dd) • (Φ * D * Ξᵀ)ᵀ)ᵀ).trace\n        + (c^2/dd) * (B * (Φ * D * Φᵀ) * Bᵀ).trace\n\ntheorem eq10_constants (dd Δ pp c : ℝ) (hpp : 0 < pp) (hΔ : 0 ≤ Δ)\n    (hc : c = Real.sqrt Δ / Real.sqrt pp) ... :\n    (-(dd^2)) • ((2*c^2/dd) • (A * U) + (2*c/dd) • Vᵀ)\n      = (-(2*Δ*dd/pp)) • (A * U) + (-(2*dd*Real.sqrt Δ/Real.sqrt pp)) • Vᵀ\n\ntheorem time_rescaling (dd η : ℝ) (hdd : dd ≠ 0) (hη : η ≠ 0) ...\n    (hstep : Ak1 = Ak - η • G) :\n    (η/dd^2)⁻¹ • (Ak1 - Ak) = (-(dd^2)) • G",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 4,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.93
+    },
+    {
+      "snippet_id": "paper::DEFINITION::0",
+      "snippet_type": "DEFINITION",
+      "location": "3 Training dynamics of a Random Features Network",
+      "content": "$$v_t^2 = \\mathbb{E}_{u,v,w}\\!\\left[\\sigma\\!\\left(e^{-t}\\sigma_x u + \\sqrt{\\Delta_t}\\,v\\right)\\sigma\\!\\left(e^{-t}\\sigma_x u + \\sqrt{\\Delta_t}\\,w\\right)\\right] - a_t^2 e^{-2t}\\sigma_x^2, \\tag{13}$$\n\n$$s_t^2 = \\mathbb{E}_u\\!\\left[\\sigma(\\Gamma_t u)^2\\right] - a_t^2 e^{-2t}\\sigma_x^2 - v_t^2 - b_t^2. \\tag{14}$$\n\nwhere $\\sigma_x^2 = \\frac{\\mathrm{Tr}(\\Sigma)}{d}$, $\\Gamma_t = e^{-2t}\\sigma_x^2 + \\Delta_t = 1 + e^{-2t}(\\sigma_x^2 - 1)$ and the expectation is over the $u, v, w$ random variables which are independent standard Gaussian $\\mathcal{N}(0, 1)$.",
+      "route": "verify-math-lean",
+      "route_rationale": "Two crisp formal claims: the algebraic identity defining $\\Gamma_t$, and whether the argument $\\Gamma_t u$ in Eq. (14) has the same law as the argument used in Eqs. (12)-(13).",
+      "lean_result": {
+        "snippet_id": "paper::DEFINITION::0",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.9,
+        "reasoning": "Two claims were formalised. (1) The printed identity $\\Gamma_t = e^{-2t}\\sigma_x^2+\\Delta_t = 1+e^{-2t}(\\sigma_x^2-1)$, given $\\Delta_t=1-e^{-2t}$: **PASSED** (`Gamma_identity`), together with $\\Gamma_t\\ge0$ for $t\\ge0$. (2) The argument at which $\\sigma$ is evaluated in Eq. (14). Eqs. (12)-(13) evaluate $\\sigma$ at $e^{-t}\\sigma_x u+\\sqrt{\\Delta_t}v$ with $u,v$ independent standard Gaussians; Lean proves (`law_mixed_argument`, via Mathlib's Gaussian convolution) that this has law $\\mathcal{N}(0,\\Gamma_t)$, and (`law_sqrt_Gamma`) that $\\sqrt{\\Gamma_t}\\,u$ has the same law. Eq. (14) instead writes $\\sigma(\\Gamma_t u)$, whose law is $\\mathcal{N}(0,\\Gamma_t^2)$. Lean then **REFUTES** the identification: `Gamma_u_wrong_law` compiles a proof that these two laws are *different* whenever $\\Gamma_t\\notin\\{0,1\\}$, and `Gamma_ne_one_iff` shows $\\Gamma_t\\ne1$ exactly when $\\sigma_x^2\\ne1$ (for finite $t$). So $\\Gamma_t$ is a **variance** and the expression consistent with (12)-(13) is $\\mathbb{E}_u[\\sigma(\\sqrt{\\Gamma_t}\\,u)^2]$; the printed $\\sigma(\\Gamma_t u)$ is wrong unless $\\sigma_x^2=1$. It coincides accidentally in the paper's own numerics, which use $P_x=\\mathcal{N}(0,I_d)$ and hence $\\sigma_x^2=1$ — which is presumably why the slip survived. The downstream Gaussian-equivalence decomposition $\\mathbb{E}[\\sigma^2]=a_t^2e^{-2t}\\sigma_x^2+v_t^2+b_t^2+s_t^2$ that Eq. (14) rearranges only closes with $\\sqrt{\\Gamma_t}$.",
+        "predicted_error_category": "Formally refuted",
+        "snippet_type": "DEFINITION",
+        "contradiction_locations": [
+          "3 Training dynamics of a Random Features Network (Eq. 14 vs Eqs. 12-13)"
+        ],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__DEFINITION__0_23738opus5.lean",
+          "formal_statement": "theorem Gamma_identity (t sx : ℝ) :\n    Real.exp (-(2*t)) * sx^2 + (1 - Real.exp (-(2*t)))\n      = 1 + Real.exp (-(2*t)) * (sx^2 - 1)   -- PASSED\n\ntheorem law_mixed_argument (α β : ℝ) :\n    (gaussianReal 0 (Real.toNNReal (α^2))) ∗ (gaussianReal 0 (Real.toNNReal (β^2)))\n      = gaussianReal 0 (Real.toNNReal (α^2 + β^2))   -- PASSED\n\ntheorem law_sqrt_Gamma (Γ : ℝ) (hΓ : 0 ≤ Γ) :\n    (gaussianReal 0 1).map (fun u : ℝ => Real.sqrt Γ * u)\n      = gaussianReal 0 (Real.toNNReal Γ)   -- PASSED\n\n-- REFUTATION of the argument printed in Eq. (14):\ntheorem Gamma_u_wrong_law (Γ : ℝ) (hΓ : 0 ≤ Γ) (h0 : Γ ≠ 0) (h1 : Γ ≠ 1) :\n    (gaussianReal 0 1).map (fun u : ℝ => Γ * u)\n      ≠ (gaussianReal 0 1).map (fun u : ℝ => Real.sqrt Γ * u)\n\ntheorem Gamma_ne_one_iff (t sx : ℝ) :\n    Real.exp (-(2*t)) * sx^2 + (1 - Real.exp (-(2*t))) ≠ 1 ↔ sx^2 ≠ 1",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 5,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::EQUATION::5",
+      "snippet_type": "EQUATION",
+      "location": "3 Training dynamics of a Random Features Network",
+      "content": "$$b_t = \\mathbb{E}_{u,v}\\!\\left[v\\,\\sigma\\!\\left(e^{-t}\\sigma_x u + \\sqrt{\\Delta_t}\\,v\\right)\\right], \\qquad\na_t = \\mathbb{E}_{u,v}\\!\\left[\\sigma\\!\\left(e^{-t}\\sigma_x u + \\sqrt{\\Delta_t}\\,v\\right)\\frac{u}{e^{-t}\\sigma_x}\\right], \\tag{12}$$\n\n[with (13) and (14), and the standing assumption] (iii) the activation function σ verifies μ_0 = E_z[σ(z)] = 0",
+      "route": "verify-math",
+      "route_rationale": "The Gaussian-equivalence coefficients are definitions; their mutual consistency is checkable by inspection, and the only falsifiable element (the argument of $\\sigma$ in (14)) is routed separately to Lean.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::5",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.75,
+        "reasoning": "The definitions are mutually consistent. By Stein's identity $a_t = \\mathbb{E}[\\sigma']$ and $b_t = \\sqrt{\\Delta_t}\\,\\mathbb{E}[\\sigma']$, so both are finite whenever $\\sigma$ is weakly differentiable with Gaussian-integrable derivative. $v_t^2$ in (13) is non-negative: $\\mathbb{E}_{u,v,w}[\\sigma\\sigma] = \\mathbb{E}_u[(\\mathbb{E}_v[\\sigma\\mid u])^2]$, and $a_t^2e^{-2t}\\sigma_x^2$ is exactly the squared norm of its $L^2$ projection onto $u$, so the subtraction cannot make it negative. Together with $\\mu_0=0$, (12)-(14) are the standard Gaussian-equivalence decomposition $\\mathbb{E}[\\sigma^2] = a_t^2e^{-2t}\\sigma_x^2 + v_t^2 + b_t^2 + s_t^2$. No algebraic error in (12)-(13) themselves. Two caveats reported elsewhere: the first term of (14) should use $\\sqrt{\\Gamma_t}$ rather than $\\Gamma_t$ (see `paper::DEFINITION::0`), and the standing assumption of a \"non-standard Hermite expansion that may include non-square-integrable terms\" would make $\\mathbb{E}[\\sigma^2]$ — hence $s_t^2$ — divergent (see `paper::DEFINITION::1`). Also minor: the assumption list is labelled (iii), (iv) with no (i) or (ii) in the available text.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.75
+    },
+    {
+      "snippet_id": "paper::THEOREM::0",
+      "snippet_type": "THEOREM",
+      "location": "3 Training dynamics of a Random Features Network",
+      "content": "Theorem 3.1. Let $q(z) = \\frac{1}{p}\\mathrm{Tr}(\\mathbf{U} - z\\mathbf{I}_p)^{-1}$, $r(z) = \\frac{1}{p}\\mathrm{Tr}(\\Sigma^{1/2}\\mathbf{W}^T(\\mathbf{U} - z\\mathbf{I}_p)^{-1}\\mathbf{W}\\Sigma^{1/2})$ and $s(z) = \\frac{1}{p}\\mathrm{Tr}(\\mathbf{W}^T(\\mathbf{U} - z\\mathbf{I}_p)^{-1}\\mathbf{W})$, with $z \\in \\mathbb{C}$. Let\n$$\\hat{s}(q) = b_t^2\\psi_p + \\frac{1}{q},\\qquad (15)$$\n$$\\hat{r}(r,q) = \\frac{\\psi_p a_t^2 e^{-2t}}{1 + \\frac{a_t^2 e^{-2t}\\psi_p}{\\psi_n}\\,r + \\frac{\\psi_p v_t^2}{\\psi_n}\\,q}.\\qquad (16)$$\nThen $q(z)$, $r(z)$ and $s(z)$ satisfy the following set of three equations:\n$$s = \\int d\\rho_{\\Sigma}(\\lambda)\\,\\frac{1}{\\hat{s}(q) + \\lambda\\hat{r}(r,q)},\\qquad (17)$$\n$$r = \\int d\\rho_{\\Sigma}(\\lambda)\\,\\frac{\\lambda}{\\hat{s}(q) + \\lambda\\hat{r}(r,q)},\\qquad (18)$$\n$$\\psi_p(s_t^2 - z) + \\frac{\\psi_p v_t^2}{1 + \\frac{a_t^2 e^{-2t}\\psi_p}{\\psi_n}\\,r + \\frac{\\psi_p v_t^2}{\\psi_n}\\,q} + \\frac{1 - \\psi_p}{q} - \\frac{s}{q^2} = 0.\\qquad (19)$$\nThe eigenvalue distribution of $\\mathbf{U}$, $\\rho(\\lambda)$, can then be obtained using the Sokhotski–Plemelj inversion formula $\\rho(\\lambda) = \\lim_{\\varepsilon \\to 0^+} \\frac{1}{\\pi}\\,\\mathrm{Im}\\, q(\\lambda + i\\varepsilon)$.",
+      "route": "verify-math-lean",
+      "route_rationale": "The replica derivation lives in the unavailable SM, but two consequences are crisply formalisable: the sign and prefactor of the inversion formula, and a degenerate-limit consistency check of the system (15)-(19).",
+      "lean_result": {
+        "snippet_id": "paper::THEOREM::0",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.7,
+        "reasoning": "The self-consistent system itself is derived by the replica method in the SM, which is not present in this manuscript, so it cannot be verified directly; two checkable consequences were formalised instead, both PASSED. (1) **Inversion formula.** With the paper's convention $q(z)=\\frac1p\\operatorname{Tr}(\\mathbf{U}-z\\mathbf{I})^{-1}=\\int\\frac{\\mathrm{d}\\rho(x)}{x-z}$, Lean proves the integrand's imaginary part at $z=\\lambda+i\\varepsilon$ is exactly $\\pi$ times Mathlib's Cauchy density, that the resulting kernel $\\frac1\\pi\\frac{\\varepsilon}{(x-\\lambda)^2+\\varepsilon^2}$ is non-negative, and that it has total mass exactly $1$. So both the sign ($+\\frac1\\pi\\operatorname{Im}$, not $-$) and the prefactor $\\frac1\\pi$ printed in the theorem are correct. (2) **Degenerate-case consistency of Eq. (19).** Setting $a_t=b_t=v_t=0$ gives $\\hat s(q)=1/q$ and $\\hat r=0$; Eq. (17) then yields $s=q$ (the integrand is $\\lambda$-independent and $\\rho_\\Sigma$ is a probability measure) and Lean proves that Eq. (19) forces $q(z)=1/(s_t^2-z)$ — the Stieltjes transform of $\\delta(\\lambda-s_t^2)$, which is the right answer for $\\mathbf{U}=s_t^2\\mathbf{I}_p$ and matches the $\\delta(\\lambda-s_t^2)$ atom of Theorem 3.2. The coefficient structure of (19) therefore passes a non-trivial internal consistency test. Confidence is held at 0.7 because the full system remains unverified, not because anything came back wrong.",
+        "predicted_error_category": null,
+        "snippet_type": "THEOREM",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__THEOREM__0_23738opus5.lean",
+          "formal_statement": "theorem poisson_kernel_eq (x lam eps : ℝ) (heps : 0 < eps) :\n    (1/π) * (1 / ((x : ℂ) - (lam + eps * Complex.I))).im\n      = cauchyPDFReal lam (Real.toNNReal eps) x\n\ntheorem poisson_kernel_nonneg ... : 0 ≤ (1/π) * (1 / ((x : ℂ) - (lam + eps * Complex.I))).im\n\ntheorem poisson_kernel_mass_one (lam eps : ℝ) (heps : 0 < eps) :\n    ∫ x : ℝ, (1/π) * (1 / ((x : ℂ) - (lam + eps * Complex.I))).im = 1\n\ntheorem eq19_degenerate (psip psin a b v st2 z q s r et shat rhat : ℂ)\n    (ha : a = 0) (hb : b = 0) (hv : v = 0) (hpsip : psip ≠ 0) (hq : q ≠ 0)\n    (hshat : shat = b^2 * psip + 1/q) (hrhat : ...) (h17 : s = 1 / shat)\n    (h19 : psip * (st2 - z) + ... + (1 - psip)/q - s/q^2 = 0) :\n    q = 1 / (st2 - z)",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 6,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.7
+    },
+    {
+      "snippet_id": "paper::THEOREM::1",
+      "snippet_type": "THEOREM",
+      "location": "3 Training dynamics of a Random Features Network",
+      "content": "Theorem 3.2 (Informal). Let $\\rho$ denote the spectral density of $\\mathbf{U}$.\n\nRegime I (overparametrized): $\\psi_p > \\psi_n \\gg 1$.\n$$\\rho(\\lambda) = \\left(1 - \\frac{1 + \\psi_n}{\\psi_p}\\right)\\delta(\\lambda - s_t^2) + \\frac{\\psi_n}{\\psi_p}\\rho_1(\\lambda) + \\frac{1}{\\psi_p}\\rho_2(\\lambda).$$\n\nRegime II (underparametrized): $\\psi_n > \\psi_p \\gg 1$.\n$$\\rho(\\lambda) = \\left(1 - \\frac{1}{\\psi_p}\\right)\\rho_1(\\lambda) + \\frac{1}{\\psi_p}\\rho_2(\\lambda).$$\n\nwhere $\\rho_1$ is an atomless measure with support\n$$\\left[s_t^2 + v_t^2\\left(1 - \\sqrt{\\psi_p/\\psi_n}\\right)^2,\\, s_t^2 + v_t^2\\left(1 + \\sqrt{\\psi_p/\\psi_n}\\right)^2\\right],$$\nand $\\rho_2$ coincides with the asymptotic eigenvalue bulk density of the population covariance $\\tilde{\\mathbf{U}} = \\mathbb{E}_{\\mathbf{X}}[\\mathbf{U}]; \\rho_2$ is independent of $\\psi_n$ and its support is on the scale $\\psi_p$. [...] In the limit $\\psi_p \\gg \\psi_n$, the supports of $\\rho_1$ and $\\rho_2$ are respectively on the scales $\\psi_p/\\psi_n$ and $\\psi_p$, i.e. they are well separated.",
+      "route": "verify-math-lean",
+      "route_rationale": "Mixture-weight normalisation, interval well-formedness and the stated support scalings are all crisp formal claims, even though the full spectral statement is asymptotic.",
+      "lean_result": {
+        "snippet_id": "paper::THEOREM::1",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.8,
+        "reasoning": "Four checkable components, all PASSED. (1) **Normalisation, Regime I:** $(1-\\frac{1+\\psi_n}{\\psi_p})+\\frac{\\psi_n}{\\psi_p}+\\frac{1}{\\psi_p}=1$ for every $\\psi_p\\ne0$ — the mixture weights are correctly normalised. (2) **Normalisation, Regime II:** $(1-\\frac1{\\psi_p})+\\frac1{\\psi_p}=1$. (3) **Support well-formed:** the stated interval for $\\rho_1$ has left endpoint $\\le$ right endpoint whenever $v_t^2\\ge0$. (4) **Support scale:** writing $x=\\psi_p/\\psi_n$, Lean proves $s_t^2+\\frac14v_t^2x \\le s_t^2+v_t^2(1-\\sqrt x)^2 \\le s_t^2+v_t^2 x$ for $x\\ge4$, and that $(1-\\sqrt x)^2/x\\to1$ as $x\\to\\infty$ — confirming the claim that in the limit $\\psi_p\\gg\\psi_n$ the support of $\\rho_1$ is on the scale $\\psi_p/\\psi_n$, well separated from $\\rho_2$'s scale $\\psi_p$. One **observation, not a finding**: Lean also proves that the $\\delta(\\lambda-s_t^2)$ weight is non-negative *iff* $\\psi_p\\ge1+\\psi_n$, so the printed regime condition $\\psi_p>\\psi_n$ alone does not guarantee $\\rho$ is a probability measure (e.g. $\\psi_n=10$, $\\psi_p=10.5$ gives a negative atom). Because the theorem is explicitly labelled \"Informal\" and carries the asymptotic condition $\\psi_n\\gg1$, under which $\\psi_p\\ge1+\\psi_n$ is implied, this is a statement-precision gap rather than a mathematical error, and is deliberately not formalised as a refutation (doing so would refute a strengthened reading the paper does not assert).",
+        "predicted_error_category": null,
+        "snippet_type": "THEOREM",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__THEOREM__1_23738opus5.lean",
+          "formal_statement": "theorem regimeI_weights_sum (psip psin : ℝ) (hp : psip ≠ 0) :\n    (1 - (1 + psin)/psip) + psin/psip + 1/psip = 1\n\ntheorem regimeII_weights_sum (psip : ℝ) (hp : psip ≠ 0) : (1 - 1/psip) + 1/psip = 1\n\ntheorem regimeI_delta_weight_nonneg_iff (psip psin : ℝ) (hp : 0 < psip) :\n    0 ≤ 1 - (1 + psin)/psip ↔ 1 + psin ≤ psip\n\ntheorem rho1_support_interval (st2 vt2 x : ℝ) (hv : 0 ≤ vt2) (hx : 0 ≤ x) :\n    st2 + vt2 * (1 - Real.sqrt x)^2 ≤ st2 + vt2 * (1 + Real.sqrt x)^2\n\ntheorem lambda_min_scale (st2 vt2 x : ℝ) (hv : 0 ≤ vt2) (hx : 4 ≤ x) :\n    st2 + vt2 * x / 4 ≤ st2 + vt2 * (1 - Real.sqrt x)^2 ∧\n    st2 + vt2 * (1 - Real.sqrt x)^2 ≤ st2 + vt2 * x\n\ntheorem rho1_edge_ratio_tendsto :\n    Tendsto (fun x : ℝ => (1 - Real.sqrt x)^2 / x) atTop (𝓝 1)",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 7,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::EQUATION::6",
+      "snippet_type": "EQUATION",
+      "location": "3 Training dynamics of a Random Features Network",
+      "content": "The timescales of the training dynamics are given by the inverse eigenvalues of the $p \\times p$ matrix $\\Delta_t \\mathbf{U}/\\psi_p$. [...] We recall that training timescales are directly related to eigenvalues $\\lambda$ via the relation $\\tau^{-1} = \\frac{\\psi_p}{\\Delta_t \\lambda_{\\min}}$. [...] [Fig. 5 caption: \"the training time is rescaled by τ_mem = ψ_p/(Δ_t λ_min)\"; body: \"$\\tau_{\\text{mem}}$ [...] scales as $\\psi_p/(\\Delta_t \\lambda_{\\min})$, where $\\lambda_{\\min}$ is the left edge of $\\rho_1$\"]",
+      "route": "verify-math-lean",
+      "route_rationale": "A pure algebraic relation between three printed statements; whether they can hold simultaneously is exactly the sort of question Lean settles outright.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::6",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.9,
+        "reasoning": "The paper states three things: (A) \"the timescales [...] are given by the **inverse eigenvalues** of $\\Delta_t\\mathbf{U}/\\psi_p$\", i.e. $\\tau(\\lambda)=\\psi_p/(\\Delta_t\\lambda)$; (B) \"$\\tau^{-1} = \\psi_p/(\\Delta_t\\lambda_{\\min})$\"; (C) $\\tau_{\\text{mem}} = \\psi_p/(\\Delta_t\\lambda_{\\min})$ (Fig. 5 caption and the Memorization paragraph). Lean **REFUTES** (B). `inverse_eigenvalue_gives` proves that (A) entails $\\tau^{-1} = \\Delta_t\\lambda/\\psi_p$ — the exact reciprocal of what (B) prints. `both_force_tau_one` proves that if (A)/(C) and (B) both held then $\\tau=1$ and $\\psi_p = \\Delta_t\\lambda$; `params_incompatible` then shows this fails for the paper's own parameters ($\\psi_p=64$ with $t=0.01$, so $\\Delta_t = 1-e^{-0.02} < 1/50$, and $\\lambda\\le45$ across the whole reported spectrum, giving $\\Delta_t\\lambda < 1 \\ne 64$). `relation_B_refuted` compiles an explicit counterexample showing (B) cannot hold as a general relation given (A). The inverse is on the wrong side of the equation: it should read $\\tau_{\\text{mem}} = \\psi_p/(\\Delta_t\\lambda_{\\min})$ (equivalently $\\tau^{-1} = \\Delta_t\\lambda_{\\min}/\\psi_p$), which is what the rest of the paper uses.",
+        "predicted_error_category": "Formally refuted",
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [
+          "3 Training dynamics of a Random Features Network (timescale relation vs the 'inverse eigenvalues' statement and Fig. 5 caption)"
+        ],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__EQUATION__6_23738opus5.lean",
+          "formal_statement": "theorem inverse_eigenvalue_gives (psip Dt lam tau : ℝ)\n    (hp : 0 < psip) (hD : 0 < Dt) (hl : 0 < lam)\n    (hA : tau = psip / (Dt * lam)) : tau⁻¹ = Dt * lam / psip\n\ntheorem both_force_tau_one (psip Dt lam tau : ℝ) ...\n    (hA : tau = psip / (Dt * lam)) (hB : tau⁻¹ = psip / (Dt * lam)) :\n    tau = 1 ∧ psip = Dt * lam\n\ntheorem relation_B_refuted :\n    ¬ (∀ psip Dt lam tau : ℝ, 0 < psip → 0 < Dt → 0 < lam → 0 < tau →\n        tau = psip / (Dt * lam) → tau⁻¹ = psip / (Dt * lam))\n\ntheorem params_incompatible (Dt lam : ℝ) (hD : 0 < Dt) (hD' : Dt < 1/50)\n    (hl : 0 < lam) (hl' : lam ≤ 45) : (64 : ℝ) ≠ Dt * lam",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 3,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::PROPOSITION::0",
+      "snippet_type": "PROPOSITION",
+      "location": "3 Training dynamics of a Random Features Network (Memorization)",
+      "content": "Memorization: The timescale $\\tau_{\\text{mem}}$, on which the second stage of the dynamics takes place, is associated to overfitting and memorization. It is related to the bulk $\\rho_1$, and scales as $\\psi_p/(\\Delta_t \\lambda_{\\min})$, where $\\lambda_{\\min}$ is the left edge of $\\rho_1$. In the overparameterized regime $p \\gg n$, $\\tau_{\\text{mem}}$ exhibits a more complex dependence on both $\\psi_n$ and the noise level $\\Delta_t$, and may scale sublinearly with $n$ under varying noise schedules, contrasting with experiments suggesting a simple linear scaling.",
+      "route": "verify-math-lean",
+      "route_rationale": "Substituting Theorem 3.2's $\\lambda_{\\min}$ into $\\tau_{\\text{mem}}=\\psi_p/(\\Delta_t\\lambda_{\\min})$ yields a scaling claim with crisp two-sided bounds Lean can establish.",
+      "lean_result": {
+        "snippet_id": "paper::PROPOSITION::0",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.8,
+        "reasoning": "Lean **PASSED** the derived scaling, and that PASSED theorem contradicts the printed prose. Theorem 3.2 gives $\\lambda_{\\min}=s_t^2+v_t^2(1-\\sqrt{\\psi_p/\\psi_n})^2$, so at the fixed diffusion time $t$ at which the entire analysis is carried out (the paper states \"the empirical score matching loss defined in (4) at a fixed diffusion time $t$\"), $\\tau_{\\text{mem}}=\\psi_p/(\\Delta_t\\lambda_{\\min})$. With $x=\\psi_p/\\psi_n$, `tau_mem_linear_in_psin` proves that for $x\\ge4$ and $s_t^2\\le v_t^2x/4$ (i.e. deep in the overparametrized regime $p\\gg n$ the sentence invokes) $\\tau_{\\text{mem}}$ is sandwiched **two-sidedly** by constant multiples of $\\psi_n$: $\\frac45\\frac{\\psi_n}{\\Delta_tv_t^2}\\le\\tau_{\\text{mem}}\\le\\frac{4\\psi_n}{\\Delta_tv_t^2}$, and `tau_over_psin_bounded` proves the ratio $\\tau_{\\text{mem}}/\\psi_n$ stays in the fixed window $[\\frac45 c, 4c]$ with $c=1/(\\Delta_tv_t^2)$, uniformly in $\\psi_n$. That is $\\tau_{\\text{mem}}=\\Theta(\\psi_n)=\\Theta(n)$ — exactly linear, and provably **not** sublinear. The clause \"may scale sublinearly with $n$ [...] contrasting with experiments suggesting a simple linear scaling\" therefore contradicts the paper's own Theorem 3.2, as well as its abstract (\"$\\tau_{\\text{mem}}$ increases linearly with the training set size $n$\") and Sect. 2 (\"showing that $\\tau_{\\text{mem}} \\propto n$\"). The only escape hatch in the sentence, \"under varying noise schedules\" (i.e. letting $\\Delta_t$ depend on $n$), refers to a setting the paper never analyses — its whole RF analysis is at fixed $t$. Confidence 0.8 rather than 0.9+ because the refuted object is a hedged prose claim rather than a displayed equation, so Lean refutes the mathematics behind it rather than the sentence verbatim.",
+        "predicted_error_category": "Calculus/Proof error",
+        "snippet_type": "PROPOSITION",
+        "contradiction_locations": [
+          "Abstract",
+          "2 Generalization and memorization during training of diffusion models",
+          "3 Training dynamics of a Random Features Network (Theorem 3.2)"
+        ],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__PROPOSITION__0_23738opus5.lean",
+          "formal_statement": "theorem edge_sandwich (x : ℝ) (hx : 4 ≤ x) :\n    x/4 ≤ (1 - Real.sqrt x)^2 ∧ (1 - Real.sqrt x)^2 ≤ x\n\ntheorem tau_mem_linear_in_psin (psip psin Dt vt2 st2 x : ℝ)\n    (hn : 0 < psin) (hD : 0 < Dt) (hv : 0 < vt2) (hs : 0 ≤ st2)\n    (hx : 4 ≤ x) (hxdef : psip = x * psin) (hsmall : st2 ≤ vt2 * x / 4) :\n    (4/5) * (psin / (Dt * vt2))\n        ≤ psip / (Dt * (st2 + vt2 * (1 - Real.sqrt x)^2)) ∧\n    psip / (Dt * (st2 + vt2 * (1 - Real.sqrt x)^2))\n        ≤ 4 * (psin / (Dt * vt2))\n\ntheorem tau_over_psin_bounded (psin Dt vt2 st2 x : ℝ) ... :\n    (4/5) * (1 / (Dt * vt2))\n        ≤ ((x * psin) / (Dt * (st2 + vt2 * (1 - Real.sqrt x)^2))) / psin ∧\n    ((x * psin) / (Dt * (st2 + vt2 * (1 - Real.sqrt x)^2))) / psin\n        ≤ 4 * (1 / (Dt * vt2))",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 5,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::PROPOSITION::1",
+      "snippet_type": "PROPOSITION",
+      "location": "2 Generalization and memorization during training of diffusion models (Effect of the model capacity)",
+      "content": "Panels B and D show that the two characteristic timescales simply scale as τ_gen ∝ W^−1 and τ_mem ∝ nW^−1. In particular, this implies that, for W > 8, the critical training set size n_gm(p) at which τ_mem = τ_gen is approximately independent of p (at least on the limited values of p we focused on). When n > n_gm(p), the interval [τ_gen, τ_mem] opens up, so that early stopping within this window yields high-quality samples without memorization.",
+      "route": "verify-math-lean",
+      "route_rationale": "The word \"implies\" makes this a deductive claim from two scaling laws; the implication is exactly checkable.",
+      "lean_result": {
+        "snippet_id": "paper::PROPOSITION::1",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.92,
+        "reasoning": "Formalised the stated implication faithfully: given $\\tau_{\\text{gen}}(W)=c_g/W$ and $\\tau_{\\text{mem}}(n,W)=c_m n/W$ with $c_g,c_m>0$, Lean proves that for every $W>0$ and $n>0$, $\\tau_{\\text{mem}}=\\tau_{\\text{gen}} \\iff n = c_g/c_m$ — so the crossing size exists, is unique, and is the same number for every width. A second theorem proves directly that two widths $W_1,W_2$ yield the same crossing size $n_1=n_2$. Since $p$ is a function of $W$ alone in this architecture family, the conclusion \"$n_{gm}(p)$ is approximately independent of $p$\" follows from the two scaling laws exactly as the paper claims. The $W^{-1}$ exponents themselves are an empirical fit reported from Fig. 3 and were taken as hypotheses, not verified. Compiles clean, no `sorry`, standard axioms only.",
+        "predicted_error_category": null,
+        "snippet_type": "PROPOSITION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__PROPOSITION__1_23738opus5.lean",
+          "formal_statement": "theorem crossing_indep_of_width (cg cm : ℝ) (hcg : 0 < cg) (hcm : 0 < cm)\n    (τgen : ℝ → ℝ) (τmem : ℝ → ℝ → ℝ)\n    (hgen : ∀ W : ℝ, 0 < W → τgen W = cg / W)\n    (hmem : ∀ n W : ℝ, 0 < n → 0 < W → τmem n W = cm * n / W)\n    (n W : ℝ) (hn : 0 < n) (hW : 0 < W) :\n    τmem n W = τgen W ↔ n = cg / cm\n\ntheorem crossing_same_for_all_widths (cg cm : ℝ) ... :\n    n₁ = n₂",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.92
+    },
+    {
+      "snippet_id": "paper::DEFINITION::1",
+      "snippet_type": "DEFINITION",
+      "location": "3 Training dynamics of a Random Features Network (Assumptions)",
+      "content": "Assumptions. We consider data distributions P_x with heavy-tailed components and possibly unbounded covariance spectrum, violating previous boundedness conditions. Additionally, we assume σ permits a non-standard Hermite expansion that may include non-square-integrable terms, departing from classical theory. We assume that the empirical distribution of eigenvalues of Σ converges weakly in the high-dimensional limit to a deterministic density ρ_Σ(λ) and that Tr(Σ)/d converges to a finite limit (for a more precise mathematical statement see SM Sect. C.3). Moreover, we make additional assumptions that are not essential to the proofs but which simplify the analysis: (iii) the activation function σ verifies μ_0 = E_z[σ(z)] = 0; and (iv) the second layer A is initialized with zero weights A(τ = 0) = 0. In numerical applications, unless specified, we use σ(z) = tanh(z) and P_x = N(0, I_d).",
+      "route": "verify-math",
+      "route_rationale": "An assumption block, not an assertion with a truth value; the issue is well-definedness of downstream objects, which rests on an informally described function class Lean cannot pin down.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::DEFINITION::1",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.82,
+        "reasoning": "The assumption that \"$\\sigma$ permits a non-standard Hermite expansion that may include non-square-integrable terms\" is self-contradictory and makes the paper's own definitions divergent. The Hermite expansion *is* the expansion of a function in the orthonormal Hermite basis of $L^2(\\gamma)$, $\\gamma$ the standard Gaussian measure; a \"non-square-integrable term\" in that basis does not exist, and a $\\sigma\\notin L^2(\\gamma)$ has no Hermite expansion at all. The consequence is concrete rather than pedantic: if $\\mathbb{E}_z[\\sigma(z)^2]=\\infty$ then (a) $v_t^2$ in Eq. (13) and $s_t^2$ in Eq. (14) are differences of divergent quantities and hence undefined; (b) the matrix $\\mathbf{U}=\\frac1n\\sum_\\nu\\mathbb{E}_\\xi[\\sigma_\\nu\\sigma_\\nu^\\top]$ of Eq. (11) has infinite entries, so Eq. (10), Theorem 3.1 and Theorem 3.2 have no content; and (c) the Gaussian Equivalence Principle the derivation rests on requires exactly the square-integrability being discarded. The companion sentence, assuming \"heavy-tailed components and possibly unbounded covariance spectrum, violating previous boundedness conditions\", removes the hypotheses under which GEP and the linear-pencil/replica machinery cited ([13, 14, 32], [5], [33]) are valid, while the very next sentence still requires $\\mathrm{Tr}(\\Sigma)/d$ to converge to a finite limit and $\\rho_\\Sigma$ to exist as a deterministic weak limit — so the block simultaneously asserts and denies the integrability it needs. The paper's own numerics use $\\sigma = \\tanh$ (bounded, hence in $L^2(\\gamma)$) and $P_x=\\mathcal{N}(0,I_d)$, i.e. precisely the classical setting these two sentences claim to depart from. Minor additional defect: the assumption list is labelled (iii) and (iv) with no (i) or (ii) anywhere in the text.",
+        "predicted_error_category": "Domain/Constraint violation",
+        "snippet_type": "DEFINITION",
+        "contradiction_locations": [
+          "3 Training dynamics of a Random Features Network (Assumptions)",
+          "3 Training dynamics of a Random Features Network (Eqs. 11, 13, 14)"
+        ]
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.82
+    },
+    {
+      "snippet_id": "paper::EQUATION::7",
+      "snippet_type": "EQUATION",
+      "location": "3 Training dynamics of a Random Features Network (Generalization / asymptotics)",
+      "content": "The generalization loss $\\mathcal{L}_{\\text{gen}} = \\mathcal{L}_{\\text{test}} - \\mathcal{L}_{\\text{train}}$ is zero, and $\\mathcal{E}_{\\text{score}}$ tends to a value that we find to scale as $\\mathcal{O}(\\psi_n^{-\\eta})$ with $\\eta \\simeq 0.59$ numerically (see Fig. 5). [...] As $n$ increases, the asymptotic $(\\tau \\to \\infty)$ generalization loss $\\mathcal{L}_{\\text{gen}}$ decreases, indicating a reduced overfitting. For $n > n^*(p) = p$, although some overfitting remains (i.e., $\\mathcal{L}_{\\text{gen}} > 0$), the value of $\\mathcal{L}_{\\text{gen}}$ is sensibly reduced, and the model is no longer expressive enough to memorize the training data, as shown in [12].",
+      "route": "verify-math",
+      "route_rationale": "A numerically fitted exponent plus a threshold imported from reference [12]; neither is derivable from the manuscript, so there is nothing for Lean to settle.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::7",
+        "verifier_name": "math-equations",
+        "status": "UNVERIFIABLE",
+        "error_detected": false,
+        "confidence": 0.3,
+        "reasoning": "Nothing here can be checked from the manuscript. The exponent $\\eta\\simeq0.59$ is an empirical fit read off Fig. 5 with no derivation given, and $n^*(p)=p$ is attributed to reference [12] rather than established here (it is the natural interpolation threshold for a $p$-parameter random-features model, so it is at least plausible, but the supporting argument is outside this paper). The two statements are mutually consistent and consistent with Theorem 3.2's Regime I/II boundary at $\\psi_p=\\psi_n$. No error detected, but no positive verification either.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "UNVERIFIABLE",
+      "error_detected": false,
+      "confidence": 0.3
+    }
+  ],
+  "findings": [
+    {
+      "snippet_id": "paper::EQUATION::6",
+      "category": "Formally refuted",
+      "severity": "minor",
+      "confidence": 0.9,
+      "evidence": "Lean refuted the printed relation. The paper says in the same section that \"the timescales of the training dynamics are given by the **inverse eigenvalues** of the $p\\times p$ matrix $\\Delta_t\\mathbf{U}/\\psi_p$\", i.e. $\\tau(\\lambda)=\\psi_p/(\\Delta_t\\lambda)$, and the Fig. 5 caption plus the Memorization paragraph both use $\\tau_{\\text{mem}}=\\psi_p/(\\Delta_t\\lambda_{\\min})$. A machine-checked proof (`inverse_eigenvalue_gives`) shows that statement entails $\\tau^{-1}=\\Delta_t\\lambda/\\psi_p$ — the **reciprocal** of what is printed. A second proof (`both_force_tau_one`) shows that if both the printed relation and $\\tau_{\\text{mem}}=\\psi_p/(\\Delta_t\\lambda_{\\min})$ held, then necessarily $\\tau=1$ and $\\psi_p=\\Delta_t\\lambda_{\\min}$; `params_incompatible` rules this out for the paper's own parameters, since $\\psi_p=64$ while $t=0.01$ gives $\\Delta_t=1-e^{-0.02}<1/50$ and the whole reported spectrum satisfies $\\lambda\\le45$, so $\\Delta_t\\lambda<1\\ne64$. The inverse sits on the wrong side: the relation should read $\\tau_{\\text{mem}}=\\dfrac{\\psi_p}{\\Delta_t\\lambda_{\\min}}$, equivalently $\\tau^{-1}=\\dfrac{\\Delta_t\\lambda_{\\min}}{\\psi_p}$. Severity is minor because every other use in the paper has the correct orientation, so no downstream result depends on the slip.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "We recall that training timescales are directly related to eigenvalues $\\lambda$ via the relation $\\tau^{-1} = \\frac{\\psi_p}{\\Delta_t \\lambda_{\\min}}$."
+    },
+    {
+      "snippet_id": "paper::DEFINITION::0",
+      "category": "Formally refuted",
+      "severity": "minor",
+      "confidence": 0.88,
+      "evidence": "Lean refuted the argument at which $\\sigma$ is evaluated in Eq. (14). $\\Gamma_t$ is defined as a **variance**, $\\Gamma_t=e^{-2t}\\sigma_x^2+\\Delta_t$ (an identity Lean confirms equals $1+e^{-2t}(\\sigma_x^2-1)$). Using Mathlib's Gaussian convolution, `law_mixed_argument` proves the argument used in Eqs. (12)-(13), $e^{-t}\\sigma_x u+\\sqrt{\\Delta_t}\\,v$, has law $\\mathcal{N}(0,\\Gamma_t)$, and `law_sqrt_Gamma` proves $\\sqrt{\\Gamma_t}\\,u$ has that same law. The printed $\\Gamma_t u$ instead has law $\\mathcal{N}(0,\\Gamma_t^2)$, and `Gamma_u_wrong_law` compiles a proof that the two laws **differ** whenever $\\Gamma_t\\notin\\{0,1\\}$; `Gamma_ne_one_iff` pins that down to $\\sigma_x^2\\ne1$. So Eq. (14) should read $s_t^2=\\mathbb{E}_u\\!\\left[\\sigma(\\sqrt{\\Gamma_t}\\,u)^2\\right]-a_t^2e^{-2t}\\sigma_x^2-v_t^2-b_t^2$; only then does it rearrange the Gaussian-equivalence decomposition $\\mathbb{E}[\\sigma^2]=a_t^2e^{-2t}\\sigma_x^2+v_t^2+b_t^2+s_t^2$ correctly. The error is invisible in the paper's own numerics, which take $P_x=\\mathcal{N}(0,I_d)$ and hence $\\sigma_x^2=1$, $\\Gamma_t=1$ — which is why severity is minor — but it makes $s_t^2$ wrong for any anisotropic $\\Sigma$ with $\\mathrm{Tr}(\\Sigma)/d\\ne1$, including the second example in the Fig. 4 caption.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "$$s_t^2 = \\mathbb{E}_u\\!\\left[\\sigma(\\Gamma_t u)^2\\right] - a_t^2 e^{-2t}\\sigma_x^2 - v_t^2 - b_t^2. \\tag{14}$$"
+    },
+    {
+      "snippet_id": "paper::DEFINITION::1",
+      "category": "Domain/Constraint violation",
+      "severity": "critical",
+      "confidence": 0.82,
+      "evidence": "The Assumptions block discards exactly the integrability its own equations need. The Hermite expansion is by construction an expansion in the orthonormal Hermite basis of $L^2(\\gamma)$ with $\\gamma=\\mathcal{N}(0,1)$: a \"non-square-integrable term\" in that basis does not exist, and a $\\sigma\\notin L^2(\\gamma)$ has no Hermite expansion at all. If $\\mathbb{E}_z[\\sigma(z)^2]=\\infty$ then $v_t^2$ in Eq. (13) and $s_t^2$ in Eq. (14) become differences of divergent quantities, the matrix $\\mathbf{U}=\\frac1n\\sum_\\nu\\mathbb{E}_\\xi[\\sigma_\\nu\\sigma_\\nu^{\\top}]$ of Eq. (11) has infinite entries, and the gradient flow (10), Theorem 3.1 and Theorem 3.2 all lose their meaning. The same block then requires $\\mathrm{Tr}(\\Sigma)/d$ to converge to a finite limit and $\\rho_\\Sigma$ to exist as a deterministic weak limit, so it simultaneously asserts and denies the integrability the derivation rests on; and the Gaussian Equivalence Principle and linear-pencil/replica tools cited ([13, 14, 32], [5], [33]) require the \"previous boundedness conditions\" the preceding sentence claims to violate. The paper's own experiments use $\\sigma=\\tanh$ (bounded, hence square-integrable) and $P_x=\\mathcal{N}(0,I_d)$ — the classical setting these sentences claim to leave.",
+      "verifier": "verify-math",
+      "exact_quote": "Additionally, we assume σ permits a non-standard Hermite expansion that may include non-square-integrable terms, departing from classical theory."
+    },
+    {
+      "snippet_id": "paper::PROPOSITION::0",
+      "category": "Internal contradiction with the paper's own theorem",
+      "severity": "critical",
+      "confidence": 0.8,
+      "evidence": "The paper's own Theorem 3.2 makes $\\tau_{\\text{mem}}$ exactly linear in $n$, contradicting this sentence. Substituting $\\lambda_{\\min}=s_t^2+v_t^2\\big(1-\\sqrt{\\psi_p/\\psi_n}\\big)^2$ into $\\tau_{\\text{mem}}=\\psi_p/(\\Delta_t\\lambda_{\\min})$ and writing $x=\\psi_p/\\psi_n$, Lean proves (`tau_mem_linear_in_psin`) that for $x\\ge4$ and $s_t^2\\le v_t^2x/4$ — i.e. deep in the overparametrized regime $p\\gg n$ that the sentence itself invokes — $$\\frac45\\cdot\\frac{\\psi_n}{\\Delta_tv_t^2}\\ \\le\\ \\tau_{\\text{mem}}\\ \\le\\ \\frac{4\\,\\psi_n}{\\Delta_tv_t^2},$$ and (`tau_over_psin_bounded`) that $\\tau_{\\text{mem}}/\\psi_n$ stays inside the fixed window $[\\tfrac45c,\\,4c]$, $c=1/(\\Delta_tv_t^2)$, uniformly in $\\psi_n$. That is $\\tau_{\\text{mem}}=\\Theta(\\psi_n)=\\Theta(n)$: two-sided linear, provably not sublinear. The claim therefore contradicts Theorem 3.2, the abstract (\"we find that $\\tau_{\\text{mem}}$ increases linearly with the training set size $n$\") and Sect. 2 (\"making all curves collapse and increase at around $\\tau/n \\approx 300$, showing that $\\tau_{\\text{mem}} \\propto n$\"). The qualifier \"under varying noise schedules\" does not rescue it: the entire random-features analysis is carried out at a **fixed** diffusion time $t$, hence fixed $\\Delta_t$. A closely related self-undermining clause appears in Sect. 2, \"the scaling behavior of τ_mem with n is less robust than suggested\", which is contradicted by the same bound. Severity is critical because the linear growth of $\\tau_{\\text{mem}}$ with $n$ is the paper's headline result.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "may scale sublinearly with $n$ under varying noise schedules, contrasting with experiments suggesting a simple linear scaling."
+    }
+  ],
+  "verdict": "CRITICAL_ERRORS",
+  "verdict_confidence": 0.82,
+  "summary": "Sixteen mathematical objects were extracted from *Why Diffusion Models Don't Memorize: The Role of Implicit Dynamical Regularization in Training* and all sixteen were checked: eight by informal review and eight by formal Lean 4 proof, all pinned to the shared `MATH_VERIFICATION/Paper` project (which holds other papers' saved proofs and was therefore reused and kept, not deleted; only per-snippet scratch was removed). No Lean run returned `FAILED` or `NOT_ATTEMPTED`, so no informal fallback was needed.\n\n**What Lean settled clean (6 of 8).** The empirical marginal $P_t^{\\text{emp}}$ of Eq. (5) is a genuine probability density in every dimension $d$ and sample size $n$ — normalisation constant and exponent agree. The gradient flow of Eq. (10) is exactly right: a machine-checked expansion identifies $\\nabla_A\\mathcal{L}=\\frac{2\\Delta_t}{dp}A\\mathbf{U}+\\frac{2\\sqrt{\\Delta_t}}{d\\sqrt p}\\mathbf{V}^{\\top}$ with $\\mathbf{U},\\mathbf{V}$ exactly as in Eq. (11), and the $\\tau=k\\eta/d^2$ rescaling does give $\\dot A=-d^2\\nabla_A\\mathcal{L}$, with both printed constants and the transpose on $\\mathbf{V}$ correct. In Theorem 3.1 the Sokhotski–Plemelj inversion has the correct sign and $1/\\pi$ prefactor (the kernel is the Cauchy/Poisson kernel, non-negative with total mass exactly 1), and the system (15)-(19) passes a degenerate-limit test: at $a_t=b_t=v_t=0$ it correctly returns $q(z)=1/(s_t^2-z)$, i.e. $\\rho=\\delta(\\lambda-s_t^2)$. In Theorem 3.2 both regimes' mixture weights sum to 1, the stated support of $\\rho_1$ is a well-formed interval, and its edges really do sit on the scale $\\psi_p/\\psi_n$ (with $(1-\\sqrt x)^2/x\\to1$ proved). The Sect. 2 implication that the crossing size $n_{gm}$ is $p$-independent follows rigorously from $\\tau_{\\text{gen}}\\propto W^{-1}$, $\\tau_{\\text{mem}}\\propto nW^{-1}$.\n\n**Four errors found, two critical.** (i) *Critical* — the Assumptions block asserts that $\\sigma$ has a Hermite expansion \"that may include non-square-integrable terms\". The Hermite basis is a basis of $L^2(\\gamma)$, so this is self-contradictory, and if $\\mathbb{E}[\\sigma^2]=\\infty$ then $v_t^2$, $s_t^2$ and the matrix $\\mathbf{U}$ itself diverge, emptying Eqs. (10)-(19) of content — while the very next sentence still demands $\\mathrm{Tr}(\\Sigma)/d$ finite, and the experiments use bounded $\\tanh$. (ii) *Critical* — the Memorization paragraph claims $\\tau_{\\text{mem}}$ \"may scale sublinearly with $n$\", \"contrasting with experiments suggesting a simple linear scaling\". Lean proves the opposite from the paper's own Theorem 3.2: at the fixed diffusion time the analysis uses, $\\frac45\\frac{\\psi_n}{\\Delta_tv_t^2}\\le\\tau_{\\text{mem}}\\le\\frac{4\\psi_n}{\\Delta_tv_t^2}$, so $\\tau_{\\text{mem}}=\\Theta(n)$ exactly as the abstract claims. This sentence contradicts the paper's headline result, as does the related aside in Sect. 2 that \"the scaling behavior of τ_mem with n is less robust than suggested\". (iii) *Minor, formally refuted* — the relation $\\tau^{-1}=\\psi_p/(\\Delta_t\\lambda_{\\min})$ has the inverse on the wrong side; it is incompatible with the paper's own \"inverse eigenvalues of $\\Delta_t\\mathbf{U}/\\psi_p$\" statement and with $\\tau_{\\text{mem}}=\\psi_p/(\\Delta_t\\lambda_{\\min})$ in the Fig. 5 caption. (iv) *Minor, formally refuted* — Eq. (14) evaluates $\\sigma$ at $\\Gamma_t u$, but $\\Gamma_t$ is a variance: the argument of Eqs. (12)-(13) has law $\\mathcal{N}(0,\\Gamma_t)$, so the consistent expression is $\\sigma(\\sqrt{\\Gamma_t}\\,u)$. The slip is invisible when $\\sigma_x^2=1$, which is the paper's numerical setting, but wrong for the anisotropic $\\Sigma$ of the Fig. 4 caption.\n\n**No verifier disagreements.** Lean and the informal pass never reached opposing verdicts on the same snippet: every Lean run came back `PASSED` or `REFUTED`, so no `FAILED` result had to be set aside, and the two critical findings rest on informal reasoning and a `PASSED` Lean theorem respectively rather than on any inconclusive run. One item, Eq. (7)'s $n^*(p)=p$ together with the fitted exponent $\\eta\\simeq0.59$, is recorded `UNVERIFIABLE`: it is an empirical fit plus a result imported from reference [12]. One further observation is deliberately *not* reported as a finding: Lean shows the $\\delta(\\lambda-s_t^2)$ weight of Theorem 3.2's Regime I is non-negative only when $\\psi_p\\ge1+\\psi_n$, which the printed condition $\\psi_p>\\psi_n$ does not by itself give — but the theorem is labelled \"Informal\" and carries $\\psi_n\\gg1$, under which it holds, so this is a statement-precision gap rather than an error.\n\nVerdict **CRITICAL_ERRORS**, confidence 0.82. The paper's core mathematical machinery — the diffusion setup, the gradient flow, and the structure of both spectral theorems — came back clean under machine checking. The two critical findings are localised prose claims that contradict the paper's own verified mathematics (an assumption block that destroys the well-definedness of its own quantities, and a sublinear-scaling claim refuted by Theorem 3.2), not failures of the underlying analysis; they would need correcting, but the derivations around them survive."
+}

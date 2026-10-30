@@ -1,0 +1,69 @@
+{
+  "paper_id": "6518",
+  "title": "SAGE: A Unified Framework for Generalizable Object State Recognition with State-Action Graph Embedding",
+  "paper_category": "cs.CV",
+  "predicted_errors": [
+    {
+      "error_category": "Statistical reporting",
+      "error_location": "Table 5 (Ablation Studies, Section 4.4) — ChangeIt % Pre@1 (△) Novel Obj & Act column",
+      "confidence": 0.9,
+      "supporting_evidence": "All ablation rows define △ as the performance difference compared to the same complete model. In the ChangeIt 'Novel Obj & Act' column the implied complete-model baseline is inconsistent across rows: W/o Visual Descriptions 48.4 + 7.0 = 55.4, whereas W/o Joint Training 47.9 + 4.1 = 52.0 and W/o Dynamic State Locating 48.8 + 3.2 = 52.0. Every other column of Table 5 is perfectly self-consistent (e.g., Seen: 49.8+11.6 = 56.8+4.6 = 62.3−0.9 = 58.9+2.5 = 61.4; Novel Obj: 57.1; HowToChange Seen 54.8, Novel Obj 49.7, Novel Obj & Act 45.3), isolating the contradiction to this cell: at least one of 48.4 or −7.0 is wrong.",
+      "verifier_name": "verify-statistical",
+      "snippet_id": "6518::TABLE::4"
+    },
+    {
+      "error_category": "Abstract vs Results mismatch",
+      "error_location": "1 Introduction vs Table 2(b) / Table 7",
+      "confidence": 0.7,
+      "supporting_evidence": "The Introduction claims SAGE yields 'as much as 14.6% relative precision improvement on state recognition for objects and actions unseen during training', but the paper's own Table 2(b) reports SAGE at 0.45 vs VidOSC* 0.27 ChangeIt State Pre@1 (66.7% relative gain) and vs LFC* 0.21 (114% relative gain) in the same novel-obj-and-act setting, exceeding the claimed 14.6% cap. The 14.6% figure only arises in the Table 7 (VideoCLIP) comparison (0.55 vs 0.48). 'Outperforms ... across all benchmarks' is also softened by exact ties with VidOSC (Table 1 Trans. Pre@1 0.83 = 0.83; Table 7 ChangeIt Trans. Pre@1 seen 0.89 = 0.89, HowToChange F1 seen 46.4 = 46.4). The hedged Abstract ('On some datasets ... up to 14.6% ... However, further evaluation is necessary') conflicts with the stronger, unhedged Introduction claim.",
+      "verifier_name": "verify-cross-section-consistency",
+      "snippet_id": "6518::SECTION::1"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "3.1 Base Model",
+      "confidence": 0.7,
+      "supporting_evidence": "Section 3.1 states 'All outputs are projected into the discrete state/action spaces, where cross-entropy losses are computed on' — a sentence cut off mid-way — and defines the objective as L = L_state + α L_act over frame-level pseudo labels, while also stating 'there is a lack of frame-level annotation necessary for calculating the losses'. The Figure 2 caption and Section 3.3 instead describe decoding by cosine similarity between the predicted embedding Z_t and the SAGE state/action embeddings. The discrete-space cross-entropy supervision is never reconciled with the SAGE cosine-similarity decoding and the VLM-cosine + Viterbi pseudo-label pipeline, leaving the training-supervision mechanism internally contradictory.",
+      "verifier_name": "verify-text",
+      "snippet_id": "6518::SECTION::4"
+    },
+    {
+      "error_category": "Citation / attribution",
+      "error_location": "Appendix D (Statistical Significance)",
+      "confidence": 0.8,
+      "supporting_evidence": "Appendix D says 'We conduct Student's t-test to evaluate the statistical significance of the results of our main experiments in Table 6.' Table 6 is the VLM comparison (SAGE+CLIP/SigLIP/MetaCLIP, 5 columns), but Table A9's 12 columns (State Pre@1, Action Pre@1, open-world seen/novel State and Trans. Pre@1, F1/Precision/Pre@1 seen/novel) exactly match Table 7's VideoCLIP SOTA comparison — not Table 6. The cross-reference is a mis-pointer; the intended table is Table 7.",
+      "verifier_name": "verify-citation",
+      "snippet_id": "6518::SECTION::21"
+    },
+    {
+      "error_category": "Citation / attribution",
+      "error_location": "References vs in-text citation (Menon and Vondrick)",
+      "confidence": 0.75,
+      "supporting_evidence": "The Related Work section cites '(Menon and Vondrick, 2022)' in-text, but the bibliography entry reads 'Sachit Menon and Carl Vondrick. 2023. Visual classification via description from large language models. In The Eleventh International Conference on Learning Representations.' The in-text year (2022) and reference year (2023) disagree for the same work (ICLR 2023 / arXiv:2306.14082), an internal citation inconsistency.",
+      "verifier_name": "verify-citation",
+      "snippet_id": "6518::SECTION::17"
+    },
+    {
+      "error_category": "Data inconsistency",
+      "error_location": "Table A8 (Appendix C Dataset Details)",
+      "confidence": 0.7,
+      "supporting_evidence": "Table A8 reports ChangeIt with 27 actions. The canonical ChangeIt dataset (Souček et al., CVPR 2022) contains 44 state-changing action (verb–object) categories, verified against the CVPR 2022 paper and the ChangeIt project page/GitHub repository. The paper's other ChangeIt statistics (#Videos 35,095; #Training 34,428; #Evaluation 667; avg. duration 276 s) match the canonical dataset, but the action count of 27 deviates from the canonical 44 with no statement that a filtered action subset was used.",
+      "verifier_name": "verify-citation",
+      "snippet_id": "6518::TABLE::7"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 40,
+    "snippets_verified": 25,
+    "errors_detected": 6,
+    "verifier_usage": {
+      "verify-statistical": 11,
+      "verify-text": 10,
+      "verify-citation": 3,
+      "verify-cross-section-consistency": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Uncertainty-mode verification of 'SAGE: A Unified Framework for Generalizable Object State Recognition with State-Action Graph Embedding' (cs.CV) with lenient strictness. All 40 snippets were triaged; 25 with uncertainty ≥ 0.30 were routed to specialist verifiers (statistical 11, text 10, citation 3, cross-section 1), and the remaining 15 low-risk snippets were accepted as NO_ERROR. Six findings survived filtering: (1) a provable arithmetic inconsistency in Table 5's ChangeIt 'Novel Obj & Act' ablation column — the implied complete-model baseline is 55.4 from the W/o Visual Descriptions row (48.4 + 7.0) but 52.0 from both the W/o Joint Training (47.9 + 4.1) and W/o Dynamic State Locating (48.8 + 3.2) rows, while all other columns are perfectly self-consistent (confidence 0.90); (2) the Introduction's headline claim of 'as much as 14.6% relative precision improvement' is contradicted by the paper's own Table 2(b), which shows 66.7% (0.45 vs 0.27) and 114% (0.45 vs 0.21) relative gains in the same novel-obj-and-act setting, and the 'outperforms across all benchmarks' statement is softened by exact ties with VidOSC (confidence 0.70); (3) a methodology inconsistency in §3.1 between the discrete cross-entropy supervision sentence (which is cut off: 'cross-entropy losses are computed on') and the SAGE cosine-similarity pseudo-label/Viterbi decoding described in Figure 2 and §3.3 (confidence 0.70); (4) Appendix D misreferences 'Table 6' for the statistical-significance results, while Table A9's columns match Table 7 (confidence 0.80); (5) an in-text citation (Menon and Vondrick, 2022) that disagrees with the reference-list year 2023 (confidence 0.75); and (6) Table A8 reports ChangeIt with 27 actions versus the canonical 44 action categories (externally verified; confidence 0.70). The Table 5 arithmetic error is high-confidence (≥ 0.85), so the paper requires correction.",
+  "uncertainty_map": null
+}

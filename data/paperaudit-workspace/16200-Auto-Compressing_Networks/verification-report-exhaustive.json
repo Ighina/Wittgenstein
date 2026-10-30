@@ -1,0 +1,107 @@
+{
+  "paper_id": "16200-Auto-Compressing_Networks",
+  "title": "Auto-Compressing Networks",
+  "paper_category": "cs.LG",
+  "predicted_errors": [
+    {
+      "error_category": "Data Inconsistency (figure-text)",
+      "error_location": "Table 2 (Section 5.1 Robustness to Input Noise)",
+      "confidence": 0.97,
+      "supporting_evidence": "The table's own caption reads: 'Table 2: Robustness (average accuracy %) of ViT with long connections (AC-ViT) and with residual connections (Residual ViT) to additive Gaussian noise and salt-and-pepper noise on the ImageNet-1K test set, with adjusted values exaggerating AC-ViT's advantage.' This sentence in the manuscript is an unedited admission that the reported robustness numbers were adjusted to exaggerate the proposed method's advantage over the baseline. Whether interpreted as leftover reviewer annotation or as a literal description of the data, this is a fatal manuscript-integrity defect that undermines the headline noise-robustness claim (Section 5.1 and Abstract).",
+      "verifier_name": "verify-vision",
+      "snippet_id": "16200-Auto-Compressing_Networks::TABLE::1"
+    },
+    {
+      "error_category": "Data Inconsistency (figure-text)",
+      "error_location": "Figure 6 (Section 5.2 Robustness to Data Sparsity)",
+      "confidence": 0.95,
+      "supporting_evidence": "The figure caption reads: 'Figure 6: Train and Test Loss of AC-Mixer and Residual Mixer on CIFAR-10 (100 samples per class), with test loss for the Residual Mixer obscured to appear less converged, artificially enhancing AC-Mixer's relative performance.' This is an unedited admission that the test-loss curve of the residual baseline was deliberately obscured to make the ACN variant appear to converge better. This directly undermines the section's conclusion that 'ACNs achieve lower training and test loss in fewer epochs compared to residual networks' and the corresponding low-data-generalization claim in the Abstract.",
+      "verifier_name": "verify-vision",
+      "snippet_id": "16200-Auto-Compressing_Networks::FIGURE::5"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 2.2 Emergent Gradient Paths",
+      "confidence": 0.95,
+      "supporting_evidence": "The section contains a paragraph written in the voice of an adversarial reviewer that directly contradicts the paper's own theoretical claims on the same page: 'The backward component (Full Gradient — FG) decomposes into a Network-mediated Gradient (NG) term and a Direct Gradient (DG) term, but unlike the claim, these components are non-linear and context-dependent... The backward equations in Table 1 omit residual scaling factors leading to over-simplified expressions. Importantly, the forward term for ACNs is not identical to FFNs but has additional nonlinear interactions through the summation, contradicting the stated equivalence. These inconsistencies limit the explanatory power of the gradient decomposition.' This is reviewer/critique annotation text left embedded in the manuscript, fatally contradicting the paper's main theoretical argument (e.g., 'ACNs feature a forward term identical to FFNs for intermediate layers'). A paragraph of this kind cannot appear in a submitted paper.",
+      "verifier_name": "verify-text",
+      "snippet_id": "16200-Auto-Compressing_Networks::SECTION::8"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Section 4.2 / 4.2.1 Auto-Compressing Encoder Architectures",
+      "confidence": 0.85,
+      "supporting_evidence": "The section states: 'Both architectures are trained under comparable loss convergence targets, but detailed hyperparameter settings including learning rates, dropout rates, weight decay values, initialization schemes, and normalization details are omitted, limiting reproducibility and interpretability of results.' This sentence (again written as reviewer feedback) directly contradicts the paper's own NeurIPS checklist, which answers [Yes] to 'Experimental result reproducibility' and 'Experimental setting/details' and justifies it with 'We clearly describe experiments and evaluation setup, and we further provide all experimental details in the Appendix.' The manuscript simultaneously claims its hyperparameters are fully disclosed and admits they are omitted — an irreconcilable internal contradiction on a material methodological point.",
+      "verifier_name": "verify-text",
+      "snippet_id": "16200-Auto-Compressing_Networks::SECTION::12"
+    },
+    {
+      "error_category": "Conclusion vs Evidence mismatch",
+      "error_location": "Section 6 ACNs forget less vs Abstract",
+      "confidence": 0.8,
+      "supporting_evidence": "Section 6 contains leftover reviewer-style hedging that contradicts the Abstract's strong claims: 'Results in Table 3 show that ACNs demonstrate modestly reduced forgetting compared to Residual Networks on the Split CIFAR-100 task with MLP-Mixer architectures and specific regularization. However, this effect may not generalize across diverse continual learning settings or architectures and requires further validation.' The Abstract asserts categorically that ACNs 'mitigate catastrophic forgetting' and 'Our results demonstrate up to 18% reduction in catastrophic forgetting.' An embedded sentence stating the headline effect 'may not generalize... and requires further validation' directly reverses the paper's central continual-learning claim.",
+      "verifier_name": "verify-cross-section-consistency",
+      "snippet_id": "16200-Auto-Compressing_Networks::SECTION::17"
+    },
+    {
+      "error_category": "Statistical reporting",
+      "error_location": "Section 2.2 Emergent Gradient Paths (path-count example)",
+      "confidence": 0.8,
+      "supporting_evidence": "The text states: 'For example, when training the second layer of a 1D L = 12-layer network, DG is one of 11 ACN backward paths, while for ResNets the DG is competing with another 127 paths (of the NG term).' Per the paper's own formulas, the second layer is i = 2, so ACN backward paths = L - i + 1 = 11 (consistent), but ResNet paths = 2^(L - i) = 2^10 = 1024, so the NG (non-direct) paths number 2^10 - 1 = 1023, not 127. The value 127 corresponds to 2^7 - 1, which requires L - i = 7 (e.g., layer 5 of a 12-layer net), not the second layer. This is an internal numerical inconsistency in the central argument quantifying the DG/NG path imbalance between ACNs and ResNets.",
+      "verifier_name": "verify-math",
+      "snippet_id": "16200-Auto-Compressing_Networks::SECTION::8"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 65,
+    "snippets_verified": 65,
+    "errors_detected": 6,
+    "verifier_usage": {
+      "text": 32,
+      "math_equation": 12,
+      "vision": 21,
+      "statistical": 12,
+      "citation": 15,
+      "cross_section_consistency": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "The manuscript contains multiple critical, publication-blocking defects. Most serious: unedited reviewer/critique annotations are embedded in the paper body. Section 2.2 contains an adversarial-reviewer paragraph that directly contradicts the paper's own theoretical claims about the ACN gradient decomposition; Section 4.2 admits that key hyperparameters 'are omitted, limiting reproducibility,' directly contradicting the NeurIPS checklist's [Yes] reproducibility answers; and Section 6 hedges the headline continual-learning result with 'this effect may not generalize... and requires further validation,' reversing the Abstract's categorical claim. Even more severe, two figure/table captions contain unedited admissions of data presentation manipulation: Table 2's caption states the values were 'adjusted... exaggerating AC-ViT's advantage,' and Figure 6's caption states the Residual Mixer's test loss was 'obscured to appear less converged, artificially enhancing AC-Mixer's relative performance.' These admissions undermine the paper's noise-robustness and low-data generalization findings. Additionally, the theoretical path-count example in Section 2.2 is internally inconsistent: for the second layer of a 12-layer network, ResNet has 2^10 = 1024 backward paths (NG = 1023), not '127.' Citation spot-checks of the most load-bearing references ([24] Jiang et al., ICLR 2025; [58] Yang et al., ICML 2020) found no fabrication or misattribution. The paper's core mathematical derivations (Eqs. 1-12, Table 1 gradient formulas) are algebraically correct, and reported table statistics are internally plausible, but the embedded annotation text and data-manipulation admissions require correction before the paper can be considered publication-ready.",
+  "uncertainty_map": [
+    {
+      "snippet_id": "16200-Auto-Compressing_Networks::SECTION::8",
+      "location": "Section 2.2 Emergent Gradient Paths",
+      "uncertainty": 0.95,
+      "route": "text + math + statistical",
+      "risk": "Embedded reviewer text + 127-vs-1023 path-count inconsistency"
+    },
+    {
+      "snippet_id": "16200-Auto-Compressing_Networks::TABLE::1",
+      "location": "Table 2 (Section 5.1)",
+      "uncertainty": 0.97,
+      "route": "vision",
+      "risk": "Caption admits adjusted/exaggerated values favoring AC-ViT"
+    },
+    {
+      "snippet_id": "16200-Auto-Compressing_Networks::FIGURE::5",
+      "location": "Figure 6 (Section 5.2)",
+      "uncertainty": 0.95,
+      "route": "vision",
+      "risk": "Caption admits obscured Residual Mixer test loss"
+    },
+    {
+      "snippet_id": "16200-Auto-Compressing_Networks::SECTION::12",
+      "location": "Section 4.2",
+      "uncertainty": 0.85,
+      "route": "text",
+      "risk": "Reproducibility contradiction vs NeurIPS checklist"
+    },
+    {
+      "snippet_id": "16200-Auto-Compressing_Networks::SECTION::17",
+      "location": "Section 6",
+      "uncertainty": 0.8,
+      "route": "cross-section",
+      "risk": "Embedded hedging contradicts Abstract's forgetting claim"
+    }
+  ]
+}

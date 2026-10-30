@@ -1,0 +1,119 @@
+{
+  "paper_id": "11899-Class-wise_Balancing_Data_Replay_for_Federated_Class-Incremental_Learning",
+  "title": "Class-wise Balancing Data Replay for Federated Class-Incremental Learning",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Equation (1) and Section 4.1",
+      "confidence": 0.95,
+      "supporting_evidence": "Equation (1) states X_k^{(i)'} = P_k^{(i)} X_k^{(i)} Q^{(i)}, where P_k^{(i)} ∈ ℝ^{|D_k^{(i)}| × |D_k^{(i)}|} and Q^{(i)} ∈ ℝ^{d × d}. For this matrix multiplication to be valid, X_k^{(i)} must have dimensions |D_k^{(i)}| × d. However, the text describes this as 'Inverse Singular Value Decomposition (ISVD)' which is not a standard operation. Standard SVD decomposition is X = UΣV^T, not a product of the form PXQ. The operation described appears to be a random projection or encryption scheme, not an inverse SVD.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "11899-Class-wise_Balancing_Data_Replay_for_Federated_Class-Incremental_Learning::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Equation (4)",
+      "confidence": 0.85,
+      "supporting_evidence": "Equation (4) states U_k^{(i)} = 𝕀_k(U^{(i)'}) ∈ ℝ^{|D_k^{(i)}| × n}, where n is the total number of samples from all clients. However, U^{(i)'} from Equation (3) has dimensions n × n (as stated in the text). The row selection function 𝕀_k should return a matrix of dimensions |D_k^{(i)}| × n, which is correct. But then in Equation (5), the leverage score uses e_{i,j}^⊤ U_k^{(i)}, where e_{i,j} is described as 'the j-th standard basis vector in task i'. For the multiplication to work, e_{i,j} should have dimension |D_k^{(i)}|, but the indexing and description are unclear about whether this is a local or global index.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "11899-Class-wise_Balancing_Data_Replay_for_Federated_Class-Incremental_Learning::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Abstract vs Table 2",
+      "confidence": 0.9,
+      "supporting_evidence": "The abstract claims 'a 2%-15% Top-1 accuracy improvement compared to several state-of-the-art methods'. However, examining Table 2, the improvements vary significantly. For example, on CIFAR100 with β=1.0 and 5 tasks, FedCBDR achieves 52.06% while LANDER achieves 52.77%, which is actually a DECREASE of 0.71%, not an improvement. The claimed range does not accurately represent all experimental conditions.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "11899-Class-wise_Balancing_Data_Replay_for_Federated_Class-Incremental_Learning::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 5.2 vs Table 2",
+      "confidence": 0.95,
+      "supporting_evidence": "Section 5.2 states 'FedCBDR achieves the highest Top-1 accuracy in many but not all cases' and acknowledges that 'on CIFAR100 with 5 tasks and β = 1.0, FedCBDR (52.06%) underperforms LANDER (52.77%)'. However, the first bullet point in Section 5.2 initially claims FedCBDR 'achieves the highest Top-1 accuracy' before acknowledging the exception. This contradicts the claim in the abstract that FedCBDR provides consistent improvements.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "11899-Class-wise_Balancing_Data_Replay_for_Federated_Class-Incremental_Learning::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Equation (7)",
+      "confidence": 0.8,
+      "supporting_evidence": "Equation (7) presents ℒ_TTS with separate temperature scaling for old and new classes. However, the equation shows CE(y_i, Softmax(z_i^{old} / τ_{old})) which applies temperature only to old-class logits. In a multi-class classification setting, the softmax should be computed over ALL classes (both old and new) for each sample, not separately. The formulation as written would require samples to be exclusively from old or new classes, which contradicts the typical class-incremental learning setup where the model must predict across all seen classes.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "11899-Class-wise_Balancing_Data_Replay_for_Federated_Class-Incremental_Learning::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Equation (9)",
+      "confidence": 0.85,
+      "supporting_evidence": "Equation (9) shows Concat(f_{θ_k}^{old}(x_i)/τ_{old}, f_{θ_k}^{new}(x_i)/τ_{new}) inside the Softmax. This suggests temperature is applied before concatenation and then softmax is computed. However, this is inconsistent with Equation (7) which shows temperature applied to the entire logit vector z_i^{old}/τ_{old} before softmax. The two formulations describe different operations and cannot both be correct.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "11899-Class-wise_Balancing_Data_Replay_for_Federated_Class-Incremental_Learning::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 5.1 Implementation Details vs Algorithm 1",
+      "confidence": 0.75,
+      "supporting_evidence": "Section 5.1 states 'T = 100 communication rounds per task', but Algorithm 1 uses variable R for 'number of communication rounds' without specifying its value. The relationship between T and R is not clarified, creating ambiguity about the actual experimental protocol.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "11899-Class-wise_Balancing_Data_Replay_for_Federated_Class-Incremental_Learning::baseline"
+    },
+    {
+      "error_category": "Statistical reporting",
+      "error_location": "Table 4",
+      "confidence": 0.7,
+      "supporting_evidence": "Table 4 shows ablation results where '+TTS' alone (without GDR) on CIFAR10 β=0.5 achieves 41.34±2.3, which is only marginally better than Finetune at 38.71±3.7. Given the overlapping confidence intervals (38.71±3.7 could range from ~35 to ~42.4, and 41.34±2.3 ranges from ~39 to ~43.6), the improvement may not be statistically significant, yet the paper claims TTS provides improvements without reporting significance tests.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "11899-Class-wise_Balancing_Data_Replay_for_Federated_Class-Incremental_Learning::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (figure-text)",
+      "error_location": "Figure 5 vs Section 5.7",
+      "confidence": 0.8,
+      "supporting_evidence": "Section 5.7 states 'class 79 is missing in Task 4 under Re-Fed'. However, examining Figure 5 carefully, while the bar for class 79 in Task 4 appears very small for Re-Fed, it's not entirely clear from the figure that it is completely absent (count = 0) versus just very low. The figure resolution and scale make it difficult to verify this specific claim.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "11899-Class-wise_Balancing_Data_Replay_for_Federated_Class-Incremental_Learning::baseline"
+    },
+    {
+      "error_category": "Experiment setup",
+      "error_location": "Section 5.1 and Tables 2-3",
+      "confidence": 0.85,
+      "supporting_evidence": "Section 5.1 states 'The number of clients is fixed at K = 5' for the main experiments. However, Tables 2 and 3 do not specify the number of clients used, while Tables 6 and 7 in the appendix explicitly state 'The number of clients is fixed at 10'. This creates ambiguity about whether Tables 2-3 use K=5 or K=10, which is a critical experimental parameter.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "11899-Class-wise_Balancing_Data_Replay_for_Federated_Class-Incremental_Learning::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 5.6 vs Figure 4",
+      "confidence": 0.75,
+      "supporting_evidence": "Section 5.6 states 'Figure 4 shows partial sensitivity analysis' and mentions 'Complete results including poor-performing settings are provided in the appendix.' However, the appendix does not contain additional sensitivity analysis figures beyond what is shown in the main paper, making this claim unverifiable.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "11899-Class-wise_Balancing_Data_Replay_for_Federated_Class-Incremental_Learning::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Section 6 Conclusions",
+      "confidence": 0.8,
+      "supporting_evidence": "The conclusion states FedCBDR 'achieves modest improvements in final performance under specific scenarios' and acknowledges 'limitations related to sensitivity to hyperparameters and dataset heterogeneity remain significant challenges'. This contradicts the abstract's claim of '2%-15% Top-1 accuracy improvement' which suggests consistent and substantial improvements rather than 'modest improvements under specific scenarios'.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "11899-Class-wise_Balancing_Data_Replay_for_Federated_Class-Incremental_Learning::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 12,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (claude-sonnet-4-5-20250929, taxonomy=default): 12 error(s) reported.",
+  "baseline": {
+    "model": "claude-sonnet-4-5-20250929",
+    "taxonomy": "default",
+    "paper_chars": 81830,
+    "truncated": false
+  }
+}

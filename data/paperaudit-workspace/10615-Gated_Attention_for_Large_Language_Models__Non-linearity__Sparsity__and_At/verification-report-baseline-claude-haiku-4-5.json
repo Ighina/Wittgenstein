@@ -1,0 +1,149 @@
+{
+  "paper_id": "10615-Gated_Attention_for_Large_Language_Models__Non-linearity__Sparsity__and_At",
+  "title": "Gated Attention for Large Language Models: Non-linearity: Sparsity: and At",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Abstract and Section 3.2.1",
+      "confidence": 0.95,
+      "supporting_evidence": "The abstract states 'comprehensive comparison over 40 variants of 30B MoE models and 3.4B dense models trained on a 1 trillion token dataset.' However, Section 3.2.1 describes experiments on '15A2B MoE models' (15 billion activated parameters, not 30B) trained on '400B tokens' (not 1 trillion). The dense models in Table 2 are 1.7B, not 3.4B. The abstract's claim of '1 trillion token dataset' contradicts the actual experimental setup described throughout the paper.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "10615-Gated_Attention_for_Large_Language_Models__Non-linearity__Sparsity__and_At::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 3.2.1 and Table 1",
+      "confidence": 0.9,
+      "supporting_evidence": "The text states 'We train the 15A2B MoE models on 400B tokens' but later in Section 4.2 and Table 4, the paper references 'models trained on 3.5T tokens' when discussing gating score analysis. This is inconsistent—either the main experiments use 400B or 3.5T tokens. The paper conflates results from different training runs without clearly distinguishing them.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "10615-Gated_Attention_for_Large_Language_Models__Non-linearity__Sparsity__and_At::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (figure-text)",
+      "error_location": "Figure 1 (right) and Section 3.2.2",
+      "confidence": 0.85,
+      "supporting_evidence": "Figure 1 (right) caption states 'Training loss comparison (smoothed, 0.9 coeff.) over 3T tokens between baseline and SDPA-gated 1.7B dense models.' However, Section 3.2.2 describes experiments on 1.7B models trained on 400B tokens (Table 2, rows 1-4) and 3.5T tokens (rows 3-4). The figure appears to show 3T token training, but this specific configuration is not clearly described in the main experimental setup section.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "10615-Gated_Attention_for_Large_Language_Models__Non-linearity__Sparsity__and_At::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Section 2.2, Equation (5) and footnote 1",
+      "confidence": 0.8,
+      "supporting_evidence": "Equation (5) defines the gating mechanism as Y' = g(Y, X, W_θ, σ) = Y ⊙ σ(XW_θ), where X is 'another input used to compute the gating scores.' Footnote 1 states 'We adopt the hidden states after pre-normalization as X.' However, the paper does not clearly specify which hidden states are used for different gating positions (G1-G5). For instance, at position G1 (after SDPA), what exactly is X? Is it the input to the attention layer, or the SDPA output? This ambiguity makes the method not fully reproducible.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "10615-Gated_Attention_for_Large_Language_Models__Non-linearity__Sparsity__and_At::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 4.2 and Table 4",
+      "confidence": 0.85,
+      "supporting_evidence": "Section 4.2 states 'The mean gating scores for all layers are presented in Table 4' and discusses results from models 'trained on 3.5T tokens.' However, Table 4 is presented in the context of Section 3.2.1 experiments which use 400B tokens for the 15A2B MoE model. The paper does not clearly indicate whether Table 4 results come from the 400B or 3.5T token training runs, creating confusion about which experimental setup produced these gating score statistics.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "10615-Gated_Attention_for_Large_Language_Models__Non-linearity__Sparsity__and_At::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Abstract and Section 4.3",
+      "confidence": 0.8,
+      "supporting_evidence": "The abstract claims gating 'partially alleviates attention sink' and the paper title includes 'Attention-Sink-Free.' However, Section 4.3 explicitly states 'While gating reduces the severity of attention sinks and massive activations by introducing sparsity in the SDPA output, these phenomena persist to a non-trivial degree in some layers and models. This suggests gating partially alleviates but does not entirely resolve attention sink issues.' The title's claim of being 'Attention-Sink-Free' is misleading given the paper's own acknowledgment that attention sinks persist.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "10615-Gated_Attention_for_Large_Language_Models__Non-linearity__Sparsity__and_At::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (figure-text)",
+      "error_location": "Figure 2 and Section 4.3",
+      "confidence": 0.75,
+      "supporting_evidence": "Figure 2 (left) shows 'Proportion of attention allocated to the initial token per layer (test perplexity dataset)' with baseline at 46.7% and gated at 4.8%. However, Figure 2 (right) shows layer 21 baseline at 83% and gated at 4%, which is a much more dramatic difference than the average. The text in Section 4.3 states 'Head-wise and element-wise query-dependent sigmoid gating at the SDPA output (G1) largely reduces the attention score allocated to the first token' but the layer-wise variation shown in Figure 2 (right) suggests this is not uniform across layers.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "10615-Gated_Attention_for_Large_Language_Models__Non-linearity__Sparsity__and_At::baseline"
+    },
+    {
+      "error_category": "Experiment setup",
+      "error_location": "Section 3.2.2, Table 2",
+      "confidence": 0.8,
+      "supporting_evidence": "The paper states 'When using gating, we reduce the width of FFN to maintain the parameter size.' However, Table 2 compares models with different configurations (28 layer vs 48 layer, different batch sizes, different learning rates) without clearly specifying the FFN width reduction for each configuration. This makes it difficult to verify whether parameter counts are truly matched across baseline and gated variants.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "10615-Gated_Attention_for_Large_Language_Models__Non-linearity__Sparsity__and_At::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 3.2.2 and Table 2",
+      "confidence": 0.85,
+      "supporting_evidence": "Section 3.2.2 states 'We do not perform further learning rate or batch size tuning for gating variants, possibly limiting their performance.' However, Table 2 shows that gating models are evaluated at the same hyperparameters as baselines. Yet the text also says 'In practice, one effective way to leverage the gate is to start from the baseline's optimal batch size and moderately increase the learning rate.' This suggests gating benefits from different hyperparameters, contradicting the claim that no tuning was performed.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "10615-Gated_Attention_for_Large_Language_Models__Non-linearity__Sparsity__and_At::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Section 4.1, Equations (6)-(8)",
+      "confidence": 0.75,
+      "supporting_evidence": "The paper claims that adding non-linearity between W_V and W_O improves expressiveness because 'W_V^k W_O^k can be merged into one low-rank linear mapping.' However, this argument assumes d_k < d_model, which is true, but the paper does not discuss that the low-rank constraint is inherent to multi-head attention design. The claim that gating 'solves' this by adding non-linearity is overstated—it merely adds a non-linear transformation, which is a common technique but not a fundamental solution to the low-rank problem.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "10615-Gated_Attention_for_Large_Language_Models__Non-linearity__Sparsity__and_At::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (figure-text)",
+      "error_location": "Table 4 and Section 4.2",
+      "confidence": 0.8,
+      "supporting_evidence": "Table 4 shows 'M-Act' (massive activation) values and 'F-Attn' (first-token attention) values. The text states 'SDPA output gating (elementwise/headwise) exhibit the lowest mean gating scores' (row 2: 0.116, row 3: 0.172). However, row 6 (SDPA Input-Independent Gate) has a higher gating score (0.335) but lower M-Act (471) than row 5 (Value Elementwise Gate, 0.221 score, 125 M-Act). This contradicts the claimed relationship between gating score sparsity and massive activation reduction.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "10615-Gated_Attention_for_Large_Language_Models__Non-linearity__Sparsity__and_At::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 3.2.1 and Appendix A.1",
+      "confidence": 0.75,
+      "supporting_evidence": "Section 3.2.1 states 'We find that: (i) applying key layer gating (G3) yields superior performance improvements compared to SDPA or value gating, reducing PPL by up to 0.3 and improving MMLU significantly.' However, Table 1 shows G3 (key elementwise, row 7) has PPL of 6.016, which is worse than baseline (6.026). This directly contradicts the claim that G3 yields superior performance. The text appears to have confused the findings.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "10615-Gated_Attention_for_Large_Language_Models__Non-linearity__Sparsity__and_At::baseline"
+    },
+    {
+      "error_category": "Figure / table error",
+      "error_location": "Table 1, rows 5-9",
+      "confidence": 0.85,
+      "supporting_evidence": "The table shows PPL values for different gating positions: G1 (5.761), G2 (5.820), G3 (6.016), G4 (5.981), G5 (6.017). The text claims 'SDPA and value output gating are effective' and 'Inserting gates at the output of SDPA (G1) or the value map (G2) is the most effective.' However, the data shows G1 is best (5.761) but G2 (5.820) is not clearly superior to G4 (5.981) or G8 (5.981). The claim that G2 is 'most effective' is not well-supported by the PPL numbers shown.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "10615-Gated_Attention_for_Large_Language_Models__Non-linearity__Sparsity__and_At::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 4.3 and Table 5",
+      "confidence": 0.8,
+      "supporting_evidence": "Section 4.3 states 'we extend the context length for the models trained on 3.5T tokens' and 'continue training on data with a sequence length of 32k for an additional 80B tokens.' This means total training is 3.5T + 80B = 3.58T tokens. However, the paper earlier states the main experiments use 400B tokens (Section 3.2.1). The relationship between these different training regimes and which models are being evaluated is unclear.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "10615-Gated_Attention_for_Large_Language_Models__Non-linearity__Sparsity__and_At::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Section 4.3, paragraph starting with 'Collectively, these observations...'",
+      "confidence": 0.75,
+      "supporting_evidence": "The paper claims 'input-dependent, head-specific gating of the SDPA output introduces significant sparsity, thereby mitigating the attention sink.' However, Table 4 row 4 (SDPA Elementwise Head-shared Gate) has higher sparsity (0.271 gating score) than row 2 (0.116) but worse attention sink performance (F-Attn 0.301 vs 0.048). This contradicts the claimed relationship between sparsity and attention sink mitigation.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "10615-Gated_Attention_for_Large_Language_Models__Non-linearity__Sparsity__and_At::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 15,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (claude-haiku-4-5, taxonomy=default): 15 error(s) reported.",
+  "baseline": {
+    "model": "claude-haiku-4-5",
+    "taxonomy": "default",
+    "paper_chars": 75524,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 23573,
+      "output_tokens": 2853,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0
+    }
+  }
+}

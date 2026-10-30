@@ -1,0 +1,142 @@
+{
+  "paper_id": "3558-Rethinking_Multimodal_Learning_from_the_Perspective_of_Mitigating_Classific",
+  "title": "Rethinking Multimodal Learning from the Perspective of Mitigating Classific",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Section 3.2, residual-label definition following “the residual labels are defined as”",
+      "confidence": 0.99,
+      "supporting_evidence": "The paper claims that masking with y_i “ensure[s] the non-negativity of residual labels,” but \\hat y_{it}^o = y_i - \\lambda \\sum_{j<t} y_i \\odot p_{ij}^o can be negative on the true-class coordinate. For example, with \\lambda=1 and two preceding classifiers each assigning true-class probability 0.8, the residual is 1-0.8-0.8=-0.6. No clipping, renormalization, or restriction on the cumulative probability is specified. Thus these are not guaranteed valid nonnegative targets for a cross-entropy-like residual loss.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "3558-Rethinking_Multimodal_Learning_from_the_Perspective_of_Mitigating_Classific::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Section 3.2–3.4, references to Equations (2)–(5) and definition of \\mathcal{L}_{SUB}",
+      "confidence": 0.99,
+      "supporting_evidence": "The manuscript jumps from Equation (1) to an unnumbered residual-label expression and then to Equation (6). It repeatedly refers to objectives in Equations (2), (3), (4), and (5), but none of those equations is present. Equation (6) defines \\mathcal{L}_{SUB} through L(x_i^o,y_i,n^o), but L itself is never defined. Consequently, the claimed simultaneous classification/residual objective, ensemble prediction, and actual training loss cannot be reconstructed or reproduced.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "3558-Rethinking_Multimodal_Learning_from_the_Perspective_of_Mitigating_Classific::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Section 3.3 and Algorithm 1, adaptive classifier assignment conditions",
+      "confidence": 0.98,
+      "supporting_evidence": "The stated dead-zone logic is wrong. The algorithm adds a video classifier if d=s_t^a-\\sigma s_t^v>\\tau, but adds an audio classifier whenever d<\\tau. Hence when d is in the purported tolerance/dead zone, e.g. d=0 and \\tau=0.01, it still adds an audio classifier. A symmetric dead zone would require the second condition to be d<-\\tau (or an equivalent explicit no-action interval), not d<\\tau.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "3558-Rethinking_Multimodal_Learning_from_the_Perspective_of_Mitigating_Classific::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Section 3.3, confidence-score definition",
+      "confidence": 0.95,
+      "supporting_evidence": "The score s_t^o=(1/N)\\sum_i y_i^\\top[\\sum_{j=1}^{n^o}p_{ij}^o] is an unnormalized sum over classifiers. Its maximum is n^o, so it is mechanically increased merely by adding classifiers, independent of improvement in classification ability. Comparing s_t^a and s_t^v while using the comparison to decide which modality receives another classifier confounds classifier count with modality quality and creates a positive-feedback allocation rule. No normalization by n^o is supplied.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "3558-Rethinking_Multimodal_Learning_from_the_Perspective_of_Mitigating_Classific::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Appendix A, Equations (15)–(16)",
+      "confidence": 0.98,
+      "supporting_evidence": "The proof writes \\Phi(t+1)=\\Phi(t)-\\eta\\nabla\\mathcal L(\\Phi(t))=\\Phi(t)+\\eta h(\\Phi(t)). Assumption 3 only says h has a sufficiently negative inner product with \\nabla\\mathcal L^a and bounded norm; it does not establish h=-\\nabla\\mathcal L, nor does it even refer to the unsuperscripted \\mathcal L in Equation (15). Therefore the equality between the gradient-descent update and the boosting update is unjustified.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "3558-Rethinking_Multimodal_Learning_from_the_Perspective_of_Mitigating_Classific::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Appendix A, Lemma 1 proof, Equations (29)–(31)",
+      "confidence": 0.99,
+      "supporting_evidence": "Equation (31) asserts |\\mathcal L^a(\\Phi(t))-\\mathcal L^v(\\Phi^*)| \\ge |\\mathcal L^a(\\Phi(t))-\\mathcal L^v(\\Phi(t))|. This does not follow from strong convexity, smoothness, or equal optimal values. The second expression can be arbitrarily larger because \\mathcal L^v(\\Phi(t)) need not equal or lie between \\mathcal L^v(\\Phi^*) and \\mathcal L^a(\\Phi(t)). This invalidates the claimed gradient-to-gap lower bound in Lemma 1 and therefore the theorem depending on it.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "3558-Rethinking_Multimodal_Learning_from_the_Perspective_of_Mitigating_Classific::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Appendix A, Lemma 1 proof, Equations (18) and (22)",
+      "confidence": 0.96,
+      "supporting_evidence": "Equation (18), \\|\\Phi(t)-\\Phi^*\\|\\le\\rho^t\\|\\Phi(0)-\\Phi^*\\|, is asserted from strong convexity alone. Such linear iterate convergence additionally requires a specified optimization method, step-size range, and a common strongly convex objective; none is established. Equation (22) also silently replaces \\mathcal L^a(\\Phi^*) with \\mathcal L^v(\\Phi^*) before the later unsupported statement that both modalities have equal optimal loss. Assumption 4 only says both gradients vanish, not that their objective values are equal.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "3558-Rethinking_Multimodal_Learning_from_the_Perspective_of_Mitigating_Classific::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Appendix A, Theorem 1 proof, statement before Equation (40) and Equations (43)–(45)",
+      "confidence": 0.98,
+      "supporting_evidence": "The proof assumes “parameters for each modality are independent” and hence \\mathcal L^v(\\Phi(t+1))=\\mathcal L^v(\\Phi(t)). This directly conflicts with Section 3.2, which says Layer2 is “utilized as a shared head for all modalities” to strengthen interaction. Updating the shared head changes the video loss. In addition, the reciprocal argument in Equations (43)–(45) requires the gap and the denominator \\mathcal G-d|\\mathcal G|^2 to remain positive; the proof neither proves this nor handles crossing zero, despite its update potentially doing so.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "3558-Rethinking_Multimodal_Learning_from_the_Perspective_of_Mitigating_Classific::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (figure-text)",
+      "error_location": "Table 1 caption and Table 1 entries for KSounds MAP and Twitter F1",
+      "confidence": 0.99,
+      "supporting_evidence": "The caption says the best result is bold and the second-best is underlined, but the displayed bold values are not the best for two metrics. On KSounds MAP, MLA reports 0.7945 while Ours reports 0.7901, yet Ours is bolded. On Twitter F1, LFM reports 0.7057 while Ours reports 0.6962, yet Ours is bolded. These are not rounding ties.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "3558-Rethinking_Multimodal_Learning_from_the_Perspective_of_Mitigating_Classific::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Introduction contribution 4; Conclusion; Table 1",
+      "confidence": 0.98,
+      "supporting_evidence": "The paper claims it achieves “the best performance by a large margin” and “state-of-the-art performance ... by a large margin.” Table 1 contradicts universal best-performance language: Ours is worse than MLA on KSounds MAP (0.7901 vs. 0.7945) and worse than LFM on Twitter MacroF1 (0.6962 vs. 0.7057). Many reported accuracy gains are also very small, e.g. 0.7263 versus LFM 0.7253 on KSounds and 0.7512 versus LFM 0.7501 on Twitter, while only Ours has uncertainty values reported.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "3558-Rethinking_Multimodal_Learning_from_the_Perspective_of_Mitigating_Classific::baseline"
+    },
+    {
+      "error_category": "Experiment setup",
+      "error_location": "Section 4.1, Implementation Details, final paragraph",
+      "confidence": 0.99,
+      "supporting_evidence": "The manuscript explicitly states that its own hyperparameters were selected by cross-validation and its learning-rate schedule was tailored, whereas “the baselines were run using authors' default configurations or publicly available checkpoints without further tuning.” This is not a like-for-like SOTA comparison. Since optimization schedules and hyperparameters substantially affect these multimodal methods, the reported ranking cannot support superiority claims without equivalent tuning budgets and protocols.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "3558-Rethinking_Multimodal_Learning_from_the_Perspective_of_Mitigating_Classific::baseline"
+    },
+    {
+      "error_category": "Statistical reporting",
+      "error_location": "Abstract; Section 4.2; Table 1",
+      "confidence": 0.94,
+      "supporting_evidence": "The abstract and results discuss improvements with “overlapping confidence intervals,” but Table 1 reports ± values only for Ours and supplies neither uncertainty estimates, run counts, nor confidence intervals for any baseline. Overlap with prior work therefore cannot be assessed from the reported results. Conversely, statistical significance of the claimed comparisons cannot be established.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "3558-Rethinking_Multimodal_Learning_from_the_Perspective_of_Mitigating_Classific::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Appendix C.5 versus Section 3.3",
+      "confidence": 0.96,
+      "supporting_evidence": "Section 3.3 defines the assignment criterion as a difference, s_t^a-\\sigma s_t^v, compared with \\tau. Appendix C.5 states, “since we use the ratio between different modal metrics to compare against the threshold \\tau,” and uses that assertion to justify retaining the same threshold across confidence, loss, and entropy. No ratio is defined anywhere in the method. This changes the decision rule and makes the reported score-function experiment unreproducible.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "3558-Rethinking_Multimodal_Learning_from_the_Perspective_of_Mitigating_Classific::baseline"
+    },
+    {
+      "error_category": "Citation / attribution",
+      "error_location": "Appendix C.2, “G-Blend [10]”; References [10] and [40]",
+      "confidence": 0.91,
+      "supporting_evidence": "The toy-experiment appendix cites G-Blend as “[10],” but Reference [10] is malformed (“W. et al.”) and is a duplicate/incomplete rendering of the Wang, Tran, and Feiszli CVPR 2020 paper properly listed as Reference [40]. The main text itself cites G-Blend as [40]. This is an erroneous and unusable attribution in the appendix.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "3558-Rethinking_Multimodal_Learning_from_the_Perspective_of_Mitigating_Classific::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 14,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (gpt-5.6-terra, taxonomy=default): 14 error(s) reported.",
+  "baseline": {
+    "model": "gpt-5.6-terra",
+    "provider": "openai",
+    "taxonomy": "default",
+    "paper_chars": 68387,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 19028,
+      "output_tokens": 4327,
+      "cache_read_input_tokens": null,
+      "cache_creation_input_tokens": null
+    }
+  }
+}

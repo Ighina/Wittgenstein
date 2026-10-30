@@ -1,0 +1,695 @@
+{
+  "paper_name": "paper",
+  "paper_path": "/Users/iacopoghinassi/Documents/Github/Wittgenstein/data/paperaudit-workspace/6278-Learning_to_Learn_with_Contrastive_Meta-Objective/paper.md",
+  "tag": "opus5",
+  "lean_project": "MATH_VERIFICATION/ConML6278",
+  "lean_project_kept": false,
+  "totals": {
+    "snippets_extracted": 22,
+    "routed_to_math": 16,
+    "routed_to_lean": 6,
+    "lean_passed": 2,
+    "lean_refuted": 4,
+    "lean_failed": 0,
+    "fallbacks_run": 0,
+    "errors_detected": 10
+  },
+  "results": [
+    {
+      "snippet_id": "paper::EQUATION::0",
+      "snippet_type": "EQUATION",
+      "location": "3 Meta-Learning with ConML / 3.1 A General Framework",
+      "content": "Obtaining Inter-Task Distance. ... To make this practical within the mini-batch episodic training paradigm, we compute d^{out} across a batch of tasks sampled in each episode:\nd^{out} = (1/[B(B−1)]) · ∑_{τ∈b} ∑_{τ′∈b\\τ} φ(e_τ^*, e_{τ′}^*). (2)\nwhere b is a batch of B tasks, e_τ^* = ψ(g(D_τ^{tr} ∪ D_τ^{val}; θ)) is the model representation of task τ, and φ is an explicit distance function (e.g. cosine distance).",
+      "route": "verify-math",
+      "route_rationale": "Normalisation of an average over ordered pairs; checkable by inspection.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "The double sum $\\sum_{\\tau\\in b}\\sum_{\\tau'\\in b\\setminus\\tau}$ ranges over exactly the $B(B-1)$ ordered pairs of distinct tasks in a batch of size $B$, so dividing by $B(B-1)$ yields a correct arithmetic mean of $\\varphi(e_\\tau^*, e_{\\tau'}^*)$ over distinct task pairs. The expression is well defined for $B \\ge 2$; $B = 1$ would divide by zero but a contrastive batch of one task is excluded by construction. No algebraic defect.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::EQUATION::1",
+      "snippet_type": "EQUATION",
+      "location": "3.1 A General Framework (Training Procedure)",
+      "content": "Training Procedure. ConML optimizes the combination of the original episodic loss L_e and contrastive meta-objective L_c = d^{in} − d^{out}:\nL_ConML = L_e + λ L_c (3)\nwhere d^{in} = (1/B) ∑_{τ∈b} d_τ^{in} is the averaged inner-task distance and d^{out} is given by (2); λ > 0 is the contrastive weight.",
+      "route": "verify-math",
+      "route_rationale": "Definitional combination of two losses; no derivation to invalidate.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::1",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "The composition is definitional and sign-consistent with the stated intent: minimising $\\mathcal{L}_c = d^{in} - d^{out}$ drives the inner-task distance down (alignment) and the inter-task distance up (discrimination). With $\\varphi$ the cosine distance, $d^{in}, d^{out} \\in [0,2]$, so $\\mathcal{L}_c$ is bounded and the objective is well posed. Note (recorded, not flagged here) that under the Euclidean $\\varphi(x,y) = \\|x-y\\|$ also used in §4.3.2, $d^{out}$ is unbounded above and $\\mathcal{L}_c$ unbounded below; the paper's sigmoid-bounded variant in G.1 exists precisely to fix this. No algebraic error in (3) itself.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::EQUATION::2",
+      "snippet_type": "EQUATION",
+      "location": "3.2 Provable Benefits for Generalization",
+      "content": "Following [28], the excess risk of a meta-learner g(·; θ) is defined as:\nΔ_{ε_{p(τ)}}(θ) = E_{τ∼p(τ)} E_{D_τ^{tr}∼τ^n} E_{(x,y)∼τ} ℓ(g(D_τ^{tr}; θ)(x), y) − min_θ E_{τ∼p(τ)} [ min_{h∈H_{g(θ)}} E_{(x,y)∼τ} ℓ(h(x), y) ].\nwhere H_{g(θ)} is the hypothesis class of h given g(·; θ). The value of Δ_{ε_{p(τ)}}(θ) > 0 means the difference between the expectation of validation loss of g(·; θ) given finite n examples per task, and the best we can find given g and p(τ).",
+      "route": "verify-math-lean",
+      "route_rationale": "Well-posedness of the excess risk is a crisp sup/inf inequality, cleanly formalisable.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::2",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "Formalised the well-posedness of the definition: that $\\Delta_{\\varepsilon_{p(\\tau)}}(\\theta) \\ge 0$ for every $\\theta$. Writing $R(\\theta)$ for the first term and $B(\\theta)$ for $E_\\tau[\\min_{h \\in H_{g(\\theta)}} E\\,\\ell(h(x),y)]$, the two standing assumptions carried over from the paper are (i) the model the learner actually produces lies in its own hypothesis class, so $B(\\theta) \\le R(\\theta)$, and (ii) the outer $\\min_\\theta$ is attained, as the paper's notation presupposes. Lean then proves $R(\\theta_0) - B(\\theta_m) \\ge 0$ by transitivity. Despite the outer $\\min_\\theta$ sitting inside the subtraction — which at first looks as though it could overshoot and make $\\Delta$ negative — the construction is sound, because $B(\\theta_m) \\le B(\\theta_0) \\le R(\\theta_0)$. Compiles clean, no sorry.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/ConML6278",
+          "file": "ConML6278/TMP.lean (archived Verified/EQUATION_2.lean)",
+          "formal_statement": "theorem conml_excess_risk_nonneg\n    {Θ : Type*} (R Bst : Θ → ℝ)\n    (hRB : ∀ θ, Bst θ ≤ R θ)\n    (θm : Θ) (hmin : ∀ θ, Bst θm ≤ Bst θ) :\n    ∀ θ₀, 0 ≤ R θ₀ - Bst θm := by\n  intro θ₀\n  have : Bst θm ≤ R θ₀ := le_trans (hmin θ₀) (hRB θ₀)\n  linarith",
+          "compiler_feedback": "'conml_excess_risk_nonneg' depends on axioms: [propext, Classical.choice, Quot.sound]\nEXIT=0",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": false
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::LEMMA::0",
+      "snippet_type": "LEMMA",
+      "location": "3.2 Provable Benefits for Generalization",
+      "content": "Lemma 1. Under standard regularity conditions on the meta-learner g(·; θ) and boundedness of the model representations, there exist constants C_1, C_2 such that the excess risk Δ_{ε_{p(τ)}}(θ) is upper-bounded by U_{p(τ)}(θ) defined in terms of second-order moments over model outputs.",
+      "route": "verify-math",
+      "route_rationale": "Statement is hedged into unformalisability (\"standard regularity conditions\", \"defined in terms of\"); the checkable content is its proof in B.1.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::LEMMA::0",
+        "verifier_name": "math-equations",
+        "status": "UNVERIFIABLE",
+        "error_detected": false,
+        "confidence": 0.5,
+        "reasoning": "As stated in the main text the lemma asserts nothing falsifiable: \"standard regularity conditions\" is unquantified, $C_1, C_2$ are merely said to exist, and $U_{p(\\tau)}(\\theta)$ is described only as being \"defined in terms of second-order moments over model outputs\" rather than written down. The explicit form of $U_{p(\\tau)}(\\theta)$ and the actual argument appear in Appendix B.1, which is checked as paper::PROOF::0 through paper::PROOF::3. No verdict is possible from this statement alone.",
+        "predicted_error_category": null,
+        "snippet_type": "LEMMA",
+        "contradiction_locations": []
+      },
+      "status": "UNVERIFIABLE",
+      "error_detected": false,
+      "confidence": 0.5
+    },
+    {
+      "snippet_id": "paper::THEOREM::0",
+      "snippet_type": "THEOREM",
+      "location": "3.2 Provable Benefits for Generalization",
+      "content": "Theorem 1. Minimizing the contrastive meta-objective L_c(g(·; θ), p(τ)) approximately minimizes U_{p(τ)}(θ), reducing this upper bound on excess risk. These results rely on assumptions detailed in Appendix B including continuity, compactness, and symmetric distribution of model outputs. Thus, the contrastive objective provides a surrogate for worst-case meta-test error under suitable conditions. (Context, §3.2: \"It is provable that a meta-learner which minimizes L_c has lower generalization error upper-bound than any other meta-learners.\")",
+      "route": "verify-math",
+      "route_rationale": "\"Approximately minimizes\" is undefined, so the statement itself is not formalisable; its proof in B.2 carries the content.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::THEOREM::0",
+        "verifier_name": "math-equations",
+        "status": "UNVERIFIABLE",
+        "error_detected": false,
+        "confidence": 0.5,
+        "reasoning": "\"Approximately minimizes\" is never given a quantitative meaning (no error term, no rate), so the statement admits no truth value as written. The surrounding prose makes a far stronger, genuinely checkable claim — \"a meta-learner which minimizes $\\mathcal{L}_c$ has lower generalization error upper-bound than any other meta-learners\" — and that claim rests on the Appendix B.2 derivation, checked as paper::PROOF::4, paper::PROOF::5 and paper::PROOF::6, where Lean refuted two load-bearing steps. No verdict from this statement in isolation.",
+        "predicted_error_category": null,
+        "snippet_type": "THEOREM",
+        "contradiction_locations": []
+      },
+      "status": "UNVERIFIABLE",
+      "error_detected": false,
+      "confidence": 0.5
+    },
+    {
+      "snippet_id": "paper::LEMMA::1",
+      "snippet_type": "LEMMA",
+      "location": "Appendix B Provable Benefits for Generalization",
+      "content": "Lemma 2 (Upper Bound from [28]). ∀θ, Δ_{ε_{p(τ)}}(θ) ≤ Φ_{p(τ)}(θ), where\n$$\\Phi_{p(\\tau)}(\\theta) = C_1\\sqrt{E_{\\tau\\sim p(\\tau)}E_{(x,y)\\sim\\tau}[||\\psi(g((x,y);\\theta))||^2]} + C_2,$$\nwith C_1, C_2 > 0, and dC_1/dθ = dC_2/dθ = 0.",
+      "route": "verify-math",
+      "route_rationale": "Imported verbatim from reference [28]; cannot be adjudicated without that source.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::LEMMA::1",
+        "verifier_name": "math-equations",
+        "status": "UNVERIFIABLE",
+        "error_detected": false,
+        "confidence": 0.5,
+        "reasoning": "This is quoted as an external result, so its correctness is a property of [28] rather than of this paper, and it cannot be checked from the snippet. Two internal observations are recorded without being flagged: (i) $\\Phi$ is written in terms of the paper's own projection $\\psi$, which a result imported from [28] would not reference, so some unstated translation step is being elided; (ii) $\\Phi$ evaluates $g$ on a single example, $g((x,y);\\theta)$, whereas the excess risk in §3.2 evaluates $g$ on an $n$-sample training set $D_\\tau^{tr}$ — the finite-sample dependence that makes the excess risk non-trivial has quietly disappeared. Neither is a derivation error inside this snippet.",
+        "predicted_error_category": null,
+        "snippet_type": "LEMMA",
+        "contradiction_locations": []
+      },
+      "status": "UNVERIFIABLE",
+      "error_detected": false,
+      "confidence": 0.5
+    },
+    {
+      "snippet_id": "paper::LEMMA::2",
+      "snippet_type": "LEMMA",
+      "location": "Appendix B Provable Benefits for Generalization",
+      "content": "Lemma 3 (Universal Approximation of MLP from [21]). Let σ : ℝ → ℝ be a non-constant, bounded, and continuous function. Let K be a compact subset of ℝ^n. The set of real-valued continuous functions on K is denoted by C(K). For any function f ∈ C(K) and for any error tolerance δ > 0, there exists an integer N (the number of neurons in the hidden layer), and real constants v_i, b_i ∈ ℝ and vectors w_i ∈ ℝ^n for i = 1, …, N, such that we can define the MLP output function F : K → ℝ as:\n$$F(x) = \\sum_{i=1}^{N} v_i\\sigma(w_i^T x + b_i)$$\nwhich satisfies ∀x ∈ K and |f(x) − F(x)| < δ.",
+      "route": "verify-math",
+      "route_rationale": "Classical cited theorem; the check is statement fidelity, not a derivation.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::LEMMA::2",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "This is a faithful statement of the Hornik/Cybenko universal approximation theorem: $\\sigma$ non-constant, bounded and continuous, $K \\subset \\mathbb{R}^n$ compact, and density of $\\mathrm{span}\\{\\sigma(w^Tx+b)\\}$ in $C(K)$ under the sup norm. The free parameters $v_i, b_i \\in \\mathbb{R}$ and $w_i \\in \\mathbb{R}^n$ are all present and $F$ is correctly real-valued. No error in the statement. How the paper then *uses* it is a separate matter, checked as paper::PROOF::0.",
+        "predicted_error_category": null,
+        "snippet_type": "LEMMA",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::PROOF::0",
+      "snippet_type": "PROOF_STEP",
+      "location": "Appendix B.1 Proof of Lemma 1",
+      "content": "Proof. We use the Universal Approximation of MLP to bound the ψ in Φ_{p(τ)}(θ). For the model space 𝓗 ... we can apply Lemma 3 to ψ in Φ_{p(τ)}(θ). There exists a two-layer MLP F with a nonlinear activation function σ. Then\n$$\\forall X_g \\in \\mathcal{H}, \\quad |\\psi(X_g) - F(X_g)| < \\delta, \\tag{5}$$\nwhere X_g represents the parameter vector learned by g(·; θ) from sample (x, y).\nAs X_g ∈ 𝓗, F(X_g) ∈ ℝ and ||F(X_g)|| = ||\\psi(X_g)|| ≤ ||X_g|| by definition, we have\n$$\\exists\\, w_1, \\ldots, w_N \\in \\mathbb{R}^{|\\mathcal{H}|}, \\quad \\sum_{k=1}^{N} ||w_k||^2 \\leq N, \\quad F(X_g) = \\sum_{k=1}^{N} \\sigma(\\langle w_k, X_g\\rangle).$$",
+      "route": "verify-math-lean",
+      "route_rationale": "An explicit existential with a norm constraint — exactly the shape a formal counterexample can settle.",
+      "lean_result": {
+        "snippet_id": "paper::PROOF::0",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.9,
+        "reasoning": "Lemma 3 supplies $F(x) = \\sum_i v_i \\sigma(w_i^T x + b_i)$ with free outer coefficients $v_i$ and biases $b_i$. The paper then asserts that the *same* $F$, with the *same* neuron count $N$, can be written as $\\sum_{k=1}^N \\sigma(\\langle w_k, X_g\\rangle)$ — every $v_i$ silently set to $1$ and every $b_i$ to $0$ — and additionally that $\\sum_k \\|w_k\\|^2 \\le N$. Lean refuted this. Since Lemma 3 *requires* $\\sigma$ bounded, say $|\\sigma| \\le M$, the restricted family satisfies $|\\sum_{k=1}^N \\sigma\\langle w_k, X\\rangle| \\le NM$ uniformly, whereas $F$ itself is unbounded in the $v_i$. So no such rewriting exists whenever $|F(X_0)| > NM$. A fully concrete witness was also compiled: with $\\sigma$ the clamp to $[-1,1]$ (non-constant, bounded, continuous, $\\sigma(0)=0$, Lipschitz 1 — every hypothesis B.1 uses) and $F(x) = 5\\sigma(x)$, which is of Lemma-3 form with $N=1, v_0=5, b_0=0$, there is no $w$ with $w^2 \\le 1$ and $F = \\sigma(w\\,\\cdot)$. The stated justification — \"$\\|F(X_g)\\| = \\|\\psi(X_g)\\| \\le \\|X_g\\|$ by definition\" — is also a non sequitur: $\\psi$ is an arbitrary projection $\\mathcal{H} \\to \\mathbb{R}^d$ and nothing makes it norm-contracting, and a bound on $F$'s *output* does not constrain the *weights* $w_k$. There is a further type mismatch: $\\psi$ maps into $\\mathbb{R}^d$ while Lemma 3's $F$ is scalar-valued, so $\\|\\psi(X_g)\\|$ and $F(X_g)$ cannot be identified unless $d = 1$.",
+        "predicted_error_category": "Formally refuted",
+        "snippet_type": "PROOF_STEP",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/ConML6278",
+          "file": "ConML6278/TMP.lean (archived Verified/PROOF_0.lean)",
+          "formal_statement": "theorem conml_rewriting_step_refuted\n    {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]\n    (σ : ℝ → ℝ) (M : ℝ) (hσ : ∀ t, |σ t| ≤ M)\n    (N : ℕ) (F : E → ℝ) (X₀ : E)\n    (hFbig : (N : ℝ) * M < |F X₀|) :\n    ¬ ∃ w : Fin N → E,\n        (∑ k, ‖w k‖ ^ 2 ≤ (N : ℝ)) ∧ (∀ X, F X = ∑ k, σ ⟪w k, X⟫) := by\n  rintro ⟨w, -, hrep⟩\n  have hFbound : |∑ k : Fin N, σ ⟪w k, X₀⟫| ≤ (N : ℝ) * M := by\n    calc |∑ k : Fin N, σ ⟪w k, X₀⟫|\n        ≤ ∑ k : Fin N, |σ ⟪w k, X₀⟫| := Finset.abs_sum_le_sum_abs _ _\n      _ ≤ ∑ _k : Fin N, M := Finset.sum_le_sum (fun k _ => hσ _)\n      _ = (N : ℝ) * M := by simp [Finset.sum_const, mul_comm]\n  rw [hrep X₀] at hFbig\n  linarith\n\ntheorem conml_rewriting_step_refuted_concrete :\n    ¬ ∃ w : ℝ, w ^ 2 ≤ 1 ∧\n        ∀ x : ℝ, 5 * max (-1 : ℝ) (min 1 x) = max (-1 : ℝ) (min 1 (w * x)) := by\n  rintro ⟨w, -, hrep⟩\n  have h1 := hrep 1\n  have hle : max (-1 : ℝ) (min 1 (w * 1)) ≤ 1 :=\n    max_le (by norm_num) (min_le_left _ _)\n  have : (5 : ℝ) * max (-1 : ℝ) (min 1 (1 : ℝ)) = 5 := by norm_num\n  rw [this] at h1\n  linarith",
+          "compiler_feedback": "'conml_restricted_form_refuted' depends on axioms: [propext, Classical.choice, Quot.sound]\n'conml_rewriting_step_refuted' depends on axioms: [propext, Classical.choice, Quot.sound]\n'conml_rewriting_step_refuted_concrete' depends on axioms: [propext, Classical.choice, Quot.sound]\nEXIT=0",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 3,
+          "project_kept": false
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::PROOF::1",
+      "snippet_type": "PROOF_STEP",
+      "location": "Appendix B.1 Proof of Lemma 1",
+      "content": "As δ can be arbitrarily small by selecting large enough N, we approximately rewrite (5) as ψ(X_g) = F(X_g), which is not completely rigorous but causes no harm to our proof. We have\n$$E_{\\tau\\sim p(\\tau)}E_{(x,y)\\sim\\tau}[||\\psi(g((x,y);\\theta))||^2] = E_{X\\sim P_{g(\\theta)}(\\tau,x,y)}\\Big[\\sum_k \\sigma(\\langle w_k, X_g\\rangle)^2\\Big],$$\nwhere P_{g(\\theta)}(\\tau,x,y) is the distribution of X_g output by meta-learner g(·; θ) given p(τ), x, y. (Context: the preceding step sets F(X_g) = ∑_{k=1}^{N} σ(⟨w_k, X_g⟩), a scalar, and ψ(X_g) = F(X_g).)",
+      "route": "verify-math-lean",
+      "route_rationale": "A closed-form identity between a square-of-sum and a sum-of-squares; decidable by counterexample.",
+      "lean_result": {
+        "snippet_id": "paper::PROOF::1",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.93,
+        "reasoning": "Having just set $\\psi(X_g) = F(X_g) = \\sum_{k=1}^N \\sigma(\\langle w_k, X_g\\rangle)$ — a single scalar — the correct value of $\\|\\psi(X_g)\\|^2$ is $\\big(\\sum_k \\sigma\\langle w_k, X_g\\rangle\\big)^2$. The paper instead writes $\\sum_k \\sigma(\\langle w_k, X_g\\rangle)^2$, discarding every cross term $2\\sum_{j<k} a_j a_k$. Lean refuted the identity: with $N = 2$, $\\sigma = \\mathrm{id}$, $w \\equiv 1$, $X = 1$ the left side is $(1+1)^2 = 4$ and the right side is $1 + 1 = 2$. The direction of the error is what makes it fatal rather than cosmetic: Lean also confirmed the correct Cauchy–Schwarz relation $(\\sum_k a_k)^2 \\le N \\sum_k a_k^2$, and that the inequality is strict in general (the $a \\equiv 1$, $N = 2$ instance gives $4 > 2$). So the paper replaced the target quantity by something that can be up to $N$ times *smaller*. Propagating the correct quantity through the subsequent Lipschitz chain yields $L_\\sigma^2 N^2 \\sup_{\\|v\\|\\le1} E[\\langle v,X\\rangle^2]$, hence a bound of order $C_1 L_\\sigma N \\sqrt{\\sup(\\cdot)} + C_2$ — larger than the claimed $U_{p(\\tau)}(\\theta)$ by a factor $\\sqrt{N}$. Since $U$ is asserted to be an *upper* bound, understating it this way means Lemma 1 is not established by this derivation.",
+        "predicted_error_category": "Formally refuted",
+        "snippet_type": "PROOF_STEP",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/ConML6278",
+          "file": "ConML6278/TMP.lean (archived Verified/PROOF_1.lean)",
+          "formal_statement": "theorem conml_square_of_sum_refuted :\n    ¬ ∀ (N : ℕ) (σ : ℝ → ℝ) (w : Fin N → ℝ) (X : ℝ),\n        ‖∑ k, σ (w k * X)‖ ^ 2 = ∑ k, (σ (w k * X)) ^ 2 := by\n  intro h\n  have := h 2 id (fun _ => 1) 1\n  norm_num [Fin.sum_univ_two] at this\n\ntheorem conml_square_of_sum_understates :\n    ∃ (a : Fin 2 → ℝ), (∑ k, a k) ^ 2 > ∑ k, (a k) ^ 2 := by\n  refine ⟨fun _ => 1, ?_⟩\n  norm_num [Fin.sum_univ_two]\n\ntheorem conml_square_of_sum_correct_bound (N : ℕ) (a : Fin N → ℝ) :\n    (∑ k, a k) ^ 2 ≤ (N : ℝ) * ∑ k, (a k) ^ 2 := by\n  simpa using sq_sum_le_card_mul_sum_sq (s := (Finset.univ : Finset (Fin N))) (f := a)",
+          "compiler_feedback": "'conml_square_of_sum_refuted' depends on axioms: [propext, Classical.choice, Quot.sound]\n'conml_square_of_sum_understates' depends on axioms: [propext, Classical.choice, Quot.sound]\n'conml_square_of_sum_correct_bound' depends on axioms: [propext, Classical.choice, Quot.sound]\nEXIT=0",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 2,
+          "project_kept": false
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.93
+    },
+    {
+      "snippet_id": "paper::PROOF::2",
+      "snippet_type": "PROOF_STEP",
+      "location": "Appendix B.1 Proof of Lemma 1",
+      "content": "Let the activation function σ have Lipschitz constant L_σ and σ(0) = 0. We have\n$$E_{X\\sim P_{g(\\theta)}(\\tau,x,y)}\\Big[\\sum_k \\sigma(\\langle w_k, X_g\\rangle)^2\\Big] \\leq L_\\sigma^2 \\sum_{k=1}^{N} ||w_k||^2\\, E_{X\\sim P_{g(\\theta)}(\\tau,x,y)}\\Big[\\big\\langle \\frac{w_k}{||w_k||}, X_g\\big\\rangle^2\\Big]$$\n$$\\leq L_\\sigma^2 N \\sup_{||v||\\leq 1} E_{X\\sim P_{g(\\theta)}(\\tau,x,y)}[\\langle v, X\\rangle^2].$$",
+      "route": "verify-math-lean",
+      "route_rationale": "A two-step inequality chain whose correctness turns on a real argument (Lipschitz bound plus Cauchy–Schwarz).",
+      "lean_result": {
+        "snippet_id": "paper::PROOF::2",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "Formalised the inequality chain deterministically (pointwise in $X$; the expectation version follows by monotonicity and linearity of $E$). Writing $a_k = \\langle w_k, X_g\\rangle$, $\\mathrm{nw}_k = \\|w_k\\|^2$ and $S = \\sup_{\\|v\\|\\le1}\\langle v, X\\rangle^2$: the hypotheses $|\\sigma(t)| \\le L_\\sigma|t|$ (from Lipschitz plus $\\sigma(0)=0$), $a_k^2 \\le \\mathrm{nw}_k \\cdot S$ (Cauchy–Schwarz — exactly why the supremum appears) and $\\sum_k \\mathrm{nw}_k \\le N$ give $\\sum_k \\sigma(a_k)^2 \\le L_\\sigma^2 N S$. Lean proved it clean. Two notes. First, the paper's middle expression $\\|w_k\\|^2 \\langle w_k/\\|w_k\\|, X_g\\rangle^2$ equals $\\langle w_k, X_g\\rangle^2$, so the apparent division by $\\|w_k\\|$ is harmless even when $w_k = 0$. Second, this step is locally valid but *conditionally* so: it consumes the constraint $\\sum_k \\|w_k\\|^2 \\le N$, which paper::PROOF::0 showed is not established, and it is applied to the sum-of-squares expression that paper::PROOF::1 showed is the wrong quantity. A valid step on an unsupported premise.",
+        "predicted_error_category": null,
+        "snippet_type": "PROOF_STEP",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/ConML6278",
+          "file": "ConML6278/TMP.lean (archived Verified/PROOF_2.lean)",
+          "formal_statement": "theorem conml_lipschitz_chain\n    (σ : ℝ → ℝ) (L : ℝ) (hL : 0 ≤ L)\n    (hlip : ∀ t, |σ t| ≤ L * |t|)\n    (N : ℕ) (a nw : Fin N → ℝ)\n    (hnw : ∀ k, 0 ≤ nw k) (hsum : ∑ k, nw k ≤ (N : ℝ))\n    (S : ℝ) (hS0 : 0 ≤ S) (hCS : ∀ k, (a k) ^ 2 ≤ nw k * S) :\n    ∑ k, (σ (a k)) ^ 2 ≤ L ^ 2 * (N : ℝ) * S := by\n  have step1 : ∀ k, (σ (a k)) ^ 2 ≤ L ^ 2 * (nw k * S) := by\n    intro k\n    have h1 : (σ (a k)) ^ 2 ≤ (L * |a k|) ^ 2 := by\n      have := hlip (a k)\n      have habs : |σ (a k)| ^ 2 = (σ (a k)) ^ 2 := sq_abs _\n      nlinarith [abs_nonneg (σ (a k)), abs_nonneg (a k), mul_nonneg hL (abs_nonneg (a k))]\n    have h2 : (L * |a k|) ^ 2 = L ^ 2 * (a k) ^ 2 := by\n      rw [mul_pow, sq_abs]\n    nlinarith [hCS k, sq_nonneg L]\n  calc ∑ k, (σ (a k)) ^ 2\n      ≤ ∑ k, L ^ 2 * (nw k * S) := Finset.sum_le_sum (fun k _ => step1 k)\n    _ = L ^ 2 * S * ∑ k, nw k := by\n        rw [Finset.mul_sum]\n        exact Finset.sum_congr rfl (fun k _ => by ring)\n    _ ≤ L ^ 2 * S * (N : ℝ) := by\n        exact mul_le_mul_of_nonneg_left hsum (by positivity)\n    _ = L ^ 2 * (N : ℝ) * S := by ring",
+          "compiler_feedback": "ConML6278/TMP.lean:19:25: warning: Variable name `hL` is not explicitly referenced.\nConML6278/TMP.lean:22:5: warning: Variable name `hnw` is not explicitly referenced.\n'conml_lipschitz_chain' depends on axioms: [propext, Classical.choice, Quot.sound]\nEXIT=0\n\n(Both diagnostics are severity-2 linter warnings about hypotheses deliberately retained for faithfulness to the paper's stated assumptions; no severity-1 errors.)",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 2,
+          "project_kept": false
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::PROOF::3",
+      "snippet_type": "PROOF_STEP",
+      "location": "Appendix B.1 Proof of Lemma 1",
+      "content": "So we have\n$$\\Phi_{p(\\tau)}(\\theta) = C_1\\sqrt{E_{\\tau\\sim p(\\tau)}E_{(x,y)\\sim\\tau}[||\\psi(g((x,y);\\theta))||^2]} + C_2$$\n$$\\leq C_1\\sqrt{L_\\sigma^2 N \\sup_{||v||\\leq 1} E_{\\tau\\sim p(\\tau)}E_{(x,y)\\sim\\tau}[\\langle v, g(\\{(x,y)\\};\\theta)\\rangle^2]} + C_2 = U_{p(\\tau)}(\\theta).$$\nSo U_{p(\\tau)}(\\theta) is an upper bound of the excess risk of a meta-learner Δ_{ε_{p(τ)}}(θ). □",
+      "route": "verify-math",
+      "route_rationale": "A monotonicity-of-√ substitution step; inspection suffices.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::PROOF::3",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.75,
+        "reasoning": "The local manipulation is valid: $\\sqrt{\\cdot}$ is monotone on $[0,\\infty)$ and $C_1 > 0$, so applying it to the preceding inequality preserves the direction, and the identification $X_g = g(\\{(x,y)\\};\\theta)$ matches the earlier definition of $X_g$ as \"the parameter vector learned by $g(\\cdot;\\theta)$ from sample $(x,y)$\". Per this verifier's scope I do not flag downstream consequences, so this step is clean on its own terms. It should be read together with paper::PROOF::0 and paper::PROOF::1, which Lean refuted: the quantity being square-rooted here is the one those steps mis-derived, so the concluding sentence \"$U_{p(\\tau)}(\\theta)$ is an upper bound of the excess risk\" does not follow even though this final algebraic move is sound.",
+        "predicted_error_category": null,
+        "snippet_type": "PROOF_STEP",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.75
+    },
+    {
+      "snippet_id": "paper::PROOF::4",
+      "snippet_type": "PROOF_STEP",
+      "location": "Appendix B.2 Proof of Theorem 1",
+      "content": "Proof. On the one hand, we have\nU_{p(\\tau)}(\\theta) = C_1 \\sqrt{L^2 N \\sup_{\\|v\\|\\le 1} \\mathbb{E}_{\\tau\\sim p(\\tau)} \\mathbb{E}_{(x,y)\\sim \\tau} [\\langle v, g(\\{(x,y)\\};\\theta)\\rangle^2]} + C_2 \\ge C_2,\nwhere the minimum of U_{p(\\tau)}(\\theta), U^{*}_{p(\\tau)}(\\theta) = C_2, is achieved if and only if\n\\sup_{\\|v\\|\\le 1} \\mathbb{E}_{X\\sim P_{g(\\theta)(\\tau,x,y)}} [\\langle v, X\\rangle^2] = 0,\nwhich is achieved if and only if\n\\forall X \\in \\mathcal{H},\\ P_{g(\\theta)(\\tau,x,y)}(X) = P_{g(\\theta)(\\tau,x,y)}(-X),\ni.e., P_{g(\\theta)(\\tau,x,y)} is symmetric.",
+      "route": "verify-math-lean",
+      "route_rationale": "An equivalence between a vanishing second moment and distributional symmetry — a crisp claim a counterexample settles.",
+      "lean_result": {
+        "snippet_id": "paper::PROOF::4",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.95,
+        "reasoning": "The first claim, $U_{p(\\tau)}(\\theta) \\ge C_2$ with equality iff $\\sup_{\\|v\\|\\le1} E[\\langle v,X\\rangle^2] = 0$, is correct ($C_1 > 0$ and $\\sqrt{\\cdot} \\ge 0$). The *second* equivalence — that this holds iff $P(X) = P(-X)$, i.e. iff $P$ is symmetric — is false, and it is the load-bearing step of Theorem 1. A vanishing second moment in every direction forces $X = 0$ almost surely, which is strictly stronger than symmetry. Lean refuted the claim with the symmetric two-atom law putting mass $1/2$ on each of $u$ and $-u$, $u \\ne 0$: it is a probability law, it satisfies $E[f(X)] = E[f(-X)]$ for every $f$ (so $P(X) = P(-X)$ exactly as the paper requires), yet for the unit vector $v = u/\\|u\\|$ one gets $E[\\langle v,X\\rangle^2] = \\|u\\|^2 \\ne 0$. A standard Gaussian is the same counterexample in continuous form: perfectly symmetric, second moment $1$. Lean additionally proved the correct characterisation, that for this family $E[\\langle u,X\\rangle^2] = 0 \\iff u = 0$ — i.e. the condition the paper needed is degeneracy of the model-representation distribution at the origin, not symmetry. Since $\\mathcal{L}_c$ is then shown only to drive $P$ toward symmetry, it does not drive $U$ to its minimum $C_2$, and the chain to Theorem 1 breaks here.",
+        "predicted_error_category": "Formally refuted",
+        "snippet_type": "PROOF_STEP",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/ConML6278",
+          "file": "ConML6278/TMP.lean (archived Verified/PROOF_4.lean)",
+          "formal_statement": "theorem conml_symmetry_iff_zero_second_moment_refuted\n    {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E] (u : E) (hu : u ≠ 0) :\n    ∃ Ex : (E → ℝ) → ℝ,\n      Ex (fun _ => 1) = 1 ∧\n      (∀ f : E → ℝ, Ex f = Ex (fun x => f (-x))) ∧\n      ∃ v : E, ‖v‖ = 1 ∧ Ex (fun x => ⟪v, x⟫ ^ 2) ≠ 0 := by\n  have hnu : ‖u‖ ≠ 0 := norm_ne_zero_iff.mpr hu\n  refine ⟨fun f => (f u + f (-u)) / 2, by norm_num, ?_, ⟨‖u‖⁻¹ • u, ?_, ?_⟩⟩\n  · intro f; simp [neg_neg]; ring\n  · rw [norm_smul]; simp [inv_mul_cancel₀ hnu]\n  · have hv : ⟪‖u‖⁻¹ • u, u⟫ = ‖u‖ := by\n      rw [real_inner_smul_left, real_inner_self_eq_norm_sq]\n      field_simp\n    have hv' : ⟪‖u‖⁻¹ • u, -u⟫ = -‖u‖ := by\n      rw [inner_neg_right, hv]\n    simp only [hv, hv']\n    have : (‖u‖ ^ 2 + (-‖u‖) ^ 2) / 2 = ‖u‖ ^ 2 := by ring\n    rw [this]\n    positivity\n\ntheorem conml_zero_second_moment_iff_degenerate\n    {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E] (u : E) :\n    ((fun f : E → ℝ => (f u + f (-u)) / 2) (fun x => ⟪u, x⟫ ^ 2) = 0) ↔ u = 0 := by\n  have h : ((⟪u, u⟫ : ℝ) ^ 2 + (⟪u, -u⟫ : ℝ) ^ 2) / 2 = ‖u‖ ^ 4 := by\n    rw [inner_neg_right, real_inner_self_eq_norm_sq]\n    ring\n  simp only []\n  rw [h]\n  constructor\n  · intro hz\n    exact norm_eq_zero.mp ((pow_eq_zero_iff (by norm_num)).mp hz)\n  · intro hz; simp [hz]",
+          "compiler_feedback": "'conml_symmetry_iff_zero_second_moment_refuted' depends on axioms: [propext, Classical.choice, Quot.sound]\n'conml_zero_second_moment_iff_degenerate' depends on axioms: [propext, Classical.choice, Quot.sound]\nEXIT=0",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 3,
+          "project_kept": false
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::PROOF::5",
+      "snippet_type": "PROOF_STEP",
+      "location": "Appendix B.2 Proof of Theorem 1",
+      "content": "On the other hand, by definition we have\n\\mathcal{L}_c = d^{in} - d^{out} = - \\mathbb{E}[\\frac{\\langle X_{\\tau,\\kappa}, X_{\\tau,\\kappa'}\\rangle}{\\|X_{\\tau,\\kappa}\\|\\,\\|X_{\\tau,\\kappa'}\\|} - \\frac{\\langle X_\\tau, X_{\\tau'}\\rangle}{\\|X_\\tau\\|\\,\\|X_{\\tau'}\\|}] ...\nFor arbitrary subset sampling strategy \\pi_\\kappa, we have\n\\min_{\\theta} \\mathcal{L}_c \\ge -1,\nwhere the minimum of \\mathcal{L}_c, \\mathcal{L}_c^{*} = -1, is achieved if and only if\n\\mathbb{E}[\\frac{\\langle X_{\\tau,\\kappa}, X_{\\tau,\\kappa'}\\rangle}{\\|X_{\\tau,\\kappa}\\|\\,\\|X_{\\tau,\\kappa'}\\|}] = 1,\n\\mathbb{E}[\\frac{\\langle X_\\tau, X_{\\tau'}\\rangle}{\\|X_\\tau\\|\\,\\|X_{\\tau'}\\|}] = 0,\nwhich is achieved if and only if\n\\forall \\tau,\\ P_{g(\\theta)}(\\tau) = P_{g(\\theta)}(-\\tau),\\quad P_{g(\\theta,\\pi_\\kappa)(x,y,\\kappa\\mid \\tau)}(X\\mid \\tau) = \\delta_\\tau(X),\n(with φ the cosine distance φ(x,y) = 1 − xᵀy/(‖x‖‖y‖), so 𝓛_c = −E[cos_in] + E[cos_out].)",
+      "route": "verify-math-lean",
+      "route_rationale": "A claimed infimum with an iff-characterisation of its minimisers; a realisable configuration either beats it or does not.",
+      "lean_result": {
+        "snippet_id": "paper::PROOF::5",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.95,
+        "reasoning": "With $\\varphi$ the cosine distance, $\\mathcal{L}_c = d^{in} - d^{out} = -E[\\cos_{in}] + E[\\cos_{out}]$ and each cosine lies in $[-1,1]$, so the floor of the expression is $-2$, not $-1$. The paper's $\\mathcal{L}_c^* = -1$ arises only from also requiring $E[\\cos_{out}] = 0$, which is asserted rather than derived — nothing forces the mean inter-task cosine to be non-negative. Lean refuted the bound with an explicit realisable configuration: a batch of $B = 2$ tasks with antipodal representations $e_1^* = u$, $e_2^* = -u$ ($u \\ne 0$) and perfect inner-task alignment. Then $\\varphi(u,u) = \\varphi(-u,-u) = 0$ so $d^{in} = 0$, while $\\varphi(u,-u) = \\varphi(-u,u) = 2$ so $d^{out} = 2$, giving $\\mathcal{L}_c = -2 < -1$. Lean also proved the correct floor $\\mathcal{L}_c \\ge -2$ from the cosine ranges alone. For completeness, the Gram-matrix bound $\\|\\sum_i u_i\\|^2 \\ge 0$ gives $E[\\cos_{out}] \\ge -1/(B-1)$, so the sharp general floor is $-1 - 1/(B-1)$ — which equals $-2$ at $B = 2$ and is strictly below $-1$ for every finite $B$. Either way the stated bound $\\min_\\theta \\mathcal{L}_c \\ge -1$ and its iff-characterisation are wrong. One caveat recorded honestly: whether a *particular* meta-learner can realise antipodal representations is architecture-dependent, so the refutation is of the stated bound and minimiser characterisation for the objective as defined, which is what the proof asserts \"for arbitrary subset sampling strategy $\\pi_\\kappa$\".",
+        "predicted_error_category": "Formally refuted",
+        "snippet_type": "PROOF_STEP",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/ConML6278",
+          "file": "ConML6278/TMP.lean",
+          "formal_statement": "noncomputable def phi {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]\n    (x y : E) : ℝ := 1 - ⟪x, y⟫ / (‖x‖ * ‖y‖)\n\ntheorem conml_Lc_lower_bound_refuted\n    {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E] (u : E) (hu : u ≠ 0) :\n    (phi u u + phi (-u) (-u)) / 2 = 0\n    ∧ (phi u (-u) + phi (-u) u) / 2 = 2\n    ∧ (phi u u + phi (-u) (-u)) / 2 - (phi u (-u) + phi (-u) u) / 2 = -2\n    ∧ (phi u u + phi (-u) (-u)) / 2 - (phi u (-u) + phi (-u) u) / 2 < -1 := by\n  have hnu : ‖u‖ ≠ 0 := norm_ne_zero_iff.mpr hu\n  have hself : ⟪u, u⟫ = ‖u‖ ^ 2 := real_inner_self_eq_norm_sq u\n  have e1 : phi u u = 0 := by\n    unfold phi; rw [hself]; field_simp; norm_num\n  have e2 : phi (-u) (-u) = 0 := by\n    unfold phi; rw [inner_neg_neg, hself, norm_neg]; field_simp; norm_num\n  have e3 : phi u (-u) = 2 := by\n    unfold phi; rw [inner_neg_right, hself, norm_neg]; field_simp; norm_num\n  have e4 : phi (-u) u = 2 := by\n    unfold phi; rw [inner_neg_left, hself, norm_neg]; field_simp; norm_num\n  refine ⟨?_, ?_, ?_, ?_⟩ <;> simp only [e1, e2, e3, e4] <;> norm_num\n\ntheorem conml_Lc_correct_floor (cosIn cosOut : ℝ)\n    (h1 : -1 ≤ cosIn) (h2 : cosIn ≤ 1) (h3 : -1 ≤ cosOut) (h4 : cosOut ≤ 1) :\n    -2 ≤ (1 - cosIn) - (1 - cosOut) := by linarith",
+          "compiler_feedback": "ConML6278/TMP.lean:51:5: warning: Variable name `h1` is not explicitly referenced.\nConML6278/TMP.lean:51:59: warning: Variable name `h4` is not explicitly referenced.\n'conml_Lc_lower_bound_refuted' depends on axioms: [propext, Classical.choice, Quot.sound]\n'conml_Lc_correct_floor' depends on axioms: [propext, Classical.choice, Quot.sound]\nEXIT=0\n\n(Both diagnostics are severity-2 linter warnings on deliberately retained hypotheses; no severity-1 errors.)",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 3,
+          "project_kept": false
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::PROOF::6",
+      "snippet_type": "PROOF_STEP",
+      "location": "Appendix B.2 Proof of Theorem 1",
+      "content": "Then\nP_{g(\\theta,\\pi_\\kappa)(\\tau,x,y,\\kappa)}(X) = P_{g(\\theta)}(\\tau)\\, P_{g(\\theta,\\pi_\\kappa)(x,y,\\kappa\\mid \\tau)}(X\\mid \\tau)\n= P_{g(\\theta)}(\\tau)\\, \\delta_\\tau(X) = P_{g(\\theta)}(\\tau)\\, \\delta_\\tau(-X)\n= P_{g(\\theta,\\pi_\\kappa)(\\tau,x,y,\\kappa)}(-X).\nCombining both sides, we have\n\\theta^{*}_{\\mathcal{L}_c} = \\arg\\min_{\\theta} \\mathcal{L}_c(g(\\cdot;\\theta), p(\\tau))\n\\Rightarrow P_{g(\\theta^{*}_{\\mathcal{L}_c},\\pi_\\kappa)(\\tau,x,y,\\kappa)}(X) = P_{g(\\theta^{*}_{\\mathcal{L}_c},\\pi_\\kappa)(\\tau,x,y,\\kappa)}(-X)\n\\Leftrightarrow U_{p(\\tau)}(\\theta^{*}_{\\mathcal{L}_c}) = C_2 = \\min_{\\theta} U_{p(\\tau)}(\\theta).",
+      "route": "verify-math",
+      "route_rationale": "Same mathematical content as the Lean-refuted PROOF::4; reviewed informally rather than re-formalised.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::PROOF::6",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.9,
+        "reasoning": "This is the step that closes Theorem 1, and it fails twice over.\n\n(1) The final $\\Leftrightarrow$ asserts that symmetry of $P$ is equivalent to $U_{p(\\tau)}(\\theta^*) = C_2 = \\min_\\theta U_{p(\\tau)}(\\theta)$. By B.2's own earlier line, $U = C_2$ requires $\\sup_{\\|v\\|\\le1} E[\\langle v,X\\rangle^2] = 0$, i.e. $X = 0$ almost surely. Symmetry is strictly weaker — a standard Gaussian is symmetric with second moment $1$ — so the equivalence is false in the direction the proof needs. This is the informal counterpart of the refutation Lean compiled for paper::PROOF::4.\n\n(2) The chain $P_{g(\\theta)}(\\tau)\\,\\delta_\\tau(X) = P_{g(\\theta)}(\\tau)\\,\\delta_\\tau(-X)$ is false on its own terms. $\\delta_\\tau$ is introduced as \"the Dirac-delta function centered on $\\tau$\", so $\\delta_\\tau(X)$ is supported at $X = \\tau$ while $\\delta_\\tau(-X)$ is supported at $X = -\\tau$; these agree only when $\\tau = 0$. Taken together with the preceding condition $\\forall\\tau,\\ P_{g(\\theta)}(\\tau) = P_{g(\\theta)}(-\\tau)$, the derivation also applies negation to $\\tau$, a task index rather than an element of a vector space, and centres a Dirac delta on $\\tau$ in the space where the model-representation vectors $X$ live — so $\\tau$ and $X$ are being treated as inhabiting the same space without any identification being given.\n\nEither defect alone breaks the implication from \"$\\theta^*$ minimises $\\mathcal{L}_c$\" to \"$\\theta^*$ minimises $U$\", which is the entire content of Theorem 1 and of the §3.2 claim that minimising $\\mathcal{L}_c$ yields a lower generalisation-error upper bound than any other meta-learner.",
+        "predicted_error_category": "Calculus/Proof error",
+        "snippet_type": "PROOF_STEP",
+        "contradiction_locations": []
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::EQUATION::3",
+      "snippet_type": "EQUATION",
+      "location": "3.1 A General Framework (Training Procedure)",
+      "content": "Compared to Algorithm 1, ConML introduces additional computations for ψ(g(D; θ)) a total of K + 1 times per episode. (Algorithm 2 / Algorithm 3: \"Sample a batch of tasks b ∼ p^B(τ). for All τ ∈ b do; for k = 1,2,⋯,K do Sample κ_k ...; Get model representation e_τ^{κ_k} = ψ(g(κ_k; θ)); end for; Get model representation e_τ^* = ψ(g(D_τ^{tr} ∪ D_τ^{val}; θ)); ... end for\".)",
+      "route": "verify-math",
+      "route_rationale": "A simple counting claim against the stated algorithm; inspection suffices.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::3",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.8,
+        "reasoning": "Algorithms 2 and 3 place the $K$ subset representations and the one full-dataset representation *inside* the loop \"for all $\\tau \\in \\mathbf{b}$\", and a batch contains $B$ tasks. The count per episode is therefore $B(K+1)$ evaluations of $\\psi(g(\\mathcal{D};\\theta))$, not $K+1$ — the text is short by a factor of $B$, the batch size. The phrase \"a total of\" makes the per-episode reading explicit, so this is not merely loose wording. The paper's own Table 4 is consistent with the larger count: at $K = 1$, MAML w/ ConML memory rises from 1331 MB to 2801 MB and ProtoNet from 7955 MB to 14167 MB, i.e. roughly a doubling, which $K+1 = 2$ evaluations *per episode* could not produce. Severity is limited: the conclusion that ConML adds little wall-clock cost is supported empirically (1.1–1.2× relative time) because the $B(K+1)$ calls are parallelisable, so the argument survives the miscount even though the stated figure is wrong.",
+        "predicted_error_category": "Sign/Arithmetic error",
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::0",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "Appendix A.2 Typical Meta-Learners",
+      "content": "• For optimization-based, e.g., MAML, we have $$d = |\\theta| = |h|$$. We consider $$h$$ as an $$l$$-layer MLP, with each average layer size $$(|h|/l)^{1/2} * (|h|/l)^{1/2}$$. With a single input sample, $$O_{h \\rightarrow \\mathcal{L}_e} = O(l * (|h|/l)^{3/2})$$, $$O_{h \\rightarrow \\psi(h) \\rightarrow \\mathcal{L}_c} = O(|d|) + O(|d|) = O(|h|)$$. While $$l \\ll |\\theta|$$, we have $$O_{h \\rightarrow \\mathcal{L}_e} > O_{h \\rightarrow \\psi(h) \\rightarrow \\mathcal{L}_c}$$. (Context, A.2: \"We consider, given a single input sample in a 1-D vector, the complexity $$O_{h \\rightarrow \\mathcal{L}_e}$$ to calculate the loss $$\\mathcal{L}_e = \\ell(h(x), y)$$\".)",
+      "route": "verify-math",
+      "route_rationale": "Asymptotic cost modelling of a concrete architecture; not formalisable, but arithmetically checkable.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::0",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.8,
+        "reasoning": "Set $n = (|h|/l)^{1/2}$, so each layer is an $n \\times n$ weight matrix with $n^2 = |h|/l$ parameters and the $l$ layers total $|h|$ parameters — consistent with $d = |\\theta| = |h|$. The paper explicitly stipulates \"a single input sample in a 1-D vector\", so a forward pass through one layer is a matrix–*vector* product costing $n^2 = |h|/l$ operations, and the full pass costs $l \\cdot |h|/l = O(|h|)$. The paper instead reports $O_{h \\to \\mathcal{L}_e} = O(l \\cdot (|h|/l)^{3/2}) = O(|h|^{3/2}/l^{1/2})$, which is $n^3$ per layer — the cost of a matrix–*matrix* product (or an inversion), not a matrix–vector product on a single sample. The original path is thus overstated by a factor $n = (|h|/l)^{1/2}$.\n\nThis matters for the conclusion drawn. With the correct $O(|h|)$, the two paths are $O_{h \\to \\mathcal{L}_e} = O(|h|)$ and $O_{h \\to \\psi(h) \\to \\mathcal{L}_c} = O(|h|)$ — the same order, so the asserted strict inequality $O_{h \\to \\mathcal{L}_e} > O_{h \\to \\psi(h) \\to \\mathcal{L}_c}$ does not hold and the claim that ConML's extra path is cheaper than the original is not established for MAML. Severity minor: the empirical timings in Table 4 (1.1× relative time) support the practical conclusion independently of this flawed accounting.",
+        "predicted_error_category": "Algebraic manipulation",
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": []
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::1",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "Appendix A.2 Typical Meta-Learners",
+      "content": "• For metric-based, e.g., ProtoNet, $$\\theta$$ corresponds to the parameters in the feature extractor like a CNN. $$h$$ is the final classifier which makes prediction by Euclidean distance, which can be viewed as a linear classifier with parameter size $$N * |h|/N$$. $$d$$ equals the $$N$$ (ways per task) times the dimension of the embedding of each sample $$|h|/N$$, $$d = |h|$$. A sample $$x \\in \\mathbb{R}^{|h|/N}$$. We have $$O_{h \\rightarrow \\mathcal{L}_e} = O(|h|^2/N)$$, $$O_{h \\rightarrow \\psi(h) \\rightarrow \\mathcal{L}_c} = O(d) + O(d) = O(|h|)$$. With $$|h| \\gg N$$, $$O_{h \\rightarrow \\mathcal{L}_e} > O_{h \\rightarrow \\psi(h) \\rightarrow \\mathcal{L}_c}$$.",
+      "route": "verify-math",
+      "route_rationale": "Same kind of cost accounting as FORMULA_BLOCK::0; arithmetically checkable by inspection.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::1",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.8,
+        "reasoning": "By the snippet's own stipulations the classifier is linear from $\\mathbb{R}^{|h|/N}$ to $\\mathbb{R}^N$ with $N \\cdot (|h|/N) = |h|$ parameters, and the input is a single sample $x \\in \\mathbb{R}^{|h|/N}$. Applying it therefore costs $N \\cdot (|h|/N) = O(|h|)$ multiply–adds. The paper reports $O_{h \\to \\mathcal{L}_e} = O(|h|^2/N)$, which is $N \\cdot (|h|/N)^2$ — the output dimension multiplied by the *square* of the input dimension instead of the input dimension itself. The original path is overstated by a factor $|h|/N$, the embedding dimension. This is the same structural slip as in the MAML bullet: a matrix–vector cost computed as though it were matrix–matrix. With the correct $O(|h|)$ the two paths match in order and the asserted strict inequality $O_{h \\to \\mathcal{L}_e} > O_{h \\to \\psi(h) \\to \\mathcal{L}_c}$ does not follow. Severity minor for the same reason as FORMULA_BLOCK::0: the measured 1.2× relative time supports the practical claim independently.",
+        "predicted_error_category": "Algebraic manipulation",
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": []
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::2",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "Appendix A.2 Typical Meta-Learners",
+      "content": "• For amortization-based, e.g., Simple CNAPs. Denote $$q$$ as the dimension of task-adaptive parameters generated by the hypernetwork $$H_\\theta(D)$$. $$|d| = q$$, $$O_{h \\rightarrow \\psi(h) \\rightarrow \\mathcal{L}_c} = O(d) + O(d) = O(q)$$. Consider $$l$$ layers in the main network modulated by $$H_\\theta(D)$$ feature-wise, then $$q = \\sqrt{|h|/l}$$, $$O_{h \\rightarrow \\mathcal{L}_e} = O(l * (|h|/l)^{3/2}) + O(q/l)$$. With $$l \\ll |h|$$, we have $$O_{h \\rightarrow \\mathcal{L}_e} > O_{h \\rightarrow \\psi(h) \\rightarrow \\mathcal{L}_c}$$.",
+      "route": "verify-math",
+      "route_rationale": "Same cost accounting; checked by inspection.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::2",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.65,
+        "reasoning": "This bullet reuses the $O(l \\cdot (|h|/l)^{3/2})$ forward-pass figure refuted in FORMULA_BLOCK::0, so it inherits the same overstatement of the original path. A second oddity is the trailing $O(q/l)$ term: $q$ is defined as the dimension of the task-adaptive parameters the hypernetwork emits, so merely writing those parameters out costs $\\Omega(q)$, and a cost of $q/l$ is below what producing the output requires — it is also inconsistent with this bullet's own $O_{h \\to \\psi(h) \\to \\mathcal{L}_c} = O(q)$ for handling the same vector. Confidence is held below the reporting threshold because $q$ carries two definitions here (\"the dimension of task-adaptive parameters\" and $\\sqrt{|h|/l}$), and under the second reading $q$ is a per-layer FiLM width rather than a total, which makes the intended bookkeeping too loose to pin down with certainty. Recorded as an observation rather than a reported finding.",
+        "predicted_error_category": "Algebraic manipulation",
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": []
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.65
+    },
+    {
+      "snippet_id": "paper::EQUATION::4",
+      "snippet_type": "EQUATION",
+      "location": "Appendix A.1 ICL / A.2 summary",
+      "content": "A.1: \"This means pretraining an LLM with ConML only requires $$K/n$$ ($$K$$: subset sampling number, $$n$$: average sentence length; typically $$K/n \\ll 1$$) times the computation compared with pretraining an LLM without ConML, regardless of the model size.\"\nA.2 summary: \"To summarize, for ICL model like LLMs, the complexity to pretrain with ConML is $$\\frac{n+K}{n} \\approx 1$$ times the complexity to pretrain without ConML.\"",
+      "route": "verify-math",
+      "route_rationale": "Internal consistency of two stated ratios for the same quantity; arithmetic.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::4",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.85,
+        "reasoning": "The two passages give incompatible ratios for the same quantity. A.2 states the cost of pretraining with ConML as $\\frac{n+K}{n} = 1 + K/n \\approx 1$ times the cost without it, which is the sensible accounting: ConML appends $K$ probe tokens to a sequence of average length $n$. A.1 instead states that pretraining with ConML \"only requires $K/n$ ... times the computation compared with pretraining an LLM without ConML\" and stresses $K/n \\ll 1$. Taken at face value, that says ConML pretraining costs a small *fraction* of ordinary pretraining, which is impossible: ConML only adds work to the forward pass, so the ratio must be $\\ge 1$. The A.1 figure is the *additional* cost expressed as a fraction, presented as if it were the total ratio — $K/n$ where $(n+K)/n$ belongs. Severity minor: the correct ratio appears in A.2 and the claim being supported (ConML's ICL overhead is negligible) holds under the correct arithmetic, so this misstates a ratio rather than invalidating the complexity analysis.",
+        "predicted_error_category": "Fractional/Rational error",
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::EQUATION::5",
+      "snippet_type": "EQUATION",
+      "location": "Appendix G.1 Model Analysis",
+      "content": "Beyond the simple contrastive loss, we incorporate the InfoNCE [32] loss for an episode with a batch $$b$$ containing $$B$$ tasks. The contrastive loss is defined as\n$$\n\\mathcal{L}_c = -\\sum_{\\tau \\in b} \\log\\left(\\frac{\\exp(-D_\\tau^{\\text{in}})}{\\exp(-D_\\tau^{\\text{in}}) + \\sum_{\\tau' \\in b \\setminus \\tau} \\exp(-D_{\\tau,\\tau'}^{\\text{out}})}\\right),\n$$\nwhere $$D_{\\tau,\\tau'}^{\\text{out}} = \\phi(e_\\tau^*, e_{\\tau'}^*).$$ In this case, we treat negative “distance” as “similarity.”",
+      "route": "verify-math",
+      "route_rationale": "Standard InfoNCE form; sign conventions and bounds checkable by inspection.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::5",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "The expression is a correctly formed InfoNCE objective. The positive term $\\exp(-D_\\tau^{in})$ appears in both numerator and denominator, as it should, so the log argument lies in $(0,1]$ and $\\mathcal{L}_c \\ge 0$ — no domain violation. The sign conventions are consistent with the stated reading \"negative distance as similarity\": minimising $\\mathcal{L}_c$ maximises the ratio, which pushes $\\exp(-D_\\tau^{in})$ up relative to $\\sum_{\\tau'}\\exp(-D^{out}_{\\tau,\\tau'})$, i.e. drives the inner-task distance down and the inter-task distances up — exactly the alignment/discrimination objective. $D_\\tau^{in}$ is not re-defined in G.1, but that is missing context from §3.1 rather than an error.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::EQUATION::6",
+      "snippet_type": "EQUATION",
+      "location": "Appendix G.1 Model Analysis / G.2 ICL",
+      "content": "G.1: \"Here, we also consider a manually bounded Euclidean distance $$\\phi(x, y) = \\text{sigmoid}(\\|x - y\\|).$$\"\nG.2: \"we adopt the distance measure $$\\phi(a, b) = \\sigma((a - b)^2),$$ where $$\\sigma(\\cdot)$$ is the sigmoid function to bound the squared error.\"",
+      "route": "verify-math",
+      "route_rationale": "Well-definedness of a metric; checkable by evaluating at coincident points.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::6",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.6,
+        "reasoning": "Both functions are well defined and the bounding works as advertised, so there is no derivation-invalidating error here and I do not flag one. Recorded for completeness: neither is a distance in the metric sense, because $\\mathrm{sigmoid}(0) = 1/2$ gives $\\phi(x,x) = 1/2 \\ne 0$, so identity of indiscernibles fails and both take values in $[1/2, 1)$ rather than starting at $0$. Practically this is harmless for optimisation, since each is a strictly increasing function of $\\|x-y\\|$ (resp. $(a-b)^2$) and so is minimised exactly at $x = y$. It does, however, mean the bounds derived in Appendix B for the *cosine* distance — in particular the range of $\\mathcal{L}_c$ used in B.2 — do not transfer to these variants: under $\\phi = \\mathrm{sigmoid}(\\cdot)$ one gets $d^{in}, d^{out} \\in [1/2, 1)$ and hence $\\mathcal{L}_c \\in (-1/2, 1/2)$, so the claimed optimum $\\mathcal{L}_c^* = -1$ is not even attainable.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.6
+    },
+    {
+      "snippet_id": "paper::EQUATION::7",
+      "snippet_type": "EQUATION",
+      "location": "Appendix D.1 ICL / D.2 A Meta-learning Reformulation",
+      "content": "(6): min_θ E_{t∼P(t)} (1/m) ∑_{i=0}^{m-1} ℓ(y_{t,i+1}, T_θ([x_{t,1}, y_{t,1}, ···, x_{t,i}, y_{t,i}, x_{t,i+1}])).\n(7): min_θ E_{τ∼p(τ)} (1/m) ∑_{i=0}^{m-1} ℓ(y_{τ,i+1}, g([𝓝̃_{τ,0:i}, x_{τ,i+1}]; θ)).",
+      "route": "verify-math",
+      "route_rationale": "Index bookkeeping and normalisation of an autoregressive loss; inspection suffices.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::7",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "The indexing is consistent. The sum $\\sum_{i=0}^{m-1}$ has exactly $m$ terms with targets $y_1, \\ldots, y_m$, matching the $1/m$ normalisation, and at $i = 0$ the prompt prefix correctly degenerates to $[x_1]$ with empty context. (7) is a faithful re-indexing of (6) with the sequence model $T_\\theta$ rewritten as the meta-learner $g$ and the prompt prefix as $\\tilde{\\mathcal{D}}_{\\tau,0:i}$; the expectation changes from prompts $t \\sim P(t)$ to tasks $\\tau \\sim p(\\tau)$, which is exactly the sequentializer correspondence D.2 sets up. No arithmetic or index error.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    }
+  ],
+  "findings": [
+    {
+      "snippet_id": "paper::PROOF::4",
+      "category": "Formally refuted",
+      "severity": "critical",
+      "confidence": 0.95,
+      "evidence": "Lean refuted the load-bearing equivalence in the proof of Theorem 1. B.2 argues that $U_{p(\\tau)}(\\theta)$ attains its minimum $C_2$ iff $\\sup_{\\|v\\|\\le1}\\mathbb{E}[\\langle v,X\\rangle^2]=0$, and then that *this* holds iff $P(X)=P(-X)$, i.e. iff $P$ is symmetric. The second equivalence is false: a vanishing second moment in every direction forces $X=0$ almost surely, which is strictly stronger than symmetry. The compiled counterexample is the symmetric two-atom law with mass $1/2$ on each of $u$ and $-u$, $u\\neq 0$: it is a probability law, it satisfies $\\mathbb{E}[f(X)]=\\mathbb{E}[f(-X)]$ for every $f$ — precisely the paper's condition — yet for the unit vector $v=u/\\|u\\|$ it gives $\\mathbb{E}[\\langle v,X\\rangle^2]=\\|u\\|^2\\neq 0$. A standard Gaussian is the same counterexample in continuous form: symmetric, second moment $1$. Lean also proved the correct characterisation, $\\mathbb{E}[\\langle u,X\\rangle^2]=0 \\iff u=0$, confirming that what Theorem 1 needed was degeneracy of the model-representation distribution at the origin, not symmetry. Since $\\mathcal{L}_c$ is only ever shown to push $P$ toward symmetry, it does not drive $U$ to $C_2$, and Theorem 1 does not follow. Axioms: `[propext, Classical.choice, Quot.sound]`, no `sorryAx`.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "i.e., P_{g(\\theta)(\\tau,x,y)} is symmetric."
+    },
+    {
+      "snippet_id": "paper::PROOF::5",
+      "category": "Formally refuted",
+      "severity": "critical",
+      "confidence": 0.95,
+      "evidence": "Lean refuted the claimed floor of the contrastive meta-objective. With $\\varphi$ the cosine distance, $\\mathcal{L}_c = d^{in}-d^{out} = -\\mathbb{E}[\\cos_{in}] + \\mathbb{E}[\\cos_{out}]$ and each cosine lies in $[-1,1]$, so the floor of the expression is $-2$, not $-1$; the paper's $\\mathcal{L}_c^*=-1$ follows only from additionally requiring $\\mathbb{E}[\\cos_{out}]=0$, which is asserted rather than derived. The compiled counterexample is a realisable $B=2$ configuration with antipodal task representations $e_1^*=u$, $e_2^*=-u$ ($u\\neq0$) and perfect inner-task alignment: $\\varphi(u,u)=\\varphi(-u,-u)=0$ gives $d^{in}=0$, $\\varphi(u,-u)=\\varphi(-u,u)=2$ gives $d^{out}=2$, hence $\\mathcal{L}_c=-2<-1$. Lean also proved the correct floor $\\mathcal{L}_c\\ge-2$ from the cosine ranges alone. The Gram-matrix bound $\\|\\sum_i u_i\\|^2\\ge0$ gives $\\mathbb{E}[\\cos_{out}]\\ge-1/(B-1)$, so the sharp general floor is $-1-1/(B-1)$ — strictly below $-1$ for every finite $B$ and equal to $-2$ at $B=2$. Both the bound $\\min_\\theta \\mathcal{L}_c \\ge -1$ and its iff-characterisation of the minimiser are therefore wrong, and the characterisation is what B.2 feeds into the symmetry argument. Axioms: `[propext, Classical.choice, Quot.sound]`, no `sorryAx`.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "For arbitrary subset sampling strategy \\pi_\\kappa, we have"
+    },
+    {
+      "snippet_id": "paper::PROOF::1",
+      "category": "Formally refuted",
+      "severity": "critical",
+      "confidence": 0.93,
+      "evidence": "Lean refuted the identity this step of the Lemma 1 proof relies on. Having just set $\\psi(X_g)=F(X_g)=\\sum_{k=1}^N \\sigma(\\langle w_k,X_g\\rangle)$ — a single scalar, since Lemma 3's $F$ is real-valued — the correct value of $\\|\\psi(X_g)\\|^2$ is $\\big(\\sum_k \\sigma\\langle w_k,X_g\\rangle\\big)^2$. The paper writes $\\sum_k \\sigma(\\langle w_k,X_g\\rangle)^2$ instead, discarding every cross term $2\\sum_{j<k}a_ja_k$. The counterexample: $N=2$, $\\sigma=\\mathrm{id}$, $w\\equiv1$, $X=1$ gives $4$ on the left and $2$ on the right. The direction of the error is what makes it fatal rather than cosmetic — Lean also confirmed $\\big(\\sum_k a_k\\big)^2 \\le N\\sum_k a_k^2$ with strict inequality in general, so the paper substituted a quantity that can be up to $N$ times *smaller* than the one it must bound. Carrying the correct quantity through the subsequent Lipschitz chain gives $L_\\sigma^2N^2\\sup_{\\|v\\|\\le1}\\mathbb{E}[\\langle v,X\\rangle^2]$ and hence a bound larger than the claimed $U_{p(\\tau)}(\\theta)$ by a factor $\\sqrt{N}$. Because $U$ is asserted to be an *upper* bound, understating it this way means Lemma 1 is not established. Axioms: `[propext, Classical.choice, Quot.sound]`, no `sorryAx`.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "$$E_{\\tau\\sim p(\\tau)}E_{(x,y)\\sim\\tau}[||\\psi(g((x,y);\\theta))||^2] = E_{X\\sim P_{g(\\theta)}(\\tau,x,y)}\\Big[\\sum_k \\sigma(\\langle w_k, X_g\\rangle)^2\\Big],$$"
+    },
+    {
+      "snippet_id": "paper::PROOF::0",
+      "category": "Formally refuted",
+      "severity": "critical",
+      "confidence": 0.9,
+      "evidence": "Lean refuted the rewriting step that starts the proof of Lemma 1. Lemma 3 supplies $F(x)=\\sum_i v_i\\sigma(w_i^Tx+b_i)$ with free outer coefficients $v_i$ and biases $b_i$; the paper asserts the *same* $F$ with the *same* neuron count $N$ equals $\\sum_{k=1}^N\\sigma(\\langle w_k,X_g\\rangle)$ — every $v_i$ set to $1$, every $b_i$ to $0$ — plus $\\sum_k\\|w_k\\|^2\\le N$. Since Lemma 3 *requires* $\\sigma$ bounded, say $|\\sigma|\\le M$, the restricted family obeys $|\\sum_{k=1}^N\\sigma\\langle w_k,X\\rangle|\\le NM$ uniformly while $F$ is unbounded in the $v_i$, so no such rewriting exists once $|F(X_0)|>NM$. A fully concrete witness also compiled: with $\\sigma$ the clamp to $[-1,1]$ (non-constant, bounded, continuous, $\\sigma(0)=0$, Lipschitz $1$ — every hypothesis B.1 uses) and $F(x)=5\\sigma(x)$, of Lemma-3 form with $N=1,v_0=5,b_0=0$, there is no $w$ with $w^2\\le1$ and $F=\\sigma(w\\,\\cdot)$. The paper's stated justification, \"$\\|F(X_g)\\| = \\|\\psi(X_g)\\| \\le \\|X_g\\|$ by definition\", is independently a non sequitur: $\\psi$ is an arbitrary projection $\\mathcal{H}\\to\\mathbb{R}^d$ with no reason to be norm-contracting, and a bound on $F$'s output does not constrain the weights $w_k$. There is also a type mismatch — $\\psi$ maps into $\\mathbb{R}^d$ while $F$ is scalar-valued, so $\\|\\psi(X_g)\\|$ and $F(X_g)$ cannot be identified unless $d=1$. The constraint $\\sum_k\\|w_k\\|^2\\le N$ obtained here is exactly what the rest of B.1 consumes to reach $U_{p(\\tau)}(\\theta)$. Axioms: `[propext, Classical.choice, Quot.sound]`, no `sorryAx`.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "$$\\exists\\, w_1, \\ldots, w_N \\in \\mathbb{R}^{|\\mathcal{H}|}, \\quad \\sum_{k=1}^{N} ||w_k||^2 \\leq N, \\quad F(X_g) = \\sum_{k=1}^{N} \\sigma(\\langle w_k, X_g\\rangle).$$"
+    },
+    {
+      "snippet_id": "paper::PROOF::6",
+      "category": "Calculus/Proof error",
+      "severity": "critical",
+      "confidence": 0.9,
+      "evidence": "The step that closes Theorem 1 fails twice over. First, the final $\\Leftrightarrow$ asserts that symmetry of $P$ is equivalent to $U_{p(\\tau)}(\\theta^*)=C_2=\\min_\\theta U_{p(\\tau)}(\\theta)$; by B.2's own earlier line $U=C_2$ requires $\\sup_{\\|v\\|\\le1}\\mathbb{E}[\\langle v,X\\rangle^2]=0$, i.e. $X=0$ almost surely, and symmetry is strictly weaker — so the equivalence is false in exactly the direction the proof needs. This is the informal counterpart of the Lean refutation recorded for `paper::PROOF::4`. Second, the chain $P_{g(\\theta)}(\\tau)\\,\\delta_\\tau(X) = P_{g(\\theta)}(\\tau)\\,\\delta_\\tau(-X)$ is false on its own terms: $\\delta_\\tau$ is introduced as \"the Dirac-delta function centered on $\\tau$\", so $\\delta_\\tau(X)$ is supported at $X=\\tau$ and $\\delta_\\tau(-X)$ at $X=-\\tau$, and these agree only when $\\tau=0$. The surrounding conditions compound this by applying negation to $\\tau$, a task index rather than a vector, and by centring a Dirac delta on $\\tau$ in the space where the model-representation vectors $X$ live, with no identification of the two spaces given. Either defect alone breaks the implication from \"$\\theta^*$ minimises $\\mathcal{L}_c$\" to \"$\\theta^*$ minimises $U$\", which is the whole content of Theorem 1 and of the §3.2 claim that minimising $\\mathcal{L}_c$ gives a lower generalisation-error upper bound than any other meta-learner.",
+      "verifier": "verify-math",
+      "exact_quote": "= P_{g(\\theta)}(\\tau)\\, \\delta_\\tau(X) = P_{g(\\theta)}(\\tau)\\, \\delta_\\tau(-X)"
+    },
+    {
+      "snippet_id": "paper::EQUATION::4",
+      "category": "Fractional/Rational error",
+      "severity": "minor",
+      "confidence": 0.85,
+      "evidence": "Appendix A gives two incompatible ratios for the same quantity. A.2 states the cost of pretraining with ConML as $\\frac{n+K}{n} = 1 + K/n \\approx 1$ times the cost without it — the correct accounting, since ConML appends $K$ probe tokens to a sequence of average length $n$. A.1 instead states that pretraining with ConML \"only requires $K/n$ ... times the computation compared with pretraining an LLM without ConML\" and emphasises $K/n \\ll 1$. Read literally that makes ConML pretraining a small *fraction* of ordinary pretraining, which is impossible: ConML only adds work, so the ratio must be at least $1$. The A.1 figure is the *additional* cost as a fraction, presented as though it were the total ratio — $K/n$ where $(n+K)/n$ belongs. Minor: the correct ratio appears in A.2 and the conclusion it supports (negligible ICL overhead) survives under correct arithmetic.",
+      "verifier": "verify-math",
+      "exact_quote": "This means pretraining an LLM with ConML only requires $$K/n$$ ($$K$$: subset sampling number, $$n$$: average sentence length; typically $$K/n \\ll 1$$) times the computation compared with pretraining an LLM without ConML, regardless of the model size."
+    },
+    {
+      "snippet_id": "paper::EQUATION::3",
+      "category": "Sign/Arithmetic error",
+      "severity": "minor",
+      "confidence": 0.8,
+      "evidence": "Algorithms 2 and 3 place the $K$ subset representations and the single full-dataset representation *inside* the loop \"for all $\\tau \\in \\mathbf{b}$\", and a batch holds $B$ tasks, so the per-episode count of $\\psi(g(\\mathcal{D};\\theta))$ evaluations is $B(K+1)$, not $K+1$ — short by a factor of the batch size. \"A total of\" makes the per-episode reading explicit, so this is not loose wording. The paper's own Table 4 agrees with the larger count: at $K=1$, memory rises from 1331 MB to 2801 MB for MAML and from 7955 MB to 14167 MB for ProtoNet, roughly a doubling, which $K+1=2$ evaluations per *episode* could not produce. Minor: the conclusion that ConML adds little wall-clock cost is independently supported by the measured $1.1$–$1.2\\times$ relative times, since the $B(K+1)$ calls are parallelisable.",
+      "verifier": "verify-math",
+      "exact_quote": "Compared to Algorithm 1, ConML introduces additional computations for ψ(g(D; θ)) a total of K + 1 times per episode."
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::0",
+      "category": "Algebraic manipulation",
+      "severity": "minor",
+      "confidence": 0.8,
+      "evidence": "Writing $n=(|h|/l)^{1/2}$, each layer is an $n\\times n$ matrix with $n^2=|h|/l$ parameters, totalling $|h|$ over $l$ layers — consistent with $d=|\\theta|=|h|$. Because A.2 explicitly stipulates \"a single input sample in a 1-D vector\", one layer's forward pass is a matrix–*vector* product costing $n^2=|h|/l$, and the full pass costs $l\\cdot|h|/l = O(|h|)$. The paper reports $O_{h\\to\\mathcal{L}_e}=O(l*(|h|/l)^{3/2}) = O(|h|^{3/2}/l^{1/2})$, which is $n^3$ per layer — a matrix–*matrix* cost, overstating the original path by a factor $n=(|h|/l)^{1/2}$. With the correct $O(|h|)$ both paths are the same order, so the asserted strict inequality $O_{h\\to\\mathcal{L}_e} > O_{h\\to\\psi(h)\\to\\mathcal{L}_c}$ does not hold and the claim that ConML's extra path is asymptotically cheaper is not established for MAML. Minor: the measured $1.1\\times$ relative time in Table 4 supports the practical conclusion independently of this accounting.",
+      "verifier": "verify-math",
+      "exact_quote": "With a single input sample, $$O_{h \\rightarrow \\mathcal{L}_e} = O(l * (|h|/l)^{3/2})$$, $$O_{h \\rightarrow \\psi(h) \\rightarrow \\mathcal{L}_c} = O(|d|) + O(|d|) = O(|h|)$$."
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::1",
+      "category": "Algebraic manipulation",
+      "severity": "minor",
+      "confidence": 0.8,
+      "evidence": "By the bullet's own stipulations the classifier is linear from $\\mathbb{R}^{|h|/N}$ to $\\mathbb{R}^N$ with $N\\cdot(|h|/N)=|h|$ parameters, acting on a single sample $x\\in\\mathbb{R}^{|h|/N}$, so applying it costs $N\\cdot(|h|/N)=O(|h|)$ multiply–adds. The paper reports $O_{h\\to\\mathcal{L}_e}=O(|h|^2/N)$, which is $N\\cdot(|h|/N)^2$ — the output dimension times the *square* of the input dimension — overstating the original path by a factor $|h|/N$, the embedding dimension. This is the same slip as in the MAML bullet: a matrix–vector cost computed as matrix–matrix. With the correct $O(|h|)$ both paths match in order and the asserted strict inequality does not follow. Minor for the same reason: the measured $1.2\\times$ relative time supports the practical claim independently.",
+      "verifier": "verify-math",
+      "exact_quote": "We have $$O_{h \\rightarrow \\mathcal{L}_e} = O(|h|^2/N)$$, $$O_{h \\rightarrow \\psi(h) \\rightarrow \\mathcal{L}_c} = O(d) + O(d) = O(|h|)$$."
+    }
+  ],
+  "verdict": "CRITICAL_ERRORS",
+  "verdict_confidence": 0.92,
+  "summary": "**What was checked.** 22 self-contained mathematical objects were extracted from *Learning to Learn with Contrastive Meta-Objective* (ConML) and verified: 16 by informal review and 6 by formalisation in Lean 4 (Mathlib, toolchain `v4.33.1`, project `MATH_VERIFICATION/ConML6278`, deleted on completion). Coverage centred on §3.2 \"Provable Benefits for Generalization\" and its Appendix B proofs, which carry the paper's only theoretical claims, plus the Appendix A complexity analysis and the Appendix G loss definitions.\n\n**What Lean settled.** All 6 Lean claims compiled to a verdict — no `FAILED`, no `NOT_ATTEMPTED`, every proof `sorryAx`-free on `[propext, Classical.choice, Quot.sound]`. Two steps were **proved correct**: the excess-risk definition of §3.2 is well posed ($\\Delta_{\\varepsilon_{p(\\tau)}}(\\theta)\\ge0$ despite the outer $\\min_\\theta$ sitting inside the subtraction), and the Lipschitz/Cauchy–Schwarz chain in B.1 is a valid inequality given its premises. Four steps were **refuted** by compiling proofs of their negations:\n\n1. *B.1, the MLP rewriting* — Lemma 3's approximant $\\sum_i v_i\\sigma(w_i^Tx+b_i)$ cannot be rewritten, at the same $N$, as $\\sum_k\\sigma(\\langle w_k,X\\rangle)$ with $\\sum_k\\|w_k\\|^2\\le N$; dropping the $v_i$ caps the family at sup-norm $NM$ while $F$ is unbounded in the $v_i$.\n2. *B.1, the second moment* — $\\|\\psi(X_g)\\|^2$ was replaced by $\\sum_k\\sigma(\\cdot)^2$ where $(\\sum_k\\sigma(\\cdot))^2$ belongs, dropping all cross terms. Lean also proved the correct Cauchy–Schwarz relation, which shows the substitution *understates* the bounded quantity by up to a factor $N$ — fatal, since $U$ is asserted to be an upper bound.\n3. *B.2, symmetry* — $\\sup_{\\|v\\|\\le1}\\mathbb{E}[\\langle v,X\\rangle^2]=0$ is **not** equivalent to $P$ being symmetric; it forces $X=0$ a.s. The symmetric two-atom law at $\\pm u$ (and, in continuous form, any centred Gaussian) is symmetric with non-zero second moment.\n4. *B.2, the floor of $\\mathcal{L}_c$* — $\\min_\\theta\\mathcal{L}_c\\ge-1$ is false; a realisable two-task batch with antipodal representations and perfect alignment gives $\\mathcal{L}_c=-2$. The sharp general floor is $-1-1/(B-1)$.\n\n**Consequence.** These are not isolated slips: items 1–2 are the only support offered for Lemma 1, and items 3–4 for Theorem 1, so the paper's entire formal case — \"It is provable that a meta-learner which minimizes $\\mathcal{L}_c$ has lower generalization error upper-bound than any other meta-learners\" — is unsupported as written. The closing step of B.2 (`paper::PROOF::6`, reviewed informally) fails for the same reason as item 3 and additionally asserts $\\delta_\\tau(X)=\\delta_\\tau(-X)$, which holds only at $\\tau=0$, while negating the task index $\\tau$ and placing a Dirac delta on it in the space of model representations. Hence the **CRITICAL_ERRORS** verdict.\n\n**Scope of the verdict.** The refutations invalidate the *proofs*, not the method and not the experiments: ConML's reported empirical gains across MAML, FOMAML, Reptile, MatchNet, ProtoNet, Simple CNAPS, CAML, MELR and LastShot rest on measurement, not on Lemma 1 or Theorem 1, and nothing here bears on them. Four further **minor** findings sit in the supporting analysis: the per-episode count of $\\psi$ evaluations is $B(K+1)$ rather than $K+1$; A.1's ICL cost ratio $K/n$ contradicts A.2's correct $(n+K)/n$; and the MAML and ProtoNet forward-pass costs in A.2 are computed as matrix–matrix rather than matrix–vector products, which removes the asserted strict inequality between the two computation paths. Each is contradicted or rescued by the paper's own measurements, so none threatens a main claim.\n\n**Disagreements and unsettled items.** None — no Lean run returned `FAILED`, so Step 5's informal fallback was not triggered for any snippet and there is no Lean-versus-informal conflict to adjudicate. Four snippets are recorded as `UNVERIFIABLE`, none of them a failure of a verifier: Lemma 1 and Theorem 1 as stated in the main text are hedged past falsifiability (\"standard regularity conditions\", \"approximately minimizes\"), and Lemmas 2 and 3 are imported from [28] and [21] — Lemma 3 was confirmed a faithful statement of the Hornik/Cybenko theorem, while Lemma 2's correctness belongs to [28]. Two observations fell below the 0.7 reporting threshold and are recorded in `results` only: the amortization-based complexity bullet (`FORMULA_BLOCK::2`, 0.65 — $q$ carries two incompatible definitions), and the sigmoid-based \"distances\" in G.1/G.2, which satisfy $\\phi(x,x)=1/2\\neq0$ and so are not metrics, with the side effect that B.2's claimed $\\mathcal{L}_c^*=-1$ is unattainable under them."
+}

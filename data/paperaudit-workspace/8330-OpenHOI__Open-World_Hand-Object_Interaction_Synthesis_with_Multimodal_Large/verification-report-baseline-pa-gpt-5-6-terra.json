@@ -1,0 +1,182 @@
+{
+  "paper_id": "8330-OpenHOI__Open-World_Hand-Object_Interaction_Synthesis_with_Multimodal_Large",
+  "title": "OpenHOI: Open-World Hand-Object Interaction Synthesis with Multimodal Large",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Abstract; Introduction contributions; Figure 1; Conclusion",
+      "confidence": 0.99,
+      "supporting_evidence": "The paper repeatedly claims open-world and unseen-object generalization (e.g., “the first framework for open-world HOI synthesis” and “generalizes to novel objects”), but Section 4.1 explicitly concedes that the alleged unseen test set has “object instances and categories potentially overlapping with training” and “mainly evaluates in-distribution generation with partial domain shifts.” Such a split cannot substantiate the paper's central claims about unseen categories or open-world generalization.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "8330-OpenHOI__Open-World_Hand-Object_Interaction_Synthesis_with_Multimodal_Large::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Section 4.3, Main Results",
+      "confidence": 0.99,
+      "supporting_evidence": "The text states that results show only “marginal improvements in some metrics” and that differences are “within standard deviations reported by prior works.” This is contradicted by the paper's own tables. For example, on GRAB-seen, Ours versus Text2HOI is MPJPE 47.64±1.03 versus 56.29±2.13 and FID 26.43±0.77 versus 33.72±1.27; on ARCTIC-seen it is MPJPE 45.15±0.94 versus 52.16±0.41 and FID 19.74±0.16 versus 23.35±0.33. These differences are far larger than the reported standard deviations. This also directly conflicts with the Introduction's claim of outperforming prior work “by a large margin.”",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "8330-OpenHOI__Open-World_Hand-Object_Interaction_Synthesis_with_Multimodal_Large::baseline"
+    },
+    {
+      "error_category": "evidence_data_integrity",
+      "error_location": "Table 3 versus Table 5, ARCTIC seen full-model results",
+      "confidence": 0.98,
+      "supporting_evidence": "The same claimed full model and setting has incompatible reported uncertainty values. Table 3 reports ARCTIC-seen Ours FID 19.74±0.16 and Diversity 2.65±0.03, whereas Table 5 reports FID 19.74±0.35 and Diversity 2.65±0.16. Table A6 repeats the Table 3 values. No separate run, protocol, or reason for the discrepancy is provided.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "8330-OpenHOI__Open-World_Hand-Object_Interaction_Synthesis_with_Multimodal_Large::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Eq. (8) and Appendix Eqs. (25)–(26)",
+      "confidence": 0.99,
+      "supporting_evidence": "The manuscript defines σ_t = ((1−ᾱ_{t−1})/(1−ᾱ_t)) β_t, which is the DDPM posterior variance, but then samples X_{t−1}=μ_t+σ_t ε. A Gaussian with variance σ_t requires a noise multiplier sqrt(σ_t), not σ_t. Appendix Eq. (26) likewise labels the posterior covariance as this quantity times I. Thus the stated sampler has the wrong noise scale and does not implement the posterior distribution it claims to use.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "8330-OpenHOI__Open-World_Hand-Object_Interaction_Synthesis_with_Multimodal_Large::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 3.2, Eq. (10), “Penetration Refinement”",
+      "confidence": 0.99,
+      "supporting_evidence": "The purported penetration loss is the squared Euclidean distance from hand vertices to the closest predicted affordance-region points. Minimizing distance to an unsigned closest point neither detects nor penalizes hand-object interpenetration; an interpenetrating vertex may be arbitrarily close to, or coincide with, an object/affordance point. A penetration objective requires an occupancy test, signed-distance field, collision volume, or equivalent signed geometric criterion. The equation instead encourages vertices to move toward the affordance surface.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "8330-OpenHOI__Open-World_Hand-Object_Interaction_Synthesis_with_Multimodal_Large::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Section 4.2 and Tables 2–5",
+      "confidence": 0.95,
+      "supporting_evidence": "Key metrics are not operationally defined sufficiently to reproduce or interpret the reported values. In particular, the paper does not identify the pretrained feature extractor, feature preprocessing, number of generated samples, or aggregation procedure for FID, Diversity, and MModality. It also gives no units, coordinate frame, target specification, or sequence alignment protocol for MPJPE and FOL. These omissions are consequential because rankings and all headline quantitative claims depend on these metrics.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "8330-OpenHOI__Open-World_Hand-Object_Interaction_Synthesis_with_Multimodal_Large::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Section 4.2, definition of Final Object Location Error",
+      "confidence": 0.93,
+      "supporting_evidence": "FOL is defined relative to a “target location at the final frame,” but the stated inference conditioning C contains only predicted affordances, a text embedding, and an object point cloud. It contains no target pose or target location. The paper never explains how a target is supplied at generation time, how it is inferred from language, or why comparison to the particular ground-truth terminal pose is valid for a one-to-many text-conditioned generation task.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "8330-OpenHOI__Open-World_Hand-Object_Interaction_Synthesis_with_Multimodal_Large::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Section 4.1 and Appendix D.2, semantic annotation and affordance-label construction",
+      "confidence": 0.96,
+      "supporting_evidence": "The supervision protocol is circular or at least materially underspecified. Section 4.1 says an LLM converts low-level motion data into high-level intent-focused language, while Appendix D.2 says object point clouds are upsampled and “generate accurate affordance maps using our inference model,” after which the model processes them to infer maps again. The paper does not identify the LLM, prompts, model version, validation procedure, human quality control, train/test separation during pseudo-labeling, or an independent source of fine affordance ground truth. Consequently, the task-decomposition and affordance evaluation cannot be audited for label leakage or synthetic-label artifacts.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "8330-OpenHOI__Open-World_Hand-Object_Interaction_Synthesis_with_Multimodal_Large::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Appendix C.1, H2O cross-dataset evaluation",
+      "confidence": 0.93,
+      "supporting_evidence": "The claimed extreme unseen-dataset test defers essential information: “Full details on training protocol, adaptation, and data curation for H2O are deferred to supplementary material,” despite this appendix being the supplied supplementary material. No conversion from H2O's RGB-D/hand-pose/action-label format to the paper's point-cloud, language, object-motion, and sequence metric setup is specified. Therefore Table A1 is not reproducible and cannot support a zero-shot cross-dataset claim.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "8330-OpenHOI__Open-World_Hand-Object_Interaction_Synthesis_with_Multimodal_Large::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Appendix C.2, Tables A2–A3",
+      "confidence": 0.96,
+      "supporting_evidence": "“Physical realism” and “IV” are reported as quantitative metrics without any definition, formula, dataset split, evaluator, threshold, sample count, or measurement protocol. The text merely says these metrics were evaluated against Text2HOI. Unspecified metrics cannot constitute verifiable evidence for the claimed physical-plausibility improvements.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "8330-OpenHOI__Open-World_Hand-Object_Interaction_Synthesis_with_Multimodal_Large::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Appendix C.6, Eq. (28), “SmoothRate = dFID/dt”",
+      "confidence": 0.99,
+      "supporting_evidence": "FID is a distribution-level statistic between sets of generated and real samples, not a per-frame temporal quantity with a defined derivative. The paper supplies neither a time-indexed FID construction nor a finite-difference estimator, windowing rule, or feature-sampling procedure. Thus dFID/dt is undefined as written, and Tables A8–A10's SmoothRate values do not follow from a valid stated metric.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "8330-OpenHOI__Open-World_Hand-Object_Interaction_Synthesis_with_Multimodal_Large::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Appendix C.9 and Table A11",
+      "confidence": 0.98,
+      "supporting_evidence": "The statistical-significance procedure is invalidly described and inadequately reported. It says “paired two-sample t-tests” (paired and two-sample tests are different designs), repeats each test five times, and reports a mean p-value, without specifying the independent experimental units, sample size, pairing, null distributions, or multiple-comparison correction across numerous metrics and ablations. Averaging p-values is not a valid general procedure for establishing significance. The table title also says “Statistically Insignificant” while the prose claims most results are significant at 95% confidence.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "8330-OpenHOI__Open-World_Hand-Object_Interaction_Synthesis_with_Multimodal_Large::baseline"
+    },
+    {
+      "error_category": "context_misalignment_incoherence",
+      "error_location": "Appendix B.1, “Multi-Token Fusion Mechanism”",
+      "confidence": 0.97,
+      "supporting_evidence": "This subsection abruptly describes “PixelLM [36],” image features, a pixel decoder, visual scales, and performance on the “MUSE validation set.” The cited reference is titled PixelLLM, not PixelLM, and none of MUSE, image features, visual scales, or a pixel decoder is introduced elsewhere in this point-cloud method. The passage appears pasted from an unrelated 2D segmentation method and does not specify OpenHOI's actual multi-AFF architecture, despite Table A7 claiming an ablation of it.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "8330-OpenHOI__Open-World_Hand-Object_Interaction_Synthesis_with_Multimodal_Large::baseline"
+    },
+    {
+      "error_category": "context_misalignment_incoherence",
+      "error_location": "Section 3.1, “Coarse-to-Fine Affordance Tuning”",
+      "confidence": 0.94,
+      "supporting_evidence": "The section says the total objective uses balancing weights λ_task and λ_aff, but no total-loss equation containing these weights is given; Eq. (3) is also missing entirely, with the manuscript jumping from Eq. (2) to Eq. (4). This leaves the stated joint MLLM optimization undefined. It is especially consequential because the paper's central claim is joint language-affordance training.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "8330-OpenHOI__Open-World_Hand-Object_Interaction_Synthesis_with_Multimodal_Large::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Section 3.1 and Introduction claims of jointly grounded task decomposition and affordance prediction",
+      "confidence": 0.94,
+      "supporting_evidence": "The method and claims present the MLLM as jointly grounding each language subtask to a corresponding affordance region. Yet the training description explicitly admits that “the direct correspondence between language-based segmentation tokens and the voxel-level maps is approximated and not fully integrated in end-to-end training,” indicating “partial decoupling between language and spatial outputs.” The stronger repeated claims of precise, jointly grounded semantic task decomposition are therefore not established by the described implementation.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "8330-OpenHOI__Open-World_Hand-Object_Interaction_Synthesis_with_Multimodal_Large::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Section 4.4, Affordance Awareness and Physical Refinement ablation interpretation",
+      "confidence": 0.94,
+      "supporting_evidence": "The text characterizes removal of affordance maps and physical losses as causing only “minor degradations” and says their benefit is “incremental.” Its own GRAB-seen Table 4 reports, for example, FOL worsening from 0.26 to 0.36 without affordance and to 0.42–0.43 without physical losses, with MPJPE increases up to 56.04 from 47.64 and MModality dropping from 24.59 to 16.89. These are substantial relative changes, not evidence for the stated minimized interpretation; the following paragraph then reverses direction and calls the improvements “significant.”",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "8330-OpenHOI__Open-World_Hand-Object_Interaction_Synthesis_with_Multimodal_Large::baseline"
+    },
+    {
+      "error_category": "reference_background_fabrication",
+      "error_location": "Appendix C.3, “3D MLLM Fine-tuning”",
+      "confidence": 0.98,
+      "supporting_evidence": "The statement that the final coarse-to-fine affordance model is produced “on the HOI dataset to produce our final model [43]” cites [43], which is “SDEval: Safety Dynamic Evaluation for Multimodal Large Language Models.” That work is not an affordance-tuning method or the paper's final model. This is a materially incorrect citation in the description of the training pipeline.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "8330-OpenHOI__Open-World_Hand-Object_Interaction_Synthesis_with_Multimodal_Large::baseline"
+    },
+    {
+      "error_category": "reference_background_fabrication",
+      "error_location": "Section 3.2, “classifier-free guidance [11, 30, 12]”",
+      "confidence": 0.91,
+      "supporting_evidence": "The text attributes classifier-free guidance collectively to references [11, 30, 12]. Reference [12] is the classifier-free guidance paper; [11] is the original DDPM paper and [30] is Improved DDPM, neither of which introduces classifier-free guidance. The citation bundle misattributes the technique's origin.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "8330-OpenHOI__Open-World_Hand-Object_Interaction_Synthesis_with_Multimodal_Large::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Figure 1 and Sections 3.1/Conclusion, examples involving finding objects and drinking",
+      "confidence": 0.91,
+      "supporting_evidence": "The examples claim capabilities such as “find a water bottle,” select objects in a scene, and “take a sip.” However, the specified input is a single object point cloud plus text, and conditioning C contains no scene representation, candidate-object set, person/mouth geometry, liquid state, or environmental information. The described model can at most synthesize a hand-object sequence for a supplied object; it does not implement object search, referential selection among cabinets, drinking contact with a mouth, or liquid dynamics. The failure case later confirms it cannot select a specified cabinet.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "8330-OpenHOI__Open-World_Hand-Object_Interaction_Synthesis_with_Multimodal_Large::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 19,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (gpt-5.6-terra, taxonomy=paperaudit): 19 error(s) reported.",
+  "baseline": {
+    "model": "gpt-5.6-terra",
+    "provider": "openai",
+    "taxonomy": "paperaudit",
+    "paper_chars": 75999,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 21913,
+      "output_tokens": 5039,
+      "cache_read_input_tokens": null,
+      "cache_creation_input_tokens": null
+    }
+  }
+}

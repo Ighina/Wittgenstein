@@ -1,0 +1,52 @@
+{
+  "paper_id": "9386",
+  "title": "ImageNet-trained CNNs are not biased towards texture: Revisiting feature reliance through controlled suppression",
+  "paper_category": "cs.CV",
+  "predicted_errors": [
+    {
+      "error_category": "Data Inconsistency (figure-text)",
+      "error_location": "Figure 4 / Section 5.2",
+      "confidence": 0.8,
+      "supporting_evidence": "Figure 4g-i legend lists the remote-sensing datasets as AID, EuroSAT, NWPU, RESISC45, and UC Merced, whereas Section 5.2 states the RS experiments use 'UCMerced [61], RSD46-WHU [62], DeepGlobe [63], PatternNet [64], and AID [65]' — only AID and UC Merced/UCMerced overlap between the two lists. Likewise, Figure 4d-f legend shows BloodMNIST, BreastMNIST, DermaMNIST, OCTMNIST, and PathMNIST, while the Section 5.2 MI discussion references PathMNIST, BloodMNIST, RetinaMNIST, DermaMNIST, and ChestMNIST (a grayscale dataset that does not appear in the figure at all). In addition, EuroSAT, NWPU, and RESISC45 have no entries in the reference list, so the datasets actually plotted are neither described in the text nor cited. This inconsistency affects which experiments the reported results are based on and undermines reproducibility.",
+      "verifier_name": "vision",
+      "snippet_id": "9386::FIGURE::4"
+    },
+    {
+      "error_category": "Data Inconsistency (text-table)",
+      "error_location": "Section 4.1 / Table 2",
+      "confidence": 0.78,
+      "supporting_evidence": "Section 4.1 states 'we compute a harmonic mean across the two texture metrics (Texture) and the two shape metrics (Shape) for each transformation,' but the Texture and Shape columns of Table 2 exactly match the arithmetic mean of (LV, HFE) and (ESSIM, GC), not the harmonic mean. E.g., Box Blur: arithmetic mean of LV=0.237 and HFE=0.148 is 0.1925 ≈ 0.193 (the table value), whereas the harmonic mean is 0.182; Bilateral Filter: arithmetic 0.521 (table) vs harmonic 0.519; Gaussian Blur: arithmetic 0.349 (table) vs harmonic 0.344. All seven rows reproduce the arithmetic mean to three decimals, contradicting the stated harmonic-mean computation.",
+      "verifier_name": "statistical",
+      "snippet_id": "9386::TABLE::2"
+    },
+    {
+      "error_category": "Data Inconsistency (text-table)",
+      "error_location": "Section 4 / Table 2",
+      "confidence": 0.7,
+      "supporting_evidence": "The Method text states Patch Rotation 'may partially disrupt both shape and local texture cues due to edge discontinuities introduced within patches,' yet Table 2 reports Patch Rotation with Texture=1.000, LV=1.000, and HFE=1.000 — i.e., complete texture preservation and zero reduction of local variance or high-frequency energy. The quantitative validation therefore contradicts the prose description of the transformation's effect, weakening the claim that the transformations cleanly isolate individual features.",
+      "verifier_name": "vision",
+      "snippet_id": "9386::TABLE::2"
+    },
+    {
+      "error_category": "Experiment setup",
+      "error_location": "Section 5.1",
+      "confidence": 0.62,
+      "supporting_evidence": "The human study relies on only 20 participants, each shown a random subset of image versions under five suppression conditions, with 200 ms masked presentations and an alphabetical 16-category grid interface. The text itself concedes this 'limits exposure per condition' and 'risks interface-induced bias and potential random guessing due to limited trial counts per condition.' No effect sizes or per-condition trial counts are reported, and all significance tests are deferred to the supplemental material, making the headline human-vs-model comparisons (e.g., '76% retained accuracy' under local shape suppression) hard to assess from the main text.",
+      "verifier_name": "text",
+      "snippet_id": "9386::SECTION::7"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 19,
+    "snippets_verified": 19,
+    "errors_detected": 4,
+    "verifier_usage": {
+      "text": 11,
+      "vision": 8,
+      "statistical": 4,
+      "citation": 3
+    }
+  },
+  "verdict": "NEEDS_REVIEW",
+  "summary": "Verification of 'ImageNet-trained CNNs are not biased towards texture' (exhaustive mode, lenient strictness). The paper's central narrative — CNNs rely more on local shape than texture, modern training mitigates this reliance, CLIP-ViT most closely matches human behavior, and reliance patterns differ across CV/MI/RS domains — is internally consistent across abstract, introduction, results, and conclusion, and the prose statistics (texture 80%, global shape 83%, local shape 28%, ResNet50-sota 62%, ConvNeXtV2 65%, humans 76%) all match Table 3. Citation verification confirmed that the 2024/2025 references ([16], [21], [31]) are real published papers, so no fabricated citations were found. Two data-integrity issues were identified. (1) Figure 4's dataset legends disagree with the datasets named in Section 5.2: the RS panel plots AID/EuroSAT/NWPU/RESISC45/UC Merced while the text describes UCMerced/RSD46-WHU/DeepGlobe/PatternNet/AID, and the MI panel omits RetinaMNIST and ChestMNIST that the text discusses; EuroSAT, NWPU, and RESISC45 are also absent from the reference list. (2) Table 2's aggregate Texture/Shape columns, described in Section 4.1 as harmonic means, are in fact arithmetic means. A further minor inconsistency: Patch Rotation is described as partially disrupting texture, but validates at perfect texture preservation (Texture=1.000). The human experiment's small participant pool (n=20) is also flagged as an experimental-design limitation. No high-confidence conclusion-invalidating errors were found; the identified issues warrant correction of the affected tables/figures and review but do not overturn the paper's main findings."
+}

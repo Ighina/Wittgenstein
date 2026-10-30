@@ -1,0 +1,110 @@
+{
+  "paper_id": "3501-TransferTraj__A_Vehicle_Trajectory_Learning_Model_for_Region_and_Task_Trans",
+  "title": "TransferTraj: A Vehicle Trajectory Learning Model for Region and Task Trans",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Section 4.1.4, Eq. (5)",
+      "confidence": 0.99,
+      "supporting_evidence": "The text says that both modality losses use MSE: “we apply the Mean Squared Error (MSE) loss function.” However, the temporal loss is defined as \\(\\mathcal{L}_i^t=\\|\\hat{\\mathbf t}_i-\\mathbf t_i\\|_2\\), which is an unsquared L2 norm, not MSE (and not even a mean over the four temporal components). The stated loss type and the displayed objective disagree.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "3501-TransferTraj__A_Vehicle_Trajectory_Learning_Model_for_Region_and_Task_Trans::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Sections 4.1.4 and 4.2",
+      "confidence": 0.98,
+      "supporting_evidence": "The paper claims that a fully masked point \\(p_{[m]}=([m],[m],[m],[m])\\) is “fully recovered” and that pre-training requires masked subtrajectory points to be “fully recovered.” But the only described predictor predicts spatial coordinates and temporal features, and Eq. (5) defines losses only for spatial and temporal modalities. There is no POI or road-network prediction head or loss. Thus fully masked POI and road modalities cannot be recovered as claimed.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "3501-TransferTraj__A_Vehicle_Trajectory_Learning_Model_for_Region_and_Task_Trans::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 4.2 versus Appendix B.2, pre-training masking protocol",
+      "confidence": 0.98,
+      "supporting_evidence": "Section 4.2 specifies one contiguous masked subtrajectory: it samples a single start/end pair \\(s,e\\) and masks every point in \\(\\langle p_s,\\ldots,p_e\\rangle\\), then modality-masks the remaining points. Appendix B.2 instead says every trajectory is divided into multiple non-overlapping segments, with the number of segments set to \\(0.2|\\mathcal T|\\), and 40% of those segments are selected for point masking, while only 20% of remaining points are modality-masked. These are materially different masking procedures and masking rates.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "3501-TransferTraj__A_Vehicle_Trajectory_Learning_Model_for_Region_and_Task_Trans::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Appendix B.2 versus Appendix F, hidden dimension hyperparameter",
+      "confidence": 0.97,
+      "supporting_evidence": "Appendix B.2 states that the reported model uses “128 hidden state dimensions.” Appendix F subsequently states, based on its hyperparameter analysis, “The optimal value for d is 256.” Since the paper presents the Appendix-F result as the optimum and B.2 as the experiment configuration, it does not identify which hidden dimension generated the reported results.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "3501-TransferTraj__A_Vehicle_Trajectory_Learning_Model_for_Region_and_Task_Trans::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Appendix B.2 versus Appendix F, POI/road distance thresholds",
+      "confidence": 0.94,
+      "supporting_evidence": "Appendix B.2 fixes \\(\\varphi_{dist}^{poi}=\\varphi_{dist}^{road}=100\\) m “for all datasets.” Appendix F says Chengdu and Porto are optimal at 100 m but “Xi’an performs best at 150 meters.” The reported setup therefore either did not use the stated Xi’an optimum or the claimed optimum was not used for the reported experiments; this must be resolved.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "3501-TransferTraj__A_Vehicle_Trajectory_Learning_Model_for_Region_and_Task_Trans::baseline"
+    },
+    {
+      "error_category": "Citation / attribution",
+      "error_location": "Section 5 / Appendix B.4, t2vec baseline citation and description",
+      "confidence": 0.99,
+      "supporting_evidence": "The experiments cite “t2vec [9]” and describe it as a denoising autoencoder reconstructing original trajectories from low-sampling trajectories. Reference [9] is Fang et al., “Spatio-temporal trajectory similarity learning in road networks” (2022), not the t2vec denoising-autoencoder paper. Elsewhere, the related-work section correctly identifies t2vec as [18], Li et al. (2018). Thus the experimental citation/attribution for t2vec is wrong.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "3501-TransferTraj__A_Vehicle_Trajectory_Learning_Model_for_Region_and_Task_Trans::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (figure-text)",
+      "error_location": "Section 5.2, ablation-study claim following Table 6",
+      "confidence": 0.97,
+      "supporting_evidence": "The text claims removing SC-MoE causes a “performance drop of 14.52% on the OD TTE task.” Table 6 does not support that number under any displayed OD-TTE metric: relative to TransferTraj, removing SC-MoE worsens RMSE from 2.861 to 3.240 (13.25%), MAE from 2.060 to 2.585 (25.49%), and MAPE from 9.360 to 11.584 (23.76%). The asserted 14.52% is unexplained and inconsistent with the table.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "3501-TransferTraj__A_Vehicle_Trajectory_Learning_Model_for_Region_and_Task_Trans::baseline"
+    },
+    {
+      "error_category": "Experiment setup",
+      "error_location": "Section 5.1, explanation for omitting zero-shot trajectory-recovery transfer",
+      "confidence": 0.88,
+      "supporting_evidence": "The paper says zero-shot trajectory recovery cannot be evaluated because “varying road IDs prohibit direct cross-region transfer experiments.” This conflicts with the stated TransferTraj recovery output, which is recovered spatial coordinates rather than road IDs, and with Appendix B.4, which explicitly modifies MTrajRec and RNTrajRec to predict latitude/longitude instead of road-segment IDs “to enable region transferability.” Road-ID label-space incompatibility therefore does not justify omitting zero-shot recovery for the proposed coordinate-output setup.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "3501-TransferTraj__A_Vehicle_Trajectory_Learning_Model_for_Region_and_Task_Trans::baseline"
+    },
+    {
+      "error_category": "Figure / table error",
+      "error_location": "Table 7, Efficiency Study",
+      "confidence": 0.96,
+      "supporting_evidence": "Table 7 has nine numerical columns per method—apparently three quantities for each of Chengdu, Xi’an, and Porto—but supplies no column headers, units, or indication of which values are model size, training time, and testing time. The accompanying text asserts that those are the three measures, but the table itself is uninterpretable and cannot substantiate the efficiency claims.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "3501-TransferTraj__A_Vehicle_Trajectory_Learning_Model_for_Region_and_Task_Trans::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (figure-figure)",
+      "error_location": "Table 1 versus Table 6, TransferTraj trajectory-prediction result",
+      "confidence": 0.82,
+      "supporting_evidence": "Table 1 reports the full TransferTraj Chengdu trajectory-prediction result as RMSE 187.91 and MAE 144.53. Table 6 reports the full TransferTraj trajectory-prediction result as RMSE 197.91 and MAE 144.53. Table 6 does not identify a different dataset, split, or protocol, despite presenting its rows as the ablation comparison for the same model. The unexplained 10 m RMSE discrepancy requires correction or explicit labeling.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "3501-TransferTraj__A_Vehicle_Trajectory_Learning_Model_for_Region_and_Task_Trans::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 10,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (gpt-5.6-terra, taxonomy=default): 10 error(s) reported.",
+  "baseline": {
+    "model": "gpt-5.6-terra",
+    "provider": "openai",
+    "taxonomy": "default",
+    "paper_chars": 112574,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 28870,
+      "output_tokens": 4658,
+      "cache_read_input_tokens": null,
+      "cache_creation_input_tokens": null
+    }
+  }
+}

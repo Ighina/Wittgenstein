@@ -1,0 +1,110 @@
+{
+  "paper_id": "20777-Memory_Mosaics_at_scale",
+  "title": "Memory Mosaics at scale",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Section 2, Equation 4 and surrounding text",
+      "confidence": 0.45,
+      "supporting_evidence": "The text claims Eq.(3) becomes Eq.(4) when all keys share the same squared norm. Expanding ||k-k_i||^2 = ||k||^2 - 2k^Tk_i + ||k_i||^2, the cross term in the exponent is 2βk^Tk_i, not βk^Tk_i. After canceling the constant ||k||^2 and ||k_i||^2 terms, the correct normalized weight should be e^{2βk^Tk_i}/Σe^{2βk^Tk_j}, but Eq.(4) is written with a single β (e^{βk^Tk_i}), a factor-of-2 discrepancy that is never explained or justified as a redefinition of β.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20777-Memory_Mosaics_at_scale::baseline"
+    },
+    {
+      "error_category": "Citation / attribution",
+      "error_location": "Section 3.2 ('Beck et al., 2025') and Section 5.2 / Appendix D ('xLSTM [Beck et al., 2025]')",
+      "confidence": 0.65,
+      "supporting_evidence": "The in-text citations repeatedly refer to 'Beck et al., 2025' for xLSTM, but the reference list entry reads: 'Maximilian Beck ... xLSTM: Extended Long Short-Term Memory. Advances in Neural Information Processing Systems, 37:107547–107603, 2024.' The cited year (2025) does not match the reference list year (2024).",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20777-Memory_Mosaics_at_scale::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (figure-text)",
+      "error_location": "Appendix G, text preceding Table 10 vs. Table 10 values",
+      "confidence": 0.7,
+      "supporting_evidence": "The text states: 'Table 10 shows that removing long-term memory from Memory Mosaics v2 after training degrades the performance on the RULER question-answer tasks by 20%∼30%.' However, computing the differences from Table 10 (58.9-38.5=20.4, 55.5-22.2=33.3, 54.9-20.0=34.9, 53.4-20.2=33.2) shows degradations up to ~35%, not bounded at 30% as claimed.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20777-Memory_Mosaics_at_scale::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 6.1, 'In-context learning' paragraph vs. the following 'In summary' paragraph",
+      "confidence": 0.65,
+      "supporting_evidence": "The text states: 'For semantic label tasks (Figure 6), ×8 times more training data helps transformers (8T data) match the performance of memory mosaics v2 (1T data).' Yet the following summary paragraph states: 'In summary, ×8 more training data helps transformers in certain new task learning benchmarks. However, the resulting transformers (8T data) still lag behind memory mosaics v2 trained on 1T data.' This directly contradicts the earlier claim that 8T-token transformers 'match' (not lag behind) memory mosaics v2 on semantic-label ICL.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20777-Memory_Mosaics_at_scale::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Abstract",
+      "confidence": 0.55,
+      "supporting_evidence": "The abstract claims 'completely eliminating the need for additional training data that transformers require,' implying memory mosaics v2's advantage can never be closed by more transformer training data. But Section 6.1 explicitly reports that an 8T-token transformer 'matches' memory mosaics v2 (1T tokens) on semantic-label in-context learning, directly undermining the 'completely eliminating' framing.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20777-Memory_Mosaics_at_scale::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Section 6.1, New-knowledge storage and retrieval paragraph",
+      "confidence": 0.5,
+      "supporting_evidence": "The text asserts: 'our results definitively prove that data scaling alone cannot close the gap, as the fundamental architectural limitations of transformers make them inherently inferior for these tasks regardless of training data quantity.' This sweeping conclusion is drawn from only three data points (200B, 1T, 8T tokens) showing a shrinking but nonzero gap (12.3%→6.5%), which does not 'definitively prove' an asymptotic architectural limitation applicable 'regardless of training data quantity.'",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20777-Memory_Mosaics_at_scale::baseline"
+    },
+    {
+      "error_category": "Statistical reporting",
+      "error_location": "Section 5.2, 'Main results' paragraph referencing Table 3",
+      "confidence": 0.6,
+      "supporting_evidence": "The text states 'Memory mosaics v2 outperforms transformers on 4k task-length by 1.4%∼5.6%.' From Table 3, the large-model difference at 4k is 59.3−57.7=1.6, not 1.4, so the reported lower bound of the range is incorrect.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20777-Memory_Mosaics_at_scale::baseline"
+    },
+    {
+      "error_category": "Figure / table error",
+      "error_location": "Table 5 caption",
+      "confidence": 0.45,
+      "supporting_evidence": "Table 5's caption is verbatim identical to Table 4's caption ('Comparison of memory mosaics v2 and transformer, trained on 4k and fine-tuned on 32k context length, on RULER question-answer tasks'), but Table 5's actual purpose and content is to compare transformers trained on different token counts (200B/1T/8T) against memory mosaics v2 trained on 1T tokens — a variable the caption fails to mention at all.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20777-Memory_Mosaics_at_scale::baseline"
+    },
+    {
+      "error_category": "Experiment setup",
+      "error_location": "Table 5 footnote and Section 6.1",
+      "confidence": 0.5,
+      "supporting_evidence": "The footnote states 'transformer large* uses grouped-query attention to reduce memory cost, increases training context length to 8k to boost long-context performance,' meaning the 8T-token transformer baseline differs from the other transformer baselines not only in data quantity but also in attention mechanism (GQA vs MHA) and pretraining context length (8k vs 4k). This confounds the paper's central claim that '8× more data' alone was tested, since architecture and context length were also changed simultaneously, undermining the controlled 'more data' comparison narrative of Section 6.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20777-Memory_Mosaics_at_scale::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Appendix A (Figure 9 description) vs. Section 3.2 Equations 8 and 9",
+      "confidence": 0.35,
+      "supporting_evidence": "Equation 8 defines the key projection as \\tilde{k}_T = W_φ x_T and Equation 9 defines the value projection as \\tilde{v}_T = W_ψ x_T, but the Appendix A figure description states '\\tilde{k}_t = W_k x_t' and '\\tilde{v}_t = W_v x_t', using inconsistent weight-matrix notation (W_k/W_v vs W_φ/W_ψ) for the same quantities.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20777-Memory_Mosaics_at_scale::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 10,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (claude-sonnet-5, taxonomy=default): 10 error(s) reported.",
+  "baseline": {
+    "model": "claude-sonnet-5",
+    "provider": "anthropic",
+    "taxonomy": "default",
+    "paper_chars": 74240,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 29806,
+      "output_tokens": 29190,
+      "cache_read_input_tokens": 0,
+      "cache_creation_input_tokens": 0
+    }
+  }
+}

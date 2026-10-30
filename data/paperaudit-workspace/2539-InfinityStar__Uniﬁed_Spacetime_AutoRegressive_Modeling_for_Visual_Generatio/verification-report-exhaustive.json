@@ -1,0 +1,63 @@
+{
+  "paper_id": "2539-InfinityStar__Uniﬁed_Spacetime_AutoRegressive_Modeling_for_Visual_Generatio",
+  "title": "InfinityStar: Unified Spacetime AutoRegressive Modeling for Visual Generation",
+  "paper_category": "cs.CV",
+  "predicted_errors": [
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Section 3.2 Spacetime Pyramid Modeling, Equation (2)",
+      "confidence": 0.85,
+      "supporting_evidence": "The text states 'For inter-clip predictions, clips are generated sequentially conditioned on prior clip predictions and the text input in an autoregressive manner. ... Formally, the autoregressive likelihood of the whole video can be expressed as:', but the printed Equation (2), p(r_1^1, …, r_K^N) = ∏_{c=1}^{N} ∏_{k=1}^{K} p(r_k^c | r_1^c, …, r_{k-1}^c, ψ(t)), conditions each term only on scales within the same clip c and the text ψ(t). No factor references tokens of any preceding clip (r^{<c}), so clips are formally modeled as conditionally independent given their own scales. This contradicts the explicit claim of inter-clip autoregressive conditioning: as written, the equation does not represent the described 'conditioned on prior clip predictions' generative process and would not support the paper's claim of generating 'infinitely long videos' with temporal conditioning across clips.",
+      "verifier_name": "math-equations",
+      "snippet_id": "2539-InfinityStar::EQUATION::1"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 2.3 Discrete Video Tokenizers",
+      "confidence": 0.78,
+      "supporting_evidence": "The opening paragraph ends mid-sentence: 'For a long time, discrete [33, 35] and continuous [17, 34, 28] video tokenizers have been developed independently. Although some works [1, 29] provide both discrete and continuous tokenizers, the'. The intended continuation ('Network configurations are usually not aligned. For example, Cosmos [1] chooses 6 and 16 as latent dimensions in its discrete and continuous variants respectively...') appears only two paragraphs later, after two misplaced 'Infinity for Image Generation' background paragraphs describing Infinity [13]'s tokenizer and training procedure. As printed, the section is incoherent: a truncated sentence followed by content that belongs to a separate preliminary section, inserted in the middle of a subsection titled 'Discrete Video Tokenizers'.",
+      "verifier_name": "text",
+      "snippet_id": "2539-InfinityStar::SECTION::4"
+    },
+    {
+      "error_category": "Conclusion vs Evidence mismatch",
+      "error_location": "Section 1 Introduction, paragraph 3",
+      "confidence": 0.68,
+      "supporting_evidence": "The Introduction claims 'InfinityStar establishes a new state-of-the-art among autoregressive video models, even surpassing industry-leading HunyuanVideo [17] (83.74 vs 83.24).' The arithmetic 83.74 > 83.24 is correct, but the paper's own Table 2 lists Wan 2.1 [28] at 84.70 overall, which is HIGHER than both HunyuanVideo (83.24) and InfinityStar (83.74). Calling HunyuanVideo 'industry-leading' is therefore contradicted by the paper's own results table, and the 'even surpassing' framing implies superiority over the diffusion leader while the actual top-scoring diffusion model in Table 2 (Wan 2.1) exceeds InfinityStar. The claim cherry-picks a single diffusion baseline and mischaracterizes the comparison.",
+      "verifier_name": "cross-section-consistency",
+      "snippet_id": "2539-InfinityStar::SECTION::1"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Section 3.3 Visual Tokenizer, Stochastic Quantizer Depth",
+      "confidence": 0.62,
+      "supporting_evidence": "The method is underspecified: 'During training, each one of the last $N$ scales has a probability $p$ of being discarded. In this way, there are $2^N$ possible scale schedules during training.' The value of $p$ is never given, and the paper does not state how the tokenizer reconstruction loss (or the VAR Transformer objective) is computed when scales are dropped — i.e., whether the loss is masked to retained scales, how schedules are sampled per iteration, or whether SQD also applies during VAR Transformer training. The $2^N$ enumeration is arithmetically consistent with independent per-scale discarding, but the mechanism by which this regularization modifies training is logically incomplete, which limits reproducibility of the claimed convergence and reconstruction gains.",
+      "verifier_name": "text",
+      "snippet_id": "2539-InfinityStar::SECTION::7"
+    },
+    {
+      "error_category": "Abstract vs Results mismatch",
+      "error_location": "Abstract vs Section 4.5 / Table 6",
+      "confidence": 0.55,
+      "supporting_evidence": "The Abstract states 'Without extra optimizations, our model generates a 5s, 720p video approximately 10× faster than leading diffusion-based methods', and the Introduction repeats a '10× reduction in inference latency relative to leading diffusion models'. However, Table 6 reports Wan 2.1 at 1864 s vs InfinityStar at 58 s for the same 5s/81-frame/720p setting, a 32× speedup (1864/58 ≈ 32.1), which Section 4.5 itself states ('InfinityStar achieves a 32× speedup over Wan-2.1'). The headline 10× figure in the Abstract/Introduction is inconsistent with the paper's own reported 32× result; the mismatch understates the result but constitutes a text-table discrepancy in the central efficiency claim.",
+      "verifier_name": "cross-section-consistency",
+      "snippet_id": "2539-InfinityStar::SECTION::0"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 33,
+    "snippets_verified": 33,
+    "errors_detected": 5,
+    "verifier_usage": {
+      "math_equation": 2,
+      "text": 16,
+      "statistical": 6,
+      "citation": 4,
+      "vision": 15,
+      "cross_section_consistency": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Exhaustive lenient-mode verification of 'InfinityStar: Unified Spacetime AutoRegressive Modeling for Visual Generation' (33 snippets: 16 sections, 2 equations, 6 tables, 9 figures) found 5 findings, one high-confidence (>=0.85). Most severe: (1) Equation (2) factorizes the full-video autoregressive likelihood as prod_c prod_k p(r_k^c | r_1^c, ..., r_{k-1}^c, psi(t)), conditioning each clip's tokens only on scales within the same clip plus the text, yet the surrounding text states clips are 'generated sequentially conditioned on prior clip predictions' — the prior-clip conditioning is absent from the formal model, so the inter-clip autoregression claim is inconsistent with the written likelihood. (2) Section 2.3 contains a sentence truncated mid-phrase ('Although some works [1, 29] provide both discrete and continuous tokenizers, the'), whose intended continuation ('Network configurations are usually not aligned...') appears only after two misplaced 'Infinity for Image Generation' background paragraphs, breaking the section's coherence. (3) The Introduction claims InfinityStar 'surpasses industry-leading HunyuanVideo (83.74 vs 83.24)', but the paper's own Table 2 lists Wan 2.1 at 84.70 — above both HunyuanVideo and InfinityStar — so 'industry-leading' is contradicted by the paper's own table and the surpassing claim cherry-picks a single diffusion baseline. (4) Stochastic Quantizer Depth is underspecified: 'each one of the last N scales has a probability p of being discarded' with no value for p and no description of how the loss/likelihood is adjusted for dropped scales. (5) The Abstract/Introduction claim 'approximately 10x faster' inference while Table 6 reports a 32x speedup over Wan 2.1 (1864s to 58s); the mismatch is conservative in direction but is a text-table discrepancy in the central efficiency claim. The four previously-suspicious 2025 references (Cosmos arXiv:2501.03575, Veo 3, WAN arXiv:2503.20314, Waver arXiv:2508.15761) were web-verified as real, published works and are not flagged. The Abstract's hedged 'among the first discrete autoregressive video generators' phrasing and the VBench scores in Tables 2/4 are internally consistent with the ablation text. Sub-threshold observation (not counted as an error): the Emu3 and Nova rows in Table 2 share an identical Appearance Style value (20.92), which could indicate a data-copying artifact but could not be confirmed against the external VBench leaderboard. Figure images are placeholders in the workspace, so pixel-level figure-integrity checks were not possible. Verdict: NEEDS_CORRECTION.",
+  "uncertainty_map": []
+}

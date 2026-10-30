@@ -1,0 +1,101 @@
+{
+  "paper_id": "13022",
+  "title": "A Snapshot of Influence: A Local Data Attribution Framework for Online Reinforcement Learning",
+  "paper_category": "cs.LG",
+  "predicted_errors": [
+    {
+      "error_category": "Statistical reporting",
+      "error_location": "Appendix A.2 (Training hyperparameters)",
+      "confidence": 0.9,
+      "supporting_evidence": "The paper reports n_steps=2048 for all environments and states '1,024,000 for BipedalWalker (1000 rounds)'. But 1,024,000 / 2,048 = 500 exactly, not 1000. To run 1000 rounds at n_steps=2048 the budget would need to be 2,048,000 timesteps. All other environments are internally consistent (102,400/2,048=50 for FrozenLake, 81,920/2,048=40 for MiniGrid, 102,400/2,048=50 for Acrobot, 204,800/2,048=100 for Highway, 307,200/2,048=150 for LunarLander), so the BipedalWalker '(1000 rounds)' annotation is a genuine arithmetic error.",
+      "verifier_name": "verify-statistical",
+      "snippet_id": "13022::SECTION::A.2"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 3.1 (reference policy design)",
+      "confidence": 0.85,
+      "supporting_evidence": "Section 3.1 states 'For attribution in round k, we set the reference policy π^{ref} to a fixed, pre-trained policy that has been trained to convergence on the task' and two sentences later says 'Unlike a fixed, off-distribution reference that may provide misleading signals due to mismatch with the agent's current state, our dynamic reference evolves with training, providing a stable and relevant basis for meaningful evaluation and attribution.' A reference that is simultaneously 'fixed, pre-trained' and 'dynamic ... evolves with training' is a direct internal contradiction, likely an editorial leftover from a revised draft.",
+      "verifier_name": "verify-text",
+      "snippet_id": "13022::SECTION::3.1"
+    },
+    {
+      "error_category": "Sign/Arithmetic error",
+      "error_location": "Section 3.1 (f^{return} target function)",
+      "confidence": 0.8,
+      "supporting_evidence": "The paper defines f^{return}(θ) := E_{τ ∼ π^{ref}, (s,a) ∼ τ}[ log π_θ(a|s) · (−Â^{ref}(s,a)) ] and claims 'Maximizing f^{return}(θ) encourages increasing the probability of better-than-average actions and decreasing worse-than-average ones'. Under the standard advantage convention (positive Â = better than average, cf. Sec. 4.1 where positive Â for a poor action is described as inaccurate), maximizing E[log π · (−Â)] pushes log π toward −∞ for records with Â>0, i.e., it DEcreases the probability of better-than-average actions — the opposite of the stated claim. The same paper uses the positive-sign variant f^{seq}(θ) = E[log π_θ(y|x) · Â^{ref}_{−1}(x,y)] in Sec. 5.3 for the analogous purpose, confirming the sign inconsistency. The claim is also attributed to REINFORCE with baseline, which maximizes E[Â log π] (positive sign).",
+      "verifier_name": "verify-math",
+      "snippet_id": "13022::EQUATION::f-return"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Section 3.1 vs Section 5.1 (influence score definition)",
+      "confidence": 0.78,
+      "supporting_evidence": "Three mutually inconsistent descriptions of the influence score appear. (1) The defining equation in Sec. 3.1: I_i := Σ_{j: z_i ∈ B_j^{(k)}} η_j ⟨∇_θ f(θ_0^{(k)}), ∇_θ L^{PPO}(θ_j^{(k)}, z_i)⟩ sums over all optimization steps j with the target gradient at θ_0 and the loss gradient at θ_j. (2) The immediately following explanation states '∇_θ f(θ_j^{(k)}) is the gradient of the target function evaluated at θ_j^{(k)}' — contradicting the θ_0 in its own equation. (3) Sec. 5.1 states the implementation computes ⟨∇_θ f(θ^(k)), ∇_θ L^PPO(θ^(k), z_i)⟩ 'using only the initial parameter θ^(k)', i.e., no summation over j at all. The paper never reconciles the general definition (sum over steps) with the actual implementation (single evaluation at θ^(k)).",
+      "verifier_name": "verify-text",
+      "snippet_id": "13022::EQUATION::influence-score"
+    },
+    {
+      "error_category": "Data Inconsistency (text-table)",
+      "error_location": "Section 5.2 (sample efficiency summary)",
+      "confidence": 0.75,
+      "supporting_evidence": "Section 5.2 states IIF achieves 'a 20–67% reduction in training rounds required to match the standard training performance across environments'. The paper's own Figure 6(b) reports SE_ave = {42.3%, 51.2%, 78.5%, 49.8%, 38.4%, 44.7%} and SE_peak = {28.7%, 63.9%, 82.3%, 68.4%, 54.2%, 39.8%}, i.e., the actual range of reductions is 28.7% to 82.3%. Both endpoints of the claimed '20–67%' interval are inconsistent with the reported data (28.7% > 20% and 82.3% > 67%).",
+      "verifier_name": "verify-statistical",
+      "snippet_id": "13022::SECTION::5.2"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Section 4.1 vs Appendix B.4 (MC advantage estimation)",
+      "confidence": 0.75,
+      "supporting_evidence": "Section 4.1 states 'We approximate the true advantage A^π(s, a) using Monte Carlo (MC) rollouts from each (s, a), averaging over multiple trajectories (details in Appendix B.4).' Appendix B.4 instead describes: 'For considerations of computational efficiency, in our study below, we limit to environments with discrete state and action spaces, where we compute Ā using the collected rollout buffer B^{(k)}, instead of performing additional sampling in the environment.' Performing fresh MC rollouts from each (s,a) and re-using the collected rollout buffer without additional sampling are different procedures; the main text and appendix describe the analysis method inconsistently.",
+      "verifier_name": "verify-text",
+      "snippet_id": "13022::SECTION::4.1"
+    },
+    {
+      "error_category": "Fabricated citation",
+      "error_location": "Introduction (Kumar et al. 2024)",
+      "confidence": 0.72,
+      "supporting_evidence": "The Introduction cites '[Deng et al., 2025; Kumar et al., 2024]' and asserts 'Kumar et al. [2024] demonstrated that data attribution methods can be directly applied to online RL without modification, achieving state-of-the-art results across multiple benchmarks.' No 'Kumar et al., 2024' entry appears anywhere in the reference list (which contains no Kumar-authored entry at all). This is also internally contradictory with the paper's own novelty claim that it is 'the first comprehensive and definitive study of data attribution for online RL' — if Kumar et al. already achieved state-of-the-art results applying data attribution to online RL, the 'first study' claim cannot hold.",
+      "verifier_name": "verify-citation",
+      "snippet_id": "13022::SECTION::1"
+    },
+    {
+      "error_category": "Abstract vs Results mismatch",
+      "error_location": "Abstract",
+      "confidence": 0.7,
+      "supporting_evidence": "The Abstract claims 'IIF completely eliminates sample inefficiency, achieves unprecedented training speed, and solves the long-standing challenge of training instability in online RL.' Section 5.2 reports a partial improvement: 'a 20–67% reduction in training rounds required to match the standard training performance' (and even by the paper's own Figure 6(b), the best case is 82.3%, not 100%). 'Completely eliminates sample inefficiency' is not supported by the reported results and overstates a substantial-but-partial efficiency gain.",
+      "verifier_name": "verify-cross-section-consistency",
+      "snippet_id": "13022::SECTION::abstract"
+    },
+    {
+      "error_category": "Fabricated citation",
+      "error_location": "Section 3.1 (Williams 1992)",
+      "confidence": 0.65,
+      "supporting_evidence": "Section 3.1 cites '[Williams, 1992]' for the claim that the REINFORCE-with-baseline objective 'has been proven optimal for variance reduction in policy gradient methods'. No Williams 1992 entry appears in the reference list. (The canonical reference is Williams, 'Simple Statistical Gradient-Following Algorithms for Connectionist Reinforcement Learning', 1992, but it is absent from the bibliography.)",
+      "verifier_name": "verify-citation",
+      "snippet_id": "13022::SECTION::3.1"
+    },
+    {
+      "error_category": "Data Inconsistency (text-table)",
+      "error_location": "Appendix B.9 (runtime reduction summary)",
+      "confidence": 0.6,
+      "supporting_evidence": "Appendix B.9 concludes 'IIF presents a 29%-67% reduction in runtime', but Table 5 reports RT_peak values of 31.27%, 55.16%, 71.59%, 59.89%, 44.11%, and 29.16%. The maximum actual reduction is 71.59% (MiniGrid), which exceeds the stated 67% upper bound. The stated range therefore does not span the reported data.",
+      "verifier_name": "verify-statistical",
+      "snippet_id": "13022::SECTION::B.9"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 64,
+    "snippets_verified": 64,
+    "errors_detected": 10,
+    "verifier_usage": {
+      "math_equation": 10,
+      "text": 32,
+      "vision": 15,
+      "statistical": 7,
+      "citation": 4
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Exhaustive verification of 'A Snapshot of Influence: A Local Data Attribution Framework for Online Reinforcement Learning' (NeurIPS 2025) detected 10 issues, several of which are material. (1) A definite arithmetic error in Appendix A.2: BipedalWalker's budget of 1,024,000 timesteps at n_steps=2048 yields 500 rounds, not the stated 1000. (2) A direct internal contradiction in Sec. 3.1 describing the reference policy as both 'fixed, pre-trained' and a 'dynamic reference [that] evolves with training'. (3) A sign inconsistency in the f^{return} target function: the formula uses (−Â), which under the standard advantage convention makes 'maximizing f^{return}' decrease the probability of better-than-average actions, contradicting the stated behavior and the positive-sign f^{seq} variant used for the analogous RLHF objective. (4) Three mutually inconsistent descriptions of the influence score (sum over steps j in the definition, target gradient at θ_j in the explanation, single evaluation at θ^(k) in Sec. 5.1). (5) A text/table inconsistency in the headline '20–67%' sample-efficiency claim vs the paper's own Figure 6(b) range of 28.7–82.3%. (6) A methodology mismatch between Sec. 4.1 (fresh MC rollouts per (s,a)) and Appendix B.4 (reuse of the rollout buffer, no additional sampling). (7-8) In-text citations to 'Kumar et al. [2024]' and 'Williams, 1992' that have no bibliography entries; the Kumar citation also contradicts the paper's 'first study of data attribution for online RL' novelty claim. (9) The Abstract's 'completely eliminates sample inefficiency' overstates the reported partial (20-82%) improvements. (10) A smaller text/table mismatch in the B.9 '29%-67%' runtime range vs the actual RT_peak max of 71.59%. The presence of two high-confidence findings (BipedalWalker round-count arithmetic, confidence 0.90; reference-policy contradiction, confidence 0.85) warrants the NEEDS_CORRECTION verdict. No evidence of figure duplication, fabrication of experimental results, or impossible statistical quantities was found; the RLHF runtime table (Table 6) arithmetic and the t-critical value 2.776 (t_{0.975,4}) are correct, and the RT_peak values in Table 5 recompute consistently from the reported per-round runtimes."
+}

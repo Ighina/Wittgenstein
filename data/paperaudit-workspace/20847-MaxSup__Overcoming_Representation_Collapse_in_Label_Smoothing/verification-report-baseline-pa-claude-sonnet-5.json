@@ -1,0 +1,110 @@
+{
+  "paper_id": "20847-MaxSup__Overcoming_Representation_Collapse_in_Label_Smoothing",
+  "title": "MaxSup: Overcoming Representation Collapse in Label Smoothing",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 3.1, Theorem 3.3",
+      "confidence": 0.98,
+      "supporting_evidence": "The displayed LLS formula includes an extra '- log sum_j e^{z_j}'. From Lemma 3.2 and the softmax identity, LLS = alpha(H(1/K,q) - H(y,q)) = alpha(z_gt - (1/K) sum_k z_k) exactly; the log-sum-exp cancels. Appendix B proves the same expression without the log-sum-exp. The theorem is algebraically wrong and inconsistent with Corollary 3.4.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20847-MaxSup__Overcoming_Representation_Collapse_in_Label_Smoothing::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 3.1, Eq. (5) and Table 1",
+      "confidence": 0.9,
+      "supporting_evidence": "Eq. (5) states both terms have coefficient alpha/K, but Table 1 isolates the components with alpha/M and alpha/N. These are not the actual decomposition terms, and if M=0 or N=0 (e.g., z_gt is the minimum or maximum logit) the ablation losses are undefined. Thus Table 1 does not implement the stated decomposition.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20847-MaxSup__Overcoming_Representation_Collapse_in_Label_Smoothing::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Section 3.1, Ablation Study on LS Components",
+      "confidence": 0.85,
+      "supporting_evidence": "The conclusion that LS's gains come solely from the regularization term and that the error-amplification term degrades accuracy is not supported by the table, because the isolated rows reweight the sums by M/N rather than using the actual LS coefficients alpha/K. The rows are different loss functions, not a controlled removal/addition of the true LS terms.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20847-MaxSup__Overcoming_Representation_Collapse_in_Label_Smoothing::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Section 4.2.1 vs Section 4.2.2",
+      "confidence": 0.85,
+      "supporting_evidence": "Section 4.2.1 claims all methods were re-tuned for optimal performance, but Section 4.2.2 says for OLS and Zipf-LS they 'apply the authors' official codebases and hyperparameters but do not replicate their complete training recipes' (e.g., OLS trains 250 epochs). This is a direct contradiction and makes the OLS/Zipf-LS comparisons potentially unfair.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20847-MaxSup__Overcoming_Representation_Collapse_in_Label_Smoothing::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Tables 4 and 10",
+      "confidence": 0.6,
+      "supporting_evidence": "In both tables, the ImageNet ResNet-101 baseline (75.96/76.00) is lower than the ResNet-50 baseline (76.41/76.44). Since ResNet-101 is deeper and should outperform ResNet-50 under a properly calibrated protocol, this indicates a flawed or unexplained baseline setup.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20847-MaxSup__Overcoming_Representation_Collapse_in_Label_Smoothing::baseline"
+    },
+    {
+      "error_category": "context_misalignment_incoherence",
+      "error_location": "Section 4.2.2, Long-Tailed Classification after Table 7",
+      "confidence": 0.95,
+      "supporting_evidence": "The paragraph begins with an orphaned fragment '0.9 percentage points.' with no preceding sentence. Additionally, the text says the comparison is 'Focal Loss, Focal Loss + LS, and Focal Loss + MaxSup', but Table 7 rows are labeled 'Focal Loss', 'Label Smoothing', and 'MaxSup', so the row labels do not match the described methods.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20847-MaxSup__Overcoming_Representation_Collapse_in_Label_Smoothing::baseline"
+    },
+    {
+      "error_category": "reference_background_fabrication",
+      "error_location": "Appendix H and Table 13",
+      "confidence": 0.85,
+      "supporting_evidence": "Table 13 labels 'Logit Normalization [3*]', but reference [3] is Chen et al., HSVA, not logit normalization; the method described is reference [38] (Wei et al.). Section H also lists norm-based methods as '[6, 38, 4]', but reference [6] is a label-smoothing NMT paper, not a norm-based method.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20847-MaxSup__Overcoming_Representation_Collapse_in_Label_Smoothing::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Section 4.4",
+      "confidence": 0.8,
+      "supporting_evidence": "The text claims 'Further quantitative Grad-CAM overlay metrics (e.g., precision and recall for target regions) confirm...', but no such quantitative metrics are reported anywhere in the paper. This is an unsupported reference to non-existent results.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20847-MaxSup__Overcoming_Representation_Collapse_in_Label_Smoothing::baseline"
+    },
+    {
+      "error_category": "evidence_data_integrity",
+      "error_location": "Section 4.1.1, Table 2",
+      "confidence": 0.75,
+      "supporting_evidence": "The text states 'Logit Penalty occasionally displays increased d_within and R^2 values', but Table 2 (and Table 14) show Logit Penalty's d_within (0.284 train, 0.314 val) is lower than the baseline (0.311, 0.331), not increased. Only R^2 is increased. The statement misreads the table.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20847-MaxSup__Overcoming_Representation_Collapse_in_Label_Smoothing::baseline"
+    },
+    {
+      "error_category": "context_misalignment_incoherence",
+      "error_location": "Appendix opening",
+      "confidence": 0.9,
+      "supporting_evidence": "The Appendix contains leftover template instructions addressed to authors ('Technical appendices with additional results... may be submitted... ZIP file below...') rather than paper content. This should be removed.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20847-MaxSup__Overcoming_Representation_Collapse_in_Label_Smoothing::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 10,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (claude-sonnet-5, taxonomy=paperaudit): 10 error(s) reported.",
+  "baseline": {
+    "model": "claude-sonnet-5",
+    "provider": "anthropic",
+    "taxonomy": "paperaudit",
+    "paper_chars": 83022,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 44,
+      "output_tokens": 41644,
+      "cache_read_input_tokens": 21632,
+      "cache_creation_input_tokens": 0
+    }
+  }
+}

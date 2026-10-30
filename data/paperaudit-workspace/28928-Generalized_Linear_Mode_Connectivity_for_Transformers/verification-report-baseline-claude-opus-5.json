@@ -1,0 +1,86 @@
+{
+  "paper_id": "28928-Generalized_Linear_Mode_Connectivity_for_Transformers",
+  "title": "Generalized Linear Mode Connectivity for Transformers",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Abstract vs. Conclusion",
+      "confidence": 1.0,
+      "supporting_evidence": "The Abstract states: 'Crucially, this generalization enables, for the first time, the discovery of low- and zero-barrier linear interpolation paths between all modern Transformer architectures, completely solving the alignment problem...' The Conclusion states: 'Our results demonstrate that the discrete neuron reordering approaches of prior work were already adequate, and the additional symmetry classes we explored provide only marginal improvements over standard permutation-based re-basin techniques.' These two statements directly contradict each other about the necessity and impact of richer symmetry classes. The Abstract claims the broader symmetries are crucial, while the Conclusion claims permutations alone suffice. The body of the paper (Table 2) shows huge gaps between permutation-only learned matching and the full method, further contradicting the Conclusion.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "28928-Generalized_Linear_Mode_Connectivity_for_Transformers::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Conclusion vs. Table 2 / Section 5",
+      "confidence": 1.0,
+      "supporting_evidence": "The Conclusion says: 'We introduced a unified framework for symmetry-aware model alignment that confirms permutation symmetries alone are sufficient for achieving linear mode connectivity in Transformers.' However, Table 2 shows that 'Learned matching (permutations)' has non-zero barriers (e.g., 0.45 on CIFAR-10, 0.29 on Tiny ImageNet, 1.60 on BookCorpus), while the full learned matching (using orthogonal/invertible symmetries) achieves zero barriers. Thus permutation alone is demonstrably insufficient to achieve LMC, directly contradicting the Conclusion.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "28928-Generalized_Linear_Mode_Connectivity_for_Transformers::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Equation (2) (Definition of multi-model barrier)",
+      "confidence": 1.0,
+      "supporting_evidence": "The multi-model barrier is defined as the infimum over the simplex: B[{θ_m}] = inf_{λ∈Δ^{M-1}} [ L[∑ λ_m θ_m] − ∑ λ_m L[θ_m] ]. A proper barrier should be a supremum (worst‐case deviation). Using the infimum means they report the best possible mixture rather than the worst‐case barrier, which defeats the purpose of measuring linear connectivity. This definition is mathematically incorrect for its intended use.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "28928-Generalized_Linear_Mode_Connectivity_for_Transformers::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Equation (3) (Weight matching objective for feed-forward layer)",
+      "confidence": 0.95,
+      "supporting_evidence": "The equation is written as argmin over permutation matrices P of ⟨W_ℓ^{(A)}, P W_ℓ^{(B)} O^⊤⟩_F + ⟨W_{ℓ+1}^{(A)}, O W_{ℓ+1}^{(B)} P^⊤⟩_F. However, the text states they want to 'maximize alignment' (similarity). Minimizing the Frobenius inner product would push the weights apart, not align them. The operation should be argmax or the objective should be negated.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "28928-Generalized_Linear_Mode_Connectivity_for_Transformers::baseline"
+    },
+    {
+      "error_category": "Experiment setup",
+      "error_location": "Appendix B.1 (Tiny ImageNet calibration)",
+      "confidence": 1.0,
+      "supporting_evidence": "The appendix states: 'Additionally, for Tiny ImageNet, we applied post-hoc temperature scaling to rescale the model logits and improve confidence calibration. This calibration procedure was applied only to our learned matching method to ensure optimal performance, while baseline methods were evaluated using uncalibrated logits for fair comparison.' Applying a calibration technique exclusively to the proposed method while leaving baselines uncalibrated makes the comparison unfair and invalidates the reported gains.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "28928-Generalized_Linear_Mode_Connectivity_for_Transformers::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Section 3.1 (Permutation symmetry class description)",
+      "confidence": 0.9,
+      "supporting_evidence": "The text lists softmax among elementwise operations: 'This symmetry is characteristic of elementwise operations such as GELU, sigmoid, softmax, tanh, where output values correspond directly to input positions.' Softmax is not elementwise; it depends on all input dimensions simultaneously via normalization. While softmax is permutation equivariant, it is not elementwise, so the classification is factually wrong and mischaracterizes the symmetry class.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "28928-Generalized_Linear_Mode_Connectivity_for_Transformers::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Introduction (last paragraph before contributions) and related implications",
+      "confidence": 1.0,
+      "supporting_evidence": "The paper claims: 'Our method achieves perfect zero-barrier connectivity in all cases, definitively proving that all neural networks exist in a single connected basin.' This is a severe overstatement from empirical results on a few Transformer variants; it does not constitute a proof, and the claim about 'all neural networks' is unsubstantiated. The same exaggerated tone appears in 'completely solving the alignment problem across any independently trained models regardless of positional encoding scheme or architectural details' (Abstract), which is not supported by the limited experiments.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "28928-Generalized_Linear_Mode_Connectivity_for_Transformers::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 7,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (claude-opus-5, taxonomy=default): 7 error(s) reported.",
+  "baseline": {
+    "model": "claude-opus-5",
+    "provider": "anthropic",
+    "taxonomy": "default",
+    "paper_chars": 76444,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 18681,
+      "output_tokens": 7102,
+      "cache_read_input_tokens": 0,
+      "cache_creation_input_tokens": 0
+    }
+  }
+}

@@ -1,0 +1,94 @@
+{
+  "paper_id": "20847-MaxSup__Overcoming_Representation_Collapse_in_Label_Smoothing",
+  "title": "MaxSup: Overcoming Representation Collapse in Label Smoothing",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Section 3.1, Theorem 3.3 (Equation 4)",
+      "confidence": 0.8,
+      "supporting_evidence": "Theorem 3.3 states 'L_LS ≈ α(z_gt − (1/K)∑z_k) − log∑_j e^{z_j}', but Appendix B's proof of this exact theorem derives 'L_LS = α(z_gt − (1/K)∑z_k)' with no log-sum-exp term (Eq. 18, and the subsequent derivation in Eqs. 19–26). The extra '−log∑e^{z_j}' term in the main-text theorem contradicts its own proof and is also inconsistent with Corollary 3.4, which is built from the term without the log-sum-exp component.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20847-MaxSup__Overcoming_Representation_Collapse_in_Label_Smoothing::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Table 1 vs. Corollary 3.4 (Equation 5)",
+      "confidence": 0.65,
+      "supporting_evidence": "Corollary 3.4 decomposes L_LS using a uniform coefficient α/K for both the regularization term (∑_{z_m<z_gt}) and the error-amplification term (∑_{z_n>z_gt}): L_LS = (α/K)∑(z_gt−z_m) + (α/K)∑(z_gt−z_n). However, Table 1 tests 'Regularization' as (α/M)∑(z_gt−z_m) and 'error amplification' as (α/N)∑(z_gt−z_n), using M and N (counts of logits below/above z_gt) instead of K in the denominator. This changes the scaling of each term relative to the theoretically derived decomposition, so the ablation in Table 1 does not actually isolate the two components as defined by Eq. (5), undermining the claimed direct correspondence between the theory and the ablation results.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20847-MaxSup__Overcoming_Representation_Collapse_in_Label_Smoothing::baseline"
+    },
+    {
+      "error_category": "Citation / attribution",
+      "error_location": "Section 4.3 ('Evaluation on Semantic Segmentation')",
+      "confidence": 0.85,
+      "supporting_evidence": "The text states 'We further investigate MaxSup's applicability to downstream tasks by evaluating its performance on semantic segmentation using the widely adopted MMSegmentation framework [6].' However, reference [6] in the bibliography is 'Yingbo Gao et al., Towards a better understanding of label smoothing in neural machine translation' — a paper about label smoothing in NMT, not the MMSegmentation toolbox. This is also the same reference number used earlier in the Introduction for NMT applications of LS ('neural machine translation [1, 6]'), confirming the segmentation-framework citation is misattributed.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20847-MaxSup__Overcoming_Representation_Collapse_in_Label_Smoothing::baseline"
+    },
+    {
+      "error_category": "Citation / attribution",
+      "error_location": "Appendix H, Table 13",
+      "confidence": 0.75,
+      "supporting_evidence": "Table 13 lists a row 'Logit Normalization [3*]' with accuracy 74.32. The surrounding text explicitly attributes this method and the 74.32% accuracy to reference [38] ('the method proposed in [38] aims to mitigate overconfidence via logit normalization... achieves an accuracy of 74.32%'). Reference [3] in the bibliography is 'Shiming Chen et al., HSVA: Hierarchical semantic-visual adaptation for zero-shot learning', which is unrelated to logit normalization. The table citation number does not match the reference actually discussed in text.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20847-MaxSup__Overcoming_Representation_Collapse_in_Label_Smoothing::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (figure-text)",
+      "error_location": "Section 4.1.1, discussion of Table 2",
+      "confidence": 0.55,
+      "supporting_evidence": "The text states 'Notably, MaxSup maintains d̄_within reductions similar to other methods, suggesting only marginal benefits in preserving intra-class statistics.' However, Table 2 shows MaxSup's d̄_within (0.293 train / 0.300 val) is substantially closer to the baseline (0.311/0.331) than LS (0.263/0.254), OLS (0.271/0.282), or Zipf-LS (0.261/0.293), indicating MaxSup preserves intra-class variation noticeably better than the other LS-based methods, not 'similarly'. This directly conflicts with the paper's central claim elsewhere (Abstract, Figure 1, Section 1) that MaxSup substantially restores intra-class variation.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20847-MaxSup__Overcoming_Representation_Collapse_in_Label_Smoothing::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Conclusion, 'Impact' paragraph",
+      "confidence": 0.8,
+      "supporting_evidence": "The Impact paragraph states 'we have not observed any additional adverse effects or trade-offs.' This directly contradicts the paper's own reported findings: Table 7 shows MaxSup fails on minority ('Low') classes in long-tailed classification (0.0% accuracy, same as baselines, explicitly called a 'fairness concern'); Table 8 shows MaxSup has worse NLL (1.770) than LS (1.476) on CIFAR-10-C; and the preceding paragraph of the same Conclusion section explicitly states 'some scenarios—such as severe class imbalance and out-of-distribution evaluation—highlight residual challenges and limitations.'",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20847-MaxSup__Overcoming_Representation_Collapse_in_Label_Smoothing::baseline"
+    },
+    {
+      "error_category": "Experiment setup",
+      "error_location": "Section 4.2.1 vs. Section 4.2.2",
+      "confidence": 0.55,
+      "supporting_evidence": "Section 4.2.1 claims: 'hyperparameters and training settings are re-tuned under each training recipe to ensure optimal performance for each method... This re-tuning guarantees that reported performance differences reflect method improvements rather than hyperparameter bias.' However, Section 4.2.2 states the opposite regarding OLS and Zipf-LS: 'we apply the authors' official codebases and hyperparameters but do not replicate their complete training recipes (e.g., OLS trains for 250 epochs... Zipf-LS uses 100 epochs...). Even under these modified settings, MaxSup remains robust.' This is a direct contradiction about whether baseline methods were fairly/fully tuned, undermining the fairness claim made in 4.2.1.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20847-MaxSup__Overcoming_Representation_Collapse_in_Label_Smoothing::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Section 4.2.2, Long-Tailed Classification discussion of Table 7",
+      "confidence": 0.4,
+      "supporting_evidence": "The text claims 'MaxSup achieves a better trade-off between many- and medium-shot accuracy,' but Table 7 shows this does not hold uniformly: for the test split at imbalance ratio 50, MaxSup's medium-shot accuracy (73.4) is lower than LS's (75.4), contradicting the generalized claim of a consistently better trade-off.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20847-MaxSup__Overcoming_Representation_Collapse_in_Label_Smoothing::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 8,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (claude-sonnet-5, taxonomy=default): 8 error(s) reported.",
+  "baseline": {
+    "model": "claude-sonnet-5",
+    "provider": "anthropic",
+    "taxonomy": "default",
+    "paper_chars": 83022,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 35692,
+      "output_tokens": 26402,
+      "cache_read_input_tokens": 0,
+      "cache_creation_input_tokens": 0
+    }
+  }
+}

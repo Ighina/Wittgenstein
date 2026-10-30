@@ -1,0 +1,95 @@
+{
+  "paper_id": "20777-Memory_Mosaics_at_scale",
+  "title": "Memory Mosaics at scale",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Section 2, Equation (3) to Equation (4) derivation",
+      "confidence": 0.95,
+      "supporting_evidence": "The paper claims that when all key vectors k_i share the same squared norm, Equation (3) becomes Equation (4). However, this derivation is incorrect. Starting from Eq. (3): exp(-β||k-k_i||²) = exp(-β(||k||² + ||k_i||² - 2k^T k_i)). If all k_i have the same norm C and k also has norm C, this becomes exp(-β(C + C - 2k^T k_i)) = exp(-2βC) · exp(2βk^T k_i). The constant exp(-2βC) cancels in the normalization, giving exp(2βk^T k_i), not exp(βk^T k_i) as shown in Eq. (4). The factor should be 2β, not β.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20777-Memory_Mosaics_at_scale::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Table 1 vs Table 2",
+      "confidence": 0.9,
+      "supporting_evidence": "Table 1 reports 'memory mosaics v2 large' performance on 13 benchmarks with an average of 52.2%. Table 2 reports the same model on the same 13 benchmarks (obqa through human eval+) with an average of 56.8%. These are claimed to be the same model on the same tasks but report different averages (52.2% vs 56.8%). The individual scores also differ: e.g., gsm8k is 27.4 in Table 1 but 32.4 in Table 2.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20777-Memory_Mosaics_at_scale::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Table 2",
+      "confidence": 0.85,
+      "supporting_evidence": "Table 2 shows 'Transformer large' with params 8.8B and average 57.1%, but the individual scores listed (45.8, 77.3, 72.3, 52.6, 80.8, 72.6, 79.2, 31.9, 49.3, 61.5, 32.4, 49.0, 38.3) average to approximately 57.1%. However, these same scores in Table 1 are reported with average 52.2%. The table appears to have copied scores from Table 1 but reports a different average.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20777-Memory_Mosaics_at_scale::baseline"
+    },
+    {
+      "error_category": "Statistical reporting",
+      "error_location": "Table 2, average calculation",
+      "confidence": 0.95,
+      "supporting_evidence": "Table 2 reports individual scores for 13 benchmarks for 'memory mosaics v2 large': 45.4, 78.0, 71.2, 51.8, 80.4, 73.1, 78.6, 30.9, 48.6, 62.0, 27.4, 48.2, 43.0. The arithmetic mean of these 13 values is (45.4+78.0+71.2+51.8+80.4+73.1+78.6+30.9+48.6+62.0+27.4+48.2+43.0)/13 ≈ 56.8. However, the same scores appear in Table 1 with a reported average of 52.2%, which is mathematically inconsistent.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20777-Memory_Mosaics_at_scale::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 5.2, Table 3 vs Table 4",
+      "confidence": 0.75,
+      "supporting_evidence": "Table 3 shows 'memory mosaics v2 large' trained on 4k context achieving 59.3% on 4k task-length. Table 4 shows the same model after fine-tuning on 32k context achieving 58.9% on 4k task-length. It's unusual that fine-tuning on longer context would decrease performance on the shorter 4k task (59.3% → 58.9%), though not impossible. This warrants verification but could be a real phenomenon.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20777-Memory_Mosaics_at_scale::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Abstract and Section 6",
+      "confidence": 0.8,
+      "supporting_evidence": "The abstract claims 'These improvements cannot be easily replicated by simply increasing the training data for transformers' and that Memory Mosaics v2 'completely eliminat[es] the need for additional training data that transformers require.' However, Section 6 shows that transformers trained on 8T tokens do match Memory Mosaics v2 on semantic label in-context learning (Figure 6) and approach its performance on new-knowledge storage (Table 5: 46.9% vs 53.4%). The claim of 'completely eliminating' is overstated given that 8× more data does substantially close the gap in several tasks.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20777-Memory_Mosaics_at_scale::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 4 vs Appendix C",
+      "confidence": 0.7,
+      "supporting_evidence": "Section 4 states both models are 'trained on 4,096 context length, followed by a fine-tuning process on 32,768 context length.' Appendix C Table 12 shows a model 'trained on 4k context length, then evaluated on 32k context length without any fine-tuning,' suggesting some models were NOT fine-tuned on 32k. The training protocol description is inconsistent across sections.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20777-Memory_Mosaics_at_scale::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Section 3.2, Equation (8)",
+      "confidence": 0.65,
+      "supporting_evidence": "Equation (8) defines λ_T = exp(-||W_λ x_T||), which is always positive and bounded between 0 and 1. However, the recurrence ḱ_T = g_T k̃_T + λ_T ḱ_{T-1} uses λ_T as a decay factor. For this to be a proper exponential moving average or gating mechanism, the coefficients should typically sum to 1 or have a clear normalization. The equation doesn't show normalization of g_T and λ_T, which could lead to unbounded growth or decay of ḱ_T over time.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20777-Memory_Mosaics_at_scale::baseline"
+    },
+    {
+      "error_category": "Figure / table error",
+      "error_location": "Table 1",
+      "confidence": 0.9,
+      "supporting_evidence": "Table 1 lists 19 benchmarks in the caption but only shows 19 columns of results. However, counting the column headers: obqa, arc easy, wino-grande, arc challenge, piqa, boolq, hellaswag, nq, siqa, tqa, gsm8k, mmlu alt, human eval+, squad, bbh, math, mbpp, race middle, race high = 19 benchmarks. The 'avg' column makes 20 total columns. The table structure is correct, but the individual values need verification against the claimed averages.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20777-Memory_Mosaics_at_scale::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 9,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (claude-sonnet-4-5-20250929, taxonomy=default): 9 error(s) reported.",
+  "baseline": {
+    "model": "claude-sonnet-4-5-20250929",
+    "taxonomy": "default",
+    "paper_chars": 74240,
+    "truncated": false
+  }
+}

@@ -1,0 +1,166 @@
+{
+  "paper_id": "11899-Class-wise_Balancing_Data_Replay_for_Federated_Class-Incremental_Learning",
+  "title": "Class-wise Balancing Data Replay for Federated Class-Incremental Learning",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Section 4.1, Eqs. (3)–(5)",
+      "confidence": 0.99,
+      "supporting_evidence": "The paper explicitly defines a full SVD with U^(i)' ∈ R^{n×n}, then defines leverage as the squared norm of a row of U_k^(i), which retains all n columns. Every row of a square orthogonal matrix U has unit norm, so τ_k^{i,j}=||e_{i,j}^T U_k^(i)||_2^2=1 for every sample. Consequently, the stated scores cannot measure sample importance or representativeness; the proposed sampling is uniform. Nontrivial leverage scores require a truncated/rank-r singular-vector matrix, which is neither defined nor used.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "11899-Class-wise_Balancing_Data_Replay_for_Federated_Class-Incremental_Learning::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Section 4.1, Eq. (6)",
+      "confidence": 0.99,
+      "supporting_evidence": "Eq. (6) calls p a global sampling distribution, but normalizes each p_k^{i,j} by Σ_{j'=1}^{n_k^i} τ_k^{i,j'}, i.e., only over samples on client k. Thus each client's probabilities sum to 1 and the concatenated vector over K clients sums to K, not 1. It is not a valid global probability distribution for the subsequent claimed i.i.d. sampling over all clients.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "11899-Class-wise_Balancing_Data_Replay_for_Federated_Class-Incremental_Learning::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Section 4.1, Eqs. (1)–(5), and Algorithm 1",
+      "confidence": 0.98,
+      "supporting_evidence": "Multiplication by a dense client-specific left orthogonal matrix P_k mixes all sample rows: each row of X_k'=P_k X_k Q is a linear combination of multiple original samples, not the feature of one sample. Therefore, a row leverage score computed at the server corresponds to an encrypted mixed row and cannot be mapped to an original sample ID for the server to return. Yet the method says the server sends 'the selected sample indices' back to clients. This mapping is unavailable under the stated transformation. In addition, the text says clients compute leverage scores after the server obtains U, but no transmission of U back to clients is specified; Algorithm 1 instead says the server computes the sampling.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "11899-Class-wise_Balancing_Data_Replay_for_Federated_Class-Incremental_Learning::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Algorithm 1, lines 6–18",
+      "confidence": 0.96,
+      "supporting_evidence": "For task s=1, the algorithm only trains using Eq. (8); pseudo-features are computed/uploaded only in the s≠1 branch. Nevertheless, at the final round it instructs the server to aggregate pseudo-features and sample IDs. At task 2, line 9 attempts to store historical data corresponding to globally sampled IDs, but the algorithm has never sampled IDs from task 1. Thus the stated procedure cannot populate a replay buffer for the first historical task.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "11899-Class-wise_Balancing_Data_Replay_for_Federated_Class-Incremental_Learning::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Section 4.1, paragraph following Eq. (6)",
+      "confidence": 0.94,
+      "supporting_evidence": "The rescaling '(1/√(n_s·p_x))e_x' is described as ensuring unbiased estimation during aggregation, but the operational method only communicates sample IDs and retains/replays the corresponding raw examples. Neither Algorithm 1 nor the training losses applies this rescaling to replayed features, sample weights, gradients, or aggregation. Hence the cited sketching-style unbiasedness adjustment is mathematically disconnected from the actual replay procedure.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "11899-Class-wise_Balancing_Data_Replay_for_Federated_Class-Incremental_Learning::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Abstract; Introduction; Section 4.1; conclusion",
+      "confidence": 0.96,
+      "supporting_evidence": "The paper repeatedly claims class-balanced sampling, but the defined sampling score uses only unlabelled feature-matrix singular vectors/leverage scores. There is no class-conditioned score, class quota, stratification, rejection rule, or balancing constraint anywhere in Eqs. (1)–(6) or Algorithm 1. Even if leverage scores were nontrivial, they prioritize geometric influence, not equal class counts. The claimed class-wise balancing does not follow from the stated method.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "11899-Class-wise_Balancing_Data_Replay_for_Federated_Class-Incremental_Learning::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Sections 4.2 and 4.3, Eqs. (7) and (9)",
+      "confidence": 0.95,
+      "supporting_evidence": "Eq. (7) applies CE to separate Softmax(z_old/τ_old) and Softmax(z_new/τ_new) distributions, whereas Eq. (9) applies one softmax after concatenating scaled old and new logits. These are different objectives: Eq. (7) excludes old/new classes from each other's softmax denominators while Eq. (9) includes them. They also use incompatible normalizations: Eq. (7) divides both sums by N_old+N_new, while Eq. (9) separately divides by N_old and N_new. The statement that Eq. (7)'s 'separate normalization' clarifies the training objective is therefore false.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "11899-Class-wise_Balancing_Data_Replay_for_Federated_Class-Incremental_Learning::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Abstract and Sections 4.2–4.3",
+      "confidence": 0.91,
+      "supporting_evidence": "The abstract calls TTS an adaptive class- and instance-level mechanism based on 'local task dynamics.' The actual equations define only four scalar parameters τ_old, τ_new, ω_old, and ω_new, shared by all old or new samples. Implementation details state these are selected from fixed grids. No per-instance weight, class-specific temperature, or adaptive update rule is supplied.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "11899-Class-wise_Balancing_Data_Replay_for_Federated_Class-Incremental_Learning::baseline"
+    },
+    {
+      "error_category": "Figure / table error",
+      "error_location": "Tables 2 and 3",
+      "confidence": 0.99,
+      "supporting_evidence": "The TinyImageNet β=0.1 column is blank for every baseline in Table 2 but reports FedCBDR=18.35±1.0; Table 3 leaves the entire TinyImageNet β=0.1 column blank, including FedCBDR. Thus the claimed comparison under all listed heterogeneity settings is not provided. Table 2's caption also says best values are bolded, but the sole reported 18.35 value in that column is not bolded.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "11899-Class-wise_Balancing_Data_Replay_for_Federated_Class-Incremental_Learning::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Section 5.2, final bullet",
+      "confidence": 0.93,
+      "supporting_evidence": "The text states that FedCBDR 'consistently achieves superior performance' over Re-Fed under equal memory budget. The reported tables do not establish equal replay conditions: the method description is internally unclear whether M is total memory or per-task memory, Table 5 calls M a memory size, while Appendix Table 8 calls it 'M per task.' Moreover, the class-balancing mechanism is not specified in a way that could support the asserted causal explanation.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "11899-Class-wise_Balancing_Data_Replay_for_Federated_Class-Incremental_Learning::baseline"
+    },
+    {
+      "error_category": "Citation / attribution",
+      "error_location": "Section 5.8, Figure 6 citation '[59, 60, 61, 62, 63]'",
+      "confidence": 0.99,
+      "supporting_evidence": "The paper attributes Grad-CAM visualizations to references [59–63], but none of those references is the Grad-CAM paper. They concern federated feature alignment, federated personalization, federated debiasing, visual-semantic graph classification, and adversarial cross-modal retrieval. The canonical Grad-CAM work (Selvaraju et al., ICCV 2017) is absent. These citations do not support the stated method.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "11899-Class-wise_Balancing_Data_Replay_for_Federated_Class-Incremental_Learning::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (figure-text)",
+      "error_location": "Appendix A.1.2, Figure 7 caption",
+      "confidence": 0.98,
+      "supporting_evidence": "A.1.2 says Figure 7 contains performance-evolution plots for six methods over multiple datasets, heterogeneity values, and a 10-client setting. However, Figure 7's caption says it is a comparison of per-class replay-buffer distributions between FedCBDR and Re-Fed on CIFAR100 with β=0.5, a 10-task split, and 5 clients. That description instead corresponds to the following A.1.3/Figure 8 topic and directly contradicts the surrounding text.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "11899-Class-wise_Balancing_Data_Replay_for_Federated_Class-Incremental_Learning::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (figure-text)",
+      "error_location": "Appendix A.1.3, text describing Figure 8",
+      "confidence": 0.97,
+      "supporting_evidence": "The text claims that in task 1, Re-Fed has classes 10 and 18 at nearly 100 samples and class 11 at fewer than 10. The displayed Figure 8 data table gives approximately 100 for class 10, approximately 60 for class 18, and approximately 30 for class 11. The numerical example offered as evidence for imbalance does not match the reported figure.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "11899-Class-wise_Balancing_Data_Replay_for_Federated_Class-Incremental_Learning::baseline"
+    },
+    {
+      "error_category": "Figure / table error",
+      "error_location": "Appendix A.1.6",
+      "confidence": 0.95,
+      "supporting_evidence": "A.1.6 repeatedly refers to 'Table 9' for per-task final-model results, but no Table 9 appears in the supplied paper. The section makes specific claims such as LANDER obtaining 1.37% on CIFAR10 Task 1 and 57.00% on CIFAR100 Task 5 without presenting the referenced table. The later claims about 50/100-client asynchronous experiments likewise have no identifiable results table or complete experimental specification.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "11899-Class-wise_Balancing_Data_Replay_for_Federated_Class-Incremental_Learning::baseline"
+    },
+    {
+      "error_category": "Figure / table error",
+      "error_location": "Appendix Table 11, communication-cost portion",
+      "confidence": 0.99,
+      "supporting_evidence": "The table labels the communication rows as n=100 samples/client, d=512, but reports 3.906 MB upload/client. For 100 float32 features of dimension 512, the size is 100×512×4 bytes = 0.1953 MiB, not 3.906 MB. The reported 3.906 MiB equals 2,000×512×4 bytes, matching the unrelated n=2000 in the computation portion. The 128- and 32-dimensional rows have the same factor-of-20 error.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "11899-Class-wise_Balancing_Data_Replay_for_Federated_Class-Incremental_Learning::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Appendix, complexity paragraph following Table 11",
+      "confidence": 0.94,
+      "supporting_evidence": "The paper claims client iSVD costs O(n_k d^2) and server SVD O(Nd^2), but its stated encryption explicitly multiplies a dense P_k∈R^{n_k×n_k} by X_k∈R^{n_k×d}. This alone costs O(n_k^2d) in general, in addition to creating/generating P_k. Further, the paper explicitly requests a full U∈R^{N×N}; producing/storing that matrix requires O(N^2) memory and cannot be characterized solely by O(Nd^2) without assuming a thin/truncated SVD, contrary to Eq. (3).",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "11899-Class-wise_Balancing_Data_Replay_for_Federated_Class-Incremental_Learning::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Abstract and Section 4.1 privacy claims",
+      "confidence": 0.91,
+      "supporting_evidence": "The paper calls PXQ 'encrypted and compressed pseudo features' and asserts privacy preservation, but specifies only arbitrary orthogonal transformations, no encryption primitive, secret-key distribution, threat model, security argument, compression operation, or leakage analysis. Orthogonal transformations preserve substantial feature geometry and singular information. The assertion that this is encrypted/privacy-preserving is unsupported by the stated protocol and should not be presented as an established privacy guarantee.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "11899-Class-wise_Balancing_Data_Replay_for_Federated_Class-Incremental_Learning::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 17,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (gpt-5.6-terra, taxonomy=default): 17 error(s) reported.",
+  "baseline": {
+    "model": "gpt-5.6-terra",
+    "provider": "openai",
+    "taxonomy": "default",
+    "paper_chars": 81830,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 22639,
+      "output_tokens": 5407,
+      "cache_read_input_tokens": null,
+      "cache_creation_input_tokens": null
+    }
+  }
+}

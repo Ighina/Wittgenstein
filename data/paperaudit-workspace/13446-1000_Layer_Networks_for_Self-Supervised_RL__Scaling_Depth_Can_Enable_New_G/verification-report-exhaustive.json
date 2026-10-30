@@ -1,0 +1,78 @@
+{
+  "paper_id": "13446",
+  "title": "1000 Layer Networks for Self-Supervised RL: Scaling Depth Can Enable New Goal-Reaching Capabilities",
+  "paper_category": "cs.LG",
+  "predicted_errors": [
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Section 4.4 (What Matters for CRL Scaling)",
+      "confidence": 0.9,
+      "supporting_evidence": "Section 4.4 states 'the parameter count scales linearly with width but quadratically with depth'. For an MLP with L layers of width W, the parameter count is proportional to L*W^2, i.e., quadratic in width and linear in depth. The stated scaling law is therefore reversed. This is confirmed by the paper's own example ('a network with 4 MLP layers and 2048 hidden units has roughly 35M parameters, while one with a depth of 32 and 256 hidden units has only around 2M' — the 2048-width network costs ~17x more parameters than the 32-depth network), and by Appendix B.6, which correctly states 'they scale quadratically with width but only linearly with depth'. The reversed statement in Section 4.4 contradicts the paper's own computational-efficiency argument (which requires depth to be the linear, cheaper axis).",
+      "verifier_name": "verify-math",
+      "snippet_id": "13446::SECTION::7"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 4.4 (Deep Networks Unlock Batch Size Scaling) / Figure 7",
+      "confidence": 0.8,
+      "supporting_evidence": "The Figure 7 caption and the subsection title assert that deeper networks unlock batch size scaling: 'We find that as depth increases from 4 to 64 in Humanoid, larger networks can effectively leverage batch size scaling to achieve further improvements.' The body text of the same section directly refutes this: 'Figure 7 shows only marginal or inconsistent improvements from increasing batch size, even for larger depth models. While larger networks can handle larger batches without degradation, the overall benefit of batch size scaling remains uncertain and requires further investigation.' The section title/caption claim a finding that the accompanying text explicitly negates, making the paper's stated conclusion on batch-size scaling self-contradictory.",
+      "verifier_name": "verify-text",
+      "snippet_id": "13446::SECTION::8"
+    },
+    {
+      "error_category": "Data Inconsistency (figure-text)",
+      "error_location": "Figure 1 caption",
+      "confidence": 0.7,
+      "supporting_evidence": "Figure 1's caption states the gains range 'from doubling performance to 50x improvements on Humanoid-based tasks'. Table 1 reports Humanoid Big Maze improving 600x (0.06 -> 40) and Ant Hardest Maze improving only 1.7x (215 -> 360). Both bounds of the caption's stated range are wrong: the true maximum is 600x (not 50x) and the true minimum is 1.7x (below 'doubling'). The caption materially understates the reported range of improvements.",
+      "verifier_name": "verify-vision",
+      "snippet_id": "13446::FIGURE::0"
+    },
+    {
+      "error_category": "Data Inconsistency (text-table)",
+      "error_location": "Section 4.2 (Scaling Depth in Contrastive RL)",
+      "confidence": 0.62,
+      "supporting_evidence": "Section 4.2 claims 'over 50x gains in humanoid-based tasks'. Table 1 reports Humanoid = 42x (12.6 -> 530) and Humanoid U-Maze = 40x (3.2 -> 130), both below 50x; only Humanoid Big Maze (600x) exceeds 50x. The claim overstates the gains for two of the three humanoid-based tasks in the table.",
+      "verifier_name": "verify-statistical",
+      "snippet_id": "13446::SECTION::5"
+    },
+    {
+      "error_category": "Data Inconsistency (figure-figure)",
+      "error_location": "Figure 12 (Section 4.2, Section 4.4, Appendix A.1)",
+      "confidence": 0.6,
+      "supporting_evidence": "Figure number 12 is assigned to three different figures. Section 4.2 references 'In Figure 12, we present results on the same 10 environments, but compared against SAC, SAC+HER, TD3+HER, GCBC, and GCSL'. Section 4.4 presents 'Figure 12: Testing the limits of scale' showing the 256/1024-layer Humanoid scaling results. Appendix A.1 presents yet another 'Figure 12: Scaled CRL (ours) outperforms baselines CRL (original), SAC, SAC+HER, TD3+HER, GCSL, and GCBC'. The duplicate numbering makes the cross-references in the text ambiguous.",
+      "verifier_name": "verify-vision",
+      "snippet_id": "13446::FIGURE::11"
+    },
+    {
+      "error_category": "Statistical reporting",
+      "error_location": "Figure 6 (Actor vs. Critic scaling data)",
+      "confidence": 0.55,
+      "supporting_evidence": "In the Figure 6 data, the critic-depth-16 row is anomalously low in two environments: Humanoid (15, 17, 20, 22, 25) is nearly identical to the critic-depth-4 row (18, 19, 21, 23, 25) and far below critic-8 (622-670) and critic-32 (450-480); Arm Push Easy critic-16 (170, 195, 210, 230, 250) is far below critic-8 (802-860) and critic-32 (800-839). This conflicts with Section 4.3's claim that depth 16 is a critical depth at which the Humanoid agent learns to walk upright. The systematic collapse at exactly critic depth 16 in two environments suggests a possible data-entry error or mislabeled row.",
+      "verifier_name": "verify-statistical",
+      "snippet_id": "13446::FIGURE::5"
+    },
+    {
+      "error_category": "Data Inconsistency (table-table)",
+      "error_location": "Table 3 vs Table 4 (wall-clock time, Humanoid U-Maze)",
+      "confidence": 0.55,
+      "supporting_evidence": "Table 3 reports Humanoid U-Maze wall-clock time of 8.72±0.01 h at depth 4 and 46.74±0.04 h at depth 64, while Table 4 reports 3.23±0.001 h at depth 4 and 17.33±0.003 h at depth 64 for the same environment and configuration. The two tables differ by roughly 2.7x. Additionally, Table 4's depth 128-1024 entries (55.00, 110.00, 220.00, 440.00) double exactly, which is suspicious for measured runtimes. Unless Table 4 measures a different quantity than Table 3 (which the caption 'Total wall-clock time ... for training from Depth 4 up to Depth 1024' does not clearly establish), the wall-clock numbers are internally inconsistent.",
+      "verifier_name": "verify-statistical",
+      "snippet_id": "13446::TABLE::6"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 68,
+    "snippets_verified": 68,
+    "errors_detected": 7,
+    "verifier_usage": {
+      "text": 32,
+      "statistical": 10,
+      "vision": 22,
+      "math_equation": 4,
+      "citation": 6,
+      "cross_section_consistency": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "The paper was segmented into 68 snippets and routed to specialist verifiers (math, statistical, vision, text, citation, and cross-section consistency) in exhaustive mode with lenient strictness. Seven findings were detected. The most serious (confidence 0.90) is a mathematical error in Section 4.4: the claim that 'the parameter count scales linearly with width but quadratically with depth' is reversed — for an MLP, parameters scale quadratically with width and linearly with depth, as the paper's own example (4 layers x 2048 units ≈ 35M vs 32 layers x 256 units ≈ 2M) and Appendix B.6 confirm. A second high-confidence finding (0.80) is an internal contradiction in Section 4.4: the Figure 7 caption and section title assert that deeper networks unlock batch-size scaling for further improvements, while the body text states that batch-size increases yield only marginal/inconsistent improvements whose overall benefit 'remains uncertain'. Medium-confidence findings concern misstated improvement ranges (Figure 1 caption claims gains range 'from doubling to 50x' while Table 1 shows a 600x improvement for Humanoid Big Maze and a 1.7x improvement for Ant Hardest Maze; Section 4.2 claims 'over 50x gains in humanoid-based tasks' while two of three humanoid tasks are below 50x), duplicate Figure 12 numbering across Sections 4.2, 4.4, and Appendix A.1, anomalously low critic-depth-16 rows in the Figure 6 actor-critic ablation that conflict with the paper's claim that depth 16 is a critical depth for Humanoid, and inconsistent wall-clock times between Table 3 and Table 4 for the same Humanoid U-Maze configuration. Citation verification confirmed the checked references (Eysenbach et al. 2022 CRL, Chang et al. 2018 residual norms) exist and support their attributions. Because at least one finding reaches confidence >= 0.85, the paper is assigned NEEDS_CORRECTION."
+}

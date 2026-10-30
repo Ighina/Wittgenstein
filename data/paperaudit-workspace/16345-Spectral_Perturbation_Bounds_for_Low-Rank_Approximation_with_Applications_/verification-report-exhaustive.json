@@ -1,0 +1,180 @@
+{
+  "paper_id": "16345",
+  "title": "Spectral Perturbation Bounds for Low-Rank Approximation with Applications to Privacy",
+  "paper_category": "cs.LG",
+  "predicted_errors": [
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 4 (Empirical results): 'Adult dataset (n=14)' vs 'Adult (n=6, p=4)' vs '6 × 6 Adult matrix'",
+      "confidence": 0.95,
+      "supporting_evidence": "The same dataset is reported with two incompatible dimensions within Section 4: the Setting paragraph states 'the Adult dataset (n=14)' with p=4; the gap check states 'For Adult (n=6, p=4), we find δ_p ≈ 42.18 > 8√6 ≈ 19.6' (computing with n=6); and the Result paragraph refers to 'the 6 × 6 Adult matrix'. Since A := M^T M, n is the matrix dimension, and no described preprocessing step (column centering/whitening, PCA pre-projection to 95% energy) is stated to reduce 14 attributes to 6. The gap verification and the matrix-size description use n=6, directly contradicting the n=14 dataset description in the same section.",
+      "verifier_name": "verify-cross-section-consistency",
+      "snippet_id": "16345::SECTION::4"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Appendix B, Example B.1 (rank-1 rotation in R^2)",
+      "confidence": 0.95,
+      "supporting_evidence": "Example B.1 claims 'the change-in-error is zero: ‖A − A_p‖ = ‖Ã − Ã_p‖ = 0' while ‖Ã_p − A_p‖ = |sin θ|. But the paper's own change-in-error metric (Introduction; Section B) is |‖A − A_p‖ − ‖A − Ã_p‖|. With A = diag(1,0), p = 1, Ã = R_θ A R_θ^T = uu^T for u = (cos θ, sin θ): A_p = A so ‖A − A_p‖ = 0, yet ‖A − Ã_p‖ = ‖diag(1,0) − uu^T‖. The matrix diag(1,0) − uu^T has trace 0 and determinant −sin²θ, so its eigenvalues are ±|sin θ| and its spectral norm is |sin θ|. Hence the change-in-error equals |0 − |sin θ|| = |sin θ| ≠ 0 — it matches the spectral deviation ‖Ã_p − A_p‖ rather than remaining small/zero. The example substitutes ‖Ã − Ã_p‖ (residual of Ã under its own best approximation) for the metric's ‖A − Ã_p‖ (residual of A under the perturbed approximation), so its stated conclusion is false under the paper's own definition.",
+      "verifier_name": "verify-math",
+      "snippet_id": "16345::EQUATION::20"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Proof of Theorem D.1 (Appendix D.1): 'Since p < n, then k + 1 > n − (p − k) + 1'",
+      "confidence": 0.95,
+      "supporting_evidence": "The proof states 'Since p < n, then k + 1 > n − (p − k) + 1 and hence k + 1 ∉ {π(1),…,π(p)}'. Algebra: n − (p − k) + 1 = n − p + k + 1, and k + 1 > n − p + k + 1 ⟺ 0 > n − p ⟺ p > n. Under the proof's own assumption p < n, the displayed inequality is false in every instance (e.g., n=5, p=3, k=2: 3 > 5 is false); the correct relation is k + 1 < n − (p − k) + 1. The conclusion k + 1 ∉ {π(1),…,π(p)} happens to remain true for the correct reason (k+1 lies strictly between the positive block {1,…,k} and the negative block {n−(p−k)+1,…,n} when p ≤ n−1), so the theorem survives, but the proof line contains a reversed-inequality algebraic error.",
+      "verifier_name": "verify-math",
+      "snippet_id": "16345::PROOF::0"
+    },
+    {
+      "error_category": "Citation/reference error",
+      "error_location": "References [47]–[50] cited in the Introduction but absent from the bibliography",
+      "confidence": 0.98,
+      "supporting_evidence": "The text cites [47] ('further discussed in the recent survey [47]'), [48] and [49] ('the recursive eigenspace perturbation technique introduced in [38] and further refined in [48, 49]'), and [50] ('This connection was first observed in the unpublished manuscript [50]'). The bibliography (lines 349–439) contains only entries [1]–[46], ending with Weyl [46]. Citations [47], [48], [49], and [50] have no corresponding bibliography entries — four dangling citations.",
+      "verifier_name": "verify-citation",
+      "snippet_id": "16345::SECTION::2"
+    },
+    {
+      "error_category": "Citation/reference error",
+      "error_location": "References [44] and [45] — duplicate Wainwright entry",
+      "confidence": 0.95,
+      "supporting_evidence": "References [44] ('Martin J. Wainwright. High-dimensional statistics: A non-asymptotic viewpoint, volume 47. CUP, 2019') and [45] ('M. J. Wainwright. High-Dimensional Statistics: A Non-Asymptotic Viewpoint. Cambridge Series in Statistical and Probabilistic Mathematics, volume 48. CUP, 2019') are the same book cited twice, differing only in volume number, capitalization, and author-name format. Web search confirms exactly one such book exists (Cambridge Series in Statistical and Probabilistic Mathematics, Series Number 48, ISBN 9781108498029). Both numbers are cited in the text ([44] in Section 2, [45] in the Introduction), so one work appears twice in the bibliography.",
+      "verifier_name": "verify-citation",
+      "snippet_id": "16345::SECTION::7"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Appendix F (Perturbation of matrix functionals), estimate of M_2",
+      "confidence": 0.9,
+      "supporting_evidence": "Appendix F bounds M_2 ≤ ‖E‖·|x_1 − x_0|/T^2 ≤ ‖E‖·λ_1/(4λ_1^2) = ‖E‖/(4λ_1), i.e. it claims |x_1 − x_0| ≤ λ_1. But x_1 − x_0 = 2λ_1 − λ_p + δ_p/2, and since λ_p ≤ λ_1 and δ_p/2 ≥ 0, x_1 − x_0 ≥ λ_1, with equality only when δ_p = 0, which the theorem's gap condition excludes. The inequality is reversed (e.g., λ_1 = 10, λ_p = 1, λ_{p+1} = 0 gives x_1 − x_0 = 19.5 > λ_1). The correct bound is |x_1 − x_0| ≤ 2λ_1, giving M_2 ≤ ‖E‖/(2λ_1). With the corrected constant the final estimate (2π‖E‖/δ_p + (π+1)‖E‖/λ_1 ≤ 4π‖E‖/δ_p) still holds because δ_p ≤ λ_1, so Theorem 2.3 survives, but the printed arithmetic chain is invalid. (Additionally, the justification 'λ_1 > δ_p for any PSD matrix' fails when λ_p = λ_1 and λ_{p+1} = 0, e.g. A = diag(1,0,0), p = 1; only λ_1 ≥ δ_p is always true.)",
+      "verifier_name": "verify-math",
+      "snippet_id": "16345::EQUATION::57"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Lemma 3.1 vs Theorems 2.1/2.2/2.3 — mutually inconsistent gap conditions",
+      "confidence": 0.9,
+      "supporting_evidence": "Three incompatible gap conditions govern the same lemma/theorem chain. Lemma 3.1 states the hypothesis δ_p > 5‖E‖ and calls it 'necessary', but its own proof (lines 208–213) derives the conclusion from 'our gap assumption that 4‖E‖ < δ_p', using min_{z∈Γ,i}|z − λ_i| ≥ δ_p/2 ≥ 2‖E‖ — which requires only δ_p ≥ 4‖E‖. The Section 3 proof sketch invokes '4‖E‖ ≤ δ_p', and Theorems 2.1/2.2/2.3 are stated under 4‖E‖ < δ_p / 4‖E‖ ≤ δ_p. Theorems 2.1–2.3 rely on Lemma 3.1, yet their hypotheses (4‖E‖) are weaker than the lemma's stated condition (5‖E‖); Theorem 2.1 even asserts 'the case 4‖E‖ = δ_p requires separate analysis' while Theorem 2.2's proof applies Lemma 3.1 under 4‖E‖ ≤ δ_p. The paper never reconciles the versions, so the proof chain does not go through as literally written.",
+      "verifier_name": "verify-cross-section-consistency",
+      "snippet_id": "16345::LEMMA::0"
+    },
+    {
+      "error_category": "Citation/reference error",
+      "error_location": "Reference [41] cited for '‖E‖ = (2+o(1))√n with high probability' (Sections 2 and 4)",
+      "confidence": 0.9,
+      "supporting_evidence": "Reference [41] is Sabine Van Huffel and Joos Vandewalle, 'On the accuracy of total least squares and least squares techniques in the presence of errors on all data', Automatica 25(5):765–769, 1989 — a numerical-analysis paper on TLS vs LS solution accuracy. Web search confirms it contains no statement about the spectral norm of Wigner/random matrices. The claim 'For Wigner noise… ‖E‖ = (2+o(1))√n with high probability' is properly supported by the co-cited [43] (Vu, Combinatorica 2007) and, elsewhere in the paper, [40] (van Handel, TAMS 2017), but [41] does not support it. The same mismatched citation recurs at line 277.",
+      "verifier_name": "verify-citation",
+      "snippet_id": "16345::SECTION::3"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Abstract ('near-perfect tracking' / 'essentially tight') vs Appendix C Table 2",
+      "confidence": 0.85,
+      "supporting_evidence": "The abstract claims 'Extensive empirical results on real-world datasets definitively confirm that our bounds achieve near-perfect tracking of the actual spectral error under all tested perturbation regimes … essentially tight in practice.' The paper's own Appendix C (Table 2) reports the ratio 'our bound/true error' = 87.02–90.17 across ALL rows for the Alon colon-cancer matrix, including the within-gap regimes ‖E‖/δ_p = 0.05–0.20 where Theorem 2.1's conditions hold — a bound roughly 88× above the actual spectral error (nearly two orders of magnitude), which the Appendix text calls 'remarkably stable'. A bound ~88× loose contradicts 'near-perfect tracking' and 'essentially tight'; Section 4's 'within a factor of 2' claim is scoped to Census/KDD/Adult and does not rescue the abstract's universal claim.",
+      "verifier_name": "verify-cross-section-consistency",
+      "snippet_id": "16345::SECTION::1"
+    },
+    {
+      "error_category": "Statistical reporting",
+      "error_location": "Section 4: 'We exclude 12 outlier trials (1.3%)'",
+      "confidence": 0.8,
+      "supporting_evidence": "The text states 'We exclude 12 outlier trials (1.3%)'. The pair (12 trials, 1.3%) implies 12/0.013 ≈ 923 total trials, but the stated design is 100 independent trials × 20 noise levels × 2 noise models × 3 real datasets = 12,000 trials (16,000 including the synthetic n=1200 matrix). 12/12,000 = 0.1%, not 1.3% (1.3% of 12,000 is 156 trials). No configuration in the described design yields ≈923 trials, so the reported outlier count and percentage are internally incoherent, and the '98.7% within factor 2' / '87.3% within factor 1.5' percentages cannot be correct for the stated trial total.",
+      "verifier_name": "verify-statistical",
+      "snippet_id": "16345::SECTION::4"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Table 1 vs Section 1/2 text on the gap condition of prior work [29, 30]",
+      "confidence": 0.8,
+      "supporting_evidence": "The paper describes the gap condition of [29, 30] inconsistently. Section 1 (line 38) says [29, 30] obtain their bound under 'δ_p := λ_p − λ_{p+1} ≥ 4‖E‖'; Section 2 (line 62) says 'Our assumption 4‖E‖ < δ_p aligns with standard conditions in prior work, including [29, 30]'. But Table 1 lists M–V [30] with assumption 'δ_p > 2‖E‖, λ_1 < n^{50}' and M–V [29] with 'δ_i > 4‖E‖ ∀ 1 ≤ i ≤ p'. The same cited bound family is assigned different gap thresholds (4‖E‖ vs 2‖E‖) across table and text, and 'δ_i > 4‖E‖ for all i ≤ p' is not the same condition as 'δ_p ≥ 4‖E‖'. This is an internal numeric contradiction in the description of the same prior results.",
+      "verifier_name": "verify-cross-section-consistency",
+      "snippet_id": "16345::TABLE::0"
+    },
+    {
+      "error_category": "Citation/reference error",
+      "error_location": "Introduction: 'first-ever high-probability spectral norm bounds for low-rank approximation under symmetric perturbations'",
+      "confidence": 0.75,
+      "supporting_evidence": "The paper claims (line 40) 'We completely resolve the open question posed in [29, Remark 5.3], providing the first-ever high-probability spectral norm bounds for low-rank approximation under symmetric perturbations.' Classical deterministic spectral-norm perturbation bounds — the Davis–Kahan sin-Θ theorem ([12], cited in the paper) combined with Weyl's inequality, and the paper's own Eq. G.1 Eckart–Young–Mirsky bound 2(σ_{p+1} + ‖E‖) — are high-probability bounds by construction (probability 1). A bound of the stated order, ‖Ã_p − A_p‖ = O(‖E‖·λ_p/δ_p), follows deterministically from sin-Θ + Weyl under the same 4‖E‖ < δ_p gap. The unhedged 'first-ever' claim therefore overstates novelty; the hedged line-44 claim ('this appears to be the first such result' for the direct noise-addition DP model) is more defensible and was not flagged.",
+      "verifier_name": "verify-citation",
+      "snippet_id": "16345::SECTION::2"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 101,
+    "snippets_verified": 101,
+    "errors_detected": 12,
+    "verifier_usage": {
+      "verify-math": 59,
+      "verify-text": 27,
+      "verify-vision": 15,
+      "verify-statistical": 2,
+      "verify-citation": 3,
+      "verify-cross-section-consistency": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Exhaustive (lenient) verification of 'Spectral Perturbation Bounds for Low-Rank Approximation with Applications to Privacy' found 12 errors, 9 with confidence >= 0.85. High-confidence mathematical errors: (1) Example B.1's claim that the change-in-error is zero is false under the paper's own metric — the change-in-error equals |sin θ|, the same magnitude as the spectral deviation it is meant to be contrasted with; (2) the proof of Theorem D.1 contains a reversed inequality (k+1 > n-(p-k)+1 is false whenever p < n; the correct relation is <); (3) Appendix F's bound on M_2 claims |x_1 - x_0| <= λ_1, which is backwards (x_1 - x_0 >= λ_1 always), so the printed constant ‖E‖/(4λ_1) understates the term; (4) mutually inconsistent gap conditions across Theorem 2.1/2.2/2.3 (4‖E‖), the Section 3 sketch (4‖E‖ <= δ_p), and Lemma 3.1 (δ_p > 5‖E‖), whose own proof only requires δ_p >= 4‖E‖. Internal data contradictions: (5) the Adult dataset is reported as n=14, n=6, and '6 × 6' within Section 4; (6) the outlier statistic '12 trials (1.3%)' is incoherent against the stated 12,000-trial design (12/12000 = 0.1%). Reference errors: (7) four dangling citations [47]-[50] with no bibliography entries; (8) duplicate Wainwright references [44]/[45]; (9) reference [41] (Van Huffel & Vandewalle, TLS paper) misattributed for the spectral-norm-of-random-matrices claim. Moderate-confidence findings: (10) the abstract's 'near-perfect tracking'/'essentially tight' claims contradict the paper's own Appendix C (bound ~88x the true error on the Alon matrix, even inside the gap regime); (11) Table 1 vs text inconsistency on the gap condition (2‖E‖ vs 4‖E‖) attributed to [30]; (12) the 'first-ever high-probability spectral norm bounds' novelty claim overstates prior art (deterministic Davis-Kahan/Weyl bounds are high-probability by construction). Most theorem conclusions survive despite errors internal to proof chains, but the concentration of high-confidence mathematical and citation errors warrants correction.",
+  "uncertainty_map": [
+    {
+      "snippet_id": "16345::SECTION::4",
+      "uncertainty": 0.95,
+      "route": "statistical"
+    },
+    {
+      "snippet_id": "16345::EQUATION::20",
+      "uncertainty": 0.95,
+      "route": "math"
+    },
+    {
+      "snippet_id": "16345::PROOF::0",
+      "uncertainty": 0.95,
+      "route": "math"
+    },
+    {
+      "snippet_id": "16345::SECTION::2",
+      "uncertainty": 0.9,
+      "route": "citation"
+    },
+    {
+      "snippet_id": "16345::SECTION::7",
+      "uncertainty": 0.95,
+      "route": "citation"
+    },
+    {
+      "snippet_id": "16345::EQUATION::57",
+      "uncertainty": 0.9,
+      "route": "math"
+    },
+    {
+      "snippet_id": "16345::LEMMA::0",
+      "uncertainty": 0.9,
+      "route": "proof"
+    },
+    {
+      "snippet_id": "16345::SECTION::3",
+      "uncertainty": 0.9,
+      "route": "citation"
+    },
+    {
+      "snippet_id": "16345::SECTION::1",
+      "uncertainty": 0.85,
+      "route": "text"
+    },
+    {
+      "snippet_id": "16345::TABLE::0",
+      "uncertainty": 0.8,
+      "route": "text"
+    },
+    {
+      "snippet_id": "16345::SECTION::5",
+      "uncertainty": 0.6,
+      "route": "text"
+    },
+    {
+      "snippet_id": "16345::TABLE::2",
+      "uncertainty": 0.55,
+      "route": "statistical"
+    }
+  ]
+}

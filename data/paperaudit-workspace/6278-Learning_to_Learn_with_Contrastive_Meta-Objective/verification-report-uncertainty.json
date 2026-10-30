@@ -1,0 +1,152 @@
+{
+  "paper_id": "6278",
+  "title": "Learning to Learn with Contrastive Meta-Objective",
+  "paper_category": "cs.LG",
+  "predicted_errors": [
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Section 3.1 (Obtaining Inner-Task Distance) / Algorithm 2",
+      "confidence": 0.92,
+      "supporting_evidence": "The paper references 'equation (1)' for the inner-task distance d^in_τ repeatedly — in Section 3.1 ('The overall inner-task distance is averaged as d^in = (1/B) Σ_{τ∈b} d_τ^in'), and in Algorithms 2, 3, 4, 5, 6, 7, 8, 9 ('Get inner-task distance d_τ^in by (1)'). No equation numbered (1) is ever displayed: the main text numbers only (2) for d^out and (3) for L_ConML, and the appendix numbers (4)-(8). The central definition of the alignment quantity, d^in_τ = (1/K) Σ_{k=1}^K φ(e_τ^{κ_k}, e_τ^*) with κ_k ~ π_κ(D_τ^tr ∪ D_τ^val), is therefore absent from the manuscript, making the method's core objective unverifiable.",
+      "verifier_name": "text",
+      "snippet_id": "6278::SECTION::4"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 4.4 (ICL Performance)",
+      "confidence": 0.9,
+      "supporting_evidence": "Section 4.4's closing paragraph states 'Table 5 reports means and standard deviations for relative minimal error and shot spare metrics computed over a small number of runs (unspecified). No confidence intervals or statistical significance tests are provided to assess the reliability or relevance of these improvements.' No Table 5 exists in the paper: the tables present are numbered 1, 2, 3, 4, 6, 7. The ICL quantitative results (Rel. Min. Error and Shot Spare for LR/SLR/DT/NN) that the text claims Table 5 reports are missing from the manuscript.",
+      "verifier_name": "text",
+      "snippet_id": "6278::SECTION::11"
+    },
+    {
+      "error_category": "Conclusion vs Evidence mismatch",
+      "error_location": "Section 1 (Introduction contributions) vs Section 4.1 (Few-Shot Image Classification)",
+      "confidence": 0.7,
+      "supporting_evidence": "The Introduction claims 'We empirically show that the proposed ConML universally improves the performance of various meta-learning algorithms from different categories,' yet Section 4.1 discloses: 'Table 2 presents selected results where ConML improves performance... However, we exclude several baselines and extensive negative cases where ConML fails to yield significant gains or degrades performance. The choice of hyperparameters was optimized post-hoc for strongest-performing setups. Variance estimates are optimistic as some runs with large fluctuations were excluded. A full sweep including cases with no improvement is in Appendix F.' The headline 'universal improvement' contribution is thus supported only by selectively reported, post-hoc-tuned results — the evidence selection directly undercuts the strength of the central claim, even though the limitation is disclosed.",
+      "verifier_name": "cross-section-consistency",
+      "snippet_id": "6278::FULL_PAPER::0"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Section 3.2 (Provable Benefits for Generalization) vs Appendix B",
+      "confidence": 0.6,
+      "supporting_evidence": "The main text states Lemma 1 and Theorem 1 in a hedged, assumption-laden form: Lemma 1 'Under standard regularity conditions on the meta-learner g(·; θ) and boundedness of the model representations, there exist constants C_1, C_2 such that the excess risk is upper-bounded...' and Theorem 1 'Minimizing the contrastive meta-objective L_c approximately minimizes U_{p(τ)}(θ).' But the Appendix B.2 proof concludes an exact result: 'U_{p(τ)}(θ*_{L_c}) = C_2 = min_θ U_{p(τ)}(θ),' and Section 3.2's opening asserts 'It is provable that a meta-learner which minimizes L_c has lower generalization error upper-bound than any other meta-learners.' The hedged 'approximately minimizes' main-text claim is inconsistent with the appendix's exact-equality conclusion and the unqualified opening assertion, and the essential assumptions (continuity, compactness, symmetric distribution) are deferred to an appendix without being stated in the theorem statements.",
+      "verifier_name": "text",
+      "snippet_id": "6278::SECTION::5"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Appendix B.2 (Proof of Theorem 1)",
+      "confidence": 0.55,
+      "supporting_evidence": "The proof claims 'For arbitrary subset sampling strategy π_κ, min_θ L_c ≥ −1' and characterizes L_c* = −1 as achieved if and only if E[cos_inner] = 1 and E[cos_outer] = 0. But from the paper's own definitions, L_c = d^in − d^out = E[cos_outer] − E[cos_inner], with all cosines in [−1, 1]. The tight lower bound is therefore E[cos_outer] − E[cos_inner] ≥ −1 − 1 = −2, not −1. If inter-task model representations can be antipodal (E[cos_outer] = −1) while intra-task representations are perfectly aligned (E[cos_inner] = 1), the loss reaches −2. The claimed minimum and its 'if and only if' characterization require an unstated assumption (e.g., E[cos_outer] ≥ 0) that is nowhere justified.",
+      "verifier_name": "math-equations",
+      "snippet_id": "6278::PROOF::1"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Section 3.1 (Obtaining Inner-Task Distance)",
+      "confidence": 0.55,
+      "supporting_evidence": "The paper's own text admits the core sampling mechanism is unspecified: 'The subsets κ_k used to compute d_τ^in are sampled by π_κ, which selects subsets from D_τ^tr ∪ D_τ^val with specified size and distribution characteristics... However, π_κ is not rigorously defined, leaving unclear how subset sizes, overlap, and sampling bias are controlled. Further specification and justification of π_κ choices are necessary to ensure meaningful alignment measurement and reproducibility of the method.' The unresolved reviewer-style note left inline confirms the alignment measurement's sampling distribution — a method-defining component — is undefined, directly harming reproducibility and the validity of d^in.",
+      "verifier_name": "text",
+      "snippet_id": "6278::SECTION::4"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Section 3.1 / Section 3.3 / Table 1 (Model Representation ψ)",
+      "confidence": 0.5,
+      "supporting_evidence": "The projection function ψ is specified differently for each meta-learner category with no unified formal definition: updated weights for optimization-based (ψ = θ − ∇_θ L), concatenated class prototypes for metric-based (ψ = [c_1|...|c_N]), hypernetwork output for amortization-based (ψ = H(D; θ)), and a scalar probe output through a dummy input for ICL (ψ = g([D̄, u]; θ)). These heterogeneous representations live in incompatible spaces (weights vs. prototypes vs. scalar logits), and distances φ(·,·) computed between them are not formally justified. Section 3.1 says 'The details of H and ψ will be specified in Section 3.3,' but the per-category specifications do not define a common vector space, raising concerns about the comparability and meaning of the contrastive distances.",
+      "verifier_name": "text",
+      "snippet_id": "6278::SECTION::6"
+    },
+    {
+      "error_category": "Novelty/Priority over-claim",
+      "error_location": "Section 5 (Relation with Existing Works)",
+      "confidence": 0.5,
+      "supporting_evidence": "The Related Work section asserts 'none generalize comprehensively across all episodic meta-learning paradigms as ConML aims to' and dismisses prior task-level contrastive works as 'more specialized or limited than ConML,' including [18] (Gondal et al., function contrastive learning of transferable meta-representations) and [27] (Mathieu et al., contrastive representations of stochastic processes), characterizing them as 'learner-specific' special cases. The universality claim is asserted rather than established, and the section's hedge ('as ConML aims to') does not resolve the tension with the Introduction's categorical 'universally improves' contribution claim. Prior work is selectively characterized to maximize the novelty margin.",
+      "verifier_name": "citation",
+      "snippet_id": "6278::SECTION::12"
+    },
+    {
+      "error_category": "Conclusion vs Evidence mismatch",
+      "error_location": "Section 4.4 (ICL Performance) vs Introduction/Abstract framing",
+      "confidence": 0.5,
+      "supporting_evidence": "The paper states 'we do not provide experiments demonstrating benefits on real-world pretrained large language models or natural language benchmarks. Thus, claims about applicability to pretrained LLMs remain speculative and require further validation,' and the ICL experiments use only 'relatively small GPT-2-like transformers trained from scratch' on synthetic functions (LR, SLR, DT, NN). Yet the Introduction contribution bullet claims ConML 'can also improve in-context learning (ICL) as its training also follows the paradigm of learning to learn,' and the abstract frames ICL improvements as a headline contribution. The evidence supports only synthetic, small-scale ICL gains, not the implied general ICL/LLM applicability.",
+      "verifier_name": "text",
+      "snippet_id": "6278::SECTION::11"
+    },
+    {
+      "error_category": "Data Inconsistency (text-table)",
+      "error_location": "Section 4.3.1 (Effect of the Number of Subset Samples K) vs Table 4",
+      "confidence": 0.45,
+      "supporting_evidence": "Section 4.3.1 claims 'Starting from K = 1, we observe moderate performance growth as K increases, while memory usage grows linearly with K.' Table 4 shows MAML accuracy is non-monotonic in K: K=1 → 56.25, K=4 → 56.08 (a decrease), K=16 → 57.59, K=32 → 57.33 (a decrease). The claimed monotone growth does not hold for the MAML rows (ProtoNet is monotonic: 51.03 → 52.04 → 52.34 → 52.48). Additionally, the memory growth is sub-linear for small K (MAML K=1→4 adds only 210 MB while K=4→16 adds 1092 MB), and the '~2x' memory claim between w/o and K=1 is 2.10x for MAML but only 1.78x for ProtoNet.",
+      "verifier_name": "statistical",
+      "snippet_id": "6278::TABLE::3"
+    },
+    {
+      "error_category": "Misattribution (external)",
+      "error_location": "Section 1 (Introduction), alignment definition",
+      "confidence": 0.45,
+      "supporting_evidence": "The paper defines 'Alignment aims to align different partial views of a certain object, which means integrating various aspects or perspectives of information to form a coherent understanding' and cites [10] Brian Christian, 'The Alignment Problem: Machine Learning and Human Values' (2020). Web verification of the cited book confirms it concerns AI safety and aligning machine-learning systems with human values and intentions — not representation alignment or integrating partial views of an object. The cited source does not support the technical definition given; the relevant technical reference is [50] (Wang & Isola, 'Understanding contrastive representation learning through alignment and uniformity on the hypersphere').",
+      "verifier_name": "citation",
+      "snippet_id": "6278::SECTION::1"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Appendix B.1 (Proof of Lemma 1)",
+      "confidence": 0.4,
+      "supporting_evidence": "The proof asserts '||F(X_g)|| = ||ψ(X_g)|| ≤ ||X_g|| by definition' and then states 'As δ can be arbitrarily small by selecting large enough N, we approximately rewrite (5) as ψ(X_g) = F(X_g), which is not completely rigorous.' F is only a universal approximator of ψ (|ψ(X_g) − F(X_g)| < δ); the equalities ||F(X_g)|| = ||ψ(X_g)|| and the bound ||ψ(X_g)|| ≤ ||X_g|| are asserted without derivation. The proof explicitly acknowledges its approximation step is non-rigorous, so the claimed upper bound U_{p(τ)}(θ) is established only under an acknowledged non-rigorous step.",
+      "verifier_name": "math-equations",
+      "snippet_id": "6278::PROOF::0"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 51,
+    "snippets_verified": 32,
+    "errors_detected": 12,
+    "verifier_usage": {
+      "text": 12,
+      "math_equation": 9,
+      "statistical": 6,
+      "citation": 2,
+      "vision": 4,
+      "cross_section": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Uncertainty-mode verification (lenient strictness) of paper 6278 'Learning to Learn with Contrastive Meta-Objective' (ConML, NeurIPS 2025). Segmentation produced 51 snippets; 32 exceeded the 0.30 uncertainty threshold and were escalated to specialist verifiers. Two high-confidence structural defects: (1) the paper references equation (1) — the definition of the inner-task distance d^in_τ, the central quantity of ConML's alignment objective — in Section 3.1 and throughout Algorithms 2-9, but the equation is never displayed anywhere in the manuscript; (2) Section 4.4 references 'Table 5' (Rel. Min. Error / Shot Spare ICL results) but no Table 5 exists in the paper (tables are numbered 1, 2, 3, 4, 6, 7), so the ICL quantitative results are absent. A medium-high-confidence conclusion-vs-evidence tension: the Introduction claims ConML 'universally improves' meta-learning algorithms while Section 4.1 discloses that negative cases were excluded, hyperparameters were optimized post-hoc, and variance estimates are optimistic. Medium-confidence findings: the main-text Lemma 1/Theorem 1 are hedged ('approximately minimizes U', 'standard regularity conditions') while the Appendix B proof concludes an exact equality, and the proof's claim min_θ L_c ≥ −1 does not follow from the paper's own definitions (the tight bound is −2 absent an unstated E[cos_outer] ≥ 0 assumption); the subset-sampling strategy π_κ is admitted in-text to be not rigorously defined; the projection function ψ takes heterogeneous, incomparable forms across meta-learner categories; the Related Work overstates novelty relative to prior task-level contrastive meta-learning; ICL gains are demonstrated only on synthetic functions with small from-scratch transformers, not real pretrained LLMs; Table 4's accuracy is non-monotonic in K despite the text claiming 'moderate performance growth as K increases'; and Brian Christian's 'The Alignment Problem' (an AI-safety book) is cited for the representation-alignment definition. Statistical checks on Tables 2, 3, 6, and 7 (arithmetic, Δ Acc, MSE, standard deviations) passed. Given two findings at ≥0.85 confidence on core method components, the verdict is NEEDS_CORRECTION.",
+  "uncertainty_map": [
+    {"snippet_id": "6278::SECTION::0", "uncertainty": 0.3, "route": "text", "escalated": true},
+    {"snippet_id": "6278::SECTION::1", "uncertainty": 0.35, "route": "text", "escalated": true},
+    {"snippet_id": "6278::SECTION::4", "uncertainty": 0.65, "route": "text", "escalated": true},
+    {"snippet_id": "6278::SECTION::5", "uncertainty": 0.55, "route": "proof", "escalated": true},
+    {"snippet_id": "6278::SECTION::6", "uncertainty": 0.3, "route": "text", "escalated": true},
+    {"snippet_id": "6278::SECTION::8", "uncertainty": 0.55, "route": "text", "escalated": true},
+    {"snippet_id": "6278::SECTION::9", "uncertainty": 0.3, "route": "text", "escalated": true},
+    {"snippet_id": "6278::SECTION::10", "uncertainty": 0.4, "route": "statistical", "escalated": true},
+    {"snippet_id": "6278::SECTION::11", "uncertainty": 0.6, "route": "text", "escalated": true},
+    {"snippet_id": "6278::SECTION::12", "uncertainty": 0.4, "route": "citation", "escalated": true},
+    {"snippet_id": "6278::SECTION::13", "uncertainty": 0.3, "route": "text", "escalated": true},
+    {"snippet_id": "6278::EQUATION::0", "uncertainty": 0.3, "route": "math", "escalated": true},
+    {"snippet_id": "6278::EQUATION::2", "uncertainty": 0.35, "route": "math", "escalated": true},
+    {"snippet_id": "6278::TABLE::0", "uncertainty": 0.3, "route": "text", "escalated": true},
+    {"snippet_id": "6278::TABLE::1", "uncertainty": 0.4, "route": "statistical", "escalated": true},
+    {"snippet_id": "6278::TABLE::2", "uncertainty": 0.35, "route": "statistical", "escalated": true},
+    {"snippet_id": "6278::TABLE::3", "uncertainty": 0.45, "route": "statistical", "escalated": true},
+    {"snippet_id": "6278::TABLE::4", "uncertainty": 0.35, "route": "statistical", "escalated": true},
+    {"snippet_id": "6278::TABLE::5", "uncertainty": 0.3, "route": "statistical", "escalated": true},
+    {"snippet_id": "6278::THEOREM::0", "uncertainty": 0.5, "route": "proof", "escalated": true},
+    {"snippet_id": "6278::LEMMA::0", "uncertainty": 0.45, "route": "proof", "escalated": true},
+    {"snippet_id": "6278::LEMMA::1", "uncertainty": 0.35, "route": "math", "escalated": true},
+    {"snippet_id": "6278::LEMMA::2", "uncertainty": 0.3, "route": "math", "escalated": true},
+    {"snippet_id": "6278::PROOF::0", "uncertainty": 0.55, "route": "math", "escalated": true},
+    {"snippet_id": "6278::PROOF::1", "uncertainty": 0.7, "route": "math", "escalated": true},
+    {"snippet_id": "6278::ALGORITHM::1", "uncertainty": 0.35, "route": "text", "escalated": true},
+    {"snippet_id": "6278::ALGORITHM::4", "uncertainty": 0.35, "route": "text", "escalated": true},
+    {"snippet_id": "6278::APPENDIX::0", "uncertainty": 0.45, "route": "math", "escalated": true},
+    {"snippet_id": "6278::APPENDIX::1", "uncertainty": 0.5, "route": "math", "escalated": true},
+    {"snippet_id": "6278::APPENDIX::4", "uncertainty": 0.3, "route": "text", "escalated": true},
+    {"snippet_id": "6278::APPENDIX::6", "uncertainty": 0.35, "route": "math", "escalated": true},
+    {"snippet_id": "6278::FULL_PAPER::0", "uncertainty": 0.55, "route": "cross_section", "escalated": true}
+  ]
+}

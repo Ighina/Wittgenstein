@@ -1,0 +1,142 @@
+{
+  "paper_id": "13022-A_Snapshot_of_Influence__A_Local_Data_Attribution_Framework_for_Online_Rei",
+  "title": "A Snapshot of Influence: A Local Data Attribution Framework for Online Rei",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 3.1, definition and interpretation of f^{return}",
+      "confidence": 0.99,
+      "supporting_evidence": "The paper defines f^{return}(theta) = E[log pi_theta(a|s) * (-Ahat^{ref}(s,a))] and then states: 'Maximizing f^{return}(theta) encourages increasing the probability of better-than-average actions and decreasing worse-than-average ones.' This is sign-reversed. For a better-than-average action Ahat^{ref}>0, maximizing -Ahat^{ref} log pi_theta(a|s) decreases its log-probability; for a negative-advantage action it increases its probability. The stated behavioral interpretation is mathematically opposite to the displayed objective.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "13022-A_Snapshot_of_Influence__A_Local_Data_Attribution_Framework_for_Online_Rei::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 2.1 TracIn derivation and Section 3.1 influence-score interpretation",
+      "confidence": 0.98,
+      "supporting_evidence": "The TracIn derivation assumes SGD minimizing a loss: theta_{j+1}=theta_j-eta grad ell, and derives f(theta_j)-f(theta_{j+1}) approximately eta <grad f, grad ell>. Thus, a positive score means the update decreases f. Yet Section 3.1 asserts that 'Records with positive influence benefit behavior formation or learning.' For f^{action}=log pi_theta(a|s), beneficial records should increase f, which under the displayed minimizing-loss derivation corresponds to a negative, not positive, score. PPO is also presented as a maximized surrogate objective rather than the minimized loss used in the derivation, without a sign conversion. Consequently the score sign and the top/bottom-record interpretation are internally inconsistent.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "13022-A_Snapshot_of_Influence__A_Local_Data_Attribution_Framework_for_Online_Rei::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 3.1, displayed local TracIn equation immediately after 'Method of attribution'",
+      "confidence": 0.97,
+      "supporting_evidence": "The equation uses <nabla f(theta_0^{(k)}), nabla L^{PPO}(theta_j^{(k)},z_i)>, whereas the accompanying sentence says 'nabla_theta f(theta_j^{(k)}) is the gradient of the target function evaluated at theta_j^{(k)}.' These are different methods: a fixed initial target gradient versus a checkpoint-specific TracIn target gradient. The paper never resolves which is used for Sections 4--5.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "13022-A_Snapshot_of_Influence__A_Local_Data_Attribution_Framework_for_Online_Rei::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 3.1, reference-policy and validation-data description for f^{return}",
+      "confidence": 0.98,
+      "supporting_evidence": "The text first specifies that pi^{ref} is 'a fixed, pre-trained policy that has been trained to convergence on the task.' It then immediately claims that 'our dynamic reference evolves with training' and that, because B^{(k)} is collected under pi_{theta^{(k)}}, 'we can directly use it as the validation dataset.' These statements are incompatible: an expectation under a fixed converged pi^{ref} requires trajectories/actions and advantage estimates from pi^{ref}, whereas B^{(k)} is sampled from the current policy. No importance weighting or alternate definition pi^{ref}=pi_{theta^{(k)}} is supplied. The required reference-policy advantage estimates are likewise not specified in the experimental protocol.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "13022-A_Snapshot_of_Influence__A_Local_Data_Attribution_Framework_for_Online_Rei::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Sections 2.1, 3.1, and Appendix A.2, attribution versus actual PPO update",
+      "confidence": 0.91,
+      "supporting_evidence": "The paper explicitly notes that PPO training 'is typically combined with a value function loss and an entropy bonus,' and Appendix A.2 confirms vf_coef=0.5 and ent_coef=0.0. However, the attribution formula uses only the per-record gradient of the displayed clipped policy surrogate L^{PPO}. The actual update, especially with shared policy/value representations, includes the value-loss gradient; its effect is omitted from the claimed influence on the update from theta^{(k)} to theta^{(k+1)}. The paper does not define L^{PPO} to include the value loss or explain why excluding it is valid.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "13022-A_Snapshot_of_Influence__A_Local_Data_Attribution_Framework_for_Online_Rei::baseline"
+    },
+    {
+      "error_category": "evidence_data_integrity",
+      "error_location": "Figure 6(b) versus Appendix B.9, Table 5",
+      "confidence": 0.97,
+      "supporting_evidence": "Figure 6(b) reports RT_peak values of 38.9%, 67.8%, 81.7%, 72.3%, 58.6%, and 42.1% for FrozenLake through BipedalWalker. Appendix B.9 says Table 5 reports RT_peak 'also presented in Fig. 6(b),' but gives 31.27%, 55.16%, 71.59%, 59.89%, 44.11%, and 29.16%, respectively. These are materially different values. Different seed counts are mentioned (five for Figure 6 and three for Table 5), but the appendix explicitly identifies the table as the breakdown of the Figure 6 metric; the paper must reconcile the conflicting reported results rather than presenting both as the same quantity.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "13022-A_Snapshot_of_Influence__A_Local_Data_Attribution_Framework_for_Online_Rei::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Appendix A.2, BipedalWalker total-timestep specification",
+      "confidence": 0.99,
+      "supporting_evidence": "Appendix A.2 sets n_steps=2048 and states BipedalWalker has 'total_timesteps ... 1,024,000 ... (1000 rounds).' But 1,024,000 / 2048 = 500 rollout rounds, not 1000. Either total_timesteps, n_steps, or the reported number of rounds is wrong, leaving the BipedalWalker protocol unreproducible.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "13022-A_Snapshot_of_Influence__A_Local_Data_Attribution_Framework_for_Online_Rei::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Section 5.1, Section 5.2, and Appendix B.6, selection of filtering percentage p",
+      "confidence": 0.94,
+      "supporting_evidence": "Section 5.1 states, 'We evaluate various p's and report the best in Fig. 6.' Appendix B.6 then chooses p separately for each environment based on the reported performance: 50% for several environments, 12.5% for others, and 6.25% for BipedalWalker. Meanwhile, PPO and random-filtering baselines are described as using 'fixed, untuned hyperparameters.' Selecting the best method hyperparameter separately per benchmark on the reported experiment, without a validation split, a tuning budget for baselines, or held-out reruns, makes the principal comparison optimistically biased.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "13022-A_Snapshot_of_Influence__A_Local_Data_Attribution_Framework_for_Online_Rei::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Abstract and Introduction",
+      "confidence": 0.99,
+      "supporting_evidence": "The abstract claims IIF 'completely eliminates sample inefficiency,' achieves 'unprecedented training speed,' and 'solves the long-standing challenge of training instability in online RL.' The reported evidence is limited to six small benchmark environments and one toxicity experiment, reports finite 20--67% round reductions rather than elimination of sample inefficiency, and contains no defined instability metric, instability baseline, or stability analysis. These claims are far stronger than the presented experiments support.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "13022-A_Snapshot_of_Influence__A_Local_Data_Attribution_Framework_for_Online_Rei::baseline"
+    },
+    {
+      "error_category": "rhetorical_presentation_manipulation",
+      "error_location": "Figure 6 caption and Section 5.2 results discussion",
+      "confidence": 0.96,
+      "supporting_evidence": "The Figure 6 caption admits that 'y-axis ranges are optimized to highlight the superior performance of our method,' while the text describes the figure as showing IIF 'dramatically outperforms all baselines across all metrics.' Adjusting each plot range specifically to emphasize superiority, combined with reporting only the best p per environment, is misleading presentation of comparative evidence. The plots also do not display uncertainty bands despite performance being averaged over five seeds.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "13022-A_Snapshot_of_Influence__A_Local_Data_Attribution_Framework_for_Online_Rei::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Section 4.1 and Appendix B.4, claims about 'true' advantages and causal source of harmful records",
+      "confidence": 0.92,
+      "supporting_evidence": "Section 4.1 says it approximates the true advantage using Monte Carlo rollouts 'from each (s,a),' but Appendix B.4 says that for the reported heuristic it instead estimates advantages from the same rollout buffer and explicitly acknowledges this estimate is noisy in larger spaces. The paper then concludes that inaccurate advantage estimates cause harmful records from correlations between influence and Abar*Ahat. This is not a validated true-advantage measurement in the complex settings, and the correlation does not establish the claimed causal mechanism.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "13022-A_Snapshot_of_Influence__A_Local_Data_Attribution_Framework_for_Online_Rei::baseline"
+    },
+    {
+      "error_category": "reference_background_fabrication",
+      "error_location": "Introduction, paragraph beginning 'In recent years, data attribution'",
+      "confidence": 0.99,
+      "supporting_evidence": "The paper states that 'Kumar et al. [2024] demonstrated that data attribution methods can be directly applied to online RL without modification, achieving state-of-the-art results across multiple benchmarks.' There is no Kumar et al. [2024] entry anywhere in the supplied References. This is both an unverifiable central prior-work claim and a missing citation.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "13022-A_Snapshot_of_Influence__A_Local_Data_Attribution_Framework_for_Online_Rei::baseline"
+    },
+    {
+      "error_category": "reference_background_fabrication",
+      "error_location": "Section 3.1, f^{return} justification",
+      "confidence": 0.97,
+      "supporting_evidence": "The text attributes the objective to 'REINFORCE with baseline objective [Sutton and Barto, 2018, Section 13.4],' and says it 'has been proven optimal for variance reduction in policy gradient methods [Williams, 1992].' Williams (1992) is absent from the References, and the displayed objective is not the standard REINFORCE objective because it contains -A rather than A. Thus the citation-based justification is both incomplete and mathematically misattributed.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "13022-A_Snapshot_of_Influence__A_Local_Data_Attribution_Framework_for_Online_Rei::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Appendix B.8, claim of statistical significance",
+      "confidence": 0.88,
+      "supporting_evidence": "Appendix B.8 says Table 4 'confirm[s] a statistically significant improvement in the performance gain,' but Table 4 reports confidence intervals only for MiniGrid, LunarLander, and BipedalWalker, despite the main result claiming gains across six environments. No confidence intervals, tests, or multiplicity treatment are provided for FrozenLake, Acrobot, or Highway. The broad significance wording exceeds what the displayed analysis establishes.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "13022-A_Snapshot_of_Influence__A_Local_Data_Attribution_Framework_for_Online_Rei::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 14,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (gpt-5.6-terra, taxonomy=paperaudit): 14 error(s) reported.",
+  "baseline": {
+    "model": "gpt-5.6-terra",
+    "provider": "openai",
+    "taxonomy": "paperaudit",
+    "paper_chars": 101025,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 25496,
+      "output_tokens": 4790,
+      "cache_read_input_tokens": null,
+      "cache_creation_input_tokens": null
+    }
+  }
+}

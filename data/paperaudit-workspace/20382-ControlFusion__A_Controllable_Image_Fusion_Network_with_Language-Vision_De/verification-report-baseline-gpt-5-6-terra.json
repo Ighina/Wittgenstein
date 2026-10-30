@@ -1,0 +1,94 @@
+{
+  "paper_id": "20382-ControlFusion__A_Controllable_Image_Fusion_Network_with_Language-Vision_De",
+  "title": "ControlFusion: A Controllable Image Fusion Network with Language-Vision De",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Eq. (5), Weather-related Distortions",
+      "confidence": 0.98,
+      "supporting_evidence": "Equation (5) defines weather degradation as D_vi^w = I_vi · t + A(1-t) + R, but R is never defined, constrained, or generated anywhere in the method. The text identifies rain and haze as the simulated effects, yet only transmission t, atmospheric light A, haze coefficient beta, and depth d(x) are specified. Without a definition or sampling procedure for R (presumably a rain-streak layer), the claimed rain/haze degradation model is incomplete and not reproducible.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20382-ControlFusion__A_Controllable_Image_Fusion_Network_with_Language-Vision_De::baseline"
+    },
+    {
+      "error_category": "Citation / attribution",
+      "error_location": "Section 3, Weather-related Distortions: “d(x) refers to the scene depth, estimated by DepthAnything-V2 [40]”",
+      "confidence": 1.0,
+      "supporting_evidence": "Reference [40] is Zamir et al., “Restormer: Efficient Transformer for High-Resolution Image Restoration,” not Depth Anything V2. Thus the cited reference cannot support the claimed depth-estimation procedure, and the actual Depth Anything V2 source is absent.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20382-ControlFusion__A_Controllable_Image_Fusion_Network_with_Language-Vision_De::baseline"
+    },
+    {
+      "error_category": "Citation / attribution",
+      "error_location": "Section 5.3, Object Detection: “using the retrained YOLOv8 [26]”",
+      "confidence": 1.0,
+      "supporting_evidence": "Reference [26] is Redmon et al., “You Only Look Once: Unified, Real-Time Object Detection” (the original YOLO paper, 2016), not YOLOv8. YOLOv8 is a substantially later implementation/model family and is not attributable to this citation.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20382-ControlFusion__A_Controllable_Image_Fusion_Network_with_Language-Vision_De::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 3 / beginning of Section 4, DDL-12 dataset construction",
+      "confidence": 0.93,
+      "supporting_evidence": "The paper states that it selected 2,050 clear images and synthesized images with “12 types and 4 levels of degradation,” which implies 2,050 × 12 × 4 = 98,400 degraded pairs if every stated type-level condition is generated. It instead reports only approximately 48,000 training pairs plus 4,800 test pairs, or 52,800 total. No subset-selection rule, split accounting, or explanation for the missing 45,600 expected pairs is supplied.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20382-ControlFusion__A_Controllable_Image_Fusion_Network_with_Language-Vision_De::baseline"
+    },
+    {
+      "error_category": "Experiment setup",
+      "error_location": "Section 5.2, “Comparison with Pre-enhancement,” and Table 2",
+      "confidence": 1.0,
+      "supporting_evidence": "The paper explicitly states that ControlFusion “uniquely includes pre-enhancement by several SOTA image restoration algorithms tailored to each degradation type,” while “competing fusion methods are evaluated on raw degraded inputs without pre-enhancement steps,” and admits that this “introduc[es] an imbalance that favors our results.” Table 2 therefore does not compare equivalent pipelines and cannot serve as a fair quantitative comparison of fusion/restoration methods. A matched protocol applying the same restoration access to all methods, or comparisons against complete baseline pipelines, is required.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20382-ControlFusion__A_Controllable_Image_Fusion_Network_with_Language-Vision_De::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Section 4 versus Section 5.2, pre-enhancement protocol",
+      "confidence": 0.91,
+      "supporting_evidence": "The proposed method is described throughout Section 4 as a single coupled, end-to-end “restoration and fusion network” trained with the losses in Eqs. (10)–(14). However, the Table 2 protocol says the authors additionally use “several SOTA image restoration algorithms tailored to each degradation type” as pre-enhancement. Those external algorithms, their degradation-to-restorer routing, whether they are applied before the visual adapter, and how they interact with the stated end-to-end architecture are not described in the methodology or implementation details. Thus the evaluated system for Table 2 is not the specified ControlFusion method and is not reproducible.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20382-ControlFusion__A_Controllable_Image_Fusion_Network_with_Language-Vision_De::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Section 5.2, conclusion drawn from Table 2",
+      "confidence": 0.98,
+      "supporting_evidence": "Immediately after acknowledging that its method receives tailored pre-enhancement while all competitors receive raw degraded inputs, the paper states that the Table 2 results demonstrate ControlFusion’s “significant advantages in complex degradation scenarios.” Because the protocol gives only the proposed method extra restoration information/processing, the reported advantage cannot be attributed to ControlFusion itself rather than the undisclosed, degradation-specific external restoration pipeline.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20382-ControlFusion__A_Controllable_Image_Fusion_Network_with_Language-Vision_De::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Appendix A.7, Model Complexity Analysis",
+      "confidence": 0.96,
+      "supporting_evidence": "The appendix claims that frozen CLIP parameters “thus introduce no training overhead.” Freezing parameters eliminates gradient updates and backward computation for those parameters, but it does not eliminate the forward-pass computation needed to encode text prompts during Stage I (or Stage II when text prompts are used), nor associated memory/data-transfer overhead unless embeddings are explicitly precomputed. No such precomputation protocol is stated. The statement is therefore false as written.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20382-ControlFusion__A_Controllable_Image_Fusion_Network_with_Language-Vision_De::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 8,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (gpt-5.6-terra, taxonomy=default): 8 error(s) reported.",
+  "baseline": {
+    "model": "gpt-5.6-terra",
+    "provider": "openai",
+    "taxonomy": "default",
+    "paper_chars": 79566,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 19000,
+      "output_tokens": 4162,
+      "cache_read_input_tokens": null,
+      "cache_creation_input_tokens": null
+    }
+  }
+}

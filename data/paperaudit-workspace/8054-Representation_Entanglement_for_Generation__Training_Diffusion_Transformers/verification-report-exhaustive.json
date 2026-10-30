@@ -1,0 +1,178 @@
+{
+  "paper_id": "8054",
+  "title": "Representation Entanglement for Generation: Leveraging Pretrained Semantic Tokens to Improve Diffusion Transformer Training",
+  "paper_category": "cs.LG",
+  "predicted_errors": [
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Equation (7), Section 3.1 (score-velocity relation)",
+      "confidence": 0.96,
+      "supporting_evidence": "SIGN ERROR: Eq (7) prints s = σ_t^{-1}·(α_t v − α̇_t x)/(α_t σ̇_t − α̇_t σ_t), but combining the paper's own Eq (3) and Eq (6) yields s = −σ_t^{-1}·(α_t v − α̇_t x)/(α_t σ̇_t − α̇_t σ_t). Derivation: from x = α_t E[x_*|x] + σ_t E[ε|x] and v = α̇_t E[x_*|x] + σ̇_t E[ε|x], subtracting gives E[ε|x] = (α_t v − α̇_t x)/(α_t σ̇_t − α̇_t σ_t); substituting into Eq (6), s = −σ_t^{-1} E[ε|x], introduces a leading minus that the printed equation omits. Sanity check with α_t=1, σ_t=t (pure noise addition, x_* degenerate at 0): true score is s = −x/t², but the printed Eq (7) evaluates to +x/t² (wrong sign). The sign error makes Eq (7) mutually inconsistent with the paper's own Eq (6).",
+      "verifier_name": "verify-math",
+      "snippet_id": "8054::EQUATION::6"
+    },
+    {
+      "error_category": "Data Inconsistency (table-table)",
+      "error_location": "Table 1 vs Table 9 (Appendix C)",
+      "confidence": 0.95,
+      "supporting_evidence": "Table 1 and Table 9 both claim to report SiT+REG 'across model scales on ImageNet 256×256 without CFG', but every identical '+ REG (ours)' row differs while all baseline rows match. SiT-B/2 + REG @400K: FID 21.8 (Tab.1) vs 15.2 (Tab.9); SiT-L/2 + REG @400K: 9.8 vs 4.6; SiT-XL/2 + REG @200K: 7.1 vs 5.0; @400K: 5.6 vs 3.4; @1M: 4.3 vs 2.7; @2.4M: 3.8 vs 2.2; @4M: 3.3 vs 1.8. Baselines agree (SiT-B/2 33.0, +REPA 24.4, SiT-L/2 18.8, SiT-XL/2 7M 8.3, +REPA 4M 5.9). Section 4.2 prose (FID 4.6 @400K for L/2, record-low 1.8 @4M, 9.2-point B/2 gain) and Table 4 (FID 3.44) all match Table 9 and contradict Table 1. One of the two tables reports stale/incorrect data.",
+      "verifier_name": "verify-vision",
+      "snippet_id": "8054::TABLE::0"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 4.4, Fig. 3(a) correlation description",
+      "confidence": 0.95,
+      "supporting_evidence": "Line 289 states 'Fig. 3(a) shows the positive correlation between CKNNA and FID scores across training steps', but the very next sentence and the Fig. 3 caption (lines 283-285) describe higher CKNNA occurring 'alongside lower FID values'. Higher CKNNA with lower FID is a negative correlation; the sentence first asserts a positive correlation and then immediately describes the opposite relationship, so the direction of the reported correlation is self-contradictory.",
+      "verifier_name": "verify-text",
+      "snippet_id": "8054::SECTION::7"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Abstract (line 15) & Introduction (line 49) vs Table 1",
+      "confidence": 0.93,
+      "supporting_evidence": "Abstract claims 'SiT-L/2 + REG trained for 400K iterations achieves comparable FID scores to SiT-XL/2 + REPA trained for 4M iterations', but Table 1 lists SiT-L/2+REG @400K FID = 9.8 vs SiT-XL/2+REPA @4M FID = 5.9 (a 3.9-point gap, not comparable). The claim holds only against Table 9 (4.6 vs 5.9). The Introduction restates the same claim citing 'Tab. 1' but names 'SiT-L/2 + REPA' instead of '+ REG', so the two sections disagree on the subject of the claim and Table 1 supports neither version (9.7/9.8 vs 5.9).",
+      "verifier_name": "verify-cross-section-consistency",
+      "snippet_id": "8054::SECTION::0"
+    },
+    {
+      "error_category": "Data Inconsistency (table-table)",
+      "error_location": "Table 2 vs Table 8 (Appendix C)",
+      "confidence": 0.90,
+      "supporting_evidence": "Table 2 and Table 8 present the same with-CFG SOTA comparison on SiT-XL/2 (identical non-REG rows: SiT-XL/2 2.06, +REPA 800ep 1.42), but every '+ REG (ours)' row differs: @80 epochs FID 2.15 (Tab.2) vs 1.86 (Tab.8); @160: 1.75 vs 1.59; @480: 1.38 vs 1.40; @800: 1.34 vs 1.36. Consequently the Section 4.2 claim 'REG matches SiT-XL's quality in just 80 epochs (17× faster)' is false under Table 2 (REG@80 = 2.15 > SiT-XL/2's 2.06) and true only under Table 8 (1.86 < 2.06).",
+      "verifier_name": "verify-vision",
+      "snippet_id": "8054::TABLE::1"
+    },
+    {
+      "error_category": "Data Inconsistency (text-table)",
+      "error_location": "Section 4.3 vs Table 6 (entanglement ablation)",
+      "confidence": 0.90,
+      "supporting_evidence": "Section 4.3 (line 268) claims class-token entanglement gives 'FID improvements ranging from 0.95 to 6.33 points' and that DINOv2-B delivers 'a 19.18% FID reduction and 35.86% IS improvement compared to the SiT-B/2 baseline'. Actual deltas from Table 6 vs SiT-B/2 (FID 33.0, IS 43.70) are: CLIP-L Δ1.2, DINOv2-B Δ3.1, DINOv2-L Δ3.0 (range 1.2-3.1, not 0.95-6.33); FID reduction 3.1/33.0 = 9.4% (not 19.18%); IS improvement (52.3−43.70)/43.70 = 19.7% (not 35.86%). The text numbers match no row in the table it cites.",
+      "verifier_name": "verify-statistical",
+      "snippet_id": "8054::TABLE::5"
+    },
+    {
+      "error_category": "Statistical reporting",
+      "error_location": "Appendix C (training-iteration claim)",
+      "confidence": 0.90,
+      "supporting_evidence": "Line 470: 'demonstrating REG's excellent performance with a 1.40 FID at 480 epochs; it achieves performance comparable to REPA [1] at 800 epochs while requiring fewer than 40% of the training iterations.' 480/800 = 60%, so REG at 480 epochs requires 60% of REPA's epochs, not 'fewer than 40%'. The '<40%' figure would hold only for a 300-epoch run (300/800 = 37.5%), which the sentence does not reference; the printed pairing of 480 epochs with '<40%' is arithmetically impossible.",
+      "verifier_name": "verify-text",
+      "snippet_id": "8054::SECTION::11"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Equation (9), Section 3.2 (alignment loss)",
+      "confidence": 0.88,
+      "supporting_evidence": "The text (line 126) states alignment is performed at a single specific layer ('n = 4 for SiT-B/2 + REG and n = 8 for all other variants', corroborated by Table 12), but Eq (9) sums the similarity over n = 1..N: L_REPA := −E[(1/N) Σ_{n=1}^{N} sim(y_*, h_φ(h_t^{[n]}))]. N is defined in the same passage (line 122) as the number of visual tokens (f_* ∈ R^{N×D_vf}, e.g. 256), so the sum's upper index is both inconsistent with the single-layer alignment described in the prose and with the reuse of N as a token count. The loss as printed cannot be evaluated as written.",
+      "verifier_name": "verify-math",
+      "snippet_id": "8054::EQUATION::8"
+    },
+    {
+      "error_category": "Data inconsistency",
+      "error_location": "Table 3 (target-repr / depth / β ablation)",
+      "confidence": 0.85,
+      "supporting_evidence": "The configuration DINOv2-B, depth 4, β=0.03 (FID 15.22, IS 94.64) appears three times: as two identical rows (lines 221 and 224) with sFID 6.89, and once in the β-ablation block (line 229) with sFID 6.69. The sFID 6.69 is corroborated by Table 5 and Table 9 for the same configuration, so the duplicated 6.89 entries are internally inconsistent. A duplicated experimental condition carrying a conflicting metric indicates a table-assembly error.",
+      "verifier_name": "verify-vision",
+      "snippet_id": "8054::TABLE::2"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Appendix D (512×512 VAE latent spec)",
+      "confidence": 0.85,
+      "supporting_evidence": "Line 529 states RGB images 'are processed through the VAE [15] to yield 64×64×3 latents', but the paper's own Table 12 (line 584) lists the VAE input at 256×256 as 32×32×4 (Stable Diffusion VAE produces 4-channel latents with 8× downsampling). At 512×512 the same VAE yields 64×64×4, not 64×64×3; the spatial size 64×64 is consistent with 512/8, so only the channel count (3 vs 4) is internally inconsistent with the paper's own latent specification.",
+      "verifier_name": "verify-text",
+      "snippet_id": "8054::SECTION::12"
+    },
+    {
+      "error_category": "Data inconsistency",
+      "error_location": "Table 10 (CFG scale sweep)",
+      "confidence": 0.75,
+      "supporting_evidence": "Two data-integrity issues: (1) an exact duplicate row — '[0, 0.85], w=2.4' appears twice with identical values (FID 1.41, sFID 4.24, IS 299.65) at lines 537 and 540 of the same sweep; (2) all '+ REG (ours)' rows list #Params 675M, whereas the identical SiT-XL/2 + REG model is reported as 677M in Tables 1, 4, 9 and 12 (Table 4 even shows '+0.30%' over the 675M base). The parameter-count discrepancy is minor; the duplicated row indicates a table-assembly error.",
+      "verifier_name": "verify-vision",
+      "snippet_id": "8054::TABLE::9"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 64,
+    "snippets_verified": 64,
+    "errors_detected": 11,
+    "verifier_usage": {
+      "math_equation": 11,
+      "vision": 39,
+      "text": 14,
+      "statistical": 12,
+      "citation": 18,
+      "cross_section_consistency": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Exhaustive verification of the REG paper (mode=exhaustive, strictness=lenient) found 11 errors, including two high-confidence critical issues and several medium-confidence data inconsistencies. (1) CRITICAL — Equation (7) has a sign error: the printed score-velocity relation s = σ_t^{-1}(α_t v − α̇_t x)/(α_t σ̇_t − α̇_t σ_t) is missing a leading minus sign required by the paper's own Equations (3) and (6); verified by direct derivation and by the α=1, σ=t sanity case (confidence 0.96). (2) CRITICAL — Table 1 contradicts both the main text and Table 9 on every '+ REG (ours)' FID value (e.g., SiT-XL/2+REG @400K: 5.6 vs 3.4; @4M: 3.3 vs 1.8), while the Section 4.2 headline numbers (4.6 @400K for L/2, record-low 1.8 @4M, 9.2-point B/2 gain) match only Table 9; the Abstract's flagship 'comparable FID to REPA@4M' claim is false under Table 1 and the Introduction names 'SiT-L/2 + REPA' where the Abstract says '+ REG' (confidence 0.93-0.95). (3) Table 2 vs Table 8 also disagree on all REG with-CFG rows, and the '80 epochs matches SiT-XL' claim fails under Table 2 (confidence 0.90). Additional inconsistencies: Section 4.4 calls the CKNNA-FID relationship 'positive' while its own caption describes higher CKNNA with lower FID (0.95); Section 4.3 percentages (0.95-6.33 points, 19.18%, 35.86%) do not match Table 6 (1.2-3.1 points, 9.4%, 19.7%); Appendix C 'fewer than 40% of the training iterations' is arithmetically inconsistent with the stated 480/800 epochs (60%); Equation (9) sums the alignment loss over layers n=1..N despite text specifying a single alignment layer and reuses N as both token count and layer index (0.88); Table 3 duplicates the best configuration with conflicting sFID values (6.89 vs 6.69); Appendix D reports 64×64×3 VAE latents vs the paper's own 4-channel 32×32×4 spec; Table 10 contains an exact duplicate row and misstates REG params as 675M. Citation verification of 18 references found no fabrication or misattribution (the RepFusion[36] attribution is correct), and the 63×/23× convergence-acceleration claims and GPU-hour savings (98.36%/95.72%) are arithmetically sound. The number of high-confidence (≥0.85) errors affecting the paper's headline quantitative claims requires correction.",
+  "uncertainty_map": [
+    {
+      "snippet_id": "8054::EQUATION::6",
+      "snippet_type": "EQUATION",
+      "uncertainty": 0.96,
+      "route": "math"
+    },
+    {
+      "snippet_id": "8054::EQUATION::8",
+      "snippet_type": "EQUATION",
+      "uncertainty": 0.88,
+      "route": "math"
+    },
+    {
+      "snippet_id": "8054::TABLE::0",
+      "snippet_type": "TABLE",
+      "uncertainty": 0.95,
+      "route": "vision"
+    },
+    {
+      "snippet_id": "8054::TABLE::1",
+      "snippet_type": "TABLE",
+      "uncertainty": 0.90,
+      "route": "vision"
+    },
+    {
+      "snippet_id": "8054::TABLE::2",
+      "snippet_type": "TABLE",
+      "uncertainty": 0.85,
+      "route": "vision"
+    },
+    {
+      "snippet_id": "8054::TABLE::5",
+      "snippet_type": "TABLE",
+      "uncertainty": 0.90,
+      "route": "statistical"
+    },
+    {
+      "snippet_id": "8054::TABLE::9",
+      "snippet_type": "TABLE",
+      "uncertainty": 0.75,
+      "route": "vision"
+    },
+    {
+      "snippet_id": "8054::SECTION::0",
+      "snippet_type": "SECTION",
+      "uncertainty": 0.93,
+      "route": "text"
+    },
+    {
+      "snippet_id": "8054::SECTION::7",
+      "snippet_type": "SECTION",
+      "uncertainty": 0.95,
+      "route": "text"
+    },
+    {
+      "snippet_id": "8054::SECTION::11",
+      "snippet_type": "SECTION",
+      "uncertainty": 0.90,
+      "route": "text"
+    },
+    {
+      "snippet_id": "8054::SECTION::12",
+      "snippet_type": "SECTION",
+      "uncertainty": 0.85,
+      "route": "text"
+    }
+  ]
+}

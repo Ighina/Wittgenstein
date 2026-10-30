@@ -1,0 +1,435 @@
+{
+  "paper_name": "paper",
+  "paper_path": "/Users/iacopoghinassi/Documents/Github/Wittgenstein/data/paperaudit-workspace/10969-Task-Optimized_Convolutional_Recurrent_Networks_Align_with_Tactile_Process/paper.md",
+  "tag": "opus5",
+  "lean_project": "MATH_VERIFICATION/Paper",
+  "lean_project_kept": true,
+  "totals": {
+    "snippets_extracted": 13,
+    "routed_to_math": 8,
+    "routed_to_lean": 5,
+    "lean_passed": 2,
+    "lean_refuted": 3,
+    "lean_failed": 0,
+    "fallbacks_run": 0,
+    "errors_detected": 4
+  },
+  "results": [
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::0",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "3 Methods — whisker array adaptation",
+      "content": "although adult mice can exhibit maximal bite forces of approximately 8–10 Newtons [Freeman and Lemen, 2008, Table 1], our simulation clipping range of ±1000 milli-Newtons (±1 N) was chosen conservatively, possibly underestimating forces experienced during intense whisker-object interactions, and thus may not fully capture biological force ranges.",
+      "route": "verify-math",
+      "route_rationale": "A unit conversion compared against a cited force range; checkable by inspection, with no formal content worth a Lean project.",
+      "lean_result": null,
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.92,
+      "math_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.92,
+        "reasoning": "Two arithmetic assertions, both correct. The unit conversion is exact: $\\pm 1000$ milli-Newtons $= \\pm 1$ N. And the comparison is sound in the direction claimed: $1\\,\\mathrm{N} < 8\\text{–}10\\,\\mathrm{N}$, so clipping at $\\pm 1$ N is indeed conservative and may \"underestimate forces experienced during intense whisker-object interactions\", exactly as stated. Note the cited 8–10 N figure is a *bite* force, a different biomechanical quantity from whisker-shaft force, so the comparison is loose as a physical argument — but it is used only to argue the clipping range is conservative, which it supports.",
+        "predicted_error_category": null,
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": []
+      }
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::1",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "3 Methods — Neural Data Comparison",
+      "content": "of approximately 45–50 ms, corresponding neatly with the 15–20 Hz whisking frequency typical of rodents (50 ms per cycle at 20 Hz [Sofroniew and Svoboda, 2015]), and aligning specifically with our model’s integration scheme of five sub-timesteps (~9 ms each) per timestep.",
+      "route": "verify-math-lean",
+      "route_rationale": "Pure arithmetic tying a bin-width range (ms) to a frequency band (Hz) and to a sub-timestep count; a crisp real-arithmetic claim Lean can settle or refute outright.",
+      "lean_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::1",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.85,
+        "reasoning": "Formalised the asserted correspondence between the stated bin range and the stated whisking band, using the paper's own period convention $T = 1000/f$ ms (which it states explicitly at $f = 20$: \"50 ms per cycle at 20 Hz\"). The formalised claim was `∀ f : ℝ, 15 ≤ f → f ≤ 20 → 45 ≤ 1000/f ∧ 1000/f ≤ 50`. Lean proved its **negation**: at $f = 15$ Hz the period is $1000/15 = 66.\\overline{6}$ ms, which is above the stated 45–50 ms bin range by about 33%. A companion theorem `band_image` pins the exact image of the band: $f \\in [15, 20]$ Hz maps to periods $[50, 1000/15]$ ms, which meets the paper's $[45, 50]$ ms bin range only at the single endpoint 50 ms. The two sub-claims the paper states explicitly are correct and were proved as `period_twenty` ($1000/20 = 50$) and `five_sub_timesteps` ($5 \\times 9 = 45$); it is only the 15–20 Hz band attribution that fails. No hypothesis was added beyond the $15 \\le f \\le 20$ the paper itself names.",
+        "predicted_error_category": "Sign/Arithmetic error",
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__FORMULA_BLOCK__1_opus5.lean",
+          "formal_statement": "theorem band_mismatch :\n    ¬ (∀ f : ℝ, 15 ≤ f → f ≤ 20 → 45 ≤ period f ∧ period f ≤ 50) := by\n  intro h\n  have h15 := (h 15 (by norm_num) (by norm_num)).2\n  unfold period at h15\n  norm_num at h15",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::2",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "4 Results / Figure 5b — task performance vs neural fit",
+      "content": "Figure 5b inline annotation: \"r = 0.60\"\n\nFigure 5 caption: \"Plotting a best-fit line, we find the correlation r = 0.59.\"\n\nBody text: \"We found a linear trend between tactile supervised categorization performance and neural fit (r = 0.59, Fig. 5b)\"\n\nAbstract: \"showing a moderate correlation between supervised categorization performance and neural alignment\"\n\nIntroduction: \"we demonstrate a direct linear relationship between tactile categorization performance and neural fit\"",
+      "route": "verify-math",
+      "route_rationale": "Two reported values of one correlation coefficient; a reporting-consistency question with no derivation to check formally.",
+      "lean_result": null,
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.6,
+      "math_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::2",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.6,
+        "reasoning": "The same correlation is reported as $r = 0.60$ in the Figure 5b plot annotation and as $r = 0.59$ in both the Figure 5 caption and the body text. This is a reporting discrepancy rather than a derivation error, and it is consistent with one underlying value near $0.595$ rounded two different ways, so it falls under \"typos in accompanying text\" and is not flagged. Recorded here because it is a real internal inconsistency a copy-editor should resolve. Separately — and this is interpretive, not mathematical — the Introduction's \"direct linear relationship\" overstates what $r \\approx 0.59$ supports ($r^2 \\approx 0.35$, about a third of the variance); the Abstract's \"moderate correlation\" is the accurate description and the two framings sit in tension.",
+        "predicted_error_category": null,
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": []
+      }
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::3",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "4 Results — parameter counts of best neural models",
+      "content": "as the SimCLR-trained EAD with the IntersectionRNN encoder best matches the neural data with far fewer parameters (~3.80 × 10^7 parameters) than its supervised counterpart with a GPT-based attender (~6.38 × 10^7 parameters).",
+      "route": "verify-math",
+      "route_rationale": "A ratio of two reported parameter counts; empirical magnitudes with no formal content.",
+      "lean_result": null,
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85,
+      "math_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::3",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "The ordering is correct: $3.80 \\times 10^7 < 6.38 \\times 10^7$, so the SimCLR-trained IntersectionRNN EAD does have fewer parameters than its supervised GPT-attender counterpart. The ratio is $3.80/6.38 \\approx 0.596$, i.e. about 40% fewer parameters. \"Far fewer\" is a rhetorical stretch for a 1.68$\\times$ gap — it is within a factor of two, not an order of magnitude — but the claim is directionally true and no arithmetic is wrong. Not an erratum-level defect.",
+        "predicted_error_category": null,
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": []
+      }
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::4",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "Appendix A1 Whisk Dataset Generation — Table 1 and caption",
+      "content": "Table 1 rows:\n| (1) | 1000 Hz | 30 mm/s | -5, 0 mm | 0, 30, 90, 120° | 5, 8 mm | 40 mm | 316,192 |\n| (2) | 110 Hz | [30∼60] mm/s | -3, 0, 3 mm | [0∼359]° | 5 mm | [20∼60] mm | 2,076,048 |\n\nCaption: \"For dataset (2), the speed, rotation, and size are each sampled from the range 26 times. The total number of sweeps equals the number of sweep augmentation combinations × 9981 objects.\"\n\nBody (A1): \"Our whisking dataset uses the same 9981 ShapeNet objects and 117 category labels as in Zhuang et al. [2017]\"",
+      "route": "verify-math-lean",
+      "route_rationale": "An exact integer identity (total = combinations × objects) over values the table prints; divisibility over ℕ is exactly what a kernel check settles with certainty.",
+      "lean_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::4",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.9,
+        "reasoning": "The caption states an exact identity, not an approximation: total sweeps $=$ (number of augmentation combinations) $\\times\\,9981$. Dataset (1) enumerates its axes explicitly — 1 speed, 2 heights, 4 rotations, 2 distances, 1 size — giving $16$ combinations and so a predicted total of $16 \\times 9981 = 159{,}696$, not the reported $316{,}192$ (`dataset_one_mismatch`). Lean then proved the **strong** refutation `¬ ∃ c : ℕ, c * 9981 = 316192` (`dataset_one_not_multiple`): $9981 \\nmid 316{,}192$, since $316{,}192 = 31 \\times 9981 + 6781$ with $0 < 6781 < 9981$. So no combination count whatsoever can reconcile the stated rule with the reported total for dataset (1) — the inconsistency is independent of how one chooses to count the combinations. Dataset (2) is internally better behaved: $2{,}076{,}048 = 208 \\times 9981$ exactly (`dataset_two_multiple`), but $208$ is also not a possible combination count for the axes the table lists, because the table gives 3 height values while $3 \\nmid 208$ (`dataset_two_heights_contradiction`), and the literal product of the listed per-axis counts is $26 \\times 3 \\times 26 \\times 1 \\times 26 = 52{,}728 \\ne 208$.",
+        "predicted_error_category": "Sign/Arithmetic error",
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__FORMULA_BLOCK__4_opus5.lean",
+          "formal_statement": "theorem dataset_one_not_multiple : ¬ ∃ c : ℕ, c * objects = 316192 := by\n  intro ⟨c, hc⟩\n  have h : objects ∣ 316192 := ⟨c, by rw [← hc]; ring⟩\n  revert h\n  decide",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::5",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "Appendix A4 Neural Evaluation — Inter-Animal Consistency",
+      "content": "We found the mean pooled animal score was 0.175 with a s.e.m. of 0.161 and maximum score of 1.34.\n\nFigure 4 caption (main text): \"The mean animal-to-animal score is 0.18 and the maximum between all pairs of animals is 0.34.\"\n\nFigure 4b axis annotation: \"0.34 inter-animal max\"",
+      "route": "verify-math",
+      "route_rationale": "Reported summary statistics checked against the figure that plots them and against the range of a correlation; empirical, not formalisable.",
+      "lean_result": null,
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.75,
+      "math_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::5",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.75,
+        "reasoning": "The appendix reports the inter-animal consistency maximum as $1.34$, while the Figure 4 caption reports \"the maximum between all pairs of animals is 0.34\" and Figure 4b annotates its ceiling line at $0.34$. These cannot both describe the same statistic, and the accompanying means show they *are* the same statistic: $0.175$ (appendix) versus $0.18$ (caption) agree to rounding. Two independent reasons make $1.34$ the erroneous value: (i) the paper's metric is \"noise-corrected RSA Pearson's r\", and a value of $1.34$ sits outside the $[-1, 1]$ range of a correlation — attenuation correction can push an estimate past 1 under sampling noise, but the figure's own ceiling line is drawn at $0.34$, not $1.34$; (ii) every downstream claim in the Results (\"exceeded the average inter-animal neural consistency\", \"robustly passing the NeuroAI Turing Test\") is argued against the $0.18$/$0.34$ pair. The most likely reading is a dropped decimal — $1.34$ for $0.34$. Severity is minor because the paper's conclusions are built on the figure's $0.34$, so the argument survives the correction. Recorded separately and not flagged: the reported s.e.m. of $0.161$ on a mean of $0.175$ means the inter-animal baseline is not distinguishable from zero at conventional thresholds, which weakens — though does not contradict — the strength claimed for the Turing-test comparison.",
+        "predicted_error_category": "Domain/Constraint violation",
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": []
+      }
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::6",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "Appendix A5 Additional Experiments — Table 6 stimuli decoding",
+      "content": "For each of the 6 stimuli, we train a logistic regression model on the 5 other stimuli and test on the 1 held-out stimulus to decode either the shape (convex/concave) or the distance (far/medium/near).\n\nTable 6 header: | Model | Shape (chance=0.5) | Distance (chance=0.33) |\n\nContext: the 6 stimuli are \"concave/convex objects at three different distances (near, medium, far)\".",
+      "route": "verify-math",
+      "route_rationale": "Chance-level arithmetic for 2-class and 3-class decoding; verifiable by inspection.",
+      "lean_result": null,
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9,
+      "math_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::6",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "Both chance levels are correct for the stated label sets. Shape is binary (convex/concave), so chance $= 1/2 = 0.5$. Distance has three levels (near/medium/far), so chance $= 1/3 \\approx 0.33$. The leave-one-stimulus-out protocol does induce a training-set class imbalance — holding out one of the 6 stimuli leaves 2 of one shape against 3 of the other, and 1/2/2 across the three distances — but that affects a majority-class baseline, not the random-guess chance level the table cites, so the reported figures are the right reference points. No mathematical error.",
+        "predicted_error_category": null,
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": []
+      }
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::7",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "Appendix A5 Additional Experiments — Table 7 temporal masking",
+      "content": "| Model | Top-5 Cat. Accuracy | Neural Fit |\n| Inter+SimCLR | 0.15 | 0.96 |\n| Inter+SimCLR with Temporal Masking | 0.18 | 0.42 |\n| Resnet+Mamba+SimCLR | 0.23 | 0.70 |\n| Resnet+Mamba+SimCLR with T. Masking | 0.28 | 0.67 |\n\nCaption: \"Top-5 categorization task performance improved slightly (~5%), but neural fit scores decreased.\"\n\nBody: \"We have also tried adding temporal masking, where we randomly mask 75% of the timesteps as a tactile augmentation, but it did not significantly improve the task performance or neural fit score (Table 7).\"",
+      "route": "verify-math",
+      "route_rationale": "Percentage-change arithmetic over four tabulated numbers; inspection-level.",
+      "lean_result": null,
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.7,
+      "math_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::7",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.7,
+        "reasoning": "The qualitative claims hold. Both accuracies rose ($0.15 \\to 0.18$ and $0.23 \\to 0.28$) and both neural fits fell ($0.96 \\to 0.42$ and $0.70 \\to 0.67$), as the caption says. The \"$\\sim$5%\" is ambiguous but defensible: read as percentage points the gains are $+3$ and $+5$ points; read as relative change they are $+20\\%$ and $+21.7\\%$, so \"$\\sim$5%\" is only correct under the percentage-point reading, and only for the second model. That is imprecise reporting, not a mathematical error, so it is not flagged. Worth noting for the authors: the Inter+SimCLR neural fit more than halves ($0.96 \\to 0.42$), which is a substantial degradation that the body text's \"did not significantly improve the task performance or neural fit score\" understates.",
+        "predicted_error_category": null,
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": []
+      }
+    },
+    {
+      "snippet_id": "paper::EQUATION::0",
+      "snippet_type": "EQUATION",
+      "location": "Appendix A2.1 UGRNN — equations (1)–(4)",
+      "content": "• x_t^ℓ: input at time t and layer ℓ\n• s_t^ℓ: state at time t and layer ℓ\n• W^ℓ, U^ℓ: learnable weight matrices at layer ℓ\n• b^ℓ: bias terms at layer ℓ\n• ∘: element-wise multiplication\n• σ: sigmoid function\n• tanh: hyperbolic tangent function\n• ReLU: rectified linear unit function\n• *: linear transformation or convolution (depending on context)\n\n\nA2.1 UGRNN\n\nc_t^ℓ = tanh(W_c^ℓ * x_t^ℓ + U_c^ℓ * s_{t-1}^ℓ + b_c^ℓ) (1)\n\ng_t^ℓ = σ(W_g^ℓ * x_t^ℓ + U_g^ℓ * s_{t-1}^ℓ + b_g^ℓ + 1) (2)\n\ns_t^ℓ = g_t^ℓ ∘ s_{t-1}^ℓ + (1 - g_t^ℓ) ∘ c_t^ℓ (3)\n\nh_t^ℓ = s_t^ℓ (4)",
+      "route": "verify-math-lean",
+      "route_rationale": "A recurrent update rule whose asserted gating structure (sigmoid interpolation weight, tanh candidate, convex combination) implies a checkable state bound provable by induction.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::0",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.88,
+        "reasoning": "All operations in (1)–(4) are element-wise, so the vector recurrence reduces component-wise to a scalar one, which is what was formalised. Lean proved, for **arbitrary** real weights $W_c, U_c, W_g, U_g$, biases $b_c, b_g$ and inputs $x_t$ (the paper restricts none of them): (a) the gate of (2) satisfies $0 < g_t < 1$, so (3) is a genuine convex combination; (b) the candidate of (1) satisfies $-1 < c_t < 1$; (c) by induction over the input sequence, the state of (3) stays in $[-1,1]$ at every timestep given $s_0 \\in [-1,1]$ (`run_abs_le`); and (d) the `+ 1` inside the sigmoid of (2) is a genuine forget bias — $\\sigma(1) > 1/2$ and $\\sigma(z) < \\sigma(z+1)$ for all $z$ — biasing the cell toward retaining $s_{t-1}$. The printed recurrence is therefore well posed, and equation (4) ($h_t = s_t$) inherits the same bound. The structure also matches the published UGRNN of Collins et al. (2017): tanh candidate, sigmoid update gate with unit forget bias, convex interpolation $g \\circ s_{t-1} + (1-g) \\circ c_t$. No mathematical error.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__EQUATION__0_opus5.lean",
+          "formal_statement": "theorem run_abs_le : ∀ (xs : List ℝ) (s0 : ℝ), |s0| ≤ 1 →\n    |run Wc Uc bc Wg Ug bg xs s0| ≤ 1",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.88
+    },
+    {
+      "snippet_id": "paper::EQUATION::1",
+      "snippet_type": "EQUATION",
+      "location": "Appendix A2.2 IntersectionRNN — equations (5)–(10)",
+      "content": "• x_t^ℓ: input at time t and layer ℓ\n• s_t^ℓ: state at time t and layer ℓ\n• W^ℓ, U^ℓ: learnable weight matrices at layer ℓ\n• b^ℓ: bias terms at layer ℓ\n• ∘: element-wise multiplication\n• σ: sigmoid function\n• tanh: hyperbolic tangent function\n• ReLU: rectified linear unit function\n• *: linear transformation or convolution (depending on context)\n\n\nA2.2 IntersectionRNN\n\nm_t^ℓ = tanh(W_m^ℓ * x_t^ℓ + U_m^ℓ * s_{t-1}^ℓ + b_m^ℓ) (5)\n\nn_t^ℓ = ReLU(W_n^ℓ * x_t^ℓ + U_n^ℓ * s_{t-1}^ℓ + b_n^ℓ) (6)\n\np_t^ℓ = σ(W_p^ℓ * x_t^ℓ + U_p^ℓ * s_{t-1}^ℓ + b_p^ℓ + 1) (7)\n\ny_t^ℓ = σ(W_y^ℓ * x_t^ℓ + U_y^ℓ * s_{t-1}^ℓ + b_y^ℓ + 1) (8)\n\ns_t^ℓ = p_t^ℓ ∘ s_{t-1}^ℓ + (1 - p_t^ℓ) ∘ m_t^ℓ (9)\n\nh_t^ℓ = y_t^ℓ ∘ x_t^ℓ + (1 - y_t^ℓ) ∘ n_t^ℓ (10)",
+      "route": "verify-math-lean",
+      "route_rationale": "Two coupled gated interpolations (time direction and depth direction) whose asserted properties — bounded state, unbounded gated output — are formalisable and would break if the equations were mis-stated.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::1",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.86,
+        "reasoning": "Formalised component-wise, with arbitrary real weights, biases and inputs. Lean proved: (a) both gates (7) and (8) lie strictly in $(0,1)$; (b) the tanh candidate (5) lies in $(-1,1)$ and the ReLU branch (6) satisfies $n_t \\ge 0$; (c) the **state** recurrence (9) keeps $s_t \\in [-1,1]$ at every timestep by induction (`runState_abs_le`), exactly as for the UGRNN; (d) the **output** (10) is a convex combination of the layer input $x_t$ and the ReLU branch, hence lies between $\\min(x_t, n_t)$ and $\\max(x_t, n_t)$ (`stepOut_between`) and is therefore *deliberately not* confined to $[-1,1]$ — with zeroed output-branch weights and $x = 10$, equation (10) gives $\\sigma(1)\\cdot 10 > 5$ (`stepOut_unbounded`). That asymmetry (bounded state, input-passthrough output) is the defining feature of the Intersection RNN and matches Collins et al. (2017) exactly: tanh candidate gated in the time direction, ReLU candidate gated against the input in the depth direction, both gates carrying a unit bias. No mathematical error. One notational gap, not a mathematical one: $h_t$ is used in (4) and (10) but is absent from the appendix's symbol table, and equation (10)'s element-wise product $y_t \\circ x_t$ implicitly requires the layer to be shape-preserving ($h_t$ and $x_t$ of equal shape) — a condition the paper never states but which the original architecture also assumes.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__EQUATION__1_opus5.lean",
+          "formal_statement": "theorem runState_abs_le : ∀ (xs : List ℝ) (s0 : ℝ), |s0| ≤ 1 →\n    |runState Wm Um bm Wp Up bp xs s0| ≤ 1\n\ntheorem stepOut_between (x s : ℝ) :\n    min x (nval Wn Un bn x s) ≤ stepOut Wn Un bn Wy Uy by' x s ∧\n      stepOut Wn Un bn Wy Uy by' x s ≤ max x (nval Wn Un bn x s)",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.86
+    },
+    {
+      "snippet_id": "paper::EQUATION::2",
+      "snippet_type": "EQUATION",
+      "location": "Appendix A4 Neural Evaluation — RSA Correlation, equation (11)",
+      "content": "For the neurons of animal A to animal B in the set of animals 𝒜 we estimate the RSA correlation:\n$$\\left\\langle \\mathrm{RSA}\\!\\left(t^A, t^B\\right) \\right\\rangle_{A\\in\\mathcal{A}:(A,B)\\in\\mathcal{A}\\times\\mathcal{A}} \\sim \\left\\langle \\frac{\\mathrm{RSA}\\!\\left(s_1^A, s_2^B\\right)}{\\sqrt{\\widetilde{\\mathrm{RSA}}\\!\\left(s_1^A, s_2^A\\right)\\times \\widetilde{\\mathrm{RSA}}\\!\\left(s_1^B, s_2^B\\right)}} \\right\\rangle_{A\\in\\mathcal{A}:(A,B)\\in\\mathcal{A}\\times\\mathcal{A}} \\quad.\\quad (11)$$\n\nEach neuron in our analysis is associated with a value for when it was a target animal (B), averaged over subsampled source neurons and 1000 bootstrapped trials. This yields a vector of these average values, which we can take median and standard error of the mean (s.e.m.) over, as we do with standard explained variance metrics.",
+      "route": "verify-math",
+      "route_rationale": "A noise-corrected consistency estimator over domain objects (animals, trials, half-splits) the paper never pins down formally; unformalisable without inventing the sampling model.",
+      "lean_result": null,
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.75,
+      "math_result": {
+        "snippet_id": "paper::EQUATION::2",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.75,
+        "reasoning": "Equation (11) is the standard correction-for-attenuation estimator: an observed cross-animal RSA divided by the geometric mean of the two within-animal split-half reliabilities, $\\mathrm{RSA}(s_1^A, s_2^B) / \\sqrt{\\widetilde{\\mathrm{RSA}}(s_1^A,s_2^A) \\times \\widetilde{\\mathrm{RSA}}(s_1^B,s_2^B)}$. The structure is correct and matches established practice: the numerator uses opposite half-splits across the two animals (so its noise is independent), while the denominator uses same-animal half-splits, which is exactly why the accompanying text says the Spearman-Brown correction applies to the denominator terms \"individually ... (unlike the numerator)\". Two defects, neither an algebraic error. First, the averaging index set $A \\in \\mathcal{A} : (A,B) \\in \\mathcal{A} \\times \\mathcal{A}$ is vacuous — for $A, B \\in \\mathcal{A}$ the side condition always holds — so as written it fails to express the $A \\ne B$ exclusion the prose states (\"between one mouse and every other mouse\"); taken literally it includes the self-pair $A = B$, which would inflate the baseline. Second, the square root is undefined when exactly one denominator term is negative; this is settled formally in the companion snippet `paper::EQUATION::3`, and the paper mitigates it in practice by filtering to neurons with corrected reliability above $0.5$, which forces both terms positive. Neither defect is an invalid manipulation, so no error is flagged.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      }
+    },
+    {
+      "snippet_id": "paper::EQUATION::3",
+      "snippet_type": "EQUATION",
+      "location": "Appendix A4 Neural Evaluation — Spearman-Brown Correction",
+      "content": "The Spearman-Brown correction can be applied to each of the terms in the denominator individually, as they are each correlations of observations from half the trials of the same underlying process to itself (unlike the numerator).\n\n$$\\widetilde{\\mathrm{RSA}}(X, Y) := \\mathrm{Corr}(\\mathrm{RDM}(x), \\mathrm{RDM}(y))$$\n$$= \\frac{2\\,\\mathrm{RSA}(X, Y)}{1 + \\mathrm{RSA}(X, Y)}.$$",
+      "route": "verify-math-lean",
+      "route_rationale": "A displayed definitional chain reducing to the closed-form identity r = 2r/(1+r); its solution set is exactly the kind of algebra a kernel check settles.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::3",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.8,
+        "reasoning": "The block is printed as a chain of two equalities sharing the left-hand side $\\widetilde{\\mathrm{RSA}}(X,Y)$. The first line *defines* it as $\\mathrm{Corr}(\\mathrm{RDM}(x), \\mathrm{RDM}(y))$ — which is precisely what the paper calls $\\mathrm{RSA}$ elsewhere (\"RSA compares the pairwise dissimilarity structure of neural responses and model activations\", reported as \"RSA Pearson's r\") — while the second line sets it equal to $2\\,\\mathrm{RSA}/(1+\\mathrm{RSA})$. Writing $r = \\mathrm{RSA}(X,Y)$, the block asserts $r = 2r/(1+r)$. Lean refuted that (`chain_refuted`: at $r = 1/2$ the correction gives $2/3 \\ne 1/2$) and characterised its entire solution set (`fixed_points`: for $r \\ne -1$, $r = 2r/(1+r) \\iff r = 0 \\lor r = 1$). So the two displayed lines are mutually consistent only at the two degenerate values $0$ and $1$: the first line must have been intended as the definition of $\\mathrm{RSA}$, with the tilde denoting the *corrected* quantity. Two further properties were proved on the same block. The correction map does not preserve the correlation range — $\\widetilde{\\cdot}(-1/2) = -2 < -1$ (`sb_escapes_range`) — and consequently the product under the square root in equation (11) can be negative, leaving that square root undefined (`denominator_can_be_negative`), which is consistent with the paper's own report of NaN per-layer scores in Fig. A2. Crucially, on the range the paper actually filters to (corrected reliability $> 0.5$, i.e. raw $r > 1/3 > 0$, proved as `threshold_translation`) the map is well behaved: it strictly increases $r$ and stays below 1 (`sb_wellbehaved`). The defect is therefore in the printed definition line, not in the numerical practice — which is why the confidence is 0.8 rather than the 0.9 a REFUTED verdict would usually carry: the Lean algebra is airtight, but the paper never defines its lowercase $x, y$ against its uppercase $X, Y$, leaving a sliver of room for a reading under which the first line means something it does not say.",
+        "predicted_error_category": "Fractional/Rational error",
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__EQUATION__3_opus5.lean",
+          "formal_statement": "theorem chain_refuted : ¬ (∀ r : ℝ, -1 < r → r < 1 → r = sb r) := by\n  intro h\n  have h2 := h (1/2) (by norm_num) (by norm_num)\n  unfold sb at h2\n  norm_num at h2\n\ntheorem fixed_points (r : ℝ) (h : r ≠ -1) : r = sb r ↔ (r = 0 ∨ r = 1)",
+          "compiler_feedback": "Paper/TMP.lean:76:47: warning: missing space in the source — '(0:ℝ) <' should be written as '(0 : ℝ)' (style linter only; no severity-1 diagnostic, no sorry)",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::DEFINITION::0",
+      "snippet_type": "DEFINITION",
+      "location": "3 Methods — Neural Data Comparison, reliability filter",
+      "content": "we compute split-half internal consistency of the neural responses across trials and retain only neurons with a Spearman-Brown–corrected reliability greater than 0.5.",
+      "route": "verify-math",
+      "route_rationale": "A threshold on a corrected reliability; its translation to the raw correlation scale is one line of algebra, already covered by the Lean treatment of the correction formula.",
+      "lean_result": null,
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9,
+      "math_result": {
+        "snippet_id": "paper::DEFINITION::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "The criterion is well defined and internally consistent with the correction formula the appendix gives. Under $\\tilde r = 2r/(1+r)$, the stated threshold $\\tilde r > 0.5$ is equivalent to $r > 1/3$ on the raw split-half correlation (proved in Lean as `threshold_translation` while verifying `paper::EQUATION::3`). Retaining only neurons above it is standard reliability screening, and it has the side benefit of guaranteeing both denominator terms of equation (11) are positive, so the square root there is well defined on the filtered subset. No mathematical error.",
+        "predicted_error_category": null,
+        "snippet_type": "DEFINITION",
+        "contradiction_locations": []
+      }
+    }
+  ],
+  "findings": [
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::4",
+      "category": "Formally refuted",
+      "severity": "minor",
+      "confidence": 0.9,
+      "evidence": "Table 1's caption states an exact identity — total sweeps $=$ (augmentation combinations) $\\times\\,9981$ objects — but dataset (1)'s reported total of $316{,}192$ is **not a multiple of 9981**. Lean proved `¬ ∃ c : ℕ, c * 9981 = 316192`, since $316{,}192 = 31 \\times 9981 + 6781$ with $0 < 6781 < 9981$. No combination count can reconcile the rule with the reported figure, so the inconsistency is independent of how the combinations are counted. The axes the table enumerates for dataset (1) give $1 \\times 2 \\times 4 \\times 2 \\times 1 = 16$ combinations and hence $16 \\times 9981 = 159{,}696$, roughly half the reported total. Dataset (2) fares better — $2{,}076{,}048 = 208 \\times 9981$ exactly — but $208$ is likewise not a possible combination count for its listed axes, because the table gives 3 height values and $3 \\nmid 208$ (while the literal product $26 \\times 3 \\times 26 \\times 1 \\times 26 = 52{,}728$).",
+      "verifier": "verify-math-lean",
+      "exact_quote": "The total number of sweeps equals the number of sweep augmentation combinations × 9981 objects."
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::1",
+      "category": "Formally refuted",
+      "severity": "minor",
+      "confidence": 0.85,
+      "evidence": "The stated 45–50 ms bin range does not correspond to a 15–20 Hz band. Using the paper's own convention (it writes \"50 ms per cycle at 20 Hz\", i.e. period $= 1000/f$ ms), Lean refuted `∀ f ∈ [15, 20], 1000/f ∈ [45, 50]`: at $f = 15$ Hz the period is $1000/15 = 66.\\overline{6}$ ms, about 33% above the top of the stated range. The exact image of the band is $[50,\\,1000/15]$ ms, which meets $[45, 50]$ ms only at the single endpoint 50 ms — so the bin range actually corresponds to roughly 20–22 Hz, not 15–20 Hz. The paper's two explicit sub-computations are both correct and were proved: $1000/20 = 50$ ms and $5 \\times 9 = 45$ ms.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "of approximately 45–50 ms, corresponding neatly with the 15–20 Hz whisking frequency typical of rodents (50 ms per cycle at 20 Hz [Sofroniew and Svoboda, 2015]), and aligning specifically with our model’s integration scheme of five sub-timesteps (~9 ms each) per timestep."
+    },
+    {
+      "snippet_id": "paper::EQUATION::3",
+      "category": "Formally refuted",
+      "severity": "minor",
+      "confidence": 0.8,
+      "evidence": "The Spearman-Brown block is printed as a chain of two equalities sharing the left-hand side $\\widetilde{\\mathrm{RSA}}(X,Y)$: the first line defines it as $\\mathrm{Corr}(\\mathrm{RDM}(x),\\mathrm{RDM}(y))$ — which is what the paper calls $\\mathrm{RSA}$ everywhere else — and the second sets it equal to $2\\,\\mathrm{RSA}/(1+\\mathrm{RSA})$. With $r = \\mathrm{RSA}(X,Y)$ the block therefore asserts $r = 2r/(1+r)$. Lean refuted this and characterised the whole solution set: for $r \\ne -1$, $r = 2r/(1+r) \\iff r = 0 \\lor r = 1$. The two lines are thus mutually consistent only at the degenerate values $0$ and $1$ — at $r = 1/2$ the correction gives $2/3$. The first line was evidently meant to define $\\mathrm{RSA}$, with the tilde reserved for the corrected quantity. Lean additionally showed the correction map leaves the correlation range ($\\widetilde{\\cdot}(-1/2) = -2$), so the square root in equation (11) can be undefined — matching the paper's own NaN per-layer scores in Fig. A2 — while confirming the map is well behaved on the range the paper actually filters to ($r > 1/3$), where it strictly increases $r$ and stays below 1.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "$$\\widetilde{\\mathrm{RSA}}(X, Y) := \\mathrm{Corr}(\\mathrm{RDM}(x), \\mathrm{RDM}(y))$$\n$$= \\frac{2\\,\\mathrm{RSA}(X, Y)}{1 + \\mathrm{RSA}(X, Y)}.$$"
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::5",
+      "category": "Domain/Constraint violation",
+      "severity": "minor",
+      "confidence": 0.75,
+      "evidence": "The appendix reports the inter-animal consistency maximum as $1.34$; the Figure 4 caption reports \"the maximum between all pairs of animals is 0.34\" and Figure 4b draws its ceiling line at $0.34$. The matching means — $0.175$ in the appendix versus $0.18$ in the caption — show these describe the same statistic, so the two maxima cannot both be right. A value of $1.34$ also sits outside the $[-1, 1]$ range of the \"noise-corrected RSA Pearson's r\" the paper reports, and every downstream claim (\"exceeded the average inter-animal neural consistency\", \"robustly passing the NeuroAI Turing Test\") is argued against $0.18$/$0.34$. Most likely a dropped decimal point, $1.34$ for $0.34$.",
+      "verifier": "verify-math",
+      "exact_quote": "We found the mean pooled animal score was 0.175 with a s.e.m. of 0.161 and maximum score of 1.34."
+    }
+  ],
+  "verdict": "MINOR_ERRORS",
+  "verdict_confidence": 0.85,
+  "summary": "Thirteen self-contained mathematical objects were extracted from the manuscript and all thirteen were checked: five routed to formal Lean 4 verification, eight to informal review. The Lean queue ran serially in one shared project and returned **2 PASSED, 3 REFUTED, 0 FAILED** across 5 cycles with no stuck cycles, so no Lean failure needed an informal fallback and nothing was left unsettled by the formal arm.\n\n**What Lean settled clean.** The paper's two substantive mathematical objects — the UGRNN update rules (1)–(4) and the IntersectionRNN update rules (5)–(10) of Appendix A2 — both PASSED. For arbitrary weights, biases and inputs, Lean proved by induction that the gated state recurrences are well-posed convex combinations keeping the state in $[-1,1]$ at every timestep, that the sigmoid gates lie strictly in $(0,1)$, that the `+ 1` terms are genuine forget biases pushing the gates above $1/2$, and that the IntersectionRNN *output* (10) is deliberately unbounded — a convex combination of the layer input and the ReLU branch, lying between $\\min(x_t, n_t)$ and $\\max(x_t, n_t)$. That bounded-state / unbounded-output asymmetry is the defining feature of the published Intersection RNN, and both cells reproduce Collins et al. (2017) faithfully. The architectural mathematics the paper's conclusions rest on is sound.\n\n**What Lean refuted.** Three refutations, all in methods and appendix bookkeeping rather than in any headline claim. (i) Table 1's stated identity \"total sweeps $=$ combinations $\\times\\,9981$ objects\" is unsatisfiable for dataset (1): $9981 \\nmid 316{,}192$, so *no* combination count reproduces the reported total, and the enumerated axes predict $159{,}696$. Dataset (2)'s total is an exact multiple ($208 \\times 9981$) but $208$ is not a product of its listed per-axis counts either, since the table gives 3 heights and $3 \\nmid 208$. (ii) The 45–50 ms neural bin range does not correspond to the stated 15–20 Hz whisking band: the band maps to periods $[50,\\,66.\\overline{6}]$ ms, overlapping the bin range only at the endpoint 50 ms. The paper's own two sub-computations ($1000/20 = 50$, $5 \\times 9 = 45$) are correct; only the band attribution fails. (iii) The Spearman-Brown block of Appendix A4 is printed as a chain that, under the paper's own definition of RSA, asserts $r = 2r/(1+r)$ — an identity Lean showed holds only at $r \\in \\{0, 1\\}$. The first displayed line was plainly meant to define $\\mathrm{RSA}$, not $\\widetilde{\\mathrm{RSA}}$.\n\n**The one informal finding.** Appendix A4 reports the inter-animal consistency maximum as $1.34$ while Figure 4's caption and its plotted ceiling line both give $0.34$; the agreeing means ($0.175$ vs $0.18$) identify these as the same statistic, and $1.34$ lies outside the range of the correlation metric being reported. A dropped decimal is the likely cause.\n\n**Agreement between the two arms.** The verifiers did not disagree anywhere. The one place they interlock rather than conflict is the square root in equation (11): informal review flagged it as a domain risk, and the Lean work on the Spearman-Brown formula confirmed both that the corrected terms can leave $[-1,1]$ (making that root undefined, consistent with the paper's own NaN layer scores in Fig. A2) and that the paper's reliability filter ($\\tilde r > 0.5$, i.e. raw $r > 1/3$) rules the pathology out in practice.\n\n**Verdict reasoning.** All four confident findings are `minor`: each is an arithmetic or definitional slip in dataset accounting, bin-width description, or displayed notation, and none propagates into the model architecture, the training setup, or the neural-alignment conclusions. Nothing reaches `critical`, and the two main mathematical objects carry machine-checked clean proofs — hence MINOR_ERRORS at high confidence. Three sub-threshold observations are recorded in the per-snippet reasoning but deliberately not raised as findings: the $r = 0.59$ / $r = 0.60$ split between Figure 5b's annotation and its caption; the reported inter-animal s.e.m. of $0.161$ on a mean of $0.175$, which leaves that baseline statistically indistinguishable from zero and so weakens the strength claimed for the NeuroAI Turing Test comparison; and Table 7's \"$\\sim$5%\" improvement, which is correct only as percentage points and only for one of the two models (the relative gains are $\\sim$20%).\n\n**Lean project lifecycle.** `MATH_VERIFICATION/Paper` already existed on disk before this run, shared with verifications of other papers, so Step 0 reused it rather than creating it. Per verify-math-lean's non-negotiable deletion rule — \"if Step 0 reused an existing project rather than creating it, treat it as `--keep-lean` and do not delete it\" — the final call did not remove it; `lean_project_kept` is therefore `true`. All five proofs were archived under `Paper/Verified/*_opus5.lean` and every per-snippet scratch file (`TMP.lean`, `claim.md`) was deleted."
+}

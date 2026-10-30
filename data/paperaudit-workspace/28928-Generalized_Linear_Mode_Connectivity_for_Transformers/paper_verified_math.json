@@ -1,0 +1,279 @@
+{
+  "paper_name": "paper",
+  "paper_path": "/Users/iacopoghinassi/Documents/Github/Wittgenstein/data/paperaudit-workspace/28928-Generalized_Linear_Mode_Connectivity_for_Transformers/paper.md",
+  "lean_project": "MATH_VERIFICATION/Paper",
+  "lean_project_kept": true,
+  "totals": {
+    "snippets_extracted": 9,
+    "routed_to_math": 5,
+    "routed_to_lean": 4,
+    "lean_passed": 4,
+    "lean_refuted": 0,
+    "lean_failed": 0,
+    "fallbacks_run": 0,
+    "errors_detected": 1
+  },
+  "results": [
+    {
+      "snippet_id": "paper::EQUATION::0",
+      "snippet_type": "EQUATION",
+      "location": "3.1 Symmetry classes",
+      "content": "This symmetry arises in components that are linearly decomposable—that is, their functional output satisfies the following identity: f(x) = f(αx) + f((1−α)x), ∀α ∈ [0,1], which holds for piecewise-linear functions such as ReLU, PReLU, and the absolute value.",
+      "route": "verify-math-lean",
+      "route_rationale": "Crisp algebraic claim (the linearly-decomposable identity that grounds the semi-permutation class); machine-checkable for ReLU/abs over the paper's exact domain.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::0",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.98,
+        "reasoning": "Formalised the paper's linearly-decomposable identity f(x) = f(αx) + f((1−α)x), ∀α ∈ [0,1] (Section 3.1 'Symmetry classes'), instantiated for ReLU(x) = max(x, 0) as the ONE claim: relu x = relu (α*x) + relu ((1-α)*x) for all real x and all α ∈ [0,1]. Hypotheses are exactly the paper's domain: 0 ≤ α and α ≤ 1 (interval [0,1]), x arbitrary real — no strengthening or weakening. Proof: by_cases on 0 ≤ x; in each branch sign facts mul_nonneg / mul_nonpos_of_nonneg_of_nonpos give the signs of α·x and (1−α)·x from the sign of x (using α ≥ 0 and 1−α ≥ 0, the latter via sub_nonneg.mpr hα1), then max_eq_left / max_eq_right collapse the three ReLUs and ring closes both branches. The Lean compiler accepted the proof with no errors, no 'declaration uses sorry' warning, and lean_verify reports axioms [propext, Classical.choice, Quot.sound] (no sorryAx). Optional secondary claim from claim.md (|x| = |αx| + |(1−α)x| for α ∈ [0,1], proved via abs_of_nonneg/abs_of_nonpos) also compiles cleanly. The identity as stated is mathematically true for ReLU over the paper's exact domain.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean",
+          "formal_statement": "noncomputable def relu (x : ℝ) : ℝ := max x 0\n\ntheorem relu_linear_decomposition (x α : ℝ) (hα0 : 0 ≤ α) (hα1 : α ≤ 1) :\n    relu x = relu (α * x) + relu ((1 - α) * x) := by\n  by_cases hx : 0 ≤ x\n  · have hαx : 0 ≤ α * x := mul_nonneg hα0 hx\n    have hαmx : 0 ≤ (1 - α) * x := mul_nonneg (sub_nonneg.mpr hα1) hx\n    rw [relu, relu, relu]\n    rw [max_eq_left hx, max_eq_left hαx, max_eq_left hαmx]\n    ring\n  · have hx' : x ≤ 0 := le_of_not_ge hx\n    have hαx : α * x ≤ 0 := mul_nonpos_of_nonneg_of_nonpos hα0 hx'\n    have hαmx : (1 - α) * x ≤ 0 := mul_nonpos_of_nonneg_of_nonpos (sub_nonneg.mpr hα1) hx'\n    rw [relu, relu, relu]\n    rw [max_eq_right hx', max_eq_right hαx, max_eq_right hαmx]\n    ring",
+          "compiler_feedback": "lean_diagnostic_messages (file Paper/TMP.lean): {\"result\":{\"partial\":false,\"still_elaborating_lines\":null,\"success\":true,\"timed_out\":false,\"items\":[],\"failed_dependencies\":[]}} — zero diagnostics (no severity-1 errors, no 'declaration uses sorry' warning). lean_verify (relu_linear_decomposition): {\"axioms\":[\"propext\",\"Classical.choice\",\"Quot.sound\"],\"warnings\":[{\"line\":0,\"pattern\":\"ripgrep (rg) not installed - warnings unavailable\"}]} — no sorryAx. `lake env lean Paper/TMP.lean` (from MATH_VERIFICATION/Paper): stdout empty, exit status 0.",
+          "axioms": ["propext", "Classical.choice", "Quot.sound"],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.98
+    },
+    {
+      "snippet_id": "paper::THEOREM::0",
+      "snippet_type": "THEOREM",
+      "location": "3.1 Symmetry classes / Table 1",
+      "content": "Table 1 caption: \"Hierarchical organization of symmetry classes in neural network components, illustrating their associated transformation structures and representative examples. Each class is a strict subset of the one below it.\" Table rows: S_1 Permutation — Structure \"Permutation matrices (P)\"; S_2 Semi-permutation — Structure \"Sparse, stochastic matrices (P̃)\"; S_3 Orthogonal — Structure \"Orthogonal matrices (O)\"; S_4 Invertible — Structure \"Full-rank matrices\". Also from §3.1: semi-permutation \"is defined by matrices P ∈ ℝ^{M×N}, where M ≥ N, each column is a stochastic vector, and each row contains at most one positive entry.\"",
+      "route": "verify-math",
+      "route_rationale": "Set-containment claim about the four matrix families; checkable by counterexample, but the intended reading is ambiguous between matrix containment and a looser 'progressive generality' statement, so an informal reading is the right tool.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::THEOREM::0",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.9,
+        "reasoning": "The claim that the four matrix families are strictly nested fails at the second inclusion under the paper's own definition. The paper defines semi-permutation matrices as P ∈ R^(M×N) with M ≥ N, each column a stochastic vector, and each row containing at most one positive entry. Under this literal definition, P = [0.5, 0.5]^T ∈ R^(2×1) is a semi-permutation matrix: its single column sums to 1 (stochastic), each row contains exactly one positive entry, and M = 2 ≥ N = 1. But it is not orthogonal: P^T P = (0.5)^2 + (0.5)^2 = 0.25 + 0.25 = 0.5 ≠ 1. Hence semi-permutation ⊄ orthogonal, and 'each class is a strict subset of the one below it' is false. Inclusion 1 (permutation ⊂ semi-permutation) holds and is strict only if rectangular matrices (M > N) are admitted; if only square matrices were intended, the semi-permutation conditions force a permutation matrix (sum of all entries = N from column stochasticity; ≤ 1 positive entry per row with entries ≤ 1 forces exactly one 1 per row and column), so S_1 = S_2 and strictness fails at the first inclusion instead. Inclusion 3 (orthogonal ⊂ invertible) is correct for square matrices (P^T = P^{-1}), strictly (e.g., diag(2,1)). Thus under the most natural reading of the definitions as stated — which explicitly allows rectangular matrices via M ≥ N — the strict-nesting claim is mathematically incorrect, an erratum-level error in the paper's central structural claim. A fix would require an additional constraint on the semi-permutation class (e.g., at most one positive entry per column as well), which is not stated in the paper.",
+        "predicted_error_category": "Calculus/Proof error",
+        "snippet_type": "THEOREM",
+        "contradiction_locations": []
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::THEOREM::1",
+      "snippet_type": "THEOREM",
+      "location": "3.2.1 Feed-forward layer",
+      "content": "FF(x) = W_2 φ(W_1 x + b_1) + b_2, where φ is an elementwise activation function, typically GELU or ReLU. For any permutation matrix P_FF ∈ ℝ^{h×h}, the reparameterization W'_1 = P_FF W_1, W'_2 = W_2 P_FF^⊤, b'_1 = P_FF b_1 yields an equivalent function: FF'(x) = FF(x).",
+      "route": "verify-math-lean",
+      "route_rationale": "Clean equivariance proof (elementwise activation under a permutation) — the functional-equivalence claim behind feed-forward alignment.",
+      "lean_result": {
+        "snippet_id": "paper::THEOREM::1",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.98,
+        "reasoning": "Formalised the paper's claim that the feed-forward layer reparameterization by a permutation matrix yields an equivalent function, FF'(x) = FF(x). Vectors are ι → ℝ for a finite index type ι; the permutation matrix is permMatrix σ i j = if σ i = j then 1 else 0 for σ : Equiv.Perm ι (so (permMatrix σ *ᵥ v) i = v (σ i)); the elementwise activation is φ with Elementwise φ := ∃ g : ℝ → ℝ, ∀ v i, φ v i = g (v i). Hypotheses are exactly those of the claim: φ elementwise, σ a permutation, dimensions match (W1, W2 : Matrix ι ι ℝ; b1, b2, x : ι → ℝ) — no linearity of W1/W2 assumed. The proof has three parts: (1) permMatrix_mulVec: the matrix acts as index permutation; (2) permMatrix_transpose_mul_self: P^⊤P = 1 (via Equiv.sum_comp and a by_cases split), and its corollary permMatrix_transpose_mulVec: P^⊤(P w) = w; (3) elementwise_permMatrix_mulVec: φ(P z) = P (φ z) — the substantive equivariance fact. The main theorem FF'_eq_FF then chains these: (W2 Pᵀ)*ᵥ φ((P W1)*ᵥ x + P*ᵥ b1) + b2 = W2*ᵥ φ(W1*ᵥ x + b1) + b2 by rewriting (P W1)*ᵥ x → P*ᵥ(W1*ᵥ x) and (W2 Pᵀ)*ᵥ y → W2*ᵥ(Pᵀ*ᵥ y), distributing P over the sum (Matrix.mulVec_add), applying equivariance, and cancelling PᵀP = 1. Lean compiler verdict: file compiles with zero diagnostics (no errors, no warnings), `lake env lean Paper/TMP.lean` exits 0, and `lean_verify FFPaper.FF'_eq_FF` reports axioms [propext, Classical.choice, Quot.sound] with no sorryAx. The claim is true as stated; the paper's permutation reparameterization is mathematically sound.",
+        "predicted_error_category": null,
+        "snippet_type": "THEOREM",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean",
+          "formal_statement": "theorem FF'_eq_FF {W1 W2 : Matrix ι ι ℝ} {φ : (ι → ℝ) → (ι → ℝ)} (hφ : Elementwise φ) (σ : Equiv.Perm ι) (b1 b2 x : ι → ℝ) : FF' W1 W2 φ b1 b2 x σ = FF W1 W2 φ b1 b2 x := by unfold FF FF'; simp only [← Matrix.mulVec_mulVec]; rw [← Matrix.mulVec_add]; rw [elementwise_permMatrix_mulVec hφ σ (W1 *ᵥ x + b1)]; rw [permMatrix_transpose_mulVec]  (supporting lemmas: permMatrix_mulVec, permMatrix_transpose_mul_self : (permMatrix σ)ᵀ * permMatrix σ = 1, permMatrix_transpose_mulVec, elementwise_permMatrix_mulVec)",
+          "compiler_feedback": "lean_diagnostic_messages: [] (clean, no errors, no warnings). lean_verify FFPaper.FF'_eq_FF: axioms [propext, Classical.choice, Quot.sound], no sorryAx. lake env lean Paper/TMP.lean: exit code 0, no output.",
+          "axioms": ["propext", "Classical.choice", "Quot.sound"],
+          "cycles_used": 0,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.98
+    },
+    {
+      "snippet_id": "paper::EQUATION::1",
+      "snippet_type": "EQUATION",
+      "location": "3.2.2 Multi-head attention",
+      "content": "head_i(Q,K,V) = softmax((Q W_i^Q)(K W_i^K)^⊤/√d_k)(V W_i^V) W_i^O. Inter-head: \"heads can be decomposed linearly: head(X; QK, OV) = head(X; QK, α·OV) + head(X; QK, (1−α)·OV), for any α ∈ ℝ.\"",
+      "route": "verify-math",
+      "route_rationale": "Straightforward linearity of the head output in the OV circuit (softmax attention matrix depends only on QK); checkable by inspection.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::1",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.98,
+        "reasoning": "The claim is correct. Writing head(X; QK, OV) = A·(X·OV) with A = softmax(X QK X^T/sqrt(d_k)), the attention matrix A depends only on X and QK, never on OV (the softmax input involves only QK, not the value/output weights). Matrix multiplication is bilinear over R, so the scalar factors out of both products: head(X; QK, α·OV) = A·(X·(α·OV)) = A·(α·(X·OV)) = α·(A·(X·OV)) = α·head(X; QK, OV). Similarly head(X; QK, (1−α)·OV) = (1−α)·head(X; QK, OV). Summing: α·H + (1−α)·H = (α + 1 − α)·H = 1·H = H = head(X; QK, OV), where H = A·(X·OV). The identity holds for ALL real α because α + (1−α) = 1 is an identity in R; the claim does NOT require α ∈ [0,1] — the decomposition is exact for every α ∈ R as stated (if α were restricted to [0,1] the claim would be weaker, not stronger, but as printed it is fully valid). No invalid algebraic step, no sign error, no domain constraint violated. The identity would fail only if attention depended on OV/V, which it does not.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.98
+    },
+    {
+      "snippet_id": "paper::EQUATION::2",
+      "snippet_type": "EQUATION",
+      "location": "3.2.3 Residual",
+      "content": "LayerNorm(Z) = RMSNorm(ZM) · diag(α)√D + 1_N β^⊤, where α and β are learnable scale and offset parameters, respectively, specific to each LayerNorm instance. The matrix M = I_D − (1/D)11^⊤ centers each row of Z by subtracting its mean. The matrix M and diag(α)√D can then be absorbed in preceding and subsequent linear layers.",
+      "route": "verify-math",
+      "route_rationale": "Reformulation claim whose exactness depends on LayerNorm/RMSNorm conventions (epsilon scaling, √D factor), which the paper never pins down — informal review is the appropriate tool.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::2",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.75,
+        "reasoning": "Under the stated standard definitions the identity does not hold literally for a fixed α. For row i, (ZM)_i = z_i − μ and (1/D)||z_i − μ||^2 = σ^2 (variance), so RMSNorm((ZM)_i) = (z_i − μ)/√(σ^2 + ε) — correct, with the caveat that ε must match LayerNorm's ε for exact equality (for a centered vector mean-of-squares equals variance, so the denominators coincide iff the epsilons match; the premise asserts they do). Then the printed RHS row i equals α ⊙ (z_i − μ)·√D/√(σ^2 + ε) + β, while LayerNorm(z_i) = α ⊙ (z_i − μ)/√(σ^2 + ε) + β: there is a spurious √D on the centered term (numerical check, D=2, z=(3,5): LayerNorm = (−α1, α2) + β vs. printed RHS = (−√2 α1, √2 α2) + β). The correct identity under the standard RMSNorm convention is LayerNorm(Z) = RMSNorm(ZM)·diag(α) + 1_N β^⊤. However, this is not a derivation-invalidating error: (1) it is exact as written under the alternative convention RMSNorm(v) = v/||v|| (pure L2 row normalization, the convention used in the cited Ashkboos et al. absorption framework, where RMSNorm(ZM)·diag(α)√D = α ⊙ (z−μ)√D/||z−μ|| = α ⊙ (z−μ)/σ); and (2) under the standard convention it holds exactly up to the reparameterization α' = α/√D, which is exact because α is a learnable parameter spanning ℝ^D — both sides define the identical class of functions. The snippet's stated purpose (absorbing M and diag(α)√D into adjacent linear layers) is unaffected: the √D is a constant absorbed together with α into neighboring weights, and no symmetry/absorption conclusion changes. The printed equation is therefore a convention-dependent reformulation rather than a critical algebraic error; confidence that it warrants erratum/retraction is far below the 0.8 flagging threshold.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.75
+    },
+    {
+      "snippet_id": "paper::THEOREM::2",
+      "snippet_type": "THEOREM",
+      "location": "4.1 Weight matching",
+      "content": "O = argmin_{O ∈ ℝ^{d_r×d_r}, O^⊤O = I} ||R^{(A)} − R^{(B)}O||_F^2, (4) where R^{(A)} and R^{(B)} are the weights along the residual path collected from both models. The closed-form solution is given by the SVD of (R^{(B)})^⊤ R^{(A)}.",
+      "route": "verify-math",
+      "route_rationale": "Standard orthogonal-Procrustes closed-form result; the SVD machinery makes a Lean formalization disproportionately heavy for a known theorem.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::THEOREM::2",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.97,
+        "reasoning": "The claim is the standard orthogonal Procrustes result and is fully correct. Verification step by step: (a) Expanding ||A − BO||_F^2 = tr((A−BO)^⊤(A−BO)) = tr(A^⊤A) − tr(A^⊤BO) − tr(O^⊤B^⊤A) + tr(O^⊤B^⊤BO). The cross terms are equal: tr(O^⊤B^⊤A) = tr(B^⊤A O^⊤) = tr(O A^⊤B) = tr(A^⊤BO) (cyclicity of trace), and tr(O^⊤B^⊤BO) = tr(B^⊤B O O^⊤) = tr(B^⊤B) = ||B||_F^2 since O is orthogonal. Hence ||A − BO||_F^2 = ||A||_F^2 + ||B||_F^2 − 2 tr(A^⊤BO), and minimizing over O is equivalent to maximizing tr(A^⊤BO) = tr((B^⊤A)^⊤O). (b) With B^⊤A = UΣV^⊤ (U, V orthogonal, Σ = diag(σ_i) ≥ 0), cyclicity gives tr((B^⊤A)^⊤O) = tr(VΣU^⊤O) = tr(Σ U^⊤OV) = tr(ΣQ) where Q = U^⊤OV is orthogonal. Since |Q_ii| ≤ 1 for an orthogonal matrix, tr(ΣQ) = Σ_i σ_i Q_ii ≤ Σ_i σ_i, with equality iff Q = I, i.e., O = UV^⊤. So O = UV^⊤ is a global minimizer (and is itself orthogonal, as required by the constraint O^⊤O = I). This matches the paper: the minimizer is exactly the product of the left and right singular vectors of (R^(B))^⊤R^(A), which is precisely what 'the closed-form solution is given by the SVD of (R^(B))^⊤R^(A)' conventionally means (Schönemann 1966). Assessment of precision: the paper does not explicitly print 'O = UV^⊤', but 'the closed-form solution is given by the SVD of X' is the standard, unambiguous shorthand in the Procrustes literature for exactly this construction; the statement is correct and sufficiently precise. Edge cases considered: for rank-deficient B^⊤A (zero singular values) O = UV^⊤ is still a global minimizer (the max of tr(ΣQ) ≤ Σσ_i is still attained at Q = I, though not uniquely); no domain-constraint or sign issues arise since all matrices are real and the F-norm/trace algebra is valid for d_r×d_r square weights. Numerical verification: 200 random 5×5 instances confirmed that O = UV^⊤ from the SVD of B^⊤A is orthogonal and attains ||A − BO||_F^2 ≤ ||A − BQ||_F^2 for random orthogonal perturbations Q (and equals the polar-decomposition optimum). All checks passed.",
+        "predicted_error_category": null,
+        "snippet_type": "THEOREM",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.97
+    },
+    {
+      "snippet_id": "paper::THEOREM::3",
+      "snippet_type": "THEOREM",
+      "location": "E. General symmetries of network components",
+      "content": "a_l = σ_l(W_l a_{l-1}), with a_0 = X. \"The transformed weights are then given by: W_l' = S_l W_l S_{l-1}^{-1} for l ∈ {1, …, L}.\" \"Exact functional invariance, f[θ'](X) = f[θ](X), is guaranteed if S_L = I_{d_L} and the activation functions σ_l are equivariant with respect to their corresponding transformations S_l, i.e., S_l σ_l(Z) = σ_l(S_l Z) for l ∈ {1, …, L−1}.\"",
+      "route": "verify-math-lean",
+      "route_rationale": "The theoretical backbone of the whole framework — a general invariance theorem whose correctness turns on the equivariance/cancellation argument.",
+      "lean_result": {
+        "snippet_id": "paper::THEOREM::3",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.97,
+        "reasoning": "Formalised the claim 'Exact functional invariance of feed-forward networks under invertible reparameterization': for a network of L layers with per-layer spaces T : ℕ → Type, weights W : (i : ℕ) → i < L → T i → T (i+1), activations σ : (i : ℕ) → i < L → T (i+1) → T (i+1), and invertible transformations S : (i : ℕ) → i ≤ L → Equiv (T i) (T i) with S 0 = id and S L = id, if every activation is equivariant, S_{i+1} ∘ σ_i = σ_i ∘ S_{i+1} for all i < L (0-based; at i = L−1 the condition is vacuous given S_L = id, so the last layer needs no equivariance), then reparameterising the weights as W'_i = S_{i+1} ∘ W_i ∘ S_i⁻¹ leaves the full network function unchanged: runFrom (W' W S) σ 0 (Nat.zero_le L) = runFrom W σ 0 (Nat.zero_le L), i.e. f[θ'](X) = f[θ](X) for all inputs X. The Lean compiler accepted the proof: zero diagnostics (no errors, no warnings), lake env lean exit code 0, and lean_verify reports only the standard axioms propext and Quot.sound with no sorryAx. Invertibility is modelled by Equiv, activations are arbitrary functions (no linearity/elementwise assumptions), and the last layer's S_{L-1}⁻¹ cancels S_{L-1} without needing equivariance, exactly as the paper claims.",
+        "predicted_error_category": null,
+        "snippet_type": "THEOREM",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__THEOREM__3.lean",
+          "formal_statement": "namespace PaperThm3; variable {T : ℕ → Type}. theorem network_invariance {L : ℕ} (W : (i : ℕ) → i < L → T i → T (i + 1)) (σ : (i : ℕ) → i < L → T (i + 1) → T (i + 1)) (S : (i : ℕ) → i ≤ L → Equiv (T i) (T i)) (hS0 : (S 0 (Nat.zero_le L) : T 0 → T 0) = id) (hSL : (S L (Nat.le_refl L) : T L → T L) = id) (heqv : ∀ i (h : i < L), (S (i + 1) (Nat.succ_le_of_lt h)).toFun ∘ σ i h = σ i h ∘ (S (i + 1) (Nat.succ_le_of_lt h)).toFun) : runFrom (W' W S) σ 0 (Nat.zero_le L) = runFrom W σ 0 (Nat.zero_le L) := by funext x; simpa [hS0, hSL] using runFrom_invariance W σ S hSL heqv 0 (Nat.zero_le L) x — with supporting defs W' (transformed weights), runFrom (well-founded forward pass), and theorem runFrom_invariance (strong induction on L − k) in the same file.",
+          "compiler_feedback": "lean_diagnostic_messages (Paper/TMP.lean): no items (clean, zero errors, zero warnings).\nlake env lean Paper/TMP.lean: (no output) EXIT_CODE=0\nlean_verify PaperThm3.network_invariance: axioms [propext, Quot.sound], no sorryAx; no sorry/admit in source.\nFinal retained artifact Paper/Verified/paper__THEOREM__3.lean: lake env lean EXIT_CODE=0.",
+          "axioms": ["propext", "Quot.sound"],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.97
+    },
+    {
+      "snippet_id": "paper::EQUATION::3",
+      "snippet_type": "EQUATION",
+      "location": "E. General symmetries of network components",
+      "content": "P_left = diag(P_1, P_2, …, P_{L−1}, I_{d_L}), P_right = diag(I_{d_0}, P_1^⊤, P_2^⊤, …, P_{L−1}^⊤). \"Then, the transformed parameters are obtained by block-wise operations: (θ'_diag)_{ll} = (P_left)_{ll} (θ_diag)_{ll} (P_right)_{ll}. This results in W_1' = P_1 W_1, W_l' = P_l W_l P_{l−1}^⊤ for l ∈ {2, …, L−1}, and W_L' = I_{d_L} W_L P_{L−1}^⊤ = W_L P_{L−1}^⊤.\"",
+      "route": "verify-math",
+      "route_rationale": "Straightforward block-diagonal matrix multiplication; checkable by inspection block by block.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::3",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.97,
+        "reasoning": "The claim is the standard block-diagonal product property and is fully correct. θ'_diag = P_left · θ_diag · P_right computed block-wise via (θ'_diag)_{ll} = (P_left)_{ll} · (θ_diag)_{ll} · (P_right)_{ll} is exactly how products of block-diagonal matrices behave: since both P_left and P_right are block diagonal (P_left with block sizes d_1,…,d_L; P_right with block sizes d_0,…,d_{L−1}) and θ_diag has blocks W_l ∈ ℝ^{d_l×d_{l−1}}, there is no cross-block mixing. Block 1: W_1' = P_1 · W_1 · I_{d_0} = P_1 W_1, dimensions d_1×d_1 · d_1×d_0 · d_0×d_0 → d_1×d_0, consistent with the general form W_l' = P_l W_l P_{l−1}^⊤ under the convention P_0 = I_{d_0}. Blocks 2 ≤ l ≤ L−1: W_l' = P_l W_l P_{l−1}^⊤, dimensions match. Block L: W_L' = I_{d_L} W_L P_{L−1}^⊤ = W_L P_{L−1}^⊤, matching the general form with P_L = I_{d_L}. Well-definedness of the full product: θ_diag is (Σ d_l) × (Σ d_{l−1}), P_left square with block dims d_1,…,d_L, P_right square with block dims d_0,…,d_{L−1}; all multiply consistently, and P_right block 1 = I_{d_0} plays the role of P_0^⊤ with the standard convention P_0 = I_{d_0} (the input layer is not permuted, consistent with S_0 = I_{d_0}). All three blocks verify correctly, all dimensions line up, and the conventions are self-consistent. No error detected.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.97
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::0",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "E. General symmetries of network components",
+      "content": "Y = W_1 RMSNorm(W_0 X + b; β, γ, ε_N) = W_1 (γ (W_0 X + b)/√((1/N)‖W_0 X + b‖_2^2 + ε_N) + β). Introduce an orthogonal matrix O ∈ ℝ^{M×N} (M ≥ N, O^⊤O = I). Since ‖Oz‖_2 = ‖z‖_2, inserting O^⊤O = I gives Y = W_1 O^⊤ (γ O(W_0 X + b)/√((1/N)‖O(W_0 X + b)‖_2^2 + ε_N) + Oβ). To express the normalization over M elements, define c = √(N/M), ε_M = (N/M)ε_N. Then 1/√((1/N)‖z‖^2 + ε_N) = c · (1/√((1/M)‖z‖^2 + ε_M)), so the block can be rewritten as Y = W_1 γ O^⊤ c (O(W_0 X + b)/√((1/M)‖O(W_0 X + b)‖_2^2 + ε_M) + (1/c)(Oβ/γ)). Hence the network remains functionally equivalent when written as Y = W_1' RMSNorm(W_0' X + b'; β', γ', ε_M), (6) with transformed parameters W_1' = W_1 γ O^⊤ c, W_0' = O W_0, b' = O b, (7) and normalization constants γ' = 1_M, β' = (1/c)(Oβ/γ) = √(M/N)(Oβ/γ). (8)",
+      "route": "verify-math-lean",
+      "route_rationale": "Key closed-form identity behind the orthogonal/width-expanding symmetry; correctness turns on a real algebraic argument (norm preservation + c/ε rescaling + parameter identification).",
+      "lean_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::0",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.95,
+        "reasoning": "Formalised the load-bearing algebra of the RMSNorm reparameterization (E. General symmetries of network components) in Lean 4 / Mathlib v4.33.1. (A) Scalar rescaling: 1/sqrt((1/N)*a + εN) = sqrt(N/M)/sqrt((1/M)*a + (N/M)*εN) for N,M positive naturals, a ≥ 0, εN > 0 — proved by squaring both sides (Real.sq_sqrt, div_pow, field_simp, sq_eq_sq_iff_eq_or_eq_neg plus positivity). (B) Norm preservation ‖Oz‖² = ‖z‖² for rectangular O : Fin M × Fin N with entrywise OᵀO = I (∀ j k, ∑ i, O i j * O i k = if j = k then 1 else 0): plain-Finset-sum proof by expansion, Finset.sum_mul/mul_sum distribution, double Finset.sum_comm, and Finset.sum_ite_eq. (C) Combined identity (the exact step the paper uses) follows from (A) with a = ∑ z_j² and (B). All three compile clean. Additionally the optional (D) full functional equivalence was formalised and compiled: mulVec_orthogonal (Oᵀ(Oz) = z from entrywise orthogonality), mulVec_vdiv (matvec commutes with pointwise scalar division), functional_equivalence ((γc)·(Oᵀ(Oz/sM + (1/c)(Oβ/γ))) = γz/sN + β with c = sqrt(N/M), sM = sqrt((1/M)∑(Oz)² + εM), sN = sqrt((1/N)∑z² + εN)), and full_equivalence (eqs (6)-(7) with W₁' = W₁γOᵀc, via Matrix.smul_mulVec/mulVec_mulVec/mulVec_smul). Faithfulness: γ treated as a scalar coefficient exactly as the paper's eqs (7)-(8) do; z arbitrary (no unit-vector hypothesis); only genuine side conditions assumed (N,M positive, εN > 0, a ≥ 0). Verdict: lean_diagnostic_messages shows no severity-1 entries (only style warnings: two long lines, one unnecessarySimpa), 'lake env lean Paper/TMP.lean' exits 0, and lean_verify reports axioms [propext, Classical.choice, Quot.sound] (no sorryAx) for all six theorems. Project reused (pre-existing), so kept: project_kept = true.",
+        "predicted_error_category": null,
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean",
+          "formal_statement": "theorem rescaling_identity (N M : ℕ) (hN : 0 < N) (hM : 0 < M) (a εN : ℝ) (ha : 0 ≤ a) (hε : 0 < εN) : 1 / Real.sqrt ((1 / (N : ℝ)) * a + εN) = Real.sqrt (N / M : ℝ) / Real.sqrt ((1 / (M : ℝ)) * a + (N / M : ℝ) * εN)  -- (A)\ntheorem norm_preserved (N M : ℕ) (z : Fin N → ℝ) (O : Matrix (Fin M) (Fin N) ℝ) (hO : ∀ j k : Fin N, (∑ i : Fin M, O i j * O i k) = if j = k then 1 else 0) : (∑ i : Fin M, (∑ j : Fin N, O i j * z j) ^ 2) = ∑ j : Fin N, (z j) ^ 2  -- (B)\ntheorem combined_identity (N M : ℕ) (hN : 0 < N) (hM : 0 < M) (εN : ℝ) (hε : 0 < εN) (z : Fin N → ℝ) (O : Matrix (Fin M) (Fin N) ℝ) (hO : ...) : 1 / Real.sqrt ((1 / (N : ℝ)) * (∑ j : Fin N, (z j) ^ 2) + εN) = Real.sqrt (N / M : ℝ) / Real.sqrt ((1 / (M : ℝ)) * (∑ i : Fin M, (∑ j : Fin N, O i j * z j) ^ 2) + (N / M : ℝ) * εN)  -- (C)\n-- plus optional (D): mulVec_orthogonal, mulVec_vdiv, functional_equivalence, full_equivalence (all compiled; namespace PaperFormulaBlock0)",
+          "compiler_feedback": "Paper/TMP.lean:132:12: warning: try 'simp' instead of 'simpa'\n\nNote: This linter can be disabled with `set_option linter.unnecessarySimpa false`\nEXIT=0\n(lean_diagnostic_messages: no severity-1 entries; remaining entries are style warnings only: linter.style.longLine at lines 128, 145, 150, 192, 197; linter.unnecessarySimpa at line 132.)",
+          "axioms": ["propext", "Classical.choice", "Quot.sound"],
+          "cycles_used": 0,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.95
+    }
+  ],
+  "findings": [
+    {
+      "snippet_id": "paper::THEOREM::0",
+      "category": "Incorrect set-containment claim (hierarchy refuted by counterexample)",
+      "severity": "minor",
+      "confidence": 0.9,
+      "evidence": "The paper defines semi-permutation matrices as $\\mathbf{P} \\in \\mathbb{R}^{M\\times N}$ with $M \\ge N$, each column a stochastic vector, each row at most one positive entry (Section 3.1). Under this literal definition, $\\mathbf{P} = [0.5,\\, 0.5]^{\\top} \\in \\mathbb{R}^{2\\times 1}$ is a semi-permutation (its single column sums to $1$; each row has exactly one positive entry; $M = 2 \\ge N = 1$), but it is not orthogonal: $\\mathbf{P}^{\\top}\\mathbf{P} = 0.5^2 + 0.5^2 = 0.5 \\neq 1$. Hence semi-permutation $\\not\\subset$ orthogonal and \"each class is a strict subset of the one below it\" is false under the paper's own definitions. If instead only square matrices were intended, the semi-permutation conditions force a permutation matrix, so $S_1 = S_2$ and strictness fails at the first inclusion. Either way the strict-nesting claim is mathematically incorrect. The paper's main results (FF permutation equivalence, head semi-permutation, RMSNorm orthogonal symmetry) do not depend on this nesting, so the error is minor.",
+      "verifier": "verify-math",
+      "exact_quote": "Each class is a strict subset of the one below it."
+    }
+  ],
+  "verdict": "MINOR_ERRORS",
+  "verdict_confidence": 0.75,
+  "summary": "Verified 9 self-contained mathematical objects from the paper: 4 routed to formal Lean 4 (verify-math-lean) and 5 to informal review (verify-math), all against the shared project MATH_VERIFICATION/Paper (pre-existing, Mathlib v4.33.1; reused and preserved, lean_project_kept=true). All 4 Lean runs PASSED with no sorry/sorryAx: (1) paper::EQUATION::0 — the linearly-decomposable identity f(x)=f(αx)+f((1−α)x) for ReLU over α∈[0,1]; (2) paper::THEOREM::1 — the feed-forward permutation reparameterization yields FF'(x)=FF(x); (3) paper::THEOREM::3 — the general equivariance condition S_l∘σ_l = σ_l∘S_l guarantees exact functional invariance of the reparameterized network (the theoretical backbone); (4) paper::FORMULA_BLOCK::0 — the full RMSNorm orthogonal reparameterization (norm preservation ‖Oz‖=‖z‖ for rectangular O with OᵀO=I, the c=√(N/M) / ε_M=(N/M)ε_N rescaling identity, and the full functional-equivalence equations (6)–(8)), confirming the width-expanding symmetry is mathematically sound as written (γ treated as a scalar, faithful to eqs (7)–(8)). Informal review confirmed clean: the inter-head decomposition head(X;QK,α·OV)+head(X;QK,(1−α)·OV)=head(X;QK,OV) for all α∈ℝ; the orthogonal-Procrustes closed form from the SVD of (R^B)^⊤R^A; and the P_left/P_right block-diagonal transformation. One error was found: paper::THEOREM::0 — the Table 1 claim that each symmetry class is a strict subset of the one below it is false under the paper's own definitions (a 2×1 semi-permutation [0.5,0.5]^⊤ is not orthogonal, so semi-permutation ⊄ orthogonal); severity minor since no main result depends on the nesting. Two conventions are flagged as caveats, not findings: the LayerNorm = RMSNorm(ZM)·diag(α)√D + 1_N β^⊤ reformulation (Section 3.2.3) carries a √D factor that is exact only under an alternative RMSNorm convention or up to reparameterization of the learnable α — the paper's stated 'absorb into adjacent linear layers' purpose is unaffected; and the RMSNorm derivation treats γ as a scalar while standard RMSNorm uses an elementwise γ, a modelling nuance outside the verified algebra. No Lean FAILED results, so no informal fallbacks were needed; the Lean and informal verifiers agree on every snippet. Verdict: MINOR_ERRORS."
+}

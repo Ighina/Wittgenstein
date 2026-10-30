@@ -1,0 +1,86 @@
+{
+  "paper_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction",
+  "title": "KVzip: Query-Agnostic KV Cache Compression with Context Reconstruction",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Abstract vs Section 4.1 and later experiments",
+      "confidence": 0.9,
+      "supporting_evidence": "Abstract states 'context lengths up to 100K tokens', but Section 4.1 mentions 'Context lengths range from 100 to 170K tokens', and experiments include models like Qwen2.5-7B-1M with 170K tokens (e.g., Retr.KV up to 170K tokens in Figure 9 caption and text).",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Abstract vs Introduction (Section 1)",
+      "confidence": 0.9,
+      "supporting_evidence": "Abstract claims 'FlashAttention decoding latency improvements up to 1.5×', whereas Section 1 states 'approximately 2× latency reduction in FlashAttention'. These are two different claimed speedups for the same method.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Abstract vs Introduction (Section 1)",
+      "confidence": 0.9,
+      "supporting_evidence": "Abstract says 'KV cache size reductions by 2–3×', but Introduction says '3–4× reduction in KV cache size'. These numbers are inconsistent.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Section 3.2, Equation (2)",
+      "confidence": 0.95,
+      "supporting_evidence": "The equation defines max over i=1,…,n_c for the third dimension of \\bar{A}_{l,h}. However, \\bar{A} is of shape G × n_c × n_in, where n_in = n_prompt + n_c is the length of the reconstruction input (query dimension). The max should be over i=1,…,n_in, not n_c. Using n_c would miss query positions from the repeat prompt and could yield incorrect importance scores.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 3.4, Complexity Analysis",
+      "confidence": 0.95,
+      "supporting_evidence": "The text states that chunked scoring 'reduces from quadratic O(n_c^2) to linear O(m n_c)' and later says 'total complexity O(m n_c), linear with context length'. Immediately after, it says 'Importance scoring introduces additional overhead … FlashAttention incurs O(n_c m + m^2/2) causal-attention FLOPs per chunk, resulting in a total complexity of O(n_c^2 + n_c m/2) across all n_c/m chunks.' These statements contradict each other: the first claims linear complexity, the second claims quadratic. The described method (subsampling keys to only the current chunk) would yield linear complexity O(m n_c); the quadratic O(n_c^2) analysis corresponds to attending to the full cache, which is not what the method does.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction::baseline"
+    },
+    {
+      "error_category": "Experiment setup",
+      "error_location": "Section 4.1, Eviction Structure",
+      "confidence": 0.85,
+      "supporting_evidence": "KVzip is evaluated with non-uniform head-budget allocation, while baseline methods (H₂O, SnapKV, PyramidKV) are evaluated with uniform head budgets as per their original design. This asymmetric treatment can favor KVzip and make the comparison unfair; a rigorous comparison would evaluate all methods under the same budget allocation scheme.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Section 3.3, Figure 6 description",
+      "confidence": 0.7,
+      "supporting_evidence": "The text claims that 'distributions concentrated in the lower-right triangular region' (where reconstruction attention is higher than the downstream task) indicates 'KV features receiving high attention in reconstruction also receive high attention across other tasks.' This interpretation does not logically follow from the described pattern: a concentration in the region where reconstruction attention > downstream attention suggests many KV pairs receive high reconstruction attention but low downstream attention, which would argue against the claimed generalization.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 7,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (claude-opus-5, taxonomy=default): 7 error(s) reported.",
+  "baseline": {
+    "model": "claude-opus-5",
+    "provider": "anthropic",
+    "taxonomy": "default",
+    "paper_chars": 83648,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 21023,
+      "output_tokens": 9065,
+      "cache_read_input_tokens": 0,
+      "cache_creation_input_tokens": 0
+    }
+  }
+}

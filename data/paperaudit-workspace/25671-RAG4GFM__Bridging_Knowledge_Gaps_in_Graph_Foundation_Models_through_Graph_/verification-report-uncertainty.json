@@ -1,0 +1,153 @@
+{
+  "paper_id": "25671",
+  "title": "RAG4GFM: Bridging Knowledge Gaps in Graph Foundation Models through Graph Retrieval-Augmented Generation",
+  "paper_category": "cs.LG",
+  "predicted_errors": [
+    {
+      "error_category": "Data Inconsistency (text-table)",
+      "error_location": "Table 2 (Link Prediction) vs Table 3 vs Figure 3 (Section 4.3)",
+      "confidence": 0.9,
+      "supporting_evidence": "The same configuration (AnyGraph as base GFM, K=3) on History link prediction is reported three different ways: Table 2 gives AnyGraph+RAG4GFM History Acc = 41.74, Table 3 gives 'RAG4GFM (Ours) AnyGraph-based' History (Link Pred.) Accuracy = 63.45, and the Section 4.3 ablation (Figure 3) gives RAG4GFM History Acc = 63.5. Likewise vanilla AnyGraph is 40.01 in Table 2 but the ablation's 'w/o RAG' is 56.7. A ~22-percentage-point discrepancy for identical conditions is a material data inconsistency.",
+      "verifier_name": "statistical",
+      "snippet_id": "25671::TABLE::1"
+    },
+    {
+      "error_category": "Data Inconsistency (text-table)",
+      "error_location": "Section 4.2 vs Table 2",
+      "confidence": 0.9,
+      "supporting_evidence": "Text states 'GLEM+RAG4GFM achieves 83.12% accuracy on node classification in the Computers dataset, representing a relative gain of approximately 5.5% over GLEM.' Table 2 reports GLEM+RAG4GFM Computers Acc = 87.34 and vanilla GLEM = 79.45, giving a relative gain of (87.34-79.45)/79.45 = 9.9% (or 4.6% if the 83.12 text value were used). Neither 83.12 nor 5.5% matches the table.",
+      "verifier_name": "statistical",
+      "snippet_id": "25671::SECTION::6"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Abstract vs Section 3.1 vs Appendix A.1",
+      "confidence": 0.85,
+      "supporting_evidence": "Abstract claims 'achieving efficient constant-time retrieval and fusion for all graph sizes'; Section 3.1 states it 'guarantees efficient O(log_2 N) end-to-end retrieval and fusion time'; Appendix A.1 says the retriever 'operates in O(log N) time' and the overall pipeline is O(log N + k|V|^2). Constant-time (O(1)) directly contradicts O(log N), and the appendix shows fusion (O(k|V|^2)) dominates for dense subgraphs, so the 'logarithmic end-to-end' claim is also unsupported.",
+      "verifier_name": "cross-section-consistency",
+      "snippet_id": "25671::SECTION::0"
+    },
+    {
+      "error_category": "Statistical reporting",
+      "error_location": "Table 6 (Appendix C.1)",
+      "confidence": 0.85,
+      "supporting_evidence": "MSE and R^2 are jointly impossible. For Chameleon node regression, AnyGraph MSE=6.83, R^2=0.55 implies Var(y)=MSE/(1-R^2)=15.18, while AnyGraph+RAG4GFM MSE=1.47, R^2=0.63 implies Var(y)=3.97. Same target variable on the same split, so the variance must be identical. QM7b likewise: 10.52/0.65 implies Var=30.06 vs 3.42/0.73 implies Var=12.67. The reported MSE/R^2 pairs cannot both be correct.",
+      "verifier_name": "statistical",
+      "snippet_id": "25671::TABLE::5"
+    },
+    {
+      "error_category": "Data inconsistency",
+      "error_location": "Table 2 dataset columns vs Table 1 dataset list",
+      "confidence": 0.8,
+      "supporting_evidence": "Table 2 and the Section 4.2 text report node classification / link prediction on datasets 'Computers, History, Fitness, Photo'. Table 1 lists only Books-Children, Books-History, Ele-Computers, Ele-Photo, MiniGCDataset, BA2MotifDataset, Chameleon, WN18Dataset, QM7bDataset. 'Fitness' is never defined as a dataset, and Books-Children never appears in Table 2. The four NC/LP datasets (Books-Children, Books-History, Ele-Computers, Ele-Photo) do not match the four Table 2 columns.",
+      "verifier_name": "vision",
+      "snippet_id": "25671::TABLE::1"
+    },
+    {
+      "error_category": "Data Inconsistency (text-table)",
+      "error_location": "Section 4.4 vs Table 3",
+      "confidence": 0.78,
+      "supporting_evidence": "Text: 'Results in Table 3 show that RAG4GFM consistently outperforms all competing approaches'. In Table 3, on MiniGCDataset (Graph Class.) ROC-AUC, G-Retriever scores 52.32 while RAG4GFM (AnyGraph-based) scores 51.88. G-Retriever is strictly higher, contradicting the 'consistently outperforms all' claim on a reported metric.",
+      "verifier_name": "statistical",
+      "snippet_id": "25671::TABLE::2"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Section 3.3 Equations (5)-(10) vs text / Appendix C.2",
+      "confidence": 0.72,
+      "supporting_evidence": "The text defines γ as the 'feature fusion acceptance threshold ... accepting graphs with α_i^F ≥ γ', but Equations (5)-(8) use the strict indicator I[α_i^F > γ] — a mismatch between the stated filter (≥) and the implemented filter (>). Additionally, Equation (10) reuses the feature threshold γ for the topological indicator I[α_i^T > γ], while Appendix C.2 defines δ as the separate 'structural pruning threshold', conflating two distinct hyperparameters in the fused-graph construction.",
+      "verifier_name": "math",
+      "snippet_id": "25671::EQUATION::4"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Equation (3) and Equation (4), Section 3.2",
+      "confidence": 0.7,
+      "supporting_evidence": "Equation (3) defines S(q | h_q, C) = Σ_{x∈F} 1/(d + rank_x^k(C)) with 'd' a smoothing constant (default 60), but the superscript k in rank_x^k is never defined and the text asserts the rank is 'in the full retrieval corpus (not limited to top-k)' — a notation that conflicts with the k superscript. Equation (4) uses h_q(G) for the graph-level feature set, inconsistent with the graph-level encoding h_g(G) defined in Equation (2), and mixes the context symbol C with node/edge/graph identifiers v, (u,v), G in the case conditions.",
+      "verifier_name": "math",
+      "snippet_id": "25671::EQUATION::2"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Equation (8), Section 3.3",
+      "confidence": 0.7,
+      "supporting_evidence": "Equation (8) gives h_v'^G = (1/k) Σ_{i=1}^k (α_i^F · β_v^i · h_v) · I[α_i^F > γ], which is a per-node quantity (subscript v) yet is labeled 'the enhanced target graph feature' for a graph-level task. β_v^i = SOFTMAX(h_v · (h_g^q + h_g^i)) has no defined normalization axis, and averaging per-node features over retrieved graphs does not produce a graph-level representation. Equations (5)-(7) also add the identical retrieved-node-average term to node, source-edge and destination-edge features, so the 'edge-level' fusion is not edge-aware.",
+      "verifier_name": "math",
+      "snippet_id": "25671::EQUATION::7"
+    },
+    {
+      "error_category": "Data Inconsistency (text-table)",
+      "error_location": "Section 4.4 vs Table 4",
+      "confidence": 0.68,
+      "supporting_evidence": "Text: 'RAG4GFM achieves comparable accuracy while reducing runtime by up to 7.0×'. Table 4 gives GraphLoRA+AnyGraph = 12.47 h (748 min) vs RAG4GFM+AnyGraph = 48 min, i.e., a 15.6× reduction; GraphLoRA+HiGPT = 5.87 h (352 min) vs RAG4GFM+HiGPT = 19 min, i.e., 18.5×. Neither row supports the stated 7.0× figure.",
+      "verifier_name": "statistical",
+      "snippet_id": "25671::TABLE::3"
+    },
+    {
+      "error_category": "Data Inconsistency (text-table)",
+      "error_location": "Section 4.2 vs Table 2 (Link Prediction)",
+      "confidence": 0.65,
+      "supporting_evidence": "Text: 'GraphGPT+RAG4GFM attains 60.37% accuracy on link prediction, outperforming its vanilla counterpart by 5.1%.' Table 2 shows vanilla GraphGPT Computers link-prediction Acc = 54.27; 60.37 - 54.27 = 6.10 (absolute) or 11.2% (relative). Neither equals the claimed 5.1%.",
+      "verifier_name": "statistical",
+      "snippet_id": "25671::SECTION::6"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Abstract vs Section 4.2/Appendix C.1",
+      "confidence": 0.62,
+      "supporting_evidence": "Abstract: 'achieving near-perfect accuracy in all tested scenarios'. Reported best accuracy is 87.34% (GLEM+RAG4GFM, Computers); most results are 60-80% (e.g., AnyGraph+RAG4GFM Computers 79.56%, MiniGCDataset 65.51%, History link prediction 41.74-63.45%). 'Near-perfect accuracy in all tested scenarios' is contradicted by the reported numbers.",
+      "verifier_name": "text",
+      "snippet_id": "25671::SECTION::0"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Conclusion and Introduction overclaims",
+      "confidence": 0.6,
+      "supporting_evidence": "Conclusion: 'a RAG framework that completely solves the two most critical and previously unsolved GFM challenges ... unprecedented and universal gains ... across all possible graph domains and tasks'. Introduction: 'the first and only unified RAG framework', 'a revolutionary breakthrough that completely redefines the state-of-the-art ... rendering all prior approaches obsolete'. These universal claims are unsupported by results that are partial (subset of GFMs per task, e.g., Table 2 link prediction covers only 4 of 7 GFMs) and inconsistent (see Table 2 vs Table 3 discrepancies).",
+      "verifier_name": "text",
+      "snippet_id": "25671::SECTION::7"
+    },
+    {
+      "error_category": "Impossible bounds",
+      "error_location": "Table 1 (QM7bDataset row)",
+      "confidence": 0.58,
+      "supporting_evidence": "QM7bDataset: 108,165 nodes across 7,211 graphs implies ~15.0 nodes/graph, but 1,766,695 edges implies ~245 edges/graph. A simple graph on 15 nodes has at most 15·14/2 = 105 edges, so ~245 edges/graph exceeds the maximum possible edge count for the reported average node count, indicating an internal node/edge inconsistency (or an unexplained non-simple graph representation).",
+      "verifier_name": "statistical",
+      "snippet_id": "25671::TABLE::0"
+    },
+    {
+      "error_category": "Misattribution (external)",
+      "error_location": "Related Work, LightRAG [44]",
+      "confidence": 0.55,
+      "supporting_evidence": "Related Work credits 'LightRAG [44] (which introduced logarithmic-time graph indexing via hierarchical clustering)'. Reference [44] ('LightRAG: Simple and fast retrieval-augmented generation', 2024) is listed with no venue, DOI or arXiv identifier, and the specific attribution of logarithmic-time hierarchical-clustering indexing to LightRAG is not supported by the citation entry itself; it also suspiciously mirrors RAG4GFM's own complexity claim. Requires external search to confirm, hence moderate confidence.",
+      "verifier_name": "citation",
+      "snippet_id": "25671::SECTION::2"
+    },
+    {
+      "error_category": "Statistical reporting",
+      "error_location": "Section 4.3 ablation interpretation",
+      "confidence": 0.55,
+      "supporting_evidence": "Text claims retrieval is 'accounting for over 80% of RAG4GFM's performance gains'. From the reported numbers (Computers: full 79.6, w/o RAG 73.5 -> 6.1 drop; w/o GF 76.2 -> 3.4 drop; w/o GI 77.9 -> 1.7 drop), retrieval accounts for 6.1/(6.1+3.4+1.7) ≈ 54% of the additive component contributions, and History (full 63.5, w/o RAG 56.7, w/o GF 59.8, w/o GI 60.5) gives 6.8/13.5 ≈ 50%. The 'over 80%' figure is not supported by the reported data.",
+      "verifier_name": "text",
+      "snippet_id": "25671::SECTION::6"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 44,
+    "snippets_verified": 26,
+    "errors_detected": 16,
+    "verifier_usage": {
+      "text": 11,
+      "statistical": 9,
+      "math": 8,
+      "vision": 6,
+      "citation": 1,
+      "cross_section_consistency": 2
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Uncertainty-mode verification (strictness=lenient) of the RAG4GFM paper found 16 predicted errors, several at high confidence (>=0.85). The most serious are internal numeric inconsistencies: (1) the same AnyGraph+RAG4GFM History link-prediction result is reported as 41.74 (Table 2), 63.45 (Table 3) and 63.5 (ablation); (2) Section 4.2 claims GLEM+RAG4GFM reaches 83.12% with a 5.5% gain while Table 2 reports 87.34 (9.9% gain); (3) the MSE/R^2 pairs in Table 6 are jointly impossible (implied target variance changes by ~4x between rows); and (4) the Abstract's 'constant-time retrieval and fusion' contradicts the O(log N) complexity stated in Section 3.1 and Appendix A.1. Additional issues include an undefined 'Fitness' dataset in Table 2 absent from Table 1, a 'consistently outperforms all' claim contradicted by G-Retriever's higher MiniGCDataset ROC-AUC, a runtime speedup claim of 7.0x inconsistent with the 15.6x/18.5x implied by Table 4, graph-level fusion Equation (8) producing a per-node quantity labeled a graph feature, an undefined symbol in the RRF Equation (3), a feature-threshold '>' vs '>=' mismatch, and multiple overclaiming statements in the Abstract, Introduction, and Conclusion. Verdict: NEEDS_CORRECTION.",
+  "mode": "uncertainty",
+  "strictness": "lenient",
+  "uncertainty_threshold": 0.3
+}

@@ -1,0 +1,157 @@
+{
+  "paper_name": "paper",
+  "paper_path": "/Users/iacopoghinassi/Documents/Github/Wittgenstein/data/paperaudit-workspace/19233-Understanding_and_Mitigating_Numerical_Sources_of_Nondeterminism_in_LLM_In/paper.md",
+  "lean_project": "MATH_VERIFICATION/Paper",
+  "lean_project_kept": true,
+  "totals": {
+    "snippets_extracted": 5,
+    "routed_to_math": 4,
+    "routed_to_lean": 1,
+    "lean_passed": 1,
+    "lean_refuted": 0,
+    "lean_failed": 0,
+    "fallbacks_run": 0,
+    "errors_detected": 0
+  },
+  "results": [
+    {
+      "snippet_id": "paper::EQUATION::0",
+      "snippet_type": "EQUATION",
+      "location": "1 Introduction",
+      "content": "Floating-point arithmetic in GPUs exhibits non-associativity, meaning (a + b) + c ≠ a + (b + c) due to finite precision and rounding errors. (Restated in Preliminaries: \"Floating-point arithmetic in GPUs exhibits non-associativity, meaning (a + b) + c ≠ a + (b + c) due to finite precision and rounding errors.\")",
+      "route": "verify-math-lean",
+      "route_rationale": "Central premise of the paper: floating-point addition is non-associative. Formalisable as an existential over Mathlib's Float (IEEE binary64); correctness turns on a real computational fact.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::0",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "Formalised the paper's general non-associativity claim as an existential over Mathlib's Float (IEEE binary64): ∃ a b c : Float, a + b + c ≠ a + (b + c), witnessed by a = 0.1, b = 0.2, c = 0.3, for which (0.1 + 0.2) + 0.3 ≠ 0.1 + (0.2 + 0.3) under IEEE round-to-nearest. The proof is discharged with native_decide, the standard mechanism for concrete Float computations since Float arithmetic is opaque to kernel reduction; the compiler evaluated the inequality and it holds (independently confirmed by exact Python IEEE-754 computation: 0.6000000000000001 ≠ 0.6). The paper's Table-2 example values (0.1, −0.1, 0.2) were deliberately NOT used as witnesses: those are FP32/BF16 claims, and in binary64 those two orderings round to the same value, so the general claim — which is what the paper actually asserts — is what was verified. Lean verdict: PASSED — compiles clean, no sorry/sorryAx; the only axiom beyond the standard Mathlib set is the native_decide trusted-evaluator axiom, reported verbatim below.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper_EQUATION_0.lean",
+          "formal_statement": "theorem float_addition_nonassociative : ∃ a b c : Float, a + b + c ≠ a + (b + c) := by\n  refine ⟨0.1, 0.2, 0.3, ?_⟩\n  native_decide",
+          "compiler_feedback": "lake env lean Paper/TMP.lean: exit 0, no errors, no 'declaration uses sorry' warning. lean_diagnostic_messages: one severity-2 linter warning at TMP.lean:11:3 — 'Using `native_decide` is not allowed in mathlib: because it trusts the entire Lean compiler (not just the Lean kernel), it could quite possibly be used to prove false. Note: This linter can be disabled with `set_option linter.style.nativeDecide false`.'",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound",
+            "float_addition_nonassociative._native.native_decide.ax_1_1"
+          ],
+          "cycles_used": 0,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::EQUATION::1",
+      "snippet_type": "EQUATION",
+      "location": "Preliminaries",
+      "content": "Formally, for a reduction operation ⊕ over a set of values {v1, v2, ..., vn} (such as summing attention scores or computing softmax denominators), the result depends on the specific ordering of operations: ⊕_{i=1}^n v_i = v_{π(1)} ⊕ v_{π(2)} ⊕ ... ⊕ v_{π(n)}, where π is a permutation of indices {1, 2, ..., n} determined by thread scheduling.",
+      "route": "verify-math",
+      "route_rationale": "Definitional/modelling statement about floating-point reductions; no crisp formal content beyond the non-associativity claim (paper::EQUATION::0), which is handled in Lean. The ⊕-formula as written is a notational restatement of order-dependence, not a falsifiable algebraic identity.",
+      "math_result": {
+        "snippet_id": "paper::EQUATION::1",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "The displayed equation restates that a reduction over a set can be written as a permutation-ordered fold and asserts (in prose) that under floating-point arithmetic the result depends on that ordering. As a notational identity it is trivially true; the substantive order-dependence claim is exactly the non-associativity of floating-point addition, which is machine-verified in Lean for binary64 (paper::EQUATION::0) and demonstrated by the paper's own Table 2. No invalid algebra, sign, or domain error is present in this excerpt.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "lean_result": null,
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::0",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "Preliminaries (Table 1)",
+      "content": "Table 1: Rounding error when the same true value (1.00012) is represented in three different numeric formats. | Precision | Decimal | Rounding Error | | FP32 | 1.00012004375457761 | ≈ +4.38e-8 | | FP16 | 1.0 | ≈ -0.00012 | | BF16 | 1.0 | ≈ -0.00012 |",
+      "route": "verify-math",
+      "route_rationale": "Concrete IEEE-754 rounding values for FP32/FP16/BF16. Checkable by exact computation; not faithfully formalisable in Mathlib, which has no FP16/BF16 types.",
+      "math_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.95,
+        "reasoning": "Verified by exact IEEE-754 computation (Python struct, round-to-nearest-even): FP32(1.00012) = 1.0001200437545776 with error +4.375457773875269e-08 ≈ +4.38e-8 (matches); FP16(1.00012) = 1.0 with error −0.00012 (matches); BF16(1.00012) = 1.0 with error −0.00012 (matches). All three entries and rounding-error values are correct.",
+        "predicted_error_category": null,
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": []
+      },
+      "lean_result": null,
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::1",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "Preliminaries (Table 2)",
+      "content": "Two illustrative cases demonstrate how rounding error, together with the non-associativity of floating-point addition, can affect numerical results. Example 1: a, b, c = 0.1, -0.1, 0.2 — FP32 a+b+c = 00111110010011001100110011001101, a+c+b = 00111110010011001100110011001110; BF16 a+b+c = 0011111001001101, a+c+b = 0011111001001110. Example 2: a, b, c = 0.0016, 0.0027, 1.0 — FP32 a+b+c = a+c+b = 00111111100000001000110011100111; BF16 a+b+c = 0011111110000001, a+c+b = 0011111110000000.",
+      "route": "verify-math",
+      "route_rationale": "Concrete FP32/BF16 bit patterns for two summation orders. Checkable by exact IEEE-754 round-to-nearest-even computation; not faithfully formalisable in Mathlib's binary64 Float.",
+      "math_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::1",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.95,
+        "reasoning": "All bit patterns verified by exact IEEE-754 round-to-nearest-even computation (Python struct): Ex1 FP32 a+b+c = 00111110010011001100110011001101 and a+c+b = 00111110010011001100110011001110 (orders differ, matches); Ex1 BF16 a+b+c = 0011111001001101 and a+c+b = 0011111001001110 (orders differ, matches); Ex2 FP32 both orders = 00111111100000001000110011100111 (identical, matches); Ex2 BF16 a+b+c = 0011111110000001 and a+c+b = 0011111110000000 (orders differ, matches). The table correctly illustrates accumulation error at both precisions (Ex1) and a discrepancy only in BF16 while FP32 delivers identical results (Ex2), consistent with the caption.",
+        "predicted_error_category": null,
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": []
+      },
+      "lean_result": null,
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::EQUATION::2",
+      "snippet_type": "EQUATION",
+      "location": "3.3 Random Sampling Has Reproducibility Issues, Too",
+      "content": "With only 30 problems in AIME'24, a single answer can shift Pass@1 by about 3.33%, amplifying statistical noise.",
+      "route": "verify-math",
+      "route_rationale": "Trivial arithmetic claim (1/30 ≈ 3.33%); checkable by inspection.",
+      "math_result": {
+        "snippet_id": "paper::EQUATION::2",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.97,
+        "reasoning": "With 30 problems, changing the correctness of a single answer changes the correct count by 1, shifting accuracy by 1/30 = 0.03333... ≈ 3.33%. The claim is arithmetically correct.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "lean_result": null,
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.97
+    }
+  ],
+  "findings": [],
+  "verdict": "NO_ERRORS",
+  "verdict_confidence": 0.8,
+  "summary": "The paper is an empirical systems study of numerical nondeterminism in LLM inference; its extractable mathematics is thin — there are no theorems, lemmas, or proofs in the traditional sense. Five self-contained mathematical objects were extracted and checked: (1) the central claim that floating-point addition is non-associative (paper::EQUATION::0), (2) a reduction-formula statement about order-dependent floating-point reductions (paper::EQUATION::1), (3) Table 1's concrete IEEE-754 rounding values for 1.00012 in FP32/FP16/BF16 (paper::FORMULA_BLOCK::0), (4) Table 2's concrete FP32/BF16 bit patterns for two summation orders (paper::FORMULA_BLOCK::1), and (5) the arithmetic claim that one answer shifts AIME'24 Pass@1 by 1/30 ≈ 3.33% (paper::EQUATION::2).\n\nThe central non-associativity claim was machine-verified in Lean 4 as a PASSED proof of the existential ∃ a b c : Float, (a+b)+c ≠ a+(b+c) over Mathlib's Float (IEEE binary64), witnessed by (0.1, 0.2, 0.3). Two caveats are recorded: (a) the proof is discharged with native_decide (compiler-evaluated rather than kernel-reducible, because Float arithmetic is opaque to the kernel), so the compiler_feedback and axioms list the corresponding trusted-evaluator axiom; and (b) the paper's own FP32 example values (0.1, −0.1, 0.2) are NOT a non-associativity witness in binary64 (those two orderings round to the same value there), which is a property of the format, not an error in the paper — its claim is about FP32/BF16, where the two orders do differ (verified in Table 2).\n\nTables 1 and 2 were verified by exact IEEE-754 round-to-nearest-even computation: all rounding-error values and all eight bit patterns are correct, including the intended contrast (Ex1 differs at both precisions; Ex2 differs only in BF16 while FP32 is order-invariant). The 1/30 ≈ 3.33% arithmetic is correct. No errors were detected in any of the five checked claims (errors_detected = 0, findings = []).\n\nVerdict NO_ERRORS: the paper's main mathematical claims were checked and nothing confident remains. The vast majority of the paper's claims are empirical measurements (accuracy variances, divergence percentages, memory reductions) and are not mathematical objects; they were not checked here. Verdict confidence 0.8 reflects that the one machine-checked proof relies on native_decide and that the table checks are computational rather than theorem-level.",
+  "lean_project_kept": true
+}

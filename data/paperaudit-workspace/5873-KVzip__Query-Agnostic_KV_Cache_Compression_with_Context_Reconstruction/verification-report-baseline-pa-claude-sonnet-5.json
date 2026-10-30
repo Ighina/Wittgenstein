@@ -1,0 +1,94 @@
+{
+  "paper_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction",
+  "title": "KVzip: Query-Agnostic KV Cache Compression with Context Reconstruction",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "evidence_data_integrity",
+      "error_location": "Abstract vs Introduction",
+      "confidence": 0.9,
+      "supporting_evidence": "Abstract states 'context lengths up to 100K tokens', 'KV cache size reductions by 2–3×', and 'decoding latency improvements up to 1.5×'; Introduction states contexts 'up to 170K tokens', '3–4× reduction in KV cache size during decoding', and 'approximately 2× latency reduction'. These quantitative claims are internally inconsistent.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Section 4.1, Eviction Structure",
+      "confidence": 0.8,
+      "supporting_evidence": "The paper says: 'We apply non-uniform head-budget allocation exclusively to KVzip... Baseline methods are evaluated using their originally recommended uniform budget settings.' This asymmetric design biases the main comparison in favor of KVzip; the uniform-budget comparison is deferred to Appendix C.4 rather than used in the main evaluation.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction::baseline"
+    },
+    {
+      "error_category": "context_misalignment_incoherence",
+      "error_location": "Section 4.2 vs Figure 9 and Figure 10 captions",
+      "confidence": 0.85,
+      "supporting_evidence": "The body claims 'Our method significantly outperforms baselines' and 'robustly generalizes across diverse tasks', while the paper's own Figure 9 caption says 'KVzip maintains competitive but not universally dominant performance... Baseline methods such as SnapKV sometimes perform comparably or better', and Figure 10 caption says 'small or inconsistent margins'. The text and figure summaries directly contradict each other.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 3.2, Equation (2) and preceding definitions",
+      "confidence": 0.9,
+      "supporting_evidence": "For an input of length n_in = n_prompt + n_c, the query tensor should be G×n_in×d and the key tensor should be (n_c+n_in)×d, not Q∈G×(n_c+n_in)×d and K∈n_in×d. The attention slice relevant to the cached KV pairs should be G×n_in×n_c, not G×n_c×n_in, and the max in Eq. (2) should be over the n_in query positions, not i=1..n_c. The printed formulas are incompatible with Algorithm 1.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 3.4, Complexity Analysis",
+      "confidence": 0.9,
+      "supporting_evidence": "The text first claims chunked scoring reduces complexity 'from quadratic O(n_c^2) to linear O(m n_c)', but later derives 'total complexity O(n_c^2 + n_c m/2)' after FlashAttention, 'approximately double the initial prefill' cost. The latter is quadratic, so the linear-complexity claim is false. The 'O(m^2) negligible' peak-memory claim is also contradicted by Figure 8b showing about 52.7 GB peak memory and by the later admission that peak memory 'challenges assertions of negligible overhead'.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Section 4.3, Table 1",
+      "confidence": 0.9,
+      "supporting_evidence": "The text states that the behavior analysis 'reveals privacy risks where compressed KV caches leak sensitive information omitted by full caches', but Table 1 shows identical outputs ('I cannot provide personal contact information') for full and evicted caches and contains '[Removed for privacy compliance]' placeholders. No leakage is demonstrated by the displayed data.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction::baseline"
+    },
+    {
+      "error_category": "ethical_integrity_omission",
+      "error_location": "Appendix B",
+      "confidence": 0.9,
+      "supporting_evidence": "The section titled 'B Broader Impacts and Limitations' is empty: it is immediately followed by 'C Analysis and Experiments', and the acknowledgments state no IRB approvals or consent statements were obtained. Required broader-impacts/limitations discussion and ethics statements are missing.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction::baseline"
+    },
+    {
+      "error_category": "reference_background_fabrication",
+      "error_location": "Section 5, Related Work",
+      "confidence": 0.8,
+      "supporting_evidence": "The sentence 'DuoAttention profiles and selectively replaces attention heads with sliding-window attention prior to deployment [52, 53]' cites [52] (Efficient Streaming Language Models with Attention Sinks) as if it were DuoAttention. That description applies to DuoAttention [53], not to [52].",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 8,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (claude-sonnet-5, taxonomy=paperaudit): 8 error(s) reported.",
+  "baseline": {
+    "model": "claude-sonnet-5",
+    "provider": "anthropic",
+    "taxonomy": "paperaudit",
+    "paper_chars": 83648,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 105,
+      "output_tokens": 22086,
+      "cache_read_input_tokens": 20992,
+      "cache_creation_input_tokens": 0
+    }
+  }
+}

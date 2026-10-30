@@ -1,0 +1,118 @@
+{
+  "paper_id": "10615-Gated_Attention_for_Large_Language_Models__Non-linearity__Sparsity__and_At",
+  "title": "Gated Attention for Large Language Models: Non-linearity: Sparsity: and At",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "evidence_data_integrity",
+      "error_location": "Abstract versus Sections 3.1–3.2 and Table 2",
+      "confidence": 0.99,
+      "supporting_evidence": "The abstract says the comparison uses “30B MoE models and 3.4B dense models trained on a 1 trillion token dataset.” The methods instead define 15A2B MoE models (15B total, 2.54B activated) and 1.7B dense models. The reported training lengths are 400B tokens for Table 1, 400B/1T/3.5T for Table 2, and 3.5T plus 80B continued training for long-context experiments. These are materially incompatible model-size and data-scale descriptions, not a rounding difference.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "10615-Gated_Attention_for_Large_Language_Models__Non-linearity__Sparsity__and_At::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Introduction, final paragraph before “Practical Recommendation”",
+      "confidence": 0.99,
+      "supporting_evidence": "The introduction claims “applying key layer gating (G3) yields superior performance improvements compared to SDPA or value gating, reducing PPL by up to 0.3.” The paper’s central Table 1 directly contradicts this: key gating has Avg PPL 6.016 versus 5.761 for SDPA gating and 5.820 for value gating, compared with the 6.026 baseline. Thus G3 improves PPL by only 0.010 in the displayed experiment and is substantially worse than G1/G2.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "10615-Gated_Attention_for_Large_Language_Models__Non-linearity__Sparsity__and_At::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 2.1, Eqs. (1) and (3)",
+      "confidence": 0.98,
+      "supporting_evidence": "Eq. (1) already defines Q=XW_Q, K=XW_K, and V=XW_V, each with width d_k. Eq. (3) then defines each head as Attention(QW_Q^i, KW_K^i, VW_V^i). This applies Q/K/V projection matrices a second time and is dimensionally invalid under the stated matrix dimensions: Q is n×d_k whereas W_Q^i was described as d_model×d_k. Standard multi-head attention should project X independently per head, not re-project the already projected Q, K, and V as written.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "10615-Gated_Attention_for_Large_Language_Models__Non-linearity__Sparsity__and_At::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Figure 1 diagram and Section 2.2 position definitions",
+      "confidence": 0.97,
+      "supporting_evidence": "The textual definitions consistently identify G1 as after SDPA, G2 as after V, G3 as after K, G4 as after Q, and G5 as after the output projection. The Figure 1 Mermaid graph instead routes SDPA to G4/G3/G1 and then routes G4 to Wq, G3 to Wk, and G1 to Wv. It is both reverse in dataflow direction and assigns G1 to the value projection rather than the SDPA output. This makes the central architectural ablation figure inconsistent with the method and tables.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "10615-Gated_Attention_for_Large_Language_Models__Non-linearity__Sparsity__and_At::baseline"
+    },
+    {
+      "error_category": "evidence_data_integrity",
+      "error_location": "Table 4, row (5), compared with Table 1, row (6)",
+      "confidence": 0.98,
+      "supporting_evidence": "Both rows describe the same “Value Elementwise Gate” in the stated 15A2B/400B-token setting, and their PPL, HellaSwag, and MMLU values match exactly (5.820, 74.38, 59.17). However, GSM8k is 53.97 in Table 1 and 51.33 in Table 4. No changed checkpoint, evaluation protocol, or experimental setting is disclosed, so one of these reported results must be corrected.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "10615-Gated_Attention_for_Large_Language_Models__Non-linearity__Sparsity__and_At::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Section 4.2, discussion of Table 4 row (6)",
+      "confidence": 0.96,
+      "supporting_evidence": "The paper says the input-independent gate improves over baseline “likely due to the introduction of non-linearity.” But the described gate is input-independent: it consists of learnable q×d_k parameters, passed through sigmoid and multiplied into the SDPA output. Once learned, this is a constant per-head/per-channel diagonal scaling of the output, i.e., a linear operation with respect to the SDPA output; it does not insert an input-dependent nonlinearity between W_V and W_O. Therefore this explanation cannot follow from the stated construction.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "10615-Gated_Attention_for_Large_Language_Models__Non-linearity__Sparsity__and_At::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Section 3.2.2, paragraph interpreting Table 2",
+      "confidence": 0.97,
+      "supporting_evidence": "The text says that “both baselines and gating variants frequently encounter convergence issues (row 6, 12), with some gating models diverging silently.” Rows 6 and 12 are both baseline models, not gated models. Row 6 reports a completed run with PPL 9.195 rather than divergence; row 12 alone is marked divergent. Conversely, the displayed gated runs at LR 8e-3 (rows 10 and 14) both report successful training. The stated evidence does not support frequent gated divergence or the claimed interpretation of those rows.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "10615-Gated_Attention_for_Large_Language_Models__Non-linearity__Sparsity__and_At::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Abstract; Introduction; Sections 4.3 and 5.2; Conclusion",
+      "confidence": 0.94,
+      "supporting_evidence": "The manuscript alternates between claiming that gating “eliminates” or produces “no attention sink” and acknowledging that it only “partially alleviates” sinks. Table 4 reports a nonzero first-token-attention mean of 0.048 for the favored gate, and Section 4.3 explicitly states that “these phenomena persist to a non-trivial degree in some layers and models.” The categorical elimination/no-sink claims are therefore contradicted by the paper’s own measurements and qualification.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "10615-Gated_Attention_for_Large_Language_Models__Non-linearity__Sparsity__and_At::baseline"
+    },
+    {
+      "error_category": "reference_background_fabrication",
+      "error_location": "Section 5.1, first two paragraphs",
+      "confidence": 0.99,
+      "supporting_evidence": "The related-work text cites “[3, 10, 57, 80]”, “DeltaGate model [81],” and an “unseen GatorNet [82] architecture,” but the reference list ends at [71]. References [80], [81], and [82] do not exist in the bibliography. Consequently the claims about those works are unverifiable and the related-work citations must be repaired or removed.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "10615-Gated_Attention_for_Large_Language_Models__Non-linearity__Sparsity__and_At::baseline"
+    },
+    {
+      "error_category": "context_misalignment_incoherence",
+      "error_location": "Section 5.1, paragraph beginning “For example, while Switch Heads”",
+      "confidence": 0.95,
+      "supporting_evidence": "The paragraph contains an incomplete, duplicated sentence: “For example, while Switch Heads [19, 18], NSA [20], and MoSA [62] While we employ sigmoid-based gating [63] for selection...” It never states the predicate for the Switch Heads/NSA/MoSA clause and abruptly switches to “we employ.” This is not merely stylistic: it removes the comparison or qualification needed to establish the claimed relationship to prior work.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "10615-Gated_Attention_for_Large_Language_Models__Non-linearity__Sparsity__and_At::baseline"
+    },
+    {
+      "error_category": "context_misalignment_incoherence",
+      "error_location": "Figure 1 caption and embedded performance tables",
+      "confidence": 0.9,
+      "supporting_evidence": "Figure 1’s caption says that “Gating after SDPA (G1) yields the best overall results,” whereas its embedded PPL table lists key gating as 5.75, lower than value gating (5.85), SDPA gating (5.95), and baseline (6.05). The adjacent “Position” table additionally reports key as “+0.38%,” which points in the opposite direction without identifying the metric. No MMLU values or protocol are shown despite the caption invoking a joint PPL/MMLU comparison. The figure therefore does not coherently support its stated conclusion.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "10615-Gated_Attention_for_Large_Language_Models__Non-linearity__Sparsity__and_At::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 11,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (gpt-5.6-terra, taxonomy=paperaudit): 11 error(s) reported.",
+  "baseline": {
+    "model": "gpt-5.6-terra",
+    "provider": "openai",
+    "taxonomy": "paperaudit",
+    "paper_chars": 75524,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 20180,
+      "output_tokens": 4609,
+      "cache_read_input_tokens": null,
+      "cache_creation_input_tokens": null
+    }
+  }
+}

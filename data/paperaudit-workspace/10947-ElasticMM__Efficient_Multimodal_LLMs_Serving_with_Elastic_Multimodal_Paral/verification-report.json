@@ -1,0 +1,110 @@
+{
+  "paper_id": "10947",
+  "title": "ElasticMM: Efficient Multimodal LLM Serving with Elastic Multimodal Parallelism",
+  "paper_category": "cs.DC",
+  "predicted_errors": [
+    {
+      "error_category": "Abstract vs Results mismatch",
+      "error_location": "Abstract vs Introduction / Section 4.2 / Conclusion",
+      "confidence": 0.92,
+      "supporting_evidence": "The Abstract claims 'reducing TTFT by up to 6.8x and achieving 5.1-7.2x higher throughput', but every other statement of the same results reports 'up to 4.2x' TTFT reduction and '3.2x-4.5x' throughput improvement (Introduction contribution bullet, Section 4.2, Conclusion). The ranges do not overlap (5.1-7.2x vs 3.2-4.5x; 6.8x vs 4.2x), so the abstract's headline numbers are incompatible with the paper's own reported measurements.",
+      "verifier_name": "cross-section-consistency",
+      "snippet_id": "10947::FULL_PAPER"
+    },
+    {
+      "error_category": "Statistical reporting",
+      "error_location": "Abstract",
+      "confidence": 0.92,
+      "supporting_evidence": "Abstract-level figures (6.8x TTFT, 5.1-7.2x throughput) appear nowhere else in the paper and exceed the maximum supported values (4.2x TTFT, 4.5x throughput) reported in Sections 1, 4.2, and 6; the lower bound of the abstract's throughput range (5.1x) is above the paper's maximum measured gain (4.5x).",
+      "verifier_name": "statistical",
+      "snippet_id": "10947::SECTION::0"
+    },
+    {
+      "error_category": "Fabricated citation",
+      "error_location": "Section 5 Related Work ('Zhang et al. [61]')",
+      "confidence": 0.9,
+      "supporting_evidence": "Section 5 attributes a specific prior contribution to 'Zhang et al. [61] proposed a similar two-tier separation in 2024 but lacked elastic scheduling', but the reference list contains exactly 60 entries ([1]-[60]); reference [61] does not exist, and no bibliography entry matches a 2024 Zhang et al. two-tier separation paper. A material novelty-positioning claim rests on a nonexistent reference.",
+      "verifier_name": "citation",
+      "snippet_id": "10947::SECTION::12"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Appendix B.4, Lemma 3, Equations (12)-(14)",
+      "confidence": 0.85,
+      "supporting_evidence": "Eq. 13 models data-parallel encoding as g_E^{DP_n}(i) = Gather({g_E^1(i_1),...,g_E^n(i_n)}) where i_1..i_n are partitions of a SINGLE input i, then concludes output invariance under any parallelism strategy. For attention-based vision encoders, independently encoding partitions of one image and concatenating is not equivalent to encoding the whole input (cross-partition attention terms are dropped), so the printed proof of Lemma 3 does not establish the claimed equivalence. The proof also conflates 'Gather' with 'synchronous all-reduce'.",
+      "verifier_name": "math-equations",
+      "snippet_id": "10947::EQUATION::3"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Appendix B.8, Proposition 1, Equation (32)",
+      "confidence": 0.85,
+      "supporting_evidence": "The numerical-stability argument asserts epsilon_max ~ 10^-7 'for fp16 operations'. IEEE fp16 machine epsilon is ~9.8e-4 (unit roundoff ~4.9e-4); 10^-7 is the machine epsilon of fp32. The bound is wrong by roughly three orders of magnitude, and the conclusion that probability perturbations are 'statistically negligible' relies on this incorrect constant (and implicitly assumes greedy/argmax decoding).",
+      "verifier_name": "math-equations",
+      "snippet_id": "10947::EQUATION::5(Eq32)"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 1 Introduction (EMP paradigm claim)",
+      "confidence": 0.82,
+      "supporting_evidence": "The Introduction asserts EMP is 'a groundbreaking paradigm that completely eliminates all inference bottlenecks and solves the multimodal serving problem' - an absolute claim contradicted by the paper's own finite speedups (3.2-4.5x), its acknowledgment that decode remains memory-bound, and the Conclusion's admission of unresolved multi-node challenges.",
+      "verifier_name": "text",
+      "snippet_id": "10947::SECTION::1"
+    },
+    {
+      "error_category": "Misattribution (external)",
+      "error_location": "Reference [21] as cited in Sections 2.2 and 4.1",
+      "confidence": 0.8,
+      "supporting_evidence": "The paper cites [21] as the LLaMA-3.2 Vision model ('encoder-decoder architectures, including LLaMA-3.2 Vision [21]'; 'We select LLaMA3.2-Vision-11B [21]'), but [21] (arXiv 2411.10414, Chi et al.) is 'Llama Guard 3 Vision: Safeguarding Human-AI Image Understanding Conversations' - a safety-moderation model fine-tuned on Llama 3.2-Vision, not the model release itself. The citation does not support the attributed content for the paper's primary evaluated model.",
+      "verifier_name": "citation",
+      "snippet_id": "10947::SECTION::15"
+    },
+    {
+      "error_category": "Experiment setup",
+      "error_location": "Section 4.1 Testbed/Baselines",
+      "confidence": 0.8,
+      "supporting_evidence": "'ElasticMM was additionally tested with optimized CUDA kernels and custom memory allocators to maximize hardware utilization' while 'Both baselines were configured with default settings.' Granting the proposed system low-level optimizations withheld from baselines confounds the reported speedups: gains cannot be cleanly attributed to the claimed EMP scheduling contributions. Secondary: 'two 64-core Intel Xeon 8358P CPUs' - the Xeon Platinum 8358P is a 32-core part.",
+      "verifier_name": "text",
+      "snippet_id": "10947::SECTION::9"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 4.2 Throughput paragraph",
+      "confidence": 0.8,
+      "supporting_evidence": "Claims the results demonstrate 'universal applicability across all MLLM architectures, including cross-attention, prefix-tuning, and adapter-based models', but the evaluation covers exactly two models (one decoder-only, one cross-attention); no prefix-tuning or adapter-based MLLM was tested. Unsupported generalization presented as demonstrated.",
+      "verifier_name": "text",
+      "snippet_id": "10947::SECTION::10"
+    },
+    {
+      "error_category": "Conclusion vs Evidence mismatch",
+      "error_location": "Section 6 Conclusion",
+      "confidence": 0.8,
+      "supporting_evidence": "'ElasticMM represents a complete solution to the multimodal serving problem with no significant limitations or risks' directly contradicts the same section's admission of unresolved multi-node challenges left to future work; 'guaranteeing SLO compliance under all workload conditions' overstates Section 4's metric, which measures maximum throughput achievable within an SLO rather than establishing a universal guarantee.",
+      "verifier_name": "text",
+      "snippet_id": "10947::SECTION::13"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 3.1 / Equation (1)",
+      "confidence": 0.78,
+      "supporting_evidence": "Prose defines burst tolerance as 'the difference between peak load and idle capacity normalized by total instances', but Equation (1) formalizes a ratio bt(i) = N_i^peak / N_i^avg. A normalized difference and a ratio of instance counts are mathematically distinct, leaving the load-balancing objective ambiguously defined.",
+      "verifier_name": "math-equations",
+      "snippet_id": "10947::EQUATION::0"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 57,
+    "snippets_verified": 57,
+    "errors_detected": 10,
+    "verifier_usage": {
+      "math_equation": 6,
+      "text": 29,
+      "vision": 14,
+      "statistical": 6,
+      "citation": 3,
+      "cross_section_consistency": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Exhaustive strict-mode verification of the ElasticMM paper (57 snippets, all routed to specialist verifiers) found 10 findings above threshold, several erratum-level. Most critical: (1) the Abstract's headline results (6.8x TTFT reduction, 5.1-7.2x throughput gain) are incompatible with the numbers reported consistently in the Introduction, Section 4.2, and Conclusion (4.2x and 3.2-4.5x) - the ranges do not even overlap; (2) Section 5 cites a nonexistent reference ('Zhang et al. [61]' - the bibliography ends at [60]) to support a novelty-positioning claim; (3) reference [21], used for the primary evaluated model LLaMA-3.2 Vision, is actually the Llama Guard 3 Vision safety paper (verified via web search); (4) Appendix B contains two proof defects - Lemma 3's data-parallelism equivalence argument incorrectly treats partitions of a single input as independently encodable, and Proposition 1 uses the fp32 machine epsilon (10^-7) for fp16 arithmetic (actual ~10^-3); (5) the experimental setup grants ElasticMM kernel/allocator optimizations withheld from baselines run at default settings, confounding attribution of the reported speedups; and (6) multiple absolute overclaims ('completely eliminates all inference bottlenecks', 'complete solution... with no significant limitations or risks', 'universal applicability across all MLLM architectures' including untested classes) are contradicted by the paper's own content. Lower-confidence observations (below reporting threshold): Figure 6's extracted multiplier annotations are incoherent with its tabulated values (lossy chart extraction), Eq. 19's index set typo, beta-vs-w notation inconsistency between Eqs. 2 and 3, 'sublinear scalability' wording inversion in Section 3.2, the Qwen2-VL-for-Qwen2.5-VL citation, the 'D. Jurafsky' author error in [41], and the 32-core-vs-64-core Xeon 8358P spec. Verdict: NEEDS_CORRECTION."
+}

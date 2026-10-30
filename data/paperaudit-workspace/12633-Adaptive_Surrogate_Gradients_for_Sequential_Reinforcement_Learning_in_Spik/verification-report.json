@@ -1,0 +1,54 @@
+{
+  "paper_id": "12633",
+  "title": "Adaptive Surrogate Gradients for Sequential Reinforcement Learning in Spiking Neural Networks",
+  "paper_category": "cs.NE",
+  "predicted_errors": [
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 3.4 Asymmetric Actor-Critic",
+      "confidence": 0.88,
+      "supporting_evidence": "Section 3.4 states the critic 'receives all observed states without any action history, maintaining architectural symmetry with the deployed actor'. This directly contradicts (a) Section 3.1: 'Both the guiding policy and the non-spiking critic receive privileged information in the form of action histories'; (b) the section's own title 'Asymmetric Actor-Critic' and its next sentence calling it 'This asymmetric setup'; and (c) the same section's statement that the jump-starting actor has 'the same privileged inputs as the critic'. The critic's input specification is inverted, contradicting the paper's core asymmetric-critic methodology.",
+      "verifier_name": "verify-text",
+      "snippet_id": "12633::SECTION::6"
+    },
+    {
+      "error_category": "Methodology vs Results mismatch",
+      "error_location": "Sections 3.1 vs 3.4; Sections 3.3/Conclusion vs Appendix 8.1",
+      "confidence": 0.87,
+      "supporting_evidence": "Cross-section pass confirmed two mutually exclusive method descriptions: the critic both does and does not receive action history (3.1 vs 3.4), and the slope-magnitude relationship is stated in opposite directions (main text: shallower slopes increase gradient magnitude; Appendix 8.1: magnitude bias is positive and grows with k, vanishing at k = 1).",
+      "verifier_name": "verify-cross-section-consistency",
+      "snippet_id": "12633::FULL_PAPER::0"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Appendix 8.1, 'Bias in Gradient Magnitude' (surrogate bias inequality)",
+      "confidence": 0.85,
+      "supporting_evidence": "The appendix claims tilde-sigma'_k(z) = sigma(kz)(1 - sigma(kz)) > sigma'(z) 'for most z', yielding a positive gradient-magnitude bias 'unless k = 1'. This is provably reversed in the paper's slope regime k >= 1: since g(z) = sigma(z)(1 - sigma(z)) is strictly decreasing in |z|, for any k > 1 and z != 0, sigma(kz)(1 - sigma(kz)) < sigma(z)(1 - sigma(z)). The normalized surrogate therefore UNDER-estimates the true derivative for all k > 1 (bias direction reversed). The same section also claims cosine similarity decays to 0 for shallow slopes (k = 1) within a framework where k = 1 recovers the exact true derivative (cosine similarity would be 1), and the derived bias direction contradicts the main text's finding that shallower slopes increase gradient magnitude.",
+      "verifier_name": "verify-math",
+      "snippet_id": "12633::EQUATION::9"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Appendix 8.1 Effect of Surrogate Gradients on Gradient Alignment",
+      "confidence": 0.85,
+      "supporting_evidence": "Text-level confirmation of the appendix self-contradiction: 'unless k = 1, which recovers the original derivative' is incompatible with 'cosine similarity decays toward 0 in deeper layers when using shallow slopes (e.g., k = 1)', and the positive-bias claim contradicts Section 3.3's shallower-slopes-increase-magnitude result.",
+      "verifier_name": "verify-text",
+      "snippet_id": "12633::SECTION::16"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 55,
+    "snippets_verified": 55,
+    "errors_detected": 3,
+    "verifier_usage": {
+      "verify-math": 16,
+      "verify-text": 29,
+      "verify-statistical": 8,
+      "verify-citation": 6,
+      "verify-vision": 9,
+      "verify-cross-section-consistency": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Exhaustive strict-mode verification of all 55 segmented snippets (16 equations, 21 sections, 7 tables, 9 figures, 1 algorithm, plus a whole-paper consistency pass) found 3 distinct high-confidence errors (4 findings including cross-verifier confirmation). (1) Section 3.4 inverts the critic's input specification, stating the critic receives no action history and is 'symmetric' with the actor, directly contradicting Section 3.1 and the section's own 'Asymmetric Actor-Critic' framing. (2) Appendix 8.1's formal bias analysis has its inequality direction provably reversed for the paper's slope regime k >= 1 (for k > 1 the normalized surrogate under-estimates, not over-estimates, the true sigmoid derivative), contradicting the main text's claim that shallower slopes increase gradient magnitude. (3) The same appendix simultaneously asserts that k = 1 recovers the true derivative and that k = 1 gradients decay to zero cosine similarity with the true gradient — mutually exclusive statements. Everything else verified cleanly: the appendix energy estimate was recomputed exactly (97,417 pJ = 9.7e-5 mJ), the ablation numbers match the text (33030/2200 = 15x), the 4.5x and 400 vs -200 point claims are consistent across Abstract/Results/Conclusion, no impossible statistics were found, and all spot-checked citations (NeuroBench, JSRL, TD3/TD3BC, PopSAN 140x energy claim, Eschmann et al., Davies et al.) exist and support the attributed claims. Figure images were absent from disk and could not be visually verified; the Figure 2 schematic's 12 enumerated inputs vs the stated 18-dimensional state was noted at sub-threshold confidence (plausibly a rotation-matrix representation simplified to Euler angles). Verdict: NEEDS_CORRECTION due to multiple high-confidence (>= 0.85) internal contradictions in the methodology description and the appendix derivation."
+}

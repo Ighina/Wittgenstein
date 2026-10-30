@@ -1,0 +1,79 @@
+{
+  "paper_id": "15994",
+  "title": "MokA: Multimodal Low-Rank Adaptation for MLLMs",
+  "paper_category": "cs.LG",
+  "predicted_errors": [
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Table 2 (Section 4.2), LLaMA2 + LoRA, MME column",
+      "confidence": 0.92,
+      "supporting_evidence": "Table 2 reports LLaMA2+LoRA MME = 90.85, but the identical experiment is reported as MME = 908.52 in both Table 4 (Section 4.4) and Table 11 (Appendix G). Every other MME value in Table 2 lies in the 774-1292 range, and the surrounding text treats the LoRA MME baseline as ~908 (e.g., Multiple LoRA at 882.87 is discussed as a degradation). 90.85 is a corrupted entry (dropped digit of 908.52) contradicting two other tables.",
+      "verifier_name": "text",
+      "snippet_id": "15994::TABLE::1"
+    },
+    {
+      "error_category": "Conclusion vs Evidence mismatch",
+      "error_location": "Section 6 Discussion",
+      "confidence": 0.88,
+      "supporting_evidence": "The Discussion claims the work 'completely solves the problem of multimodal adaptation', 'absolutely ensures superior model performance', and constitutes a 'definitive advancement' enabling 'final, conclusive exploration'. This directly contradicts the Abstract ('gains vary among backbones and modalities, suggesting further exploration is needed to fully assess its generality and robustness') and Introduction ('MokA represents a first-step attempt'), and is falsified by the paper's own Table 3, where MokA (35.40/36.70) is outperformed by Uni-modal LoRA (36.80 MMAU) and Uni LoRA + MM LoRA (37.10/37.60) on LLaMA2 speech-text.",
+      "verifier_name": "cross-section-consistency",
+      "snippet_id": "15994::FULL_PAPER::0"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 4.1, claim about Qwen2.5-VL vs Table 1",
+      "confidence": 0.86,
+      "supporting_evidence": "Section 4.1 states 'Qwen2.5-VL with LoRA outperforms both LLaMA-2 and Qwen2 under the LoRA fine-tuning setting', but Table 1 shows Qwen2.5-VL LoRA at 73.00 (MUSIC-AVQA) / 71.38 (AVE) versus LLaMA2 LoRA 73.41 / 69.84 and Qwen2 LoRA 72.83 / 72.13 - i.e., below LLaMA2 on MUSIC-AVQA and below Qwen2 on AVE. The following sentences (frozen visual connector 'limiting the model's ability to adapt') only make sense as an explanation of underperformance, confirming the direction of the claim is inverted relative to the data.",
+      "verifier_name": "text",
+      "snippet_id": "15994::SECTION::11"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Table 5 (Section 4.5), AIR-Bench column",
+      "confidence": 0.85,
+      "supporting_evidence": "Table 5 (ablation, LLaMA2) reports MokA AIR-Bench = 39.64 and Multiple LoRA AIR-Bench = 31.97, but Table 3 reports the same LLaMA2 configurations as 36.70 and 32.80 respectively. The shared LoRA row (31.75) matches across both tables and the MUSIC-AVQA/POPE columns match Tables 1-2, isolating the contradiction to the AIR-Bench column: two mutually inconsistent results are reported for the same experiment.",
+      "verifier_name": "statistical",
+      "snippet_id": "15994::TABLE::4"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Appendix B, Equations 14-15 (vs Section 2.2.2, Equations 5-6)",
+      "confidence": 0.82,
+      "supporting_evidence": "Appendix B restates the core cross-attention equations with logits scaled by 1/sqrt(N_t) (N_t = number of text tokens), while the main text (Eqs 5-6) scales by 1/sqrt(d) and explicitly defines d as 'the dimensionality of the projected token embeddings, ensuring correct normalization'. Appendix B claims 'the notation is consistent with the main manuscript', but sqrt(N_t) != sqrt(d): scaled dot-product attention normalizes by the key dimension, not the key sequence length, so one of the two published forms of the method's central equation is wrong.",
+      "verifier_name": "math-equations",
+      "snippet_id": "15994::EQUATION::12"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 1 Introduction, partial-modality inference paragraph",
+      "confidence": 0.80,
+      "supporting_evidence": "The Introduction's motivating experiment probes the standard shared-LoRA baseline (Figure 1b), which contains no cross-attention module, yet the text claims 'this setup disables the cross-attention mechanism which requires simultaneous text and non-text tokens, potentially biasing results'. That caveat only applies to MokA (correctly stated in Section 4.3); attributing it to the LoRA baseline is incoherent. The same paragraph asserts cross-modal adaptation's 'impact appears secondary', contradicting the paper's central thesis (Abstract, Section 2.1) that unimodal and cross-modal adaptation are both essential.",
+      "verifier_name": "text",
+      "snippet_id": "15994::SECTION::2"
+    },
+    {
+      "error_category": "Misattribution (external)",
+      "error_location": "Section 5 Related works, DoRA description",
+      "confidence": 0.80,
+      "supporting_evidence": "The paper states 'DoRA [21] focuses solely on optimizing the gradient direction, enabling more efficient updates.' The cited DoRA paper (Liu et al., ICML 2024, arXiv:2402.09353) actually decomposes the pre-trained weight into magnitude and direction components and trains both, employing LoRA for the directional updates - it neither optimizes a 'gradient direction' nor focuses 'solely' on direction. Verified via web search against the published abstract and ICML proceedings.",
+      "verifier_name": "citation",
+      "snippet_id": "15994::SECTION::17"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 75,
+    "snippets_verified": 75,
+    "errors_detected": 7,
+    "verifier_usage": {
+      "math_equation": 16,
+      "text": 43,
+      "statistical": 21,
+      "citation": 3,
+      "vision": 14,
+      "cross_section_consistency": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Exhaustive strict-mode verification of the MokA paper (75 snippets: 30 sections/appendices, 16 equations, 13 tables, 14 figures, 2 code blocks) found 7 high-confidence issues spanning five error classes. (1) Cross-table numeric contradictions: Table 2's LLaMA2+LoRA MME value (90.85) contradicts 908.52 reported for the same experiment in Tables 4 and 11, and Table 5's AIR-Bench column (39.64 / 31.97) contradicts Table 3 (36.70 / 32.80) for identical configurations. (2) Text-vs-data contradiction: Section 4.1 claims Qwen2.5-VL with LoRA outperforms LLaMA2 and Qwen2, while Table 1 shows the opposite. (3) Equation inconsistency: the core cross-attention equations are published with two different scaling factors (1/sqrt(d) in Section 2.2.2 vs 1/sqrt(N_t) in Appendix B) despite an explicit claim of consistent notation. (4) Internal logical incoherence: the Introduction attributes a cross-attention confound to a vanilla-LoRA experiment that has no cross-attention, and calls cross-modal adaptation 'secondary' against the paper's central both-are-essential thesis. (5) Overclaiming contradiction: the Discussion asserts the work 'completely solves' multimodal adaptation and 'absolutely ensures superior performance', contradicting the hedged Abstract/Introduction and Table 3 results where baselines beat MokA on LLaMA2 speech-text; Related Works also misattributes DoRA's mechanism ('solely optimizing the gradient direction' vs the actual magnitude-direction weight decomposition). Figures could not be pixel-verified (image files absent) but captions are consistent with the text. Multiple findings exceed the 0.85 confidence threshold, so the paper requires correction before its reported results can be trusted.",
+  "uncertainty_map": []
+}

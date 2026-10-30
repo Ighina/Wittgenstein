@@ -1,0 +1,584 @@
+{
+  "paper_name": "paper",
+  "paper_path": "/Users/iacopoghinassi/Documents/Github/Wittgenstein/data/paperaudit-workspace/27970-Deep_Compositional_Phase_Diffusion_for_Long_Motion_Sequence_Generation/paper.md",
+  "tag": "opus5",
+  "lean_project": "MATH_VERIFICATION/Paper",
+  "lean_project_kept": true,
+  "totals": {
+    "snippets_extracted": 17,
+    "routed_to_math": 12,
+    "routed_to_lean": 5,
+    "lean_passed": 4,
+    "lean_refuted": 1,
+    "lean_failed": 0,
+    "fallbacks_run": 0,
+    "errors_detected": 7
+  },
+  "results": [
+    {
+      "snippet_id": "paper::EQUATION::0",
+      "snippet_type": "EQUATION",
+      "location": "3.1.1 ACT-PAE: Action-Centric Periodic Autoencoder",
+      "content": "To enforce latent space periodicity, these parameters are parameterized into a periodic signal $\\mathbf{Q} \\in \\mathbb{R}^{N \\times Q}$ using the following equation:\n$\\mathbf{Q} = \\mathbf{A} \\sin(\\mathbf{F} \\cdot T + \\mathbf{S}) + \\mathbf{B}.$ (1)\nHere $T$ represents the normalized time progression of each frame in the motion, where $T \\in [-\\pi, \\pi]$ spans from the start to end of the segment. The sine function parameterizes $\\mathbf{F} \\cdot (T - \\mathbf{S})$ into a periodic sine wave, transforming frequency and phase shift information into a sinusoidal basis.",
+      "route": "verify-math-lean",
+      "route_rationale": "The displayed sine argument $\\mathbf{F}\\cdot T + \\mathbf{S}$ and the argument the very next sentence describes, $\\mathbf{F}\\cdot(T-\\mathbf{S})$, are a crisp closed-form identity question that the Lean kernel can settle outright.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::0",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.9,
+        "reasoning": "Formalised the identity the paper implicitly asserts between the displayed form of Equation 1, $A\\sin(F\\cdot T + S)+B$, and the form its explanatory sentence gives, $A\\sin(F\\cdot(T-S))+B$, with no extra hypotheses (all five symbols range over $\\mathbb{R}$, as the paper leaves them unconstrained). Lean compiled a refutation: `phase_forms_not_equal` proves the universally quantified identity is false, witnessed by $A=1,\\ B=0,\\ F=1,\\ S=\\pi/2,\\ T=0$, where the displayed form gives $\\sin(\\pi/2)=1$ and the described form gives $\\sin(-\\pi/2)=-1$ (`phase_forms_counterexample`). A companion theorem `phase_forms_reparam` compiles too and diagnoses the gap: the two coincide only under the substitution $S \\mapsto -(F\\cdot S)$, a sign- and frequency-dependent reparameterisation the paper never states. The two forms span the same family of sinusoids, so the method itself is not invalidated, but Equation 1 and its own description are not the same equation and $\\mathbf{S}$ cannot denote the phase shift of both.",
+        "predicted_error_category": "Formally refuted",
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [
+          "Equation 1: $\\mathbf{Q} = \\mathbf{A} \\sin(\\mathbf{F} \\cdot T + \\mathbf{S}) + \\mathbf{B}$",
+          "Sentence following Equation 1: \"The sine function parameterizes $\\mathbf{F} \\cdot (T - \\mathbf{S})$ into a periodic sine wave\""
+        ],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__EQUATION__0_27970opus5.lean",
+          "formal_statement": "theorem phase_forms_not_equal :\n    ¬ (∀ A B F S T : ℝ, Qdisp A B F S T = Qprose A B F S T) := by\n  intro h\n  have h2 := h 1 0 1 (π / 2) 0\n  simp [Qdisp, Qprose] at h2\n  norm_num at h2\n\n-- where\nnoncomputable def Qdisp (A B F S T : ℝ) : ℝ := A * Real.sin (F * T + S) + B\nnoncomputable def Qprose (A B F S T : ℝ) : ℝ := A * Real.sin (F * (T - S)) + B\n\ntheorem phase_forms_counterexample :\n    Qdisp 1 0 1 (π / 2) 0 = 1 ∧ Qprose 1 0 1 (π / 2) 0 = -1\n\ntheorem phase_forms_reparam (A B F S T : ℝ) :\n    Qprose A B F S T = Qdisp A B F (-(F * S)) T",
+          "compiler_feedback": "`lake env lean Paper/TMP.lean` exited 0 with no severity-1 diagnostic.\n`lean_diagnostic_messages` (severity=error): [] (success: true).\n`#print axioms` output:\n'PaperEq0_27970.phase_forms_not_equal' depends on axioms: [propext, Classical.choice, Quot.sound]\n'PaperEq0_27970.phase_forms_reparam' depends on axioms: [propext, Classical.choice, Quot.sound]\n`lean_verify PaperEq0_27970.phase_forms_not_equal` -> {\"axioms\":[\"propext\",\"Classical.choice\",\"Quot.sound\"],\"trust\":\"standard\",\"non_standard_axioms\":[]}\n(One intermediate compile failed first with `unsolved goals  h2 : 1 = -1 ⊢ False` and an unknown-identifier error on `pow_le_pow_left`-style lemmas; both were repaired before the verdict above.)",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::EQUATION::1",
+      "snippet_type": "EQUATION",
+      "location": "3.2.1 Compositional Motion Pair Generation",
+      "content": "The predictions from both SPDM and TPDM are then combined using the Phase Mixing Equation:\n$$\\mathbf{P}^0_\\cdot = r \\frac{\\mathbf{P}^0_{\\cdot f} + \\mathbf{P}^0_{\\cdot b}}{2} + (1-r)\\mathbf{P}^0_{\\cdot c} \\tag{2}$$\nThe variable r is defined as r = (k/K)³ for semantically conditioned motion segments (i.e., Xₚ and Xₛ), and r = 1 otherwise (i.e., Xₜ).",
+      "route": "verify-math-lean",
+      "route_rationale": "A closed-form mixing rule whose well-formedness (partition of unity, convexity on $r\\in[0,1]$, the $r=1$ specialisation, and $r=(k/K)^3\\in(0,1]$) is exactly what a formal proof settles.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::1",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "Formalised Equation 2 as `mix r Pf Pb Pc = r * ((Pf + Pb)/2) + (1 - r) * Pc` over $\\mathbb{R}$ (the mixing is applied coordinate-wise to the phase latents, so a scalar coordinate is a faithful rendering). Four theorems compiled clean: (i) `mix_weights_sum_one` — the coefficients $r/2, r/2, 1-r$ sum to $1$, so Equation 2 is an affine combination; (ii) `mix_mem_interval` — for $r\\in[0,1]$ it is a genuine convex combination, keeping the mixed latent inside any interval containing the three predictions, so the rule cannot inflate the latent out of range; (iii) `mix_r_one` — at $r=1$ it collapses exactly to $(\\mathbf{P}^0_{\\cdot f} + \\mathbf{P}^0_{\\cdot b})/2$, matching the line Algorithm 1 prints for $\\mathbf{X}_t$; (iv) `rsched_mem_Ioc` — for $1 \\le k \\le K$, $r=(k/K)^3 \\in (0,1]$, so (ii) applies to the semantically conditioned segments too. No error in the equation's algebra. (The separate problem of the orphan parameter $\\alpha$ stated in the same paragraph is handled as `paper::DEFINITION::4`.)",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__EQUATION__1_27970opus5.lean",
+          "formal_statement": "noncomputable def mix (r Pf Pb Pc : ℝ) : ℝ := r * ((Pf + Pb) / 2) + (1 - r) * Pc\nnoncomputable def rsched (k K : ℝ) : ℝ := (k / K) ^ 3\n\ntheorem mix_weights_sum_one (r : ℝ) : r / 2 + r / 2 + (1 - r) = 1 := by ring\n\ntheorem mix_eq_affine (r Pf Pb Pc : ℝ) :\n    mix r Pf Pb Pc = (r / 2) * Pf + (r / 2) * Pb + (1 - r) * Pc := by\n  unfold mix; ring\n\ntheorem mix_mem_interval {r Pf Pb Pc lo hi : ℝ}\n    (hr0 : 0 ≤ r) (hr1 : r ≤ 1)\n    (hf : lo ≤ Pf) (hf' : Pf ≤ hi) (hb : lo ≤ Pb) (hb' : Pb ≤ hi)\n    (hc : lo ≤ Pc) (hc' : Pc ≤ hi) :\n    lo ≤ mix r Pf Pb Pc ∧ mix r Pf Pb Pc ≤ hi\n\ntheorem mix_r_one (Pf Pb Pc : ℝ) : mix 1 Pf Pb Pc = (Pf + Pb) / 2 := by\n  unfold mix; ring\n\ntheorem rsched_mem_Ioc {k K : ℝ} (hk : 1 ≤ k) (hkK : k ≤ K) :\n    0 < rsched k K ∧ rsched k K ≤ 1",
+          "compiler_feedback": "`lake env lean Paper/TMP.lean` exited 0; `grep -c \"error:\"` = 0.\n`#print axioms` output:\n'PaperEq1_27970.mix_weights_sum_one' depends on axioms: [propext, Classical.choice, Quot.sound]\n'PaperEq1_27970.mix_eq_affine' depends on axioms: [propext, Classical.choice, Quot.sound]\n'PaperEq1_27970.mix_mem_interval' depends on axioms: [propext, Classical.choice, Quot.sound]\n'PaperEq1_27970.mix_r_one' depends on axioms: [propext, Classical.choice, Quot.sound]\n'PaperEq1_27970.rsched_mem_Ioc' depends on axioms: [propext, Classical.choice, Quot.sound]\n(First attempt failed with `failed to prove positivity/nonnegativity/nonzeroness` and `Unknown identifier 'pow_le_pow_left'`; repaired with `unfold rsched` + `pow_le_one₀`.)",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::EQUATION::2",
+      "snippet_type": "EQUATION",
+      "location": "A.3 Details of SPDM and TPDM",
+      "content": "our diffusion models are designed as an ε-model [25], which is trained using the ℓ₁ loss (formulated as ||·||₁) to the diffusion noise [ε_p, ε_t, ε_s] that was scheduled to diffuse the clean phase latent of the motion segments to [P_p^k, P_t^k, P_s^k] ... The training loss of SPDM on each subsequence pair is illustrated as follows:\n$$\\mathcal{L}_S = \\left\\|\\mathcal{F}_S(k, C_p, \\mathbf{P}_p^k) - \\epsilon_p\\right\\|_1 + \\left\\|\\mathcal{F}_S(k, C_s, \\mathbf{P}_s^k) - \\epsilon_s\\right\\|_1.$$",
+      "route": "verify-math",
+      "route_rationale": "A loss definition over an unspecified learned map $\\mathcal{F}_S$; there is no identity or bound to formalise, only an inspection of whether the loss is well formed and matches the stated $\\epsilon$-parameterisation.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::EQUATION::2",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "$\\mathcal{L}_S$ is the standard $\\epsilon$-prediction DDPM/DDIM objective, summed over the two semantically conditioned segments of a BABEL-TEACH subsequence pair, with the $\\ell_1$ norm the appendix declares. Both terms are non-negative, each argument of $\\mathcal{F}_S$ matches the signature $\\mathcal{F}_S(k, C, \\mathbf{P}^k)$ introduced in Section 3.1.2, and the targets $\\epsilon_p, \\epsilon_s$ are the noises that diffused the respective clean latents to $\\mathbf{P}_p^k, \\mathbf{P}_s^k$. Nothing algebraically invalid. The only defect in the vicinity is nomenclature, not algebra: the same quantity $\\mathcal{F}_S(k, C_p, \\mathbf{P}_p^k)$ is denoted $\\mathbf{P}_{pc}^0$ in Section 3.1.2 while being trained here to equal $\\epsilon_p$ — recorded separately as `paper::MATHEMATICAL_MODEL::0`.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::EQUATION::3",
+      "snippet_type": "EQUATION",
+      "location": "A.3 Details of SPDM and TPDM",
+      "content": "TPDM_f and TPDM_b are trained on each transitional segment pair to denoise motion phase parameters using neighbouring phase information from either the forward or backward direction.\n$$\\mathcal{L}_{T_f} = \\left\\|\\mathcal{F}_{T_f}(k, \\mathbf{P}_t^k, \\mathbf{P}_p^0) - \\epsilon_t\\right\\|_1 + \\left\\|\\mathcal{F}_{T_f}(k, \\mathbf{P}_s^k, \\mathbf{P}_t^0) - \\epsilon_s\\right\\|_1,$$",
+      "route": "verify-math",
+      "route_rationale": "Loss definition over a learned map; consistency-by-inspection against Algorithm 1, nothing formalisable.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::EQUATION::3",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "The conditioning pattern is internally consistent. $\\mathcal{F}_{T_f}$ is the *forward* TPDM, conditioned on the preceding segment: here $\\mathbf{P}_t^k$ is conditioned on $\\mathbf{P}_p^0$ and $\\mathbf{P}_s^k$ on $\\mathbf{P}_t^0$, which is exactly the order of the two $\\mathcal{F}_{T_f}$ calls in Algorithm 1 ($\\mathbf{P}_{tf}^0 \\leftarrow \\mathcal{F}_{T_f}(k, \\mathbf{P}_t^k, \\mathbf{P}_p^0)$ and $\\mathbf{P}_{sf}^0 \\leftarrow \\mathcal{F}_{T_f}(k, \\mathbf{P}_s^k, \\mathbf{P}_t^0)$), and matches the temporal order $\\mathbf{X}_p \\to \\mathbf{X}_t \\to \\mathbf{X}_s$ with $\\mathbf{X}_t$ straddling the boundary. Both terms are non-negative $\\ell_1$ residuals against the correct per-segment noise targets. No algebraic or sign error.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::EQUATION::4",
+      "snippet_type": "EQUATION",
+      "location": "A.3 Details of SPDM and TPDM",
+      "content": "$$\\mathcal{L}_{T_b} = \\left\\|\\mathcal{F}_{T_b}(k, \\mathbf{P}_p^k, \\mathbf{P}_t^0) - \\epsilon_p\\right\\|_1 + \\left\\|\\mathcal{F}_{T_b}(k, \\mathbf{P}_t^k, \\mathbf{P}_s^0) - \\epsilon_t\\right\\|_1.$$",
+      "route": "verify-math",
+      "route_rationale": "Loss definition over a learned map; consistency-by-inspection against Algorithm 1, nothing formalisable.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::EQUATION::4",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "Mirror image of $\\mathcal{L}_{T_f}$ and consistent with it: $\\mathcal{F}_{T_b}$ is the *backward* TPDM, conditioned on the succeeding segment, so $\\mathbf{P}_p^k$ is conditioned on $\\mathbf{P}_t^0$ and $\\mathbf{P}_t^k$ on $\\mathbf{P}_s^0$. These are precisely the two $\\mathcal{F}_{T_b}$ calls Algorithm 1 makes ($\\mathbf{P}_{pb}^0 \\leftarrow \\mathcal{F}_{T_b}(k, \\mathbf{P}_p^k, \\mathbf{P}_t^0)$ and $\\mathbf{P}_{tb}^0 \\leftarrow \\mathcal{F}_{T_b}(k, \\mathbf{P}_t^k, \\mathbf{P}_s^0)$), and the four TPDM calls across $\\mathcal{L}_{T_f}$ and $\\mathcal{L}_{T_b}$ cover exactly the two transitional pairs $(\\mathbf{X}_p, \\mathbf{X}_t)$ and $(\\mathbf{X}_t, \\mathbf{X}_s)$ the text says are extracted per tuple. No algebraic, sign, or direction error.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::0",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "A.1 Compositional Motion Generation Algorithm (Algorithm 1)",
+      "content": "# perform phase mixing as in Eq. 2\nP_p^0 ← (k/K)^3 P_{pb}^0 + (1 - (k/K)^3) P_{pc}^0   ▷ r_p = (k/K)^3\nP_t^0 ← (P_{tf}^0 + P_{tb}^0)/2                     ▷ r_t = 1\nP_s^0 ← (k/K)^3 P_{sf}^0 + (1 - (k/K)^3) P_{sc}^0   ▷ r_s = (k/K)^3\n[compared against Eq. 2: $\\mathbf{P}^0_\\cdot = r (\\mathbf{P}^0_{\\cdot f} + \\mathbf{P}^0_{\\cdot b})/2 + (1-r)\\mathbf{P}^0_{\\cdot c}$; note that Algorithm 1 computes only $\\mathbf{P}_{pb}^0$ for $\\mathbf{X}_p$ and only $\\mathbf{P}_{sf}^0$ for $\\mathbf{X}_s$]",
+      "route": "verify-math-lean",
+      "route_rationale": "Whether the algorithm's instantiation really is \"as in Eq. 2\" is an exact identity question with a decidable answer; Lean can characterise precisely when the two agree.",
+      "lean_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::0",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.8,
+        "reasoning": "Formalised both forms coordinate-wise and proved an iff characterisation rather than guessing at the paper's intent. `alg1_eq_eq2_iff` compiles: Algorithm 1's semantic line $r\\mathbf{P}_{pb}^0 + (1-r)\\mathbf{P}_{pc}^0$ equals Equation 2 at the same $r$ **iff** $r = 0$ or $\\mathbf{P}_{pf}^0 = \\mathbf{P}_{pb}^0$. Since $\\mathbf{X}_p$ has no forward prediction at all, the only reading under which Algorithm 1 is literally \"as in Eq. 2\" is that the bracket averages over the *available* directions (one, here) rather than always dividing by two. `alg1_ne_eq2_zero_pad` compiles as well and shows the alternative literal reading — missing directional term treated as $0$ — is not equivalent: at $r=1, \\mathbf{P}_{pb}^0=1, \\mathbf{P}_{pc}^0=0$ Equation 2 gives $1/2$ where Algorithm 1 gives $1$, a factor-two difference in the transition contribution. `alg1_transition_agrees` confirms the $\\mathbf{X}_t$ line ($r=1$, both directions present) matches Equation 2 exactly. Verdict: no mathematical error — the intended convention is recoverable and self-consistent — but Equation 2 is under-specified for one-sided segments, and the normalisation is left to the reader. Flagged as a clarity gap below the reporting threshold, not a finding.",
+        "predicted_error_category": null,
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__FORMULA_BLOCK__0_27970opus5.lean",
+          "formal_statement": "noncomputable def eq2 (r Pf Pb Pc : ℝ) : ℝ := r * ((Pf + Pb) / 2) + (1 - r) * Pc\nnoncomputable def alg1_semantic (r Pb Pc : ℝ) : ℝ := r * Pb + (1 - r) * Pc\n\ntheorem alg1_eq_eq2_iff (r Pf Pb Pc : ℝ) :\n    eq2 r Pf Pb Pc = alg1_semantic r Pb Pc ↔ (r = 0 ∨ Pf = Pb)\n\ntheorem alg1_ne_eq2_zero_pad :\n    ¬ (∀ r Pb Pc : ℝ, eq2 r 0 Pb Pc = alg1_semantic r Pb Pc)\n\ntheorem alg1_transition_agrees (Pf Pb Pc : ℝ) : eq2 1 Pf Pb Pc = (Pf + Pb) / 2",
+          "compiler_feedback": "`lake env lean Paper/TMP.lean` exited 0; `grep -c \"error:\"` = 0 (clean on the first attempt).\n`#print axioms` output:\n'PaperFB0_27970.alg1_eq_eq2_iff' depends on axioms: [propext, Classical.choice, Quot.sound]\n'PaperFB0_27970.alg1_ne_eq2_zero_pad' depends on axioms: [propext, Classical.choice, Quot.sound]\n'PaperFB0_27970.alg1_transition_agrees' depends on axioms: [propext, Classical.choice, Quot.sound]",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::DEFINITION::0",
+      "snippet_type": "DEFINITION",
+      "location": "3.2.1 Compositional Motion Pair Generation",
+      "content": "The variable r is defined as r = (k/K)³ for semantically conditioned motion segments ... Note that the value of r for semantically denoised segments is determined by the ratio of total steps K and current denoising step k, ensuring transition compatibility early and enriching semantic details progressively. [In Eq. 2, r weights the TPDM/transition term and (1-r) the SPDM/semantic term; Algorithm 1 runs k from K down to 1; A.4 sets 100 inference steps.]",
+      "route": "verify-math-lean",
+      "route_rationale": "The claim is a monotonicity assertion about the explicit schedule $r=(k/K)^3$ over the denoising trajectory — exactly the kind of statement a formal proof settles.",
+      "lean_result": {
+        "snippet_id": "paper::DEFINITION::0",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.88,
+        "reasoning": "Formalised the schedule as $r(k,K) = (k/K)^3$ and proved the behaviour the paper claims. `r_at_K` : $r(K,K) = 1$ for $K \\ne 0$, so the first denoising step is purely transitional with zero semantic weight — \"transition compatibility early\". `r_strictMono` : $r$ is strictly increasing in $k$ on $[0,\\infty)$ for $K>0$; since Algorithm 1 decreases $k$ from $K$ to $1$, the transition weight strictly decreases along the trajectory. `semantic_weight_increases` : $1 - r$ therefore strictly increases — \"enriching semantic details progressively\". `r_at_one` : $r(1,K) = 1/K^3$, and `r_at_one_K100` : with the paper's $K=100$ inference steps the final step is weighted $10^{-6}$ transitional and $1-10^{-6}$ semantic. Every claim the sentence makes about the schedule holds. (The phrase \"ratio of total steps K and current denoising step k\" is loose — the schedule is the cube of $k/K$, not $K/k$ — but the formula is printed explicitly and is the one that was verified.)",
+        "predicted_error_category": null,
+        "snippet_type": "DEFINITION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__DEFINITION__0_27970opus5.lean",
+          "formal_statement": "noncomputable def r (k K : ℝ) : ℝ := (k / K) ^ 3\n\ntheorem r_at_K {K : ℝ} (hK : K ≠ 0) : r K K = 1\n\ntheorem r_strictMono {K : ℝ} (hK : 0 < K) {k₁ k₂ : ℝ}\n    (h0 : 0 ≤ k₁) (h : k₁ < k₂) : r k₁ K < r k₂ K\n\ntheorem semantic_weight_increases {K : ℝ} (hK : 0 < K) {k₁ k₂ : ℝ}\n    (h0 : 0 ≤ k₁) (h : k₁ < k₂) : 1 - r k₂ K < 1 - r k₁ K\n\ntheorem r_at_one {K : ℝ} (hK : K ≠ 0) : r 1 K = 1 / K ^ 3\n\ntheorem r_at_one_K100 : r 1 100 = 1 / 1000000",
+          "compiler_feedback": "`lake env lean Paper/TMP.lean` exited 0; `grep -c \"error:\"` = 0.\nOne linter warning only: \"Variable name `hK` is not explicitly referenced\" (severity 2, category linter, non-blocking).\n`#print axioms` output:\n'PaperDef0_27970.r_at_K' depends on axioms: [propext, Classical.choice, Quot.sound]\n'PaperDef0_27970.r_strictMono' depends on axioms: [propext, Classical.choice, Quot.sound]\n'PaperDef0_27970.semantic_weight_increases' depends on axioms: [propext, Classical.choice, Quot.sound]\n'PaperDef0_27970.r_at_one' depends on axioms: [propext, Classical.choice, Quot.sound]\n'PaperDef0_27970.r_at_one_K100' depends on axioms: [propext, Classical.choice, Quot.sound]\n(First attempt failed with `Unknown identifier 'div_lt_div_of_pos_left''`, `Unknown identifier 'pow_lt_pow_left'` and a `rewrite` failure on `one_div_pow`; repaired with `gcongr` plus an explicit cube factorisation.)",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.88
+    },
+    {
+      "snippet_id": "paper::DEFINITION::1",
+      "snippet_type": "DEFINITION",
+      "location": "A.2 Adjustment to T and PE (footnote 3)",
+      "content": "X_t represents the segment covering the second half of X_p and the first half of X_s. For example, if X_p is 2 seconds and X_s is 8 seconds, X_t will span 5 seconds, covering the last 1 second of X_p and the first 4 seconds of X_s. Note that the middle frame of X_t is defined at the transition boundary; when X_p and X_s have unequal lengths, this middle frame is offset from the center of X_t.",
+      "route": "verify-math-lean",
+      "route_rationale": "A crisp arithmetic/geometry claim: segment lengths, a worked example, and an iff about when the boundary coincides with the centre — fully formalisable.",
+      "lean_result": {
+        "snippet_id": "paper::DEFINITION::1",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "Formalised with $\\mathrm{len}(\\mathbf{X}_t) = L_p/2 + L_s/2$, boundary offset $L_p/2$ from the start of $\\mathbf{X}_t$, and centre $\\mathrm{len}/2 = (L_p+L_s)/4$. `worked_example` compiles: $L_p=2, L_s=8$ give $\\mathrm{len} = 5$ s from $1$ s of $\\mathbf{X}_p$ and $4$ s of $\\mathbf{X}_s$, matching the footnote exactly. `boundary_eq_centre_iff` compiles: the boundary coincides with the centre **iff** $L_p = L_s$, so the footnote's statement that the middle frame is offset from the centre precisely when the segments differ in length is exactly right. `worked_example_offset` compiles: in the footnote's own example the offset is $3/2$ s ($1$ s boundary vs $2.5$ s centre), i.e. nonzero as claimed. No error.",
+        "predicted_error_category": null,
+        "snippet_type": "DEFINITION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__DEFINITION__1_27970opus5.lean",
+          "formal_statement": "noncomputable def lenXt (Lp Ls : ℝ) : ℝ := Lp / 2 + Ls / 2\nnoncomputable def boundaryXt (Lp : ℝ) : ℝ := Lp / 2\nnoncomputable def centreXt (Lp Ls : ℝ) : ℝ := lenXt Lp Ls / 2\n\ntheorem worked_example :\n    lenXt 2 8 = 5 ∧ (2:ℝ) / 2 = 1 ∧ (8:ℝ) / 2 = 4\n\ntheorem boundary_eq_centre_iff : boundaryXt Lp = centreXt Lp Ls ↔ Lp = Ls\n\ntheorem worked_example_offset : centreXt 2 8 - boundaryXt 2 = 3 / 2",
+          "compiler_feedback": "`lake env lean Paper/TMP.lean` exited 0; `grep -c \"error:\"` = 0.\n`#print axioms` output:\n'PaperDef1_27970.worked_example' depends on axioms: [propext, Classical.choice, Quot.sound]\n'PaperDef1_27970.boundary_eq_centre_iff' depends on axioms: [propext, Classical.choice, Quot.sound]\n'PaperDef1_27970.worked_example_offset' depends on axioms: [propext, Classical.choice, Quot.sound]\n(First attempt failed with two `Tactic 'unfold' failed to unfold 'lenXt'` errors from an over-eager `<;>` combinator; repaired.)",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::DEFINITION::2",
+      "snippet_type": "DEFINITION",
+      "location": "4.1.1 Training and Evaluation Dataset",
+      "content": "Initially, the root trajectory is represented by only 4 out of 263 parameters, omitting essential root orientation details. Therefore, we supplement a 6D rotation [38] for the root, increasing the total parameters to E = 269.",
+      "route": "verify-math",
+      "route_rationale": "Single-step arithmetic a careful reader checks by inspection; no reason to spend a Lean cycle.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::DEFINITION::2",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "$263 + 6 = 269$, so the stated dimension $E = 269$ follows from the HumanML3D baseline of 263 parameters plus a 6D root rotation. This is also consistent with the use of $\\mathbf{X} \\in \\mathbb{R}^{N \\times E}$ in Section 3.1.1. No arithmetic error.",
+        "predicted_error_category": null,
+        "snippet_type": "DEFINITION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::DEFINITION::3",
+      "snippet_type": "DEFINITION",
+      "location": "4.1.1 / Table 2 / 4.2.2 Long-term Motion Generation",
+      "content": "we set the minimum and maximum lengths for each subsequence as 45 and 250 frames, respectively ... the training dataset contains 4370 subsequence pairs, while the testing dataset includes 1582 subsequence pairs ... a single extended text sequence of 3,164 texts (302,298 frames, 168 minutes)",
+      "route": "verify-math",
+      "route_rationale": "Arithmetic consistency between reported dataset counts and durations — checkable by inspection, and not a theorem to formalise.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::DEFINITION::3",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.8,
+        "reasoning": "All three reported quantities are mutually consistent. (i) $1582$ test subsequence *pairs* give $1582 \\times 2 = 3164$ texts, matching the \"3,164 texts\". (ii) $302{,}298 / 3164 \\approx 95.5$ frames per text, comfortably inside the stated per-subsequence range $[45, 250]$ frames. (iii) $302{,}298 / (168 \\times 60) \\approx 29.99$ frames per second, i.e. 30 fps — the native rate of BABEL/AMASS — so \"302,298 frames\" and \"168 minutes\" agree. No arithmetic contradiction.",
+        "predicted_error_category": null,
+        "snippet_type": "DEFINITION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::DEFINITION::4",
+      "snippet_type": "DEFINITION",
+      "location": "3.2.1 Compositional Motion Pair Generation",
+      "content": "The variable r is defined as r = (k/K)³ for semantically conditioned motion segments (i.e., Xₚ and Xₛ), and r = 1 otherwise (i.e., Xₜ). The weighting parameter α controls the balance between transition and semantic information, where α = 0.5 for all segments.",
+      "route": "verify-math",
+      "route_rationale": "An undefined symbol cannot be formalised faithfully — there is no statement to render in Lean, only an internal contradiction to read off the page.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::DEFINITION::4",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.8,
+        "reasoning": "The symbol $\\alpha$ occurs exactly once in the entire manuscript — in this sentence — and appears in no equation, in Algorithm 1, or anywhere else. Equation 2, the only place a weighting parameter enters, uses $r$. So the sentence either (a) introduces a parameter that never acts on anything, or (b) is a stale reference to $r$, in which case it directly contradicts the immediately preceding sentence: $r$ is *not* $0.5$ \"for all segments\" — it is $(k/K)^3$, which sweeps $(0,1]$ over the denoising loop, for $\\mathbf{X}_p$ and $\\mathbf{X}_s$, and exactly $1$ for $\\mathbf{X}_t$. The constant $0.5$ is attained by $(k/K)^3$ only at the single step $k = K/2^{1/3} \\approx 0.794K$, and never for $\\mathbf{X}_t$. Under either reading the sentence is wrong as printed. The results do not depend on it — Algorithm 1 implements the $r$ schedule, not $\\alpha$ — so the defect is in the specification rather than in the method.",
+        "predicted_error_category": "Domain/Constraint violation",
+        "snippet_type": "DEFINITION",
+        "contradiction_locations": [
+          "Section 3.2.1: \"The variable r is defined as r = (k/K)³ for semantically conditioned motion segments (i.e., Xₚ and Xₛ), and r = 1 otherwise (i.e., Xₜ).\"",
+          "Section 3.2.1: \"The weighting parameter α controls the balance between transition and semantic information, where α = 0.5 for all segments.\""
+        ]
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "3.1.2 SPDM / 3.1.3 TPDM / A.3 Details of SPDM and TPDM",
+      "content": "[3.1.2] This embedding guides the denoising process of the phase parameters $\\mathbf{P}_p^k$ ... via $\\mathbf{P}_{pc}^0 = \\mathcal{F}_S(k, C_p, \\mathbf{P}_p^k)$ ... Finally, a self-attention transformer [1] is employed to derive semantically denoised parameters $\\mathbf{P}_{pc}^0$.\n[3.1.3] Finally, a cross-attention transformer [1] processes all the $\\mathbf{P}_t^k$ and $\\mathbf{P}_p^0$ tokens to predict phase noise $\\mathbf{P}_{tf}^0$.\n[A.3] our diffusion models are designed as an ε-model [25], which is trained using the ℓ₁ loss ... to the diffusion noise [ε_p, ε_t, ε_s] ... the estimation of the diffused latent at the next diffusion step (prev_sample) and the clean phase latent (pred_original_sample) is also supported by the commonly used DDIM diffusion scheduler [3]: P_p^{k−1}, P_p^0 ← ℱ_D(P_p^0, P_p^k, k−1).",
+      "route": "verify-math",
+      "route_rationale": "The defect is which object a symbol denotes across three sections; a faithful Lean statement would require inventing the diffusion schedule the paper never prints, so this is an inspection task.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.75,
+        "reasoning": "The superscript-$0$ outputs of SPDM and TPDM are given three mutually incompatible meanings. Section 3.1.2 defines $\\mathbf{P}_{pc}^0 = \\mathcal{F}_S(k, C_p, \\mathbf{P}_p^k)$ and calls it \"semantically denoised parameters\", i.e. a clean latent $\\mathbf{P}^0$. Section 3.1.3 calls the structurally identical $\\mathbf{P}_{tf}^0$ \"phase noise\". Appendix A.3 then fixes the matter by training these maps as $\\epsilon$-models: $\\mathcal{L}_S = \\|\\mathcal{F}_S(k, C_p, \\mathbf{P}_p^k) - \\epsilon_p\\|_1 + \\cdots$, i.e. $\\mathcal{F}_S(k,C_p,\\mathbf{P}_p^k) \\approx \\epsilon_p$. Composing the definition with the loss yields $\\mathbf{P}_{pc}^0 \\approx \\epsilon_p$ — the clean phase latent equals the diffusion noise — which is false: under the DDIM/DDPM parameterisation the two are related by $\\mathbf{P}^0 = (\\mathbf{P}^k - \\sqrt{1-\\bar\\alpha_k}\\,\\epsilon)/\\sqrt{\\bar\\alpha_k}$, a $k$-dependent affine map, not the identity. The same confusion propagates into A.3's scheduler call, where the mixed quantity is passed in the `pred_original_sample` slot of $\\mathcal{F}_D(\\mathbf{P}_p^0, \\mathbf{P}_p^k, k-1)$ — a slot that takes a clean latent, not an $\\epsilon$ estimate. Mitigating, and the reason this is scored minor rather than critical: the $\\epsilon \\mapsto \\mathbf{P}^0$ map is affine at fixed $k$ and Equation 2's mixing weights sum to $1$ (formally verified as `paper::EQUATION::1`), so mixing in $\\epsilon$-space and converting is equivalent to converting and then mixing. The implementation is therefore recoverable; the written specification is not self-consistent, and a reader cannot tell from the paper which quantity the modules emit.",
+        "predicted_error_category": "Algebraic manipulation",
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": [
+          "Section 3.1.2: \"a self-attention transformer [1] is employed to derive semantically denoised parameters $\\mathbf{P}_{pc}^0$\"",
+          "Section 3.1.3: \"a cross-attention transformer [1] processes all the $\\mathbf{P}_t^k$ and $\\mathbf{P}_p^0$ tokens to predict phase noise $\\mathbf{P}_{tf}^0$\"",
+          "Appendix A.3: \"$\\mathcal{L}_S = \\|\\mathcal{F}_S(k, C_p, \\mathbf{P}_p^k) - \\epsilon_p\\|_1 + \\|\\mathcal{F}_S(k, C_s, \\mathbf{P}_s^k) - \\epsilon_s\\|_1$\""
+        ]
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.75
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::1",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "3.1.1 ACT-PAE (with A.2 and A.4)",
+      "content": "[3.1.1] The ACT-PAE encoder first processes input motion $\\mathbf{X} \\in \\mathbb{R}^{N \\times E}$ of $N$ frames into four phase parameters $\\mathbf{F}, \\mathbf{A}, \\mathbf{B}, \\mathbf{S} \\in \\mathbb{R}^4$, each representing a scalar value per motion segment. ... these parameters are parameterized into a periodic signal $\\mathbf{Q} \\in \\mathbb{R}^{N \\times Q}$ using the following equation: $\\mathbf{Q} = \\mathbf{A} \\sin(\\mathbf{F} \\cdot T + \\mathbf{S}) + \\mathbf{B}.$\n[A.2] the time window $T \\in \\mathbb{R}^{N \\times Q}$ is essential for transforming the fixed-size parameters F, A, B, S into the variable-length periodic signal Q ... we employ a mixed linear parameterization (mixT), where Q/2 channels within the time window T are parameterized using frameT, while the other half is parameterized using normT.\n[A.4] our models are designed based on phase latent size Q = 512, which serves as both the latent dimension for all diffusion modules and the number of periodic signals in ACT-PAE.",
+      "route": "verify-math",
+      "route_rationale": "A shape/conformability claim about tensors whose broadcasting convention the paper never states; any Lean rendering would have to invent that convention, so a faithful formalisation is impossible.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::1",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.85,
+        "reasoning": "Two defects, both internal to the paper. (i) The phrase is self-contradictory on its face: an element of $\\mathbb{R}^4$ is a 4-vector, not \"a scalar value\". (ii) More substantively, $\\mathbf{F}, \\mathbf{A}, \\mathbf{B}, \\mathbf{S} \\in \\mathbb{R}^4$ is not conformable with Equation 1. Appendix A.2 gives $T \\in \\mathbb{R}^{N \\times Q}$ and Appendix A.4 fixes $Q = 512$ as \"the number of periodic signals in ACT-PAE\"; A.2 further splits $T$ into $Q/2$ frameT channels and $Q/2$ normT channels, which only makes sense if each channel carries its own phase parameters. For $\\mathbf{A}\\sin(\\mathbf{F}\\cdot T + \\mathbf{S}) + \\mathbf{B}$ to land in $\\mathbb{R}^{N \\times Q} = \\mathbb{R}^{N \\times 512}$, each of the four parameters must broadcast across $512$ channels, i.e. live in $\\mathbb{R}^{Q}$ (equivalently $\\mathbf{P} = [\\mathbf{F},\\mathbf{A},\\mathbf{B},\\mathbf{S}] \\in \\mathbb{R}^{4 \\times Q}$). With $\\mathbb{R}^4$ as printed, $4 \\ne 512$ and Equation 1 is dimensionally ill-formed; the most likely intent is that the *number* of parameter types is four, which is not what \"$\\in \\mathbb{R}^4$\" says. The published numbers are unaffected, but Equation 1 — the paper's central latent definition — cannot be implemented as written.",
+        "predicted_error_category": "Domain/Constraint violation",
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": [
+          "Section 3.1.1: \"four phase parameters $\\mathbf{F}, \\mathbf{A}, \\mathbf{B}, \\mathbf{S} \\in \\mathbb{R}^4$, each representing a scalar value per motion segment\"",
+          "Appendix A.2: \"the time window $T \\in \\mathbb{R}^{N\\times Q}$\" together with \"Q/2 channels within the time window T\"",
+          "Appendix A.4: \"phase latent size Q = 512 ... the number of periodic signals in ACT-PAE\""
+        ]
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::2",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "3.1.1 ACT-PAE (with A.2)",
+      "content": "[3.1.1] Here $T$ represents the normalized time progression of each frame in the motion, where $T \\in [-\\pi, \\pi]$ spans from the start to end of the segment. ... Importantly, we have changed the sinusoidal positional embedding module $PE$ and the time window $T$ to accommodate variable-length motion encoding. For example, $T$ can be parameterized for normalized action progression (−1 to 1 across $N$ frames), or actual time duration ($-\\frac{N}{2}$ to $\\frac{N}{2}$ across $N$ frames).\n[A.2] (normT) parameterizes the time window from -1 to 1 over the frame count N ... and (frameT) parameterizes the time window from -N/2 to N/2 ... In this work, we employ a mixed linear parameterization (mixT), where Q/2 channels within the time window T are parameterized using frameT, while the other half is parameterized using normT.",
+      "route": "verify-math",
+      "route_rationale": "A contradiction between two stated domains for the same variable; there is no single faithful formal statement to compile, only two incompatible declarations to compare.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::2",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.85,
+        "reasoning": "The domain of $T$ in Equation 1 is declared twice, incompatibly, within the same subsection. The sentence under Equation 1 states $T \\in [-\\pi, \\pi]$. Two paragraphs later the same section says $T$ ranges over $[-1, 1]$ (normalized action progression) or $[-N/2, N/2]$ (actual time duration), and Appendix A.2 confirms exactly these two parameterisations — normT on $[-1,1]$, frameT on $[-N/2, N/2]$ — and states that the work actually uses mixT, half of each. Neither of the parameterisations the paper implements is $[-\\pi, \\pi]$. The discrepancy is not cosmetic: the range of $T$ sets the scale of $\\mathbf{F}$ in $\\sin(\\mathbf{F}\\cdot T + \\mathbf{S})$, so $[-\\pi,\\pi]$ versus $[-1,1]$ rescales every learned frequency by $\\pi$, and $[-N/2, N/2]$ makes the span length-dependent rather than normalized — contradicting the same sentence's description of $T$ as \"normalized time progression\". As written, a reader cannot determine the domain of Equation 1's only free variable.",
+        "predicted_error_category": "Domain/Constraint violation",
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": [
+          "Section 3.1.1: \"where $T \\in [-\\pi, \\pi]$ spans from the start to end of the segment\"",
+          "Section 3.1.1: \"$T$ can be parameterized for normalized action progression (−1 to 1 across $N$ frames), or actual time duration ($-\\frac{N}{2}$ to $\\frac{N}{2}$ across $N$ frames)\"",
+          "Appendix A.2: \"(normT) parameterizes the time window from -1 to 1 over the frame count N\""
+        ]
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::PROOF_STEP::0",
+      "snippet_type": "PROOF_STEP",
+      "location": "4.2.1 Compositional Motion Pair Generation",
+      "content": "[Table 1 header: \"Motion Realism — FID↓\"; TEACH Overall FID = 1.041, PCMDM = 0.837, priorMDM = 0.839, Ours = 0.782, MDM-30 = 1.146, MLD-30 = 14.25]\nAlthough TEACH shows strong contextual alignment in semantic segments, its lower Overall FID score indicates a compromise in motion quality, leading to motion artifacts such as changes in the root roll angle, as shown in Fig. 5.",
+      "route": "verify-math",
+      "route_rationale": "An inference about the direction of a monotone metric read off a table — checkable by inspection and not a theorem.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::PROOF_STEP::0",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.75,
+        "reasoning": "Table 1 declares FID with a \"$\\downarrow$\" arrow, so the metric is monotone decreasing in quality: a *lower* FID means *better* motion realism. The sentence therefore asserts the opposite of what the metric means — a lower Overall FID cannot indicate \"a compromise in motion quality\". The table also contradicts the premise: TEACH's Overall FID is $1.041$, which is *higher* (worse) than Ours $0.782$, PCMDM $0.837$ and priorMDM $0.839$, so TEACH's score is not lower than the competitive field at all. The substantive conclusion the authors draw — that TEACH trades semantic alignment for overall motion quality — is the one Table 1 supports; only the direction word is inverted, so the error is in the stated reasoning rather than in the result. Scored at $0.75$ rather than higher because \"lower\" could conceivably be intended as \"poorer standing\" rather than a smaller number, but under the table's own $\\downarrow$ convention the sentence is wrong as printed.",
+        "predicted_error_category": "Domain/Constraint violation",
+        "snippet_type": "PROOF_STEP",
+        "contradiction_locations": [
+          "Table 1 header: \"Motion Realism — FID↓\"",
+          "Section 4.2.1: \"its lower Overall FID score indicates a compromise in motion quality\""
+        ]
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.75
+    },
+    {
+      "snippet_id": "paper::PROOF_STEP::1",
+      "snippet_type": "PROOF_STEP",
+      "location": "4.3 Motion Inbetweening Performance Evaluation",
+      "content": "[Table 3 RMS-Jerk↓ at 60/120/180 frames — RMIB 1.9216/1.3794/1.1009; RSMT 1.6435/1.4670/1.3249; CMB 2.0658/1.9885/1.9298; MDM 1.9283/2.1205/2.0688; priorMDM 0.4058/0.4495/0.2803; Ours 0.0963/0.1054/0.1213]\nThe results are shown in Tab. 3, demonstrating the superior performance of our proposed framework across all inbetweening length settings, with improvements of up to 85% in RMS-Jerk and substantial gains in all transition realism and smoothness metrics compared to all baseline methods.",
+      "route": "verify-math",
+      "route_rationale": "A percentage-reduction claim recomputable directly from the table's reported numbers; arithmetic on experimental values, not a formalisable theorem.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::PROOF_STEP::1",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.75,
+        "reasoning": "Recomputing every RMS-Jerk reduction in Table 3 yields no figure near $85\\%$ under either natural reading. Against the strongest baseline, priorMDM, the reductions are $(0.4058-0.0963)/0.4058 = 76.3\\%$ at 60 frames, $(0.4495-0.1054)/0.4495 = 76.6\\%$ at 120 and $(0.2803-0.1213)/0.2803 = 56.7\\%$ at 180 — a maximum of $76.6\\%$, so \"up to 85%\" overstates the gain over the best competitor. Against the weaker baselines the reductions are all $94$–$95\\%$ (e.g. CMB at 60 frames: $(2.0658-0.0963)/2.0658 = 95.3\\%$), so \"up to 85%\" is not the maximum there either. The sentence says \"compared to all baseline methods\", which binds on the strongest one; on that reading the claimed headline number exceeds what Table 3 supports by about eight percentage points. The qualitative claim — best RMS-Jerk in every length setting — does hold in the table, so the defect is a misquoted magnitude, not a reversed conclusion.",
+        "predicted_error_category": "Sign/Arithmetic error",
+        "snippet_type": "PROOF_STEP",
+        "contradiction_locations": [
+          "Section 4.3: \"with improvements of up to 85% in RMS-Jerk\"",
+          "Table 3, RMS-Jerk row priorMDM [13]: 0.4058 / 0.4495 / 0.2803 versus Ours 0.0963 / 0.1054 / 0.1213"
+        ]
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.75
+    },
+    {
+      "snippet_id": "paper::PROOF_STEP::2",
+      "snippet_type": "PROOF_STEP",
+      "location": "3.2.3 Long-term Motion Generation",
+      "content": "To adapt our compositional motion framework for long-term generation, we can unroll it to process each segment with the [TPDM_f, SPDM, TPDM_b] triplet and denoise them based on semantics and adjacent phase conditions. By rearranging and batching the input for each module, the denoising process of all segments can be done in parallel, making the overall denoising time independent of the number of segments.",
+      "route": "verify-math",
+      "route_rationale": "A systems/complexity assertion whose truth depends on hardware the paper does not specify; there is no crisp formal content, so Lean is the wrong tool.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::PROOF_STEP::2",
+        "verifier_name": "math-equations",
+        "status": "UNVERIFIABLE",
+        "error_detected": false,
+        "confidence": 0.6,
+        "reasoning": "Not a mathematical claim that can be settled from the manuscript. The charitable and almost certainly intended reading — that the number of *sequential* denoising rounds is $K$ regardless of how many segments are batched — is correct, and is the standard sense in which batched diffusion is \"parallel\". Read literally as wall-clock time, the claim is false for large segment counts: total work scales linearly in the number of segments ($M$ segments × 3 modules × $K$ steps), so once the batch exceeds available accelerator width the time grows with $M$ — and the paper's own long-term experiment batches 3,164 texts (302,298 frames). Deciding between the two readings needs hardware, batch-size and throughput figures the paper never reports, so no verdict is available from the text. Recorded as an unsettled claim, not a finding.",
+        "predicted_error_category": null,
+        "snippet_type": "PROOF_STEP",
+        "contradiction_locations": []
+      },
+      "status": "UNVERIFIABLE",
+      "error_detected": false,
+      "confidence": 0.6
+    }
+  ],
+  "findings": [
+    {
+      "snippet_id": "paper::EQUATION::0",
+      "category": "Formally refuted",
+      "severity": "minor",
+      "confidence": 0.9,
+      "evidence": "Equation 1 is printed as $\\mathbf{Q} = \\mathbf{A}\\sin(\\mathbf{F}\\cdot T + \\mathbf{S}) + \\mathbf{B}$, but the very next sentence says the sine function parameterises $\\mathbf{F}\\cdot(T - \\mathbf{S})$. Lean refuted the identity of the two forms: `phase_forms_not_equal` compiles with axioms `[propext, Classical.choice, Quot.sound]` and no `sorryAx`, witnessed by $A=1, B=0, F=1, S=\\pi/2, T=0$, where the printed form gives $\\sin(\\pi/2) = 1$ and the described form gives $\\sin(-\\pi/2) = -1$. A second compiling theorem, `phase_forms_reparam`, locates the gap exactly: $A\\sin(F(T-S)) + B = A\\sin(FT + (-(F\\cdot S))) + B$, so the two agree only under the unstated reparameterisation $\\mathbf{S} \\mapsto -(\\mathbf{F}\\cdot\\mathbf{S})$ — $\\mathbf{S}$ cannot be the phase shift of both expressions. Severity is minor because both forms span the same family of sinusoids, so the trained model is unaffected; but the definition of the paper's central latent is self-contradictory as printed.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "The sine function parameterizes $\\mathbf{F} \\cdot (T - \\mathbf{S})$ into a periodic sine wave, transforming frequency and phase shift information into a sinusoidal basis."
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::1",
+      "category": "Dimensional inconsistency in Equation 1",
+      "severity": "minor",
+      "confidence": 0.85,
+      "evidence": "Section 3.1.1 declares $\\mathbf{F}, \\mathbf{A}, \\mathbf{B}, \\mathbf{S} \\in \\mathbb{R}^4$ while calling each \"a scalar value per motion segment\" — an element of $\\mathbb{R}^4$ is a 4-vector, not a scalar. More substantively, Equation 1 must map these parameters and $T \\in \\mathbb{R}^{N\\times Q}$ (Appendix A.2) to $\\mathbf{Q} \\in \\mathbb{R}^{N\\times Q}$ with $Q = 512$ (Appendix A.4: \"phase latent size $Q = 512$ ... the number of periodic signals in ACT-PAE\"). For $\\mathbf{A}\\sin(\\mathbf{F}\\cdot T + \\mathbf{S}) + \\mathbf{B}$ to be conformable, each parameter must broadcast over $Q = 512$ channels, i.e. lie in $\\mathbb{R}^{Q}$, equivalently $\\mathbf{P} = [\\mathbf{F},\\mathbf{A},\\mathbf{B},\\mathbf{S}] \\in \\mathbb{R}^{4\\times Q}$. Appendix A.2's mixT, which splits $T$ into $Q/2$ frameT and $Q/2$ normT channels, only makes sense under that per-channel reading. With $\\mathbb{R}^4$ as printed, $4 \\neq 512$ and Equation 1 is dimensionally ill-formed.",
+      "verifier": "verify-math",
+      "exact_quote": "The ACT-PAE encoder first processes input motion $\\mathbf{X} \\in \\mathbb{R}^{N \\times E}$ of $N$ frames into four phase parameters $\\mathbf{F}, \\mathbf{A}, \\mathbf{B}, \\mathbf{S} \\in \\mathbb{R}^4$, each representing a scalar value per motion segment."
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::2",
+      "category": "Contradictory domain for the time variable",
+      "severity": "minor",
+      "confidence": 0.85,
+      "evidence": "The domain of Equation 1's only free variable is declared twice, incompatibly, inside Section 3.1.1. The sentence under Equation 1 gives $T \\in [-\\pi, \\pi]$; two paragraphs later the same section gives \"normalized action progression (−1 to 1 across $N$ frames)\" or \"actual time duration ($-\\frac{N}{2}$ to $\\frac{N}{2}$)\", and Appendix A.2 confirms exactly those two (normT on $[-1,1]$, frameT on $[-N/2, N/2]$) and states that the work uses mixT, half of each. Neither implemented parameterisation is $[-\\pi,\\pi]$. This is not cosmetic: the span of $T$ sets the scale of $\\mathbf{F}$ in $\\sin(\\mathbf{F}\\cdot T + \\mathbf{S})$, so $[-\\pi,\\pi]$ versus $[-1,1]$ rescales every learned frequency by $\\pi$, and $[-N/2, N/2]$ is length-dependent rather than normalized — contradicting the same sentence's own description of $T$ as \"normalized time progression\".",
+      "verifier": "verify-math",
+      "exact_quote": "Here $T$ represents the normalized time progression of each frame in the motion, where $T \\in [-\\pi, \\pi]$ spans from the start to end of the segment."
+    },
+    {
+      "snippet_id": "paper::DEFINITION::4",
+      "category": "Undefined parameter contradicting the stated schedule",
+      "severity": "minor",
+      "confidence": 0.8,
+      "evidence": "$\\alpha$ occurs exactly once in the whole manuscript — in this sentence — and in no equation, in Algorithm 1, or anywhere else; Equation 2's weighting parameter is $r$. So the sentence either introduces a parameter that acts on nothing, or is a stale reference to $r$, in which case it contradicts the immediately preceding sentence: $r = (k/K)^3$ for $\\mathbf{X}_p, \\mathbf{X}_s$ (sweeping $(0,1]$ across the denoising loop) and $r = 1$ for $\\mathbf{X}_t$, so $r$ is certainly not $0.5$ \"for all segments\". $(k/K)^3 = 0.5$ holds only at the single step $k = K/2^{1/3} \\approx 0.794K$, and never for $\\mathbf{X}_t$. Algorithm 1 implements the $r$ schedule and never mentions $\\alpha$, so the results do not depend on it.",
+      "verifier": "verify-math",
+      "exact_quote": "The weighting parameter α controls the balance between transition and semantic information, where α = 0.5 for all segments."
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+      "category": "Inconsistent ε-model / clean-latent semantics",
+      "severity": "minor",
+      "confidence": 0.75,
+      "evidence": "The superscript-$0$ module outputs carry three incompatible meanings. Section 3.1.2 defines $\\mathbf{P}_{pc}^0 = \\mathcal{F}_S(k, C_p, \\mathbf{P}_p^k)$ as \"semantically denoised parameters\" (a clean latent); Section 3.1.3 calls the structurally identical $\\mathbf{P}_{tf}^0$ \"phase noise\"; Appendix A.3 then trains these maps as $\\epsilon$-models, $\\mathcal{L}_S = \\|\\mathcal{F}_S(k, C_p, \\mathbf{P}_p^k) - \\epsilon_p\\|_1 + \\cdots$. Composing definition with loss gives $\\mathbf{P}_{pc}^0 \\approx \\epsilon_p$, i.e. the clean phase latent equals the diffusion noise — false, since under DDIM the two are related by the $k$-dependent affine map $\\mathbf{P}^0 = (\\mathbf{P}^k - \\sqrt{1-\\bar\\alpha_k}\\,\\epsilon)/\\sqrt{\\bar\\alpha_k}$. The same conflation reaches A.3's scheduler call, which passes the mixed quantity in the `pred_original_sample` slot of $\\mathcal{F}_D(\\mathbf{P}_p^0, \\mathbf{P}_p^k, k-1)$. Severity is minor because that affine map commutes with Equation 2's weight-one mixing (formally verified in `paper::EQUATION::1`), so the implementation is recoverable — but the written specification is not self-consistent.",
+      "verifier": "verify-math",
+      "exact_quote": "Finally, a cross-attention transformer [1] processes all the $\\mathbf{P}_t^k$ and $\\mathbf{P}_p^0$ tokens to predict phase noise $\\mathbf{P}_{tf}^0$."
+    },
+    {
+      "snippet_id": "paper::PROOF_STEP::0",
+      "category": "Inverted metric direction",
+      "severity": "minor",
+      "confidence": 0.75,
+      "evidence": "Table 1 labels the metric \"Motion Realism — FID$\\downarrow$\", so a *lower* FID is *better*. The sentence asserts the opposite, that a lower Overall FID \"indicates a compromise in motion quality\". The table also contradicts the premise: TEACH's Overall FID is $1.041$, which is higher — worse — than Ours $0.782$, PCMDM $0.837$ and priorMDM $0.839$, so TEACH's score is not the lower one. The conclusion the authors want (TEACH trades semantic alignment for overall motion quality) is what Table 1 supports; only the direction word is inverted.",
+      "verifier": "verify-math",
+      "exact_quote": "Although TEACH shows strong contextual alignment in semantic segments, its lower Overall FID score indicates a compromise in motion quality, leading to motion artifacts such as changes in the root roll angle, as shown in Fig. 5."
+    },
+    {
+      "snippet_id": "paper::PROOF_STEP::1",
+      "category": "Overstated improvement percentage",
+      "severity": "minor",
+      "confidence": 0.75,
+      "evidence": "No RMS-Jerk reduction in Table 3 equals $85\\%$ under either reading. Against the strongest baseline, priorMDM: $(0.4058-0.0963)/0.4058 = 76.3\\%$ at 60 frames, $(0.4495-0.1054)/0.4495 = 76.6\\%$ at 120 and $(0.2803-0.1213)/0.2803 = 56.7\\%$ at 180 — a maximum of $76.6\\%$. Against the weaker baselines every reduction is $94$–$95\\%$ (e.g. CMB at 60 frames: $(2.0658-0.0963)/2.0658 = 95.3\\%$). Since the sentence says \"compared to all baseline methods\", the binding comparison is the strongest one, and the headline $85\\%$ exceeds what Table 3 supports by roughly eight percentage points. The qualitative claim of best RMS-Jerk at every length does hold.",
+      "verifier": "verify-math",
+      "exact_quote": "with improvements of up to 85% in RMS-Jerk and substantial gains in all transition realism and smoothness metrics compared to all baseline methods"
+    }
+  ],
+  "verdict": "MINOR_ERRORS",
+  "verdict_confidence": 0.8,
+  "summary": "**Scope.** Walked the whole manuscript (main text, Algorithm 1, and Appendices A.1–A.4) and extracted 17 self-contained mathematical objects: the five display equations (Equation 1, the Equation 2 phase-mixing rule, and the three training losses $\\mathcal{L}_S$, $\\mathcal{L}_{T_f}$, $\\mathcal{L}_{T_b}$), the phase-mixing block of Algorithm 1, five definitional claims, three model-level specification claims, and three load-bearing inference steps. Five went to Lean 4 and twelve to informal review. Experimental numbers were only checked where the paper derives something arithmetically from them.\n\n**What Lean settled.** All five Lean snippets produced a verdict; none hit the budget, so no informal fallback was needed. Four compiled clean (`PASSED`, standard Mathlib axioms only, no `sorryAx`): Equation 2 is a well-formed convex mixing rule whose weights $r/2, r/2, 1-r$ sum to $1$ and which collapses at $r=1$ to exactly the average Algorithm 1 prints for $\\mathbf{X}_t$; the schedule $r = (k/K)^3$ does behave as claimed, equal to $1$ at $k=K$ and strictly decreasing as denoising proceeds so the semantic weight $1-r$ strictly increases; Algorithm 1's one-sided mixing lines agree with Equation 2 exactly when the absent directional prediction is read as equal to the present one; and footnote 3's transition-segment arithmetic is right, including the 2 s/8 s worked example and the iff that the middle frame is offset from the centre precisely when $L_p \\neq L_s$.\n\nOne snippet was **`REFUTED`** — the strongest outcome available. Equation 1 prints $\\mathbf{A}\\sin(\\mathbf{F}\\cdot T + \\mathbf{S}) + \\mathbf{B}$ while the next sentence says the sine parameterises $\\mathbf{F}\\cdot(T-\\mathbf{S})$; Lean compiled a refutation of their equality at $A=1, B=0, F=1, S=\\pi/2, T=0$ ($1$ versus $-1$) and a companion theorem showing they reconcile only under the unstated reparameterisation $\\mathbf{S} \\mapsto -(\\mathbf{F}\\cdot\\mathbf{S})$.\n\n**What informal review found.** Six further confident findings, all specification-level: the parameter shapes in Equation 1 ($\\mathbb{R}^4$, described as scalars) are not conformable with $T \\in \\mathbb{R}^{N\\times Q}$ and $Q = 512$; the domain of $T$ is declared as $[-\\pi,\\pi]$ and then, in the same section and again in A.2, as $[-1,1]$ or $[-N/2, N/2]$; a weighting parameter $\\alpha = 0.5$ \"for all segments\" appears once and in no equation, contradicting the $r$ schedule two sentences earlier; the SPDM/TPDM outputs are simultaneously called clean latents $\\mathbf{P}^0$, \"phase noise\", and $\\epsilon$-targets, which cannot all hold; the TEACH discussion inverts the FID$\\downarrow$ direction; and the \"up to 85%\" RMS-Jerk headline matches no reduction computable from Table 3 (76.6% against the strongest baseline, 94–95% against the weaker ones). Clean: the three $\\epsilon$-prediction losses, whose forward/backward conditioning matches Algorithm 1 call for call; $E = 263 + 6 = 269$; and the long-term dataset arithmetic ($1582 \\times 2 = 3164$ texts, $302{,}298/3164 \\approx 95.5$ frames per text inside the stated $[45,250]$ range, $302{,}298$ frames over 168 minutes $\\approx 30$ fps).\n\n**Unsettled.** One snippet is `UNVERIFIABLE`: the claim that batching makes \"the overall denoising time independent of the number of segments\" is correct for sequential denoising depth and false for wall-clock time at scale, and the paper reports no hardware or throughput figures to choose between the readings. No verifier disagreed with another — no Lean run returned `FAILED`, so no result rests on a stalled proof search, and the one Lean `REFUTED` concerns a snippet no informal reviewer contradicted.\n\n**Verdict.** `MINOR_ERRORS`. Seven confident findings, every one of them a defect in how the method is specified rather than in a result: the latent definition, the time domain, the mixing parameter, the $\\epsilon$-versus-$\\mathbf{P}^0$ semantics, and two misreported comparisons. None invalidates a main claim — the mixing algebra and schedule that the pipeline actually runs are formally verified correct, and the reported scores survive — but Equation 1 cannot be implemented as printed, which is substantial for a reproducibility reader. Confidence 0.8: four machine-checked proofs and one machine-checked refutation on the core formal content, with the informal findings resting on quotable internal contradictions rather than on judgement.\n\n**Outside this skill's scope**, noted for the record and excluded from `findings`: the paper cites \"[41]\" and \"[42]\" in Section 2, but the reference list ends at [40]; and Section 4.1.1 states ACT-PAE was pre-trained on HumanML3D \"while baseline methods were trained exclusively on BABEL-TEACH\" and that MDM-30/MLD-30 used 500 epochs against the authors' 300, which sits badly with the same section's \"all models being compared are trained on the same dataset and representation to ensure a fair comparison\" and Table 1's \"evaluated under identical conditions\". The abstract's absolute claims (\"completely eliminates these issues\", \"flawless transitions in all tested scenarios\", \"ensures perfect boundary alignment\") are also unsupported by Tables 1–4, which show nonzero transition FID and nonzero L2/jerk residuals.\n\n**Lean project.** `MATH_VERIFICATION/Paper` already existed and is shared across every `paper.md` run in this workspace, so per `verify-math-lean`'s reuse rule it was kept, not deleted; `--keep-lean` semantics applied to all five calls. Per-snippet scratch (`TMP.lean`, `claim.md`) was removed and the five proofs saved as `Paper/Verified/paper__<TYPE>__<index>_27970opus5.lean`."
+}

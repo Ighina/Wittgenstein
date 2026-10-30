@@ -1,0 +1,46 @@
+{
+  "paper_id": "3501-TransferTraj",
+  "title": "TransferTraj: A Vehicle Trajectory Learning Model for Region and Task Transferability",
+  "paper_category": "cs.LG",
+  "predicted_errors": [
+    {
+      "error_category": "Abstract vs Results mismatch",
+      "error_location": "Abstract (Region transferability claim) vs. Section 5.1 / Appendix E",
+      "confidence": 0.65,
+      "supporting_evidence": "Abstract states: 'It achieves an average improvement of 83.70% and 33.68% in zero-shot region transferability.' Section 5.1 states: 'on the TP task, our method achieves improvements of 83.70% and 33.68% over SOTA models in zero-shot and few-shot settings.' Appendix E confirms 33.68% is the few-shot improvement ('with improvements of 33.68%, 18.08%, and 13.07% on TP, TR, and OD TTE tasks' in the few-shot section). Verification against Tables 4 and 11: the average zero-shot TP gain over START is ~83.9% (RMSE, 6 transfer pairs) while the average few-shot TP gain over START is ~34.0% (RMSE, 6 transfer pairs). The abstract attributes both figures to the zero-shot setting, omitting that 33.68% is the few-shot result — an internal contradiction in a headline quantitative claim.",
+      "verifier_name": "cross-section-consistency",
+      "snippet_id": "3501-TransferTraj::SECTION::0"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 5 Experiments (t2vec [9]) and Appendix B.4 (t2vec [9]) vs. Related Works (t2vec [18]) and reference list",
+      "confidence": 0.6,
+      "supporting_evidence": "The text cites the trajectory representation method t2vec as [9] both in Section 5 ('including t2vec [9], Trembr [11], CTLE [23], ...') and in Appendix B.4 ('t2vec [9]: Pre-trains the model by reconstructing original trajectories...'). However, Related Works correctly cites t2vec as [18], and reference [18] is 'Xiucheng Li, Kaiqi Zhao, Gao Cong, Christian S. Jensen, and Wei Wei. Deep representation learning for trajectory similarity computation. In ICDE, pages 617–628, 2018' — confirmed by web search to be the t2vec paper. Reference [9] in the bibliography is 'Ziquan Fang, Yuntao Du, Xinjun Zhu, ... Spatio-temporal trajectory similarity learning in road networks. In KDD, 2022' (the TrajGAT paper), which is a different work. The same method is therefore assigned two different reference numbers within the paper, one of which points to an unrelated citation.",
+      "verifier_name": "citation",
+      "snippet_id": "3501-TransferTraj::SECTION::12"
+    },
+    {
+      "error_category": "Data Inconsistency (text-table)",
+      "error_location": "Section 5.2 Model Analysis (Ablation study, SC-MoE claim) vs. Table 6",
+      "confidence": 0.45,
+      "supporting_evidence": "The text claims: 'our ablation study on SC-MoE demonstrates a substantial performance drop of 14.52% on the OD TTE task.' Recomputing from Table 6 (RMSE), the relative drop when removing SC-MoE is: TP 12.95% ((227.36-197.91)/227.36), TR 18.82% ((166.48-135.15)/166.48), OD TTE 11.70% ((3.240-2.861)/3.240). The average across the three tasks is (12.95+18.82+11.70)/3 = 14.49% ≈ 14.52%. The OD TTE-specific drop is 11.70%, not 14.52%. The reported figure is the cross-task average, not the OD TTE drop as stated.",
+      "verifier_name": "statistical",
+      "snippet_id": "3501-TransferTraj::SECTION::13"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 67,
+    "snippets_verified": 67,
+    "errors_detected": 3,
+    "verifier_usage": {
+      "math_equation": 9,
+      "text": 25,
+      "statistical": 16,
+      "vision": 16,
+      "citation": 1,
+      "cross_section": 1
+    }
+  },
+  "verdict": "NEEDS_REVIEW",
+  "summary": "Uncertainty-mode verification of the TransferTraj paper (NeurIPS 2025 submission, three real-world vehicle trajectory datasets, region/task transferability). All nine display equations were checked by the math verifier and are mathematically sound — the TRIE rotation-matrix derivation (Eqs. 1-2 and Appendix C proof, Eqs. 7-9) is the standard RoFormer-style rotary-position argument and is algebraically correct, including the sign convention in the transposed rotation product. The SC-MoE noisy top-K gating (Eq. 4) and the MSE losses (Eq. 5) are consistent with standard formulations. All headline quantitative claims in Section 5.1 were independently recomputed against Tables 1-5 and are accurate: task-transfer gains over SOTA (TP 20.18%, TR 17.87%, OD TTE 7.94%), fine-tuning gains (11.41%, 13.59%, 8.62%), zero-shot TP gain (83.70%), zero-shot OD TTE gain (10.88%, reproduced exactly at 10.89% when averaged over all 18 metric cells), and the POI/road-network density figures (~263.10, ~111.44, ~282.87 per km²). Three issues were identified, none high-confidence: (1) an abstract-vs-body contradiction — the abstract attributes both 83.70% and 33.68% to zero-shot region transfer, while the body and Appendix E explicitly assign 33.68% to the few-shot setting (confidence 0.65); (2) an internal citation inconsistency — t2vec is cited as [9] in Section 5 and Appendix B.4 but as [18] in Related Works, where [9] actually maps to a different paper (Fang et al., KDD 2022) (confidence 0.60); (3) the ablation claim of a '14.52% drop on the OD TTE task' for SC-MoE is actually the cross-task average; the OD TTE-specific drop is 11.70% (confidence 0.45). Given lenient strictness and no finding reaching high confidence (>= 0.85), the paper requires review but not correction."
+}

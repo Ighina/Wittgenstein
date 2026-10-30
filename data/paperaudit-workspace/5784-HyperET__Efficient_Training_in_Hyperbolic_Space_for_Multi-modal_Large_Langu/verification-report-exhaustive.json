@@ -1,0 +1,69 @@
+{
+  "paper_id": "5784",
+  "title": "HyperET: Efficient Training in Hyperbolic Space for Multi-modal Large Language Models",
+  "paper_category": "cs.CV",
+  "predicted_errors": [
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Appendix B, Theorem 1 (Revised Flawed) and Eq. (19)",
+      "confidence": 0.9,
+      "supporting_evidence": "The appendix labels the paper's core theorem 'Theorem 1 (Revised Flawed)' and states 'this relation does not strictly hold due to nonlinearities in Möbius multiplication, meaning precise control over radius via scalar multiplication is not guaranteed', directly contradicting Theorem 1 in Sec. 4.2, which asserts that hyperbolic radius adjustment 'can be precisely controlled through ⊗_c between s and X'. The proof of Eq. (19) also contains an invalid algebraic step: it replaces tanh(s(√c/2)·Rad_X) with √c·tanh(s(√c/2)·Rad_X)·‖X‖/‖X‖, introducing a spurious factor √c that equals the original expression only when √c = 1 (the paper uses c = 0.01).",
+      "verifier_name": "math-equations",
+      "snippet_id": "5784::THEOREM::2"
+    },
+    {
+      "error_category": "Citation",
+      "error_location": "Sec. 2.3 Learning in Hyperbolic Space",
+      "confidence": 0.85,
+      "supporting_evidence": "The sentence 'Existing hyperbolic space methods often manipulate hierarchical embeddings or impose constraints to improve modality alignment [incorrect ref]' contains the literal placeholder '[incorrect ref]' in place of a citation reference, an unfilled template artifact that breaks the citation of the entire related-work claim.",
+      "verifier_name": "verify-citation",
+      "snippet_id": "5784::SECTION::5"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Sec. 5.1 Comparing to SOTA",
+      "confidence": 0.82,
+      "supporting_evidence": "The paper's own evaluation section states 'baseline MemVP generally outperforms HyperET-enhanced LaVIN by a small margin, with inconsistent improvements noted', 'Some gains with higher-parameter configurations appear marginal or within variance', and 'HyperET's benefits may be dataset- and architecture-specific rather than broadly generalizable' — directly contradicting the Abstract and Introduction claims that HyperET 'consistently improve various MLLMs'. It further claims 'MemVP-LLaMA-7B combined with HyperET fails to reach the top accuracy of MemVP-LLaMA-13B', yet Table 1 reports identical averages of 93.78 for both MemVP+Ours (LLaMA-7B, 3.95M) and MemVP (LLaMA-13B, 5.5M).",
+      "verifier_name": "text",
+      "snippet_id": "5784::SECTION::12"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Sec. 4.3 Theoretical Analysis, Eq. (11)",
+      "confidence": 0.72,
+      "supporting_evidence": "The deduction assumes exp_0^{D,c}(W_0 X) = exp_0^{D,c}(W_0)·exp_0^{D,c}(X), i.e. that the hyperbolic exponential map at the origin is multiplicative over matrix products. The exponential map is not a homomorphism for matrix multiplication (Baker–Campbell–Hausdorff; in general exp(A·B) ≠ exp(A)·exp(B)), so the claimed identity Y_0^{D_c^n} = W_0^{D_c^n} X^{D_c^n} does not hold and invalidates the formal derivation chain in Eqs. (11)–(13).",
+      "verifier_name": "math-equations",
+      "snippet_id": "5784::EQUATION::10"
+    },
+    {
+      "error_category": "Data Inconsistency (figure-text)",
+      "error_location": "Method (Fig. 1/Fig. 13) and Conclusion (Fig. 33) figures",
+      "confidence": 0.75,
+      "supporting_evidence": "The figure embedded in Sec. 4.2 is captioned 'Method, index 13' with file image_13.jpg and the one in the Conclusion is captioned 'Conclusion, index 33' with file image_33.jpg, while the text refers to 'Figure 1' (the three scaling-matrix variants) and 'Figure 2' (hyperbolic radius visualization, referenced in Sec. 5.4). No image file corresponds to the Figure 1 and Figure 2 referenced in the text, indicating mismatched/placeholder figure artifacts.",
+      "verifier_name": "vision",
+      "snippet_id": "5784::FIGURE::1"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Sec. 4.2, Efficient Adjustment (block-diagonal matrix definition)",
+      "confidence": 0.7,
+      "supporting_evidence": "The text states 'Here, r is the block size' for W_s^{B-D} = diag(R_1,...,R_r) with R_i ∈ R^{n/r × n/r}, but later claims the matrix degenerates to the diagonal form 'when r = n'. If r is the block size, r = n yields a single n×n block (dense), not diagonal; the degeneration claim is consistent only if r is the number of blocks (block size n/r), which contradicts the stated definition. Table 3 also treats n/r as the block size in its rows, compounding the inconsistency.",
+      "verifier_name": "math-equations",
+      "snippet_id": "5784::SECTION::9"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 58,
+    "snippets_verified": 58,
+    "errors_detected": 6,
+    "verifier_usage": {
+      "math_equation": 24,
+      "text": 21,
+      "vision": 11,
+      "statistical": 1,
+      "citation": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Exhaustive verification of HyperET with lenient strictness. 58 snippets were segmented (23 sections, 17 equations, 4 theorems, 3 proofs, 4 figures, 7 tables) and routed to specialist verifiers. Six errors were detected. The most serious (conf. 0.90): Appendix B labels the paper's core Theorem 1 '(Revised Flawed)' and concedes the radius-scaling relation 'does not strictly hold', directly contradicting Sec. 4.2's claim of precise control, and the proof of Eq. (19) contains a spurious √c factor in an intermediate algebraic step. A literal '[incorrect ref]' citation placeholder remains in Sec. 2.3 (conf. 0.85). The Sec. 5.1 'Comparing to SOTA' text contradicts the paper's headline claims of consistent gains and misstates that MemVP-7B+Ours 'fails to reach' MemVP-13B when Table 1 shows equal averages of 93.78 (conf. 0.82). Eq. (11) incorrectly assumes the hyperbolic exponential map is multiplicative over matrix products (conf. 0.72). Figure artifacts appear as 'Figure 13'/'Figure 33' with mismatched captions and no image for the referenced Figure 1/Figure 2 (conf. 0.75). The block-diagonal parameter r is defined inconsistently as 'block size' yet degenerates to diagonal only if r is the number of blocks (conf. 0.70). Table arithmetic was checked and is internally consistent; baseline values in Tables 1–2 match published LLaVA-1.5/LLaVA-Next results. The appendix's own section cross-reference (MERU comparison placed in Section C, not D as stated) is an additional minor inconsistency noted in the summary. Verdict: NEEDS_CORRECTION."
+}

@@ -1,0 +1,54 @@
+{
+  "paper_id": "10947",
+  "title": "ElasticMM: Efficient Multimodal LLM Serving with Elastic Multimodal Parallelism",
+  "paper_category": "cs.LG",
+  "predicted_errors": [
+    {
+      "error_category": "Abstract vs Results mismatch",
+      "error_location": "Abstract (headline TTFT/throughput claims) vs. Introduction (contribution bullet), Section 4.2, and Section 6 Conclusion",
+      "confidence": 0.92,
+      "supporting_evidence": "The Abstract states 'reducing TTFT by up to 6.8× and achieving 5.1–7.2× higher throughput'. The Introduction contribution bullet states 'ElasticMM reduces TTFT by up to 4.2× and achieves a 3.2×–4.5× throughput improvement'. Section 4.2 reports TTFT reductions of 'up to 4.2× and 3.5×' (ShareGPT-4o) / 'up to 3.7× and 2.9×' (VisualWebInstruct) and throughput 'up to 4.5× and 3.2× higher throughput than vLLM'. The Conclusion states 'up to 4.2× reduction in TTFT and 3.2–4.5× higher throughput compared to vLLM'. The Abstract's 6.8× TTFT and 5.1–7.2× throughput figures appear nowhere in the main text and directly contradict the results reported in every other section.",
+      "verifier_name": "cross-section-consistency",
+      "snippet_id": "10947::SECTION::0"
+    },
+    {
+      "error_category": "Misattribution (external)",
+      "error_location": "Section 2.1 and Section 4.1, reference [21]",
+      "confidence": 0.88,
+      "supporting_evidence": "The paper cites [21] as the source for the 'LLaMA-3.2 Vision' model: Section 2.1 says 'encoder-decoder architectures, including LLaMA-3.2 Vision [21]' and Section 4.1 says 'We select LLaMA3.2-Vision-11B [21]'. However, reference [21] is 'Llama Guard 3 Vision: Safeguarding human-AI image understanding conversations' (arXiv:2411.10414), a multimodal safety-guardrail classification model that is fine-tuned on Llama 3.2 Vision — not the Llama 3.2 Vision multimodal generation model whose architecture and results the paper evaluates. Verified via web search: arXiv:2411.10414 describes a content-safety classifier for harmful prompts/responses, not the Llama 3.2 Vision base model. No correct Llama 3.2 Vision reference appears in the bibliography.",
+      "verifier_name": "citation",
+      "snippet_id": "10947::SECTION::9"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Appendix B.8, Proposition 1 (Numerical Stability)",
+      "confidence": 0.72,
+      "supporting_evidence": "Proposition 1's proof claims 'these differences are typically on the order of ε ≈ 10^{-7} for fp16 operations' and later bounds the probability variation with 'ε_max ≈ 10^{-7} for fp16 operations'. fp16 (IEEE half precision) has a 10-bit mantissa, giving a machine epsilon of 2^{-10} ≈ 9.8×10^{-4} (unit roundoff 2^{-11} ≈ 4.9×10^{-4}), not 10^{-7}. The value 10^{-7} is the machine epsilon of fp32 (2^{-23} ≈ 1.19×10^{-7}). The claimed fp16 error bound is therefore off by roughly 3–4 orders of magnitude. The conclusion that differences are negligible still plausibly holds, but the stated numerical claim is wrong.",
+      "verifier_name": "math-equations",
+      "snippet_id": "10947::PROOF::7"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Appendix B.4, Lemma 3 (Dynamic Parallelism Invariance), Eq. (13)",
+      "confidence": 0.65,
+      "supporting_evidence": "Lemma 3's proof formalizes data parallelism as g_E^{DP_n}(i) = Gather({g_E^1(i_1), ..., g_E^n(i_n)}) where 'i_1,...,i_n represent partitions of input i'. This does not describe data parallelism: in DP the model is replicated across devices and the batch is sharded, with each device running the full model on its batch slice; a single image is not spatially partitioned across replicas. Encode each sub-partition of a single image independently with a ViT (which applies global self-attention over all patches) would not reproduce g_E(i). 'Synchronous all-reduce with fixed-order reduction' is likewise a misdescription of the concat/gather used to merge DP outputs. The proof's conclusion (parallelism does not change outputs) is true in practice, but the formalization in Eq. (13) is mathematically invalid.",
+      "verifier_name": "math-equations",
+      "snippet_id": "10947::LEMMA::2"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 73,
+    "snippets_verified": 73,
+    "errors_detected": 4,
+    "verifier_usage": {
+      "text": 41,
+      "math_equation": 18,
+      "vision": 14,
+      "statistical": 5,
+      "citation": 5,
+      "cross_section_consistency": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Exhaustive verification of the ElasticMM paper (mode=exhaustive, strictness=lenient) found 4 issues. (1) [high confidence, 0.92] The Abstract reports headline improvements of 'TTFT up to 6.8×' and '5.1–7.2× higher throughput' that appear nowhere in the main text and directly contradict the values repeated consistently in the Introduction (4.2× / 3.2×–4.5×), Section 4.2 (up to 4.2× TTFT; 4.5×/3.2× throughput vs vLLM), and Conclusion (4.2× / 3.2–4.5×). (2) [high confidence, 0.88] Reference [21], used for 'LLaMA-3.2 Vision' in Sections 2.1 and 4.1, is actually 'Llama Guard 3 Vision' (arXiv:2411.10414), a safety-guardrail model, not the Llama 3.2 Vision generation model evaluated in the paper — a citation misattribution verified via web search. (3) [moderate, 0.72] Appendix B.8 Proposition 1 states ε ≈ 10^{-7} for fp16 operations; fp16 machine epsilon is ~10^{-4}, so the bound is off by 3–4 orders of magnitude (10^{-7} is fp32's epsilon). (4) [moderate, 0.65] Appendix B.4 Lemma 3 Eq. (13) formalizes data parallelism by spatially partitioning a single input across devices, which is not how DP works and is mathematically invalid for ViT encoding. Sections, equations, tables, figures, and the formal appendix were routed to the text, math, statistical, citation, and vision verifiers; the two high-confidence findings make the paper's headline numbers internally inconsistent and its model attribution incorrect, warranting correction."
+}

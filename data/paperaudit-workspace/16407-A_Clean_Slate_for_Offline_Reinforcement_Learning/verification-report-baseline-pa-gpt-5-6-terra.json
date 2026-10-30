@@ -1,0 +1,150 @@
+{
+  "paper_id": "16407-A_Clean_Slate_for_Offline_Reinforcement_Learning",
+  "title": "A Clean Slate for Offline Reinforcement Learning",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 2.1, Eq. (1)",
+      "confidence": 0.93,
+      "supporting_evidence": "The finite-horizon indexing is inconsistent. The trajectory distribution specifies actions a_{0:T} and states s_{1:T}, while the return sums rewards from t=0 through T. Since r_t=R(s_t,a_t), the t=T reward requires s_T and a_T and normally a transition to s_{T+1}; yet the stated sampled state sequence ends at s_T. For a horizon T, the standard convention is T actions/rewards indexed 0,...,T-1, or the trajectory must include s_{T+1}.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16407-A_Clean_Slate_for_Offline_Reinforcement_Learning::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Section 3.2, Step 2: Run Bootstrapped Tuning Bandit",
+      "confidence": 0.94,
+      "supporting_evidence": "The procedure calls the selected arm's score its 'true average return,' but it is computed from the finite collection of R evaluation episodes gathered in Step 1. R is never specified. The same recorded episode-score pool is also used to simulate bandit pulls and to score the selected policy, so the purported final-policy performance is not an independently evaluated expected return and can be statistically dependent on observations used for selection. A held-out evaluation set or a clearly specified, sufficiently large independent estimation protocol is required.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16407-A_Clean_Slate_for_Offline_Reinforcement_Learning::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Section 3.2 and Figures 3/8",
+      "confidence": 0.89,
+      "supporting_evidence": "Key parameters needed to reproduce the proposed evaluation are omitted: the number R of scores per policy, the precise UCB rule/exploration constant and initialization, and whether repeated score pulls are sampled with or without replacement from the finite score collection. These choices materially affect the claimed noisy-bandit curves and the distractor-policy effect. Reporting K=8, P=20 in captions, and B=500 does not resolve these omissions.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16407-A_Clean_Slate_for_Offline_Reinforcement_Learning::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Section 3.3, opening paragraph, relative to Sections 3.1-3.2",
+      "confidence": 0.91,
+      "supporting_evidence": "The paper presents fixed, method-level hyperparameter ranges and equalized online-tuning budgets as the central remedy for unfair comparison, but then states that Figure 3 evaluates each algorithm with 'its original hyperparameter ranges without equalizing the online tuning budgets or computational cost across methods.' This makes the central cross-method comparison explicitly confounded. Acknowledging the flaw does not make conclusions such as identifying the best baselines or model-based-method ranking valid under the proposed fair-evaluation premise.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16407-A_Clean_Slate_for_Offline_Reinforcement_Learning::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Section 3.3, 'Overfit Model-Based Methods'",
+      "confidence": 0.84,
+      "supporting_evidence": "The assertion that poor non-locomotion performance 'suggest[s] that these methods are deeply overfit to the locomotion datasets they were originally evaluated on' is not supported by this experiment. The paper simultaneously admits that the evaluations use unequal original hyperparameter ranges and do not equalize tuning budgets or computational cost. Poor performance from a reimplementation/configuration under that protocol cannot distinguish benchmark overfitting from inappropriate transferred hyperparameters, implementation differences, insufficient dynamics-model tuning, or other confounds.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16407-A_Clean_Slate_for_Offline_Reinforcement_Learning::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Appendix I.1, Eq. (5)",
+      "confidence": 0.99,
+      "supporting_evidence": "Equation (5) adds alpha_BC·(tilde{a}_{t+1}-a_{t+1}) directly to v_{t+1}. v is scalar whereas the action difference is an action-dimensional vector, so the expression is dimensionally invalid. Moreover, tilde{a}_{t+1} is not defined. A scalar penalty such as a norm or squared distance, with a defined policy action, would be needed.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16407-A_Clean_Slate_for_Offline_Reinforcement_Learning::baseline"
+    },
+    {
+      "error_category": "context_misalignment_incoherence",
+      "error_location": "Section 4.2, 'Actor Objective,' versus Appendix I.2, Eq. (8)",
+      "confidence": 0.95,
+      "supporting_evidence": "Section 4.2 defines the unified actor loss as including beta_div·L_div and beta_dyn·L_dyn, explicitly saying these terms cover prior components. Appendix I.2 then gives the actor loss with only Q, BC, and entropy terms. Neither L_div nor L_dyn nor their coefficients appear in Eq. (8). Thus the claimed unified objective is internally inconsistent and it is unclear which objective was actually implemented.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16407-A_Clean_Slate_for_Offline_Reinforcement_Learning::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Appendix E, Figure 12, EDAC update code",
+      "confidence": 0.97,
+      "supporting_evidence": "The displayed EDAC implementation replaces EDAC's critic gradient-diversity regularizer with diversity_loss = -eta * current_q.std(0).mean(), and additionally applies an analogous term to the actor objective. EDAC's stated objective elsewhere in the paper (Appendix I.1, Eq. (7)) is based on pairwise inner products/cosine similarity of action-gradients of ensemble Q functions, not the standard deviation of Q values. Maximizing Q-value dispersion is not equivalent to minimizing gradient similarity and changes the algorithm materially. This also contradicts the preceding JAX diff snippet, which does use _diversity_loss_fn on gradients.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16407-A_Clean_Slate_for_Offline_Reinforcement_Learning::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Appendix E, Figure 12, CQL update_critic code",
+      "confidence": 0.96,
+      "supporting_evidence": "The displayed CQL penalty has incompatible tensor axes under the code's own critic convention. q_random and q_sampled have ensemble-by-batch shape because q_values.min(0)[0] aggregates dimension 0. Concatenating them on dim=1 produces ensemble-by-(2 batch), then logsumexp(..., dim=1) yields an ensemble-length vector. Subtracting current_q.mean(0), a batch-length vector, is not broadcastable unless the batch size accidentally equals the number of critics. Further, CQL requires a log-sum-exp over candidate actions for each state and critic, not over a concatenated batch axis. The shown implementation therefore is not a valid CQL loss.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16407-A_Clean_Slate_for_Offline_Reinforcement_Learning::baseline"
+    },
+    {
+      "error_category": "evidence_data_integrity",
+      "error_location": "Abstract; Figure 5; Appendix F, Table 2",
+      "confidence": 0.98,
+      "supporting_evidence": "The abstract claims average training speedups of 131.5× over OfflineRL-Kit and 74.8× over CORL, but Table 2's reported wall-clock times cannot produce those values. For example, across available OfflineRL-Kit comparisons, the listed ratios are roughly 11.6× to 20.8×; across available CORL comparisons, they are roughly 1.3× to 18.4×. Figure 5 likewise reports only 4×–16×. In particular, Figure 5 says ReBRAC is 8× faster, while Table 2 gives CORL 8.7 minutes versus Unifloral 6.8 minutes, about 1.28×. The headline speedup statistics conflict with the paper's own timing table.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16407-A_Clean_Slate_for_Offline_Reinforcement_Learning::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Section 5.1, 'Evaluation'",
+      "confidence": 0.89,
+      "supporting_evidence": "The text says that overlapping variances/confidence intervals indicate comparable performance. Overlap of separate 95% confidence intervals is not a test of equality or nonsignificance, and its absence is not a direct test either. A paired comparison or confidence interval/test for the performance difference under the same bandit rollouts would be required for this inference.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16407-A_Clean_Slate_for_Offline_Reinforcement_Learning::baseline"
+    },
+    {
+      "error_category": "context_misalignment_incoherence",
+      "error_location": "Section 5.2, 'Evaluation'",
+      "confidence": 0.86,
+      "supporting_evidence": "The results statement is internally contradictory: it says MoBRAC 'outperforms other model-based methods for all datasets, except for MOPO in maze2d-large-v1,' then immediately says it outperforms them in 6 of 9 datasets and is tied with MOPO for the other 3. If the maze2d exception means MOPO is superior, the latter partition into six wins and three ties cannot be correct; if it is a tie, calling it an exception to outperforming all methods is misleading.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16407-A_Clean_Slate_for_Offline_Reinforcement_Learning::baseline"
+    },
+    {
+      "error_category": "context_misalignment_incoherence",
+      "error_location": "Appendix J, Figure 14 caption",
+      "confidence": 0.99,
+      "supporting_evidence": "Figure 14 compares TD3-AWR with IQL and ReBRAC, which are model-free methods, but its caption calls this a comparison to 'prior model-based methods.' This directly mislabels the contents of the figure and conflicts with Section 5.1.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16407-A_Clean_Slate_for_Offline_Reinforcement_Learning::baseline"
+    },
+    {
+      "error_category": "reference_background_fabrication",
+      "error_location": "Section 6, Related Work",
+      "confidence": 0.99,
+      "supporting_evidence": "The citations for the claimed online-RL unification antecedents are wrong. The text cites 'Rainbow [38] and Muesli [39]' and dual optimization '[40].' In the reference list, [38] is Stable-Baselines3, [39] is Spinning Up, and [40] is rejax. The corresponding references are actually Rainbow [25], Muesli [26], and Dual RL [27].",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16407-A_Clean_Slate_for_Offline_Reinforcement_Learning::baseline"
+    },
+    {
+      "error_category": "reference_background_fabrication",
+      "error_location": "Appendix L.2, 'Open-Source Implementations'",
+      "confidence": 0.99,
+      "supporting_evidence": "The appendix states that 'PureJaxRL [35]' follows the single-file approach. Reference [35] is instead Lu et al., 'Discovered policy optimisation'; it is not a PureJaxRL reference. This is a false attribution and leaves the PureJaxRL claim uncited.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16407-A_Clean_Slate_for_Offline_Reinforcement_Learning::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 15,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (gpt-5.6-terra, taxonomy=paperaudit): 15 error(s) reported.",
+  "baseline": {
+    "model": "gpt-5.6-terra",
+    "provider": "openai",
+    "taxonomy": "paperaudit",
+    "paper_chars": 90051,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 23532,
+      "output_tokens": 5305,
+      "cache_read_input_tokens": null,
+      "cache_creation_input_tokens": null
+    }
+  }
+}

@@ -1,0 +1,134 @@
+{
+  "paper_id": "19233-Understanding_and_Mitigating_Numerical_Sources_of_Nondeterminism_in_LLM_In",
+  "title": "Understanding and Mitigating Numerical Sources of Nondeterminism in LLM In",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 4, first paragraph describing LayerCast",
+      "confidence": 0.99,
+      "supporting_evidence": "The method is self-contradictory. It says LayerCast keeps BF16 weights and performs computations \"without upcasting to FP32 at runtime,\" but the very next paragraph says that it \"ensures all computations occur in full FP32 precision.\" Both cannot describe the same implementation. This prevents readers from determining what LayerCast actually does.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "19233-Understanding_and_Mitigating_Numerical_Sources_of_Nondeterminism_in_LLM_In::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Appendix H, LayerCast theoretical justification",
+      "confidence": 0.98,
+      "supporting_evidence": "Appendix H states that just-in-time BF16-to-FP32 casting is deterministic and \"introduces no additional variance,\" then immediately claims that LayerCast has \"occasional stochastic fluctuations around 0.2–0.5% Std@Acc, reflecting minor numerical instability due to dynamic casting operations.\" Deterministic casting cannot itself create stochastic fluctuations. The stated explanation directly contradicts the preceding theoretical claim.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "19233-Understanding_and_Mitigating_Numerical_Sources_of_Nondeterminism_in_LLM_In::baseline"
+    },
+    {
+      "error_category": "context_misalignment_incoherence",
+      "error_location": "Appendix H, discussion following Table 26",
+      "confidence": 0.99,
+      "supporting_evidence": "The text claims Table 26 shows LayerCast has occasional 0.2–0.5% Std@Acc fluctuations. However, every LayerCast entry in Table 26 is exactly 36.67% across all twelve displayed configurations, which implies zero displayed standard deviation. The narrative does not match its cited table.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "19233-Understanding_and_Mitigating_Numerical_Sources_of_Nondeterminism_in_LLM_In::baseline"
+    },
+    {
+      "error_category": "context_misalignment_incoherence",
+      "error_location": "Appendix E, paragraph introducing Table 8",
+      "confidence": 0.99,
+      "supporting_evidence": "The paper says \"Div_Index in the 0–1 range; a Div_Index of 1 means\" exact agreement, but Table 8 reports Div_Index values such as 45.67, 430.13, 1825.79, and 5807.83. This also conflicts with the main-text definition, where Div_Index is a token position. Either the text is describing a different metric or the table/definition is wrong.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "19233-Understanding_and_Mitigating_Numerical_Sources_of_Nondeterminism_in_LLM_In::baseline"
+    },
+    {
+      "error_category": "evidence_data_integrity",
+      "error_location": "Table 23, Qwen2.5-7B-Instruct, MATH500 n=4 BF16 row",
+      "confidence": 0.99,
+      "supporting_evidence": "The Qwen2.5 MATH500 BF16 values (90.65, 91.15, 90.40, 90.95, 90.85, 90.35; stdev 0.3158) are an exact duplicate of the preceding DeepSeek-R1-Distill-Qwen-7B MATH500 BF16 row. They also contradict Table 5, which reports Qwen2.5 MATH500 BF16 standard deviation as 0.4663 rather than 0.3158. The duplicated row is plainly erroneous and corrupts the reported sampling results.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "19233-Understanding_and_Mitigating_Numerical_Sources_of_Nondeterminism_in_LLM_In::baseline"
+    },
+    {
+      "error_category": "context_misalignment_incoherence",
+      "error_location": "Appendix E.1, larger-model evaluation paragraph before Table 10",
+      "confidence": 0.98,
+      "supporting_evidence": "The text says Qwen3-32B FP32 could not be loaded in configurations \"such as 4 GPUs with batch size 32.\" Table 10 reports successful FP32 results for 4x A100 BS32 and 4x L40S BS32. The only FP32 OOM cells shown are all 2x L40S configurations. Thus the claimed example of an unavailable configuration contradicts the table.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "19233-Understanding_and_Mitigating_Numerical_Sources_of_Nondeterminism_in_LLM_In::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Section 3.2, sentence immediately before Table 3",
+      "confidence": 0.97,
+      "supporting_evidence": "The paper admits that \"Experiments occasionally employ non-identical random seeds during greedy decoding,\" so measured output/accuracy differences can be caused by seed differences as well as numerical precision and runtime configuration. This invalidates the claimed isolation of hardware/precision-induced nondeterminism for affected results, especially because the paper does not identify which experiments used which seeds or reanalyze them under matched seeds.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "19233-Understanding_and_Mitigating_Numerical_Sources_of_Nondeterminism_in_LLM_In::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Section 3.3, interpretation of Table 5",
+      "confidence": 0.96,
+      "supporting_evidence": "The paper says the across-configuration standard deviations \"largely reflect[] the impact from limited numerical precision, not the inherent variance of models.\" But each configuration's Pass@1 estimate is based on independently sampled generations, often only n=4 on MATH500 or n=16 on AIME'24. No matched random streams, repeated estimates within each configuration, variance decomposition, or confidence intervals are provided. Therefore intrinsic sampling variance cannot be separated from configuration effects, and the attribution to numerical precision is unsupported.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "19233-Understanding_and_Mitigating_Numerical_Sources_of_Nondeterminism_in_LLM_In::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Section 3.2 conclusion and Section 3.4 summary",
+      "confidence": 0.94,
+      "supporting_evidence": "The paper repeatedly characterizes FP32 as providing \"near-perfect determinism\" and says it \"consistently achieves near-perfect reproducibility.\" Its own full results show substantial remaining nonidentity under FP32: Table 9 reports FP32 divergence rates up to 30.08% for DeepSeek-R1-Distill-Llama-8B on LCB-Hard and 24.39% for DeepSeek-R1-Distill-Qwen-7B; Table 6 reports FP32 accuracy standard deviations up to 0.78%; and Table 7 reports FP32 output-length standard deviations up to 690.86 tokens. FP32 improves stability but does not support the broad deterministic framing.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "19233-Understanding_and_Mitigating_Numerical_Sources_of_Nondeterminism_in_LLM_In::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Section 3.4 and Appendix F, claims about GPU count, batch size, and GPU type",
+      "confidence": 0.92,
+      "supporting_evidence": "The paper presents directional explanations—e.g., four GPUs \"tend\" to cause higher variation, larger batch sizes \"consistently\" lower instability, and A100 is \"consistently slightly higher\" than L40S—despite its own tables showing many counterexamples. For example, Table 13 has lower BF16 instability with 4 GPUs for DeepSeek-R1-Distill-Qwen-7B on AIME and MATH500; Table 14 has many 4-GPU values lower than 2-GPU values; and Table 15 has multiple batch-size reversals. The authors subsequently acknowledge that the GPU-count trend is inconsistent on A100. The claimed mechanisms and general trends are consequently overstated.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "19233-Understanding_and_Mitigating_Numerical_Sources_of_Nondeterminism_in_LLM_In::baseline"
+    },
+    {
+      "error_category": "reference_background_fabrication",
+      "error_location": "Preliminaries, deterministic-library discussion",
+      "confidence": 0.99,
+      "supporting_evidence": "The statement about PyTorch/TensorFlow deterministic flags, including \"torch.use_deterministic_algorithms(True) [2],\" cites reference [2], which is the GPT-4 Technical Report. It is not PyTorch documentation and cannot support the claim. The relevant PyTorch reproducibility documentation is instead listed as reference [10].",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "19233-Understanding_and_Mitigating_Numerical_Sources_of_Nondeterminism_in_LLM_In::baseline"
+    },
+    {
+      "error_category": "reference_background_fabrication",
+      "error_location": "Reference [13] and its use in Section 3.1",
+      "confidence": 0.98,
+      "supporting_evidence": "Reference [13] attributes \"DeepSeek-R1: incentivizing reasoning capability in LLMs via reinforcement learning\" (arXiv:2501.12948) to Guhao Feng, Kai Yang, and the author list of the numerical-precision paper in reference [12]. DeepSeek-R1 is authored by DeepSeek-AI, not that listed group. Thus the citation used for the DeepSeek-R1 models is materially misattributed.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "19233-Understanding_and_Mitigating_Numerical_Sources_of_Nondeterminism_in_LLM_In::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Preliminaries, paragraph following Table 1",
+      "confidence": 0.95,
+      "supporting_evidence": "The paper says \"BF16's reduced mantissa bits and range\" explain greater errors. BF16 does have fewer significand bits than FP16/FP32, but it does not have reduced exponent range relative to FP16: BF16 has an 8-bit exponent and substantially larger dynamic range than FP16; it has the same exponent width as FP32. The statement incorrectly characterizes the format's range.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "19233-Understanding_and_Mitigating_Numerical_Sources_of_Nondeterminism_in_LLM_In::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 13,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (gpt-5.6-terra, taxonomy=paperaudit): 13 error(s) reported.",
+  "baseline": {
+    "model": "gpt-5.6-terra",
+    "provider": "openai",
+    "taxonomy": "paperaudit",
+    "paper_chars": 124957,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 29785,
+      "output_tokens": 4516,
+      "cache_read_input_tokens": null,
+      "cache_creation_input_tokens": null
+    }
+  }
+}

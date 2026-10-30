@@ -1,0 +1,479 @@
+{
+  "paper_name": "paper",
+  "paper_path": "/Users/iacopoghinassi/Documents/Github/Wittgenstein/data/paperaudit-workspace/16200-Auto-Compressing_Networks/paper.md",
+  "lean_project": "MATH_VERIFICATION/Paper",
+  "lean_project_kept": true,
+  "totals": {
+    "snippets_extracted": 14,
+    "routed_to_math": 4,
+    "routed_to_lean": 10,
+    "lean_passed": 10,
+    "lean_refuted": 0,
+    "lean_failed": 0,
+    "fallbacks_run": 0,
+    "errors_detected": 2
+  },
+  "results": [
+    {
+      "snippet_id": "paper::EQUATION::0",
+      "snippet_type": "EQUATION",
+      "location": "Preliminaries / Table 1",
+      "content": "FFN forward propagation (Table 1): $y\\_F = \\prod\\_{i=1}^{L} w\\_i x\\_0$",
+      "route": "verify-math",
+      "route_rationale": "Definitional closed-form forward equation for a 1D linear feedforward network; no non-trivial argument to machine-check.",
+      "lean_result": null,
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.0,
+      "verifier_name": "math-equations",
+      "reasoning": "The FFN forward equation y_F = (∏_{i=1}^L w_i)·x_0 is the defining closed form of a 1D linear feedforward network (x_i = w_i·x_{i-1}, so x_L = (∏ w_i)·x_0). It is a correct definitional identity; no algebraic or domain error.",
+      "predicted_error_category": null,
+      "contradiction_locations": []
+    },
+    {
+      "snippet_id": "paper::EQUATION::1",
+      "snippet_type": "EQUATION",
+      "location": "Preliminaries / Table 1",
+      "content": "FFN backward propagation (Table 1): $\\frac{\\partial y\\_F}{\\partial w\\_i} = \\left( \\prod\\_{k=i+1}^{L} w\\_k \\right) \\left( \\prod\\_{m=1}^{i-1} w\\_m \\right) x\\_0$  *backward term* *forward term*",
+      "route": "verify-math-lean",
+      "route_rationale": "Formalisable derivative-of-product identity; correctness turns on the partial-derivative computation.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::1",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.0,
+        "reasoning": "Formalised the FFN backward gradient: y_F = (∏_{k} w_k)·x0, and the derivative with respect to w_i (holding all other weights fixed) equals the product of all weights except w_i times x0. Lean proved theorem ffn_backward_gradient: deriv (fun t => (∏ k, if k = i then t else w k) * x0) (w i) = (∏ k, if k = i then 1 else w k) * x0, which is exactly the paper's RHS with the i-th factor replaced by 1. Compiles clean, no sorry, standard axioms only.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean",
+          "formal_statement": "theorem ffn_backward_gradient {L : ℕ} (w : Fin L → ℝ) (x0 : ℝ) (i : Fin L) : deriv (fun t : ℝ => (∏ k : Fin L, (if k = i then t else w k)) * x0) (w i) = (∏ k : Fin L, (if k = i then 1 else w k)) * x0",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.0
+    },
+    {
+      "snippet_id": "paper::EQUATION::2",
+      "snippet_type": "EQUATION",
+      "location": "Preliminaries / Table 1",
+      "content": "ResNet forward propagation (Table 1): $y\\_R = \\prod\\_{i=1}^{L} (1 + w\\_i) x\\_0$",
+      "route": "verify-math-lean",
+      "route_rationale": "Closed form of the residual recursion x_i = (1+w_i)x_{i-1}; formalisable by induction.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::2",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.0,
+        "reasoning": "Formalised the ResNet forward pass: from the recursion x_{n+1} = (1 + w n)·x_n with x_0 = x0, Lean proved by induction theorem resnet_forward: resnetOutput x0 w L = (∏ i ∈ range L, (1 + w i)) * x0, i.e. y_R = (∏_{i=1}^{L}(1+w_i))·x_0. Compiles clean, no sorry, standard axioms only.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean",
+          "formal_statement": "theorem resnet_forward (x0 : ℝ) (w : ℕ → ℝ) (L : ℕ) : resnetOutput x0 w L = (∏ i ∈ Finset.range L, (1 + w i)) * x0",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.0
+    },
+    {
+      "snippet_id": "paper::EQUATION::3",
+      "snippet_type": "EQUATION",
+      "location": "Preliminaries / Table 1",
+      "content": "ResNet backward propagation (Table 1): $\\frac{\\partial y\\_R}{\\partial w\\_i} = \\left( \\prod\\_{k=i+1}^{L} (1 + w\\_k) \\right) \\left( \\prod\\_{m=1}^{i-1} (1 + w\\_m) \\right) x\\_0$  *backward term* *forward term*",
+      "route": "verify-math-lean",
+      "route_rationale": "Formalisable derivative-of-product identity for the residual output; correctness turns on the partial derivative.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::3",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.0,
+        "reasoning": "Formalised the ResNet backward gradient: y_R = (∏_{k}(1+w_k))·x0, and the derivative with respect to w_i equals the product of all residual factors (1 + w_k) with k ≠ i times x0. Lean proved theorem resnet_backward_gradient: deriv (fun t => (∏ k, if k = i then (1 + t) else (1 + w k)) * x0) (w i) = (∏ k, if k = i then 1 else (1 + w k)) * x0. Compiles clean, no sorry, standard axioms only.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean",
+          "formal_statement": "theorem resnet_backward_gradient {L : ℕ} (w : Fin L → ℝ) (x0 : ℝ) (i : Fin L) : deriv (fun t : ℝ => (∏ k : Fin L, (if k = i then (1 + t) else (1 + w k))) * x0) (w i) = (∏ k : Fin L, (if k = i then 1 else (1 + w k))) * x0",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.0
+    },
+    {
+      "snippet_id": "paper::EQUATION::4",
+      "snippet_type": "EQUATION",
+      "location": "Preliminaries / Table 1",
+      "content": "ACN forward propagation (Table 1): $y\\_A = \\left( 1 + \\sum\\_{i=1}^{L} \\prod\\_{j=1}^{i} w\\_j \\right) x\\_0$",
+      "route": "verify-math-lean",
+      "route_rationale": "Closed form of the ACN sum y = x_0 + ∑ x_i for linear layers; formalisable sum-of-products identity.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::4",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.0,
+        "reasoning": "Formalised the ACN forward pass: from the layer recursion x_{n+1} = w n · x_n and the output y_A = ∑_{i=0}^{L} x_i, Lean proved theorem acn_forward: acnOutput x0 w L = (1 + ∑ i ∈ range L, ∏ j ∈ range (i+1), w j) * x0, i.e. y_A = (1 + ∑_{i=1}^{L} ∏_{j=1}^{i} w_j)·x_0. Compiles clean, no sorry, standard axioms only.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean",
+          "formal_statement": "theorem acn_forward (x0 : ℝ) (w : ℕ → ℝ) (L : ℕ) : acnOutput x0 w L = (1 + ∑ i ∈ Finset.range L, (∏ j ∈ Finset.range (i + 1), w j)) * x0",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.0
+    },
+    {
+      "snippet_id": "paper::EQUATION::5",
+      "snippet_type": "EQUATION",
+      "location": "Preliminaries / Table 1",
+      "content": "ACN backward propagation (Table 1): $\\frac{\\partial y\\_A}{\\partial w\\_i} = \\left( 1 + \\sum\\_{j=i+1}^{L} \\prod\\_{k=i+1}^{j} w\\_k \\right) \\left( \\prod\\_{m=1}^{i-1} w\\_m \\right) x\\_0$  *backward term* *forward term*",
+      "route": "verify-math-lean",
+      "route_rationale": "The key ACN gradient identity; formalisable derivative of the sum-of-prefix-products output.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::5",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.0,
+        "reasoning": "Formalised the ACN backward gradient, the central claim of Table 1 / Eq. (12). Lean proved theorem acn_backward_gradient: the derivative with respect to w a of y_A = x0 + ∑_r (∏_{j≤r} w_j)·x0 (0-indexed) equals (1 + ∑_{d} ∏_{k} w(a+1+k)) · (∏_{j<a} w_j) · x0, which is the paper's RHS reindexed. The proof splits the sum at the differentiated layer, uses the per-summand derivative (coefficient with the a-th factor replaced by 1), and factors the forward product out. Compiles clean, no sorry, standard axioms only.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean",
+          "formal_statement": "theorem acn_backward_gradient {L a : ℕ} (ha : a < L) (w : ℕ → ℝ) (x0 : ℝ) : deriv (fun t => acnY L a w x0 t) (w a) = (1 + ∑ d ∈ Finset.range (L - a - 1), ∏ k ∈ Finset.range (d + 1), w (a + 1 + k)) * (∏ j ∈ Finset.range a, w j) * x0",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.0
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::0",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "2.2 Emergent Gradient Paths",
+      "content": "For backward paths, 1D FFNs contain a single path, while 1D ACNs have L − i + 1: one direct path using the layer's own long connection to the output, plus L − i additional paths where gradient flows from each subsequent layer's long connection and back through the network. 1D ResNets have 2^(L−i) paths since at each layer there are two options: flow through the network or follow the residual connection. ... For example, when training the second layer of a 1D L = 12-layer network, DG is one of 11 ACN backward paths, while for ResNets the DG is competing with another 127 paths (of the NG term).",
+      "route": "verify-math-lean",
+      "route_rationale": "Combinatorial path-count claims (FFN=1, ACN=L−i+1, ResNet=2^(L−i)); formalisable via powerset cardinality and interval cardinality.",
+      "lean_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::0",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.0,
+        "reasoning": "Formalised the three path counts. Lean proved resnet_path_count: ((Finset.range (L-i)).powerset).card = 2^(L-i) (the number of ResNet backward paths equals the number of subsets of a set of size L-i), and acn_path_count: (Finset.Icc i L).card = L - i + 1 (the number of ACN backward paths). Lean also computed the L=12, i=2 example: 12-2+1 = 11 (ACN paths, matching the paper) and 2^(12-2) = 1024 (ResNet paths). The paper's statement that 'for ResNets the DG is competing with another 127 paths' is inconsistent: by the paper's own formula 2^(L-i) = 2^10 = 1024 total backward paths, so the direct gradient competes with 1023 other (network-mediated) paths, not 127.",
+        "predicted_error_category": null,
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean",
+          "formal_statement": "theorem resnet_path_count {L i : ℕ} : ((Finset.range (L - i)).powerset).card = 2 ^ (L - i)  and  theorem acn_path_count {L i : ℕ} (hi : i ≤ L) : (Finset.Icc i L).card = L - i + 1  and  examples: 12 - 2 + 1 = 11,  2 ^ (12 - 2) = 1024",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::EQUATION::6",
+      "snippet_type": "EQUATION",
+      "location": "Appendix C, FFN backward pass for weight i (Eq. 3)",
+      "content": "$$\\frac{\\partial y_F}{\\partial w_i} = \\frac{\\partial y_F}{\\partial x_i} \\frac{\\partial x_i}{\\partial w_i}$$ (3)",
+      "route": "verify-math",
+      "route_rationale": "Standard chain-rule decomposition step; no novel mathematical content beyond the chain rule.",
+      "lean_result": null,
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.0,
+      "verifier_name": "math-equations",
+      "reasoning": "Eq. (3) is the chain rule applied to y_F = x_L viewed through x_i: since x_L depends on w_i only through x_i, ∂y_F/∂w_i = (∂y_F/∂x_i)(∂x_i/∂w_i). This is a correct application of the chain rule; no error.",
+      "predicted_error_category": null,
+      "contradiction_locations": []
+    },
+    {
+      "snippet_id": "paper::EQUATION::7",
+      "snippet_type": "EQUATION",
+      "location": "Appendix C, ResNet forward pass (Eq. 5)",
+      "content": "$$x_i = w_i x_{i-1} + x_{i-1} = (1 + w_i)x_{i-1}$$ (5)",
+      "route": "verify-math",
+      "route_rationale": "Trivial algebra (distributivity) in the residual recursion definition.",
+      "lean_result": null,
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.0,
+      "verifier_name": "math-equations",
+      "reasoning": "Eq. (5) states the residual recursion x_i = w_i·x_{i-1} + x_{i-1} = (1 + w_i)·x_{i-1} for a 1D linear residual block. The equality follows by distributivity of multiplication over addition in ℝ; correct.",
+      "predicted_error_category": null,
+      "contradiction_locations": []
+    },
+    {
+      "snippet_id": "paper::EQUATION::8",
+      "snippet_type": "EQUATION",
+      "location": "Appendix C, ResNet backward pass for weight i (Eq. 8)",
+      "content": "$$\\frac{\\partial y_R}{\\partial w_i} = \\underbrace{\\left(1+\\sum_{k=i+1}^{L} w_k+\\sum_{i+1\\le k<j\\le L} w_k w_j+\\cdots+\\prod_{k=i+1}^{L} w_k\\right)}_{\\text{backward term}} \\underbrace{\\left(\\prod_{m=1}^{i-1}(1+w_m)\\right)}_{\\text{forward term}}\\,x_0$$ (8)",
+      "route": "verify-math-lean",
+      "route_rationale": "Distributive expansion of the residual backward product ∏(1+w_k) over the powerset; formalisable combinatorial identity.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::8",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.0,
+        "reasoning": "Formalised the expansion of the backward term: Lean proved lemma prod_add_powerset: ∏ k ∈ s, (1 + x k) = ∑ t ∈ s.powerset, ∏ k ∈ t, x k, and instantiated theorem resnet_backward_expansion with s = Ico (i+1) (L+1), giving exactly the paper's Eq. (8): the product of (1+w_k) over the layers above i equals the sum over all subsets t of those layers of ∏_{k∈t} w_k (empty subset → 1, singletons → linear terms, pairs → quadratic terms, full set → the final product). Compiles clean, no sorry, standard axioms only.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean",
+          "formal_statement": "theorem resnet_backward_expansion {L i : ℕ} (w : ℕ → ℝ) : (∏ k ∈ Finset.Ico (i + 1) (L + 1), (1 + w k)) = ∑ t ∈ (Finset.Ico (i + 1) (L + 1)).powerset, ∏ k ∈ t, w k",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.0
+    },
+    {
+      "snippet_id": "paper::EQUATION::9",
+      "snippet_type": "EQUATION",
+      "location": "Appendix C, ResNet backward pass for weight i (Eq. 9)",
+      "content": "$$\\frac{\\partial y_R}{\\partial w_i} = \\underbrace{\\left(1+\\sum_{k=1}^{L-i+1}\\text{ sum of }\\binom{L-i+1}{k}\\,w \\text{ k-tuples}\\right)}_{\\text{backward term}} \\underbrace{\\left(\\prod_{m=1}^{i-1}(1+w_m)\\right)}_{\\text{forward term}}\\,x_0$$ (9)",
+      "route": "verify-math-lean",
+      "route_rationale": "Binomial count of k-tuples in the backward expansion; Lean checks the correct count, exposing a suspected off-by-one.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::9",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.0,
+        "reasoning": "Formalised the correct counts. Lean proved resnet_backward_layer_count: (Finset.Ico (i+1) (L+1)).card = L - i — the backward term ∏_{k=i+1}^{L}(1+w_k) ranges over L−i layers (i+1,…,L), not L−i+1. Lean also proved ktuple_count: (s.powerset.filter (fun t => t.card = k)).card = s.card.choose k, i.e. a product over a set of size n has binom(n,k) terms of degree k. With n = L−i this gives binom(L−i,k) k-tuples and max degree L−i. The paper's Eq. (9) instead writes binom(L−i+1,k) and sums k to L−i+1 — an off-by-one. Concrete instance (L=3, i=1): the backward term (1+w₂)(1+w₃) has 2 layers and binom(2,1)=2 single-weight terms, while the paper's L−i+1=3 would claim binom(3,1)=3. The Lean formalization therefore establishes the correct count; the paper's Eq. (9) is internally inconsistent with Eq. (8) and Section 2.2.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean",
+          "formal_statement": "theorem resnet_backward_layer_count {L i : ℕ} (hi : i ≤ L) : (Finset.Ico (i + 1) (L + 1)).card = L - i  and  theorem ktuple_count {α : Type*} (s : Finset α) (k : ℕ) : (s.powerset.filter (fun t => t.card = k)).card = s.card.choose k",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::EQUATION::10",
+      "snippet_type": "EQUATION",
+      "location": "Appendix C, ACN backward pass for weight i (Eq. 11)",
+      "content": "$$\\frac{\\partial y_A}{\\partial w_i} =\\frac{\\partial y_A}{\\partial x_i}\\frac{\\partial x_i}{\\partial w_i} =\\left(1+\\sum_{k=i+1}^{L}\\frac{\\partial x_k}{\\partial x_i}\\right)x_{i-1}$$ (11)",
+      "route": "verify-math",
+      "route_rationale": "Chain-rule decomposition for the ACN sum; standard calculus step verified informally.",
+      "lean_result": null,
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.0,
+      "verifier_name": "math-equations",
+      "reasoning": "Eq. (11) is the chain rule for the ACN output y_A = ∑_{r=0}^{L} x_r. Since ∂y_A/∂x_i = 1 + ∑_{k>i} ∂x_k/∂x_i (the x_r for r < i do not depend on x_i, and ∂x_i/∂x_i = 1) and ∂x_i/∂w_i = x_{i-1}, the identity holds. Correct application of the chain rule.",
+      "predicted_error_category": null,
+      "contradiction_locations": []
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::1",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "Appendix D, Analysis of the Connectivity across architectures",
+      "content": "$$z_0 = x_0,\\qquad z_1 = x_1 + z_0 = x_1 + x_0,\\qquad z_2 = x_2 + z_1 = x_2 + x_1 + x_0.$$  Claim: the residual summation $z_i = z_{i-1} + x_i$ effectively results in each layer $i$ receiving as input ($z_i$) a cumulative sum of all previous layer outputs ($x_*$).",
+      "route": "verify-math-lean",
+      "route_rationale": "Simple induction proving the cumulative-sum closed form of the residual summation.",
+      "lean_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::1",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.0,
+        "reasoning": "Formalised the claim that the residual summation z_i = z_{i-1} + x_i (with z_0 = x_0) is a cumulative sum. Lean proved theorem z_cumulative: zsum x n = ∑ i ∈ range (n+1), x i, i.e. z_n = x_0 + ⋯ + x_n. The concrete instances z_1 = x_1 + x_0 and z_2 = x_2 + x_1 + x_0 follow immediately. Compiles clean, no sorry, standard axioms only.",
+        "predicted_error_category": null,
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean",
+          "formal_statement": "theorem z_cumulative (x : ℕ → ℝ) (n : ℕ) : zsum x n = ∑ i ∈ Finset.range (n + 1), x i",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.0
+    },
+    {
+      "snippet_id": "paper::EQUATION::11",
+      "snippet_type": "EQUATION",
+      "location": "Appendix H, Relation to Early Exit (EE) Methods",
+      "content": "$$w_l = 2(l + 1) / [L(L + 1)], \\text{ for } l = 0, 1, ..., L - 1.$$  Checkable property: the weights sum to 1.",
+      "route": "verify-math-lean",
+      "route_rationale": "Formalisable finite-sum arithmetic identity (the weights are a probability distribution).",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::11",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.0,
+        "reasoning": "Formalised the normalization of the early-exit layer weights. Lean proved theorem ee_weight_normalization: ∑ l ∈ range L, (2 * ((l : ℝ) + 1)) / (L * (L + 1) : ℝ) = 1 for L ≥ 1, using the auxiliary identity ∑_{l=0}^{L-1}(l+1) = L(L+1)/2. The weights w_l = 2(l+1)/[L(L+1)] therefore sum to 1. Compiles clean, no sorry, standard axioms only.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean",
+          "formal_statement": "theorem ee_weight_normalization {L : ℕ} (hL : 0 < L) : (∑ l ∈ Finset.range L, ((2 * ((l : ℝ) + 1)) / (L * (L + 1) : ℝ))) = 1",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.0
+    }
+  ],
+  "findings": [
+    {
+      "snippet_id": "paper::EQUATION::9",
+      "category": "Off-by-one counting error",
+      "severity": "minor",
+      "confidence": 0.9,
+      "evidence": "Eq. (9) writes the backward term as $1+\\sum_{k=1}^{L-i+1}$ (sum of $\\binom{L-i+1}{k}$ w k-tuples). But the backward term is $\\prod_{k=i+1}^{L}(1+w_k)$, a product over the $L-i$ layers $i+1,\\dots,L$; Lean proved `(Finset.Ico (i+1) (L+1)).card = L - i`. The correct number of k-tuples is $\\binom{L-i}{k}$, not $\\binom{L-i+1}{k}$, and the maximum degree is $L-i$. E.g. for $L=3,i=1$ the term $(1+w_2)(1+w_3)$ has $\\binom{2}{1}=2$ linear terms, while $L-i+1=3$ would claim $\\binom{3}{1}=3$. Eq. (9) is internally inconsistent with Eq. (8) and Section 2.2.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "\\frac{\\partial y_R}{\\partial w_i} = \\underbrace{\\left(1+\\sum_{k=1}^{L-i+1}\\text{ sum of }\\binom{L-i+1}{k}\\,w \\text{ k-tuples}\\right)}_{\\text{backward term}} \\underbrace{\\left(\\prod_{m=1}^{i-1}(1+w_m)\\right)}_{\\text{forward term}}\\,x_0"
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::0",
+      "category": "Arithmetic error in example",
+      "severity": "minor",
+      "confidence": 0.8,
+      "evidence": "The example states that for the second layer ($i=2$) of a depth-$L=12$ ResNet the direct gradient competes with 'another 127 paths'. By the paper's own formula $2^{L-i}=2^{10}=1024$ backward paths (Lean-verified), the direct gradient is one of 1024, so it competes with 1023 network-mediated paths, not 127. The ACN count of 11 for the same example is correct ($12-2+1=11$, Lean-verified).",
+      "verifier": "verify-math-lean",
+      "exact_quote": "For example, when training the second layer of a 1D L = 12-layer network, DG is one of 11 ACN backward paths, while for ResNets the DG is competing with another 127 paths (of the NG term)."
+    }
+  ],
+  "verdict": "MINOR_ERRORS",
+  "verdict_confidence": 0.8,
+  "summary": "Auto-Compressing Networks (ACNs), a NeurIPS-2025-style paper introducing long feedforward connections from every layer to the output. All self-contained mathematics was extracted: the FFN/ResNet/ACN forward and backward propagation equations (Table 1), the backward-path-count claims (Section 2.2), the Appendix C derivations (Eqs. 3, 5, 8, 9, 11), the Appendix D cumulative-sum identity, and the Appendix H early-exit weight normalization. 14 snippets were extracted: 4 routed to informal verification, 10 to formal Lean 4 verification. All 10 Lean formalizations PASSED (machine-checked, no sorries, standard axioms only): the FFN, ResNet, and ACN forward passes; the FFN, ResNet, and ACN backward gradient identities (including the central ACN gradient Eq. 12 / Table 1); the ResNet backward expansion (Eq. 8) via the powerset identity; the backward path counts $2^{L-i}$ (ResNet) and $L-i+1$ (ACN); the Appendix D cumulative-sum claim; and the Appendix H weight normalization ($\\sum w_l = 1$). No Lean failures, so no informal fallbacks were needed. Two minor errors were detected. (1) Eq. (9) is an off-by-one: it writes the ResNet backward term with $L-i+1$ layers and $\\binom{L-i+1}{k}$ k-tuples, but the backward term $\\prod_{k=i+1}^{L}(1+w_k)$ has $L-i$ factors, so the counts should be $L-i$ and $\\binom{L-i}{k}$; this is inconsistent with Eq. (8) and Section 2.2, and Lean-verified. (2) The Section 2.2 example for $L=12,i=2$ says the ResNet direct gradient competes with 'another 127 paths', but the Lean-verified formula $2^{L-i}=1024$ implies 1023 other paths. Both errors are minor: they do not invalidate the paper's qualitative conclusions (ACNs have linearly many backward paths, ResNets exponentially many) or any main claim. The four informal snippets (FFN forward, Eqs. 3, 5, 11) were all correct. Overall verdict: MINOR_ERRORS."
+}

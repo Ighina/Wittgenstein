@@ -1,0 +1,110 @@
+{
+  "paper_id": "754",
+  "title": "Mean Flows for One-step Generative Modeling",
+  "paper_category": "cs.LG",
+  "predicted_errors": [
+    {
+      "error_category": "Conclusion vs Evidence mismatch",
+      "error_location": "Conclusion, Sec. 6 (line 366)",
+      "confidence": 0.97,
+      "supporting_evidence": "The Conclusion claims MeanFlow 'fully solves the longstanding challenges of multi-scale and multi-resolution simulation in physics and generative modeling' and 'describes underlying physical fields at unprecedented coarsened granularity' — content that appears nowhere in this one-step image-generation paper (ImageNet/CIFAR-10 FID). 'Fully solves' is irreconcilable with the Abstract's own 'notable gaps remain compared to state-of-the-art multi-step models... do not conclusively close the performance gap', and the physics-simulation framing is a non-sequitur relative to the paper's actual content.",
+      "verifier_name": "verify-cross-section-consistency",
+      "snippet_id": "754::SECTION::23"
+    },
+    {
+      "error_category": "Citation/reference error",
+      "error_location": "Related Work (line 85); References (lines 382-475)",
+      "confidence": 0.97,
+      "supporting_evidence": "Line 85 cites '[99]' for 'hypothetical Flow Map constructs... (not publicly available)... remain unvalidated', but the bibliography spans only [1]-[54] — no reference [99] exists (dangling/fabricated citation). The described work is Flow Map Matching (Boffi, Albergo, Vanden-Eijnden), which is the paper's own reference [3] (arXiv:2406.07507, published in TMLR 2025 with validation experiments). The 'not publicly available' and 'unvalidated' characterizations are false, and reference [3] is listed in the bibliography but never cited in the body.",
+      "verifier_name": "verify-citation",
+      "snippet_id": "754::SECTION::4"
+    },
+    {
+      "error_category": "Citation/reference error",
+      "error_location": "Related Work (line 85); References (line 464)",
+      "confidence": 0.97,
+      "supporting_evidence": "Line 85 calls 'Visual Autoregressive Modeling [48]' a 'dataset' that 'has not been peer-reviewed'. Web verification shows VAR (Tian et al., 2024) is a generative MODEL — a next-scale-prediction image-generation paradigm — not a dataset, and it was peer-reviewed as a NeurIPS 2024 Oral and Best Paper. The paper's own Table 2 also lists VAR-d30 [48] as a 2B-parameter model baseline, contradicting the 'dataset' characterization.",
+      "verifier_name": "verify-citation",
+      "snippet_id": "754::SECTION::4"
+    },
+    {
+      "error_category": "Abstract vs Results mismatch",
+      "error_location": "Introduction (line 25) vs Abstract (line 10) and Method (lines 71, 73, 346)",
+      "confidence": 0.95,
+      "supporting_evidence": "Introduction states 'the consistency constraint is also applied to an underlying average velocity field in MeanFlow, which can introduce additional instability during training. Therefore, our approach similarly requires a carefully designed discretization curriculum [47, 44, 15] to ensure stable optimization and convergence.' The Abstract states MeanFlow 'requires no pre-training, distillation, or curriculum learning', Sec. 4.1 says 'No extra consistency heuristic is needed', and Sec. 5.2 claims 'without using any pre-training, distillation, or the curriculum learning adopted in [44, 15, 32]'. Mutually exclusive claims about the same training procedure.",
+      "verifier_name": "verify-text",
+      "snippet_id": "754::SECTION::2"
+    },
+    {
+      "error_category": "Data Inconsistency (text-table)",
+      "error_location": "Sec. 5.2 (line 319) vs Table 2 (line 339)",
+      "confidence": 0.95,
+      "supporting_evidence": "Text states 'SiT [34] (FID 2.15), both having an NFE of 250×2 (Tab. 2, right)', but Table 2 lists SiT-XL/2 [34] at 675M params, 250×2 NFE, FID 2.06 for the identical entry. The same quantity is reported as two different values (2.15 vs 2.06) in one paper. This also corrupts the adjacent claim: MeanFlow's 2-NFE FID of 2.20 is called 'on par with' SiT, but against the table's 2.06 it is ~6.8% worse, not on par.",
+      "verifier_name": "verify-statistical",
+      "snippet_id": "754::TABLE::1"
+    },
+    {
+      "error_category": "Data Inconsistency (text-table)",
+      "error_location": "Sec. 5.1 Loss Metrics (line 308) vs Table 1e (lines 288-294)",
+      "confidence": 0.95,
+      "supporting_evidence": "Text claims 'We study loss metrics but omit reporting the underperformance of standard squared L2 loss to maintain a positive narrative. Instead, we claim all loss metrics yield comparable results.' But Table 1e DOES report p=0.0 (squared L2) at FID 79.75 vs p=1.0 at FID 61.06 — a 30.6% relative degradation. The text both falsely states the data was omitted (the table reports it) and claims 'comparable results' that the table's own values refute.",
+      "verifier_name": "verify-text",
+      "snippet_id": "754::SECTION::20"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Sec. 4.1, Training with Average Velocity (line 178)",
+      "confidence": 0.9,
+      "supporting_evidence": "Line 178 claims 'vt = a_t x + b_t ε is the conditional velocity, where a_t and b_t omit time derivatives and thus fail to represent the instantaneous velocity properly'. This contradicts the paper's own definition at line 93: v_t = z_t' = a_t' x + b_t' ε (with ' denoting the time derivative), which for a_t = 1−t, b_t = t gives v_t = ε − x exactly as used in Algorithm 1. a_t x + b_t ε is the trajectory position z_t, not the velocity, so the statement mislabels the quantity and falsely impugns the correct training target.",
+      "verifier_name": "verify-math",
+      "snippet_id": "754::SECTION::11"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Sec. 4.1, MeanFlow Identity derivation (lines 138-141, Eq. (4)→(6))",
+      "confidence": 0.9,
+      "supporting_evidence": "The derivation differentiates Eq. (4) 'considering r as a function of t', correctly obtains the Leibniz term −v(z_r,r)·dr/dt, declares this 'invalidates the simplified MeanFlow identity', yet immediately presents Eq. (6) — which holds only under dr/dt = 0. With dr/dt ≠ 0 the correct rearrangement is u = [v(z_t,t) − v(z_r,r)r' − (t−r)(v∂_z u + r'∂_r u + ∂_t u)]/(1 − r'), NOT Eq. (6). r is in fact an independent coordinate of the field u (line 114 'jointly dependent on (r,t)'; independent (r,t) sampling; Eq. (8) itself sets dr/dt = 0). The derivation as printed is self-contradictory; equation numbering also skips Eq. (5).",
+      "verifier_name": "verify-math",
+      "snippet_id": "754::EQUATION::3"
+    },
+    {
+      "error_category": "Global data inconsistency",
+      "error_location": "Experiment Setting (line 259) vs Acknowledgement (line 379) and Appendix B.4 (line 569)",
+      "confidence": 0.9,
+      "supporting_evidence": "Text states 'All models are trained on proprietary hardware clusters without detailed cost disclosure' and 'Exact compute budgets, environmental impact, and runtime details are omitted.' But the Acknowledgement thanks 'Google TPU Research Cloud (TRC) for granting us access to TPUs' and Appendix B.4 reports per-iteration wall-clock runtimes (0.045 vs 0.052 sec/iter) benchmarked on v4-8 TPUs. The training hardware and runtime details ARE disclosed, directly contradicting the claims of undisclosed proprietary hardware and omitted runtime details.",
+      "verifier_name": "verify-cross-section-consistency",
+      "snippet_id": "754::SECTION::17"
+    },
+    {
+      "error_category": "Data Inconsistency (figure-text)",
+      "error_location": "Figure 4 caption (line 321) vs Sec. 5.1 Scalability (line 312)",
+      "confidence": 0.85,
+      "supporting_evidence": "Figure 4 caption asserts 'Our method exhibits promising scalability with respect to model size', while the same section's text states 'While MeanFlow models show some improvements with increased size and training, scalability gains diminish at higher model capacities and longer training horizons, indicating possible inefficiencies or bottlenecks. These observations temper claims about straightforward scaling benefits.' The caption and text give opposing interpretations of the same result.",
+      "verifier_name": "verify-cross-section-consistency",
+      "snippet_id": "754::FIGURE::4"
+    },
+    {
+      "error_category": "Data Inconsistency (figure-text)",
+      "error_location": "Figure 1 legend (line 16) vs Table 2 (line 331) and Table 4 (line 489)",
+      "confidence": 0.8,
+      "supporting_evidence": "Figure 1 legend lists 'XL 675M', while Table 2 lists MeanFlow-XL/2 at 676M and Table 4 lists XL/2 and XL/2+ at 676 — exact integer parameter counts, not a rounding discrepancy. All same-architecture baselines in Table 2 (iCT-XL/2, Shortcut-XL/2, iMM-XL/2, DiT-XL/2, SiT-XL/2) are 675M, so one of the two values (675 vs 676) is wrong.",
+      "verifier_name": "verify-vision",
+      "snippet_id": "754::FIGURE::0"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 77,
+    "snippets_verified": 77,
+    "errors_detected": 11,
+    "verifier_usage": {
+      "math_equation": 22,
+      "text": 31,
+      "vision": 22,
+      "statistical": 8,
+      "citation": 3,
+      "cross-section-consistency": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Exhaustive verification of the MeanFlow paper (mode=exhaustive, strictness=lenient) found 11 critical, erratum-worthy errors. The paper is heavily corrupted by injected inconsistencies. (1) The Conclusion is fabricated and off-topic: it claims MeanFlow 'fully solves... multi-scale and multi-resolution simulation in physics' and contradicts the Abstract's 'notable gaps remain... do not conclusively close the performance gap'. (2) The Introduction (line 25) claims MeanFlow 'requires a carefully designed discretization curriculum' and applies a 'consistency constraint', directly contradicting the Abstract and Method, which state the method needs no pre-training, distillation, or curriculum learning and no consistency heuristic. (3) Related Work is corrupted: it cites a nonexistent reference [99] for Flow Map constructs, falsely calls the (public, published) Flow Map Matching work 'not publicly available' and 'unvalidated' while its own reference [3] is orphaned, and mischaracterizes VAR [48] — a peer-reviewed NeurIPS 2024 Best-Paper model — as an unreviewed 'dataset'. (4) Data inconsistencies: text cites SiT FID 2.15 vs Table 2's 2.06 (the 'on par with SiT' claim then fails against 2.06); Sec. 5.1 claims the squared-L2 underperformance was 'omitted' and that 'all loss metrics yield comparable results' while Table 1e reports it (79.75 vs 61.06); Figure 4 caption claims 'promising scalability' while the text says gains diminish and temper scaling claims; Figure 1 legend lists XL 675M vs 676M in Tables 2/4. (5) Mathematical errors: line 178 misstates the conditional velocity as v_t = a_t x + b_t ε (which is the position z_t) contradicting the paper's own v_t = a_t' x + b_t' ε definition; and the MeanFlow Identity derivation treats r as a function of t, introduces a dr/dt Leibniz term, declares this 'invalidates the simplified MeanFlow identity', yet presents the dr/dt=0 identity Eq. (6) anyway. (6) Experiment-setting claims of 'proprietary hardware clusters without detailed cost disclosure' contradict the Google TPU Research Cloud acknowledgement and the runtime details in Appendix B.4. Verdict: NEEDS_CORRECTION (multiple findings at confidence ≥ 0.85)."
+}

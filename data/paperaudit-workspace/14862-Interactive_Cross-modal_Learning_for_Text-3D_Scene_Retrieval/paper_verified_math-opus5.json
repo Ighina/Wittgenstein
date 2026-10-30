@@ -1,0 +1,509 @@
+{
+  "paper_name": "paper",
+  "paper_path": "/Users/iacopoghinassi/Documents/Github/Wittgenstein/data/paperaudit-workspace/14862-Interactive_Cross-modal_Learning_for_Text-3D_Scene_Retrieval/paper.md",
+  "tag": "opus5",
+  "lean_project": "MATH_VERIFICATION/Paper",
+  "lean_project_kept": true,
+  "totals": {
+    "snippets_extracted": 15,
+    "routed_to_math": 9,
+    "routed_to_lean": 6,
+    "lean_passed": 2,
+    "lean_refuted": 4,
+    "lean_failed": 0,
+    "fallbacks_run": 0,
+    "errors_detected": 6
+  },
+  "results": [
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "3.1 Problem Formulation",
+      "content": "Given a text query set T = {t_i}_{i=1}^{n_t} and a 3D scene gallery C = {c_j}_{j=1}^{n_c}, where t_i and c_j represent the i-th text and j-th scene, n_t = |T| and n_c = |C| denote the number of samples, and |·| denotes the cardinality of a set. ... there exists correspondence y_{i,j} ∈ {0, 1}, indicating whether the pair is matched (i.e., y_{i,j} = 1), or unmatched (i.e., y_{i,j} = 0). ... IDeal asks question q_i^l (l ∈ {1, ···, r}) about the i-th sample based on the users’ previous response a_i^{l−1} (a_i^0 = t_i), where r is the upper limit of rounds. Subsequently, the external agents recall details and provide the answer a_i^l about the target 3D scene c_j (y_{i,j} = 1), forming a dialogue context D_i = {a_i^0, (q_i^1, a_i^1), ···, (q_i^r, a_i^r)} composed of question-answer pairs (q_i, a_i). Both the j-th round response text and 3D scene are projected into a shared feature space by a trained retrieval model, which are: u_i^j = f_r(a_i^j; θ) and v_j = f_r(c_j; θ), where θ denotes the learnable parameters.",
+      "route": "verify-math",
+      "route_rationale": "Model/notation setup. No crisp formal assertion to machine-check; the checkable content is internal consistency of the indexing.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.7,
+        "reasoning": "The set-up is internally coherent: $T$, $C$, the binary correspondence $y_{i,j}$, the recursion $a_i^0 = t_i$ and $q_i^l \\leftarrow a_i^{l-1}$, and the dialogue context $D_i$ all type-check. Two presentational defects are present but neither is derivation-invalidating. (1) The index $j$ is overloaded: in $u_i^j = f_r(a_i^j;\\theta)$ it is a round index ranging over $\\{0,\\dots,r\\}$, while in $v_j = f_r(c_j;\\theta)$ it is a gallery index ranging over $\\{1,\\dots,n_c\\}$; the same letter therefore denotes two unrelated ranges in adjacent expressions, and the later Eq. (2) sum over $l \\in N_k(u_i^{r-1})$ relies on the gallery reading. (2) A single encoder symbol $f_r(\\cdot;\\theta)$ with one parameter set is applied to both a text and a point cloud, whereas Section 4.1 states that texts go through BERT and point clouds through DGCNN, i.e. two encoders with disjoint parameters. Also, the round superscript in Eq. (1) is written $r-1$ (with $r$ defined here as the upper limit of rounds) where the running round index $l-1$ is meant. These are notation/typo-class issues, explicitly outside the flag list.",
+        "predicted_error_category": null,
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.7
+    },
+    {
+      "snippet_id": "paper::EQUATION::0",
+      "snippet_type": "EQUATION",
+      "location": "3.2.1 Adaptive Questioning",
+      "content": "the router assesses whether the previous-round description is informative by computing a Cross-modal Affinity Entropy (𝓔), formulated as:\n\n$$\\mathcal{E}(\\mathbf{u}_i^{r-1}) = -\\sum_{j\\in N_k(\\mathbf{u}_i^{r-1})} p(\\mathbf{u}_i^{r-1}, \\mathbf{v}_j) \\log p(\\mathbf{u}_i^{r-1}, \\mathbf{v}_j),$$\n(1)\n\nwhere $N_k(\\mathbf{u}_i^{r-1})$ means the k-nearest-neighbor index of $\\mathbf{u}_i^{r-1}$ [...] Leveraging the fairer metric $\\tilde{\\mathcal{E}}$, our questioner categorizes descriptions with $\\tilde{\\mathcal{E}} > \\beta$ as uninformative [...] Conversely, when $\\tilde{\\mathcal{E}} \\leq \\beta$, the descriptions are considered informative [...] (Sec. 4.4: \"using reasonable and moderate settings of k and β (e.g., k = 20, β = 2.0)\")",
+      "route": "verify-math-lean",
+      "route_rationale": "Shannon entropy of the Eq. (2) softmax over a k-element neighbourhood; the bound 0 ≤ E ≤ log k and the non-vacuity of the reported threshold are crisply formalisable.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::0",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "Formalised the two facts the paper's thresholding rule depends on. First, that Eq. (1) applied to the Eq. (2) softmax is a Shannon entropy on a $k$-element support and therefore satisfies $0 \\le \\mathcal{E} \\le \\log k$ for every probability vector $p$ on $\\mathrm{Fin}\\ k$, with no positivity hypothesis added (the $p_i = 0$ case is covered by Mathlib's $\\log 0 = 0$ convention, which coincides with the $0\\log 0 = 0$ convention of entropy). Proof route: $\\mathcal{E}(p) = \\sum_i \\mathrm{negMulLog}(p_i)$, split each $p_i = \\tfrac1k \\cdot (k p_i)$ via `Real.negMulLog_mul`, giving $\\log k + \\tfrac1k \\sum_i \\mathrm{negMulLog}(k p_i)$, and bound the second term by $\\tfrac1k\\sum_i (1 - k p_i) = 0$ using `Real.negMulLog_le_one_sub_self`. Second, that the reported settings are mutually consistent: $2 < \\log 20$, so with $k = 20$ and $\\beta = 2.0$ both branches ($\\tilde{\\mathcal{E}} > \\beta$ and $\\tilde{\\mathcal{E}} \\le \\beta$) are reachable and the router is not degenerate. Both compiled clean with standard axioms only. Note for the record: this verifies Eq. (1) as written over a genuine probability vector; it does not endorse the density-corrected variant $\\tilde{\\mathcal{E}}$, which is refuted separately under paper::EQUATION::2.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/14862-IDeal-opus5/paper__EQUATION__0.lean",
+          "formal_statement": "theorem affinity_entropy_bounds {k : ℕ} (hk : 0 < k) (p : Fin k → ℝ)\n    (hp : ∀ i, 0 ≤ p i) (hsum : ∑ i, p i = 1) :\n    0 ≤ ∑ i, Real.negMulLog (p i) ∧ ∑ i, Real.negMulLog (p i) ≤ Real.log k\n\ntheorem threshold_nonvacuous : (2:ℝ) < Real.log 20",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::EQUATION::1",
+      "snippet_type": "EQUATION",
+      "location": "3.2.1 Adaptive Questioning",
+      "content": "affinity probability $p(\\mathbf{u}_i^{r-1}, \\mathbf{v}_j)$ is formulated as:\n\n$$p(\\mathbf{u}_i^{r-1}, \\mathbf{v}_j) = \\frac{\\exp(\\mathcal{S}(\\mathbf{u}_i^{r-1}, \\mathbf{v}_j)/\\tau)}{\\sum_{l\\in N_k(\\mathbf{u}_i^{r-1})} \\exp(\\mathcal{S}(\\mathbf{u}_i^{r-1}, \\mathbf{v}_l)/\\tau)},$$\n(2)\n\nwhere $\\mathcal{S}$ represents the computation of similarity between features, and $\\tau$ is a temperature parameter.",
+      "route": "verify-math",
+      "route_rationale": "A standard temperature-scaled softmax restricted to the k-NN index set; correctness is checkable by inspection.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::1",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.88,
+        "reasoning": "Eq. (2) is a temperature-scaled softmax whose normaliser runs over exactly the index set $N_k(\\mathbf{u}_i^{r-1})$ that Eq. (1) sums over, so the two equations are compatible: $p$ is strictly positive (as $\\exp > 0$) and sums to $1$ over $N_k$, which is what Eq. (1) needs to be an entropy. No sign error, no domain violation, and $\\tau \\neq 0$ is the only implicit requirement (Section 4.3 reports $\\tau \\in \\{0.05, 0.2\\}$, both admissible). The formula is well defined for similarities $\\mathcal{S}$ of either sign, since the exponential removes any sign constraint.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.88
+    },
+    {
+      "snippet_id": "paper::EQUATION::2",
+      "snippet_type": "EQUATION",
+      "location": "3.2.1 Adaptive Questioning",
+      "content": "To mitigate the bias, we introduce a Density Compensated Factor for each scene feature, which is formulated as: $\\rho(\\mathbf{v}_i) = \\frac{1}{(1/k)\\sum_{j\\in N_k(\\mathbf{v}_i)} \\mathcal{D}(\\mathbf{v}_i, \\mathbf{v}_j)+\\epsilon}$, where $\\mathcal{D}$ represents the distance calculation and $\\epsilon$ is a minimal constant for numerical stability. Based on this, we try to approximately correct the original similarity score $\\mathcal{S}(\\mathbf{u}_i^{r-1}, \\mathbf{v}_j)$ by incorporating the Density Compensated Factor $\\rho(\\mathbf{v}_i)$, which could be written as: $\\tilde{\\mathcal{S}}(\\mathbf{u}_i^{r-1}, \\mathbf{v}_j) = \\mathcal{S}(\\mathbf{u}_i^{r-1}, \\mathbf{v}_j) \\cdot \\sqrt{\\rho(\\mathbf{v}_j)}$. This formulation ensures that high-density regions receive appropriately reduced similarity scores, consistent with our bias mitigation objective.",
+      "route": "verify-math-lean",
+      "route_rationale": "The claim is a monotonicity assertion relating local density to the corrected similarity score — a sharp, fully formalisable statement.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::2",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.93,
+        "reasoning": "Let $d(\\mathbf{v}) = \\tfrac1k \\sum_{j \\in N_k(\\mathbf{v})} \\mathcal{D}(\\mathbf{v},\\mathbf{v}_j)$ be the mean $k$-NN distance, which is the paper's own density proxy: a scene in a HIGH-density region has its neighbours close by, hence SMALL $d$. The paper's factor is $\\rho = 1/(d+\\epsilon)$, so $\\rho$ is LARGE in high-density regions, and the correction multiplies the similarity by $\\sqrt{\\rho}$. Lean refuted the paper's stated guarantee under both readings of \"reduced\". Comparative reading: `denser_gets_larger_score` proves that for $\\epsilon > 0$, $s > 0$ and $0 \\le d_1 < d_2$, $\\tilde{\\mathcal{S}}(s,d_2) < \\tilde{\\mathcal{S}}(s,d_1)$ — the DENSER scene receives the strictly LARGER corrected score. Absolute reading: `correction_amplifies` proves that whenever $d + \\epsilon < 1$, which is precisely the high-density case given that $\\epsilon$ is \"a minimal constant\", one has $s < \\tilde{\\mathcal{S}}$, i.e. the correction strictly INCREASES the score. The paper's universally quantified assertion was then written out and refuted outright by `paper_density_claim_false`, witness $\\epsilon = 1$, $s = 1$, $d_1 = 0$, $d_2 = 1$: the dense scene scores $\\sqrt{1} = 1$ and the sparse scene $\\sqrt{1/2} \\approx 0.707$. So the correction amplifies exactly the over-dense regions it is introduced to suppress; the sign of the compensation is inverted. The fix would be $\\tilde{\\mathcal{S}} = \\mathcal{S}/\\sqrt{\\rho}$ (equivalently $\\mathcal{S}\\cdot\\sqrt{d+\\epsilon}$). All three theorems compiled clean with standard axioms only.",
+        "predicted_error_category": "Formally refuted",
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/14862-IDeal-opus5/paper__EQUATION__2.lean",
+          "formal_statement": "noncomputable def rho (eps d : ℝ) : ℝ := 1 / (d + eps)\nnoncomputable def Stilde (eps s d : ℝ) : ℝ := s * Real.sqrt (rho eps d)\n\ntheorem rho_strictAnti {eps d₁ d₂ : ℝ} (hε : 0 < eps) (h0 : 0 ≤ d₁)\n    (h : d₁ < d₂) : rho eps d₂ < rho eps d₁\n\ntheorem denser_gets_larger_score {eps s d₁ d₂ : ℝ} (hε : 0 < eps) (hs : 0 < s)\n    (h0 : 0 ≤ d₁) (h : d₁ < d₂) : Stilde eps s d₂ < Stilde eps s d₁\n\ntheorem correction_amplifies {eps s d : ℝ} (hε : 0 < eps) (hs : 0 < s)\n    (h0 : 0 ≤ d) (hlt : d + eps < 1) : s < Stilde eps s d\n\ntheorem paper_density_claim_false :\n    ¬ (∀ eps s d₁ d₂ : ℝ, 0 < eps → 0 < s → 0 ≤ d₁ → d₁ < d₂ →\n        Stilde eps s d₁ ≤ Stilde eps s d₂)",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.93
+    },
+    {
+      "snippet_id": "paper::EQUATION::3",
+      "snippet_type": "EQUATION",
+      "location": "3.2.2 Iterative Retrieval",
+      "content": "given a text feature $$u_i$$, the prediction can be formulated as:\n\n$$\\hat{p}(u_i) = [\\hat{p}(u_i, v_1), \\hat{p}(u_i, v_2), \\ldots, \\hat{p}(u_i, v_{n_c})]^\\top,$$ (3)\n\nwhere $$\\hat{p}(u_i, v_j) = \\exp(S(u_i, v_j)) / \\sum_{l=1}^{n_c} \\exp(S(u_i, v_l))$$ denotes the probability that the $$i$$-th text retrieves the $$j$$-th scene.",
+      "route": "verify-math-lean",
+      "route_rationale": "The paper calls the entries probabilities; simplex membership is a crisp formal claim.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::3",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "Formalised the paper's own reading of Eq. (3) — that its entries are probabilities — for an ARBITRARY real similarity $S$ with no sign or range hypothesis added. Lean proved all three parts clean: $\\sum_{j=1}^{n_c} \\hat p(u_i,v_j) = 1$ (`phat_sum_eq_one`), $\\hat p(u_i,v_j) > 0$ (`phat_pos`), and $\\hat p(u_i,v_j) < 1$ whenever $n_c \\ge 2$ (`phat_lt_one`). Eq. (3) is therefore a well-formed distribution over the gallery and the word \"probability\" is justified. Standard axioms only.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/14862-IDeal-opus5/paper__EQUATION__3.lean",
+          "formal_statement": "noncomputable def phat {n : ℕ} (S : Fin n → ℝ) (j : Fin n) : ℝ :=\n  Real.exp (S j) / ∑ l, Real.exp (S l)\n\ntheorem phat_sum_eq_one {n : ℕ} (hn : 0 < n) (S : Fin n → ℝ) : ∑ j, phat S j = 1\ntheorem phat_pos {n : ℕ} (hn : 0 < n) (S : Fin n → ℝ) (j : Fin n) : 0 < phat S j\ntheorem phat_lt_one {n : ℕ} (hn : 2 ≤ n) (S : Fin n → ℝ) (j : Fin n) : phat S j < 1",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::EQUATION::4",
+      "snippet_type": "EQUATION",
+      "location": "3.2.2 Iterative Retrieval",
+      "content": "considering responses to $$Q_1$$ are refinements of the previous-round descriptions, we apply a weighted linear fusion to incorporate supplementary information. This strategy enables the preservation of core semantic cues from previous rounds while emphasizing newly introduced details: $$u_i^j = \\alpha u_i^j + (1 - \\alpha)u_i^{j-1}$$, where $$q_i^j \\in Q_1$$, $$\\alpha$$ is a trade-off weight.",
+      "route": "verify-math-lean",
+      "route_rationale": "The printed line is a self-referential equation; what it actually asserts is decidable formally.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::4",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.75,
+        "reasoning": "The printed line has its unknown $u_i^j$ on BOTH sides. Lean proved (`fusion_iff_eq`) that in any real vector space and for any $\\alpha \\neq 1$, $x = \\alpha x + (1-\\alpha) y \\iff x = y$; and (`no_nontrivial_fusion_at_three_quarters`) that at the paper's reported $\\alpha = 0.75$ there is NO pair of distinct features satisfying it. So, read as the equation it is written to be, the weighted linear fusion does not fuse anything: it asserts that the current-round and previous-round features coincide, making the operation a forced no-op, which contradicts the surrounding prose about \"emphasizing newly introduced details\". A sanity check on the INTENDED reading was also proved (`intended_fusion_strictly_between`): assigning the result to a fresh symbol does give a convex combination strictly between the two features. Confidence is held at 0.75 rather than the 0.9+ a refutation would normally carry, precisely because the authors evidently intend an assignment $\\bar u_i^j := \\alpha u_i^j + (1-\\alpha)u_i^{j-1}$, so the refutation bites on the literal rendering only; severity is minor and the method is unaffected once a fresh symbol is introduced. Standard axioms only.",
+        "predicted_error_category": "Formally refuted",
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/14862-IDeal-opus5/paper__EQUATION__4.lean",
+          "formal_statement": "variable {E : Type*} [AddCommGroup E] [Module ℝ E]\n\ntheorem fusion_iff_eq {α : ℝ} (hα : α ≠ 1) (x y : E) :\n    x = α • x + (1 - α) • y ↔ x = y\n\ntheorem no_nontrivial_fusion_at_three_quarters :\n    ¬ ∃ x y : ℝ, x ≠ y ∧ x = (0.75 : ℝ) * x + (1 - 0.75) * y\n\ntheorem intended_fusion_strictly_between {α x y : ℝ} (h0 : 0 < α) (h1 : α < 1)\n    (hxy : y < x) : y < α * x + (1 - α) * y ∧ α * x + (1 - α) * y < x",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.75
+    },
+    {
+      "snippet_id": "paper::EQUATION::5",
+      "snippet_type": "EQUATION",
+      "location": "3.2.2 Iterative Retrieval",
+      "content": "To fuse them into a comprehensive feature, inspired by [46], we model their distribution around the target scene by encapsulating them within a minimum enclosing hypersphere:\n\n$$(o_i^*, R_i^*) = \\arg \\min_{o_i, R_i} \\left\\{ R_i : u_i^j o_i^\\top \\leq R_i, \\forall j \\right\\},$$ (4)\n\nwhere $$o_i^*$$ and $$R_i^*$$ are the center and radius of the hypersphere, respectively. Based on this, features near the hypersphere boundary are grouped into a boundary set $$\\mathcal{U}_i^1$$, while the remainder constitute the central set $$\\mathcal{U}_i^2$$.",
+      "route": "verify-math-lean",
+      "route_rationale": "Well-posedness of the stated optimisation problem and whether its optimum is a hypersphere centre/radius are decidable formally.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::5",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.9,
+        "reasoning": "As printed, $u_i^j o_i^\\top$ is the INNER PRODUCT $\\langle u_i^j, o_i\\rangle$, so Eq. (4) reads: minimise $R$ over both $o$ and $R$ subject to $\\langle u^j, o\\rangle \\le R$ for all $j$. That is not a minimum enclosing hypersphere, and Lean settled it two ways. (i) `Eq4_zero_feasible`: $(o,R) = (0,0)$ is feasible for EVERY input, because $\\langle u^j, 0\\rangle = 0 \\le 0$; hence the optimal value is always $\\le 0$ and Eq. (4) can never return a positive radius. (ii) `Eq4_no_minimiser`: whenever the features lie in one open half-space — i.e. some direction $w$ and margin $c>0$ satisfy $\\langle u^j, w\\rangle \\ge c$ for all $j$, which is the generic situation for $L_2$-normalised features that all describe the SAME target scene, exactly the case Eq. (4) is applied to — the objective is unbounded below: taking $o = -t w$ with $t = (|R|+1)/c$ produces a feasible pair with strictly smaller $R$, for any starting feasible pair. The $\\arg\\min$ is then EMPTY and $o_i^*, R_i^*$ are undefined, yet the paper goes on to use $o_i^*$ as the hypersphere centre in the fused feature $\\bar u_i$ and to split features by distance to the \"boundary\". For contrast, `enclosingBall_radius_nonneg` shows the genuine SVDD/enclosing-ball constraint $\\lVert u^j - o\\rVert \\le R$ of the cited reference [46] forces $R \\ge 0$ — the opposite sign regime from (i), confirming Eq. (4) is a different problem from the one named. `Eq4_claim_false` compiles the conjunction into an outright refutation of \"Eq. (4) always admits an optimal pair with non-negative radius\". Standard axioms only; three linter warnings about unused binders, zero severity-1 diagnostics.",
+        "predicted_error_category": "Formally refuted",
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/14862-IDeal-opus5/paper__EQUATION__5.lean",
+          "formal_statement": "variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]\n\ndef Eq4Feasible {n : ℕ} (u : Fin n → E) (o : E) (R : ℝ) : Prop :=\n  ∀ j, (inner ℝ (u j) o : ℝ) ≤ R\n\ntheorem Eq4_zero_feasible {n : ℕ} (u : Fin n → E) : Eq4Feasible u 0 0\n\ntheorem Eq4_no_minimiser {n : ℕ} (hn : 0 < n) (u : Fin n → E) (w : E) (c : ℝ)\n    (hc : 0 < c) (hw : ∀ j, c ≤ (inner ℝ (u j) w : ℝ)) (o : E) (R : ℝ)\n    (hfeas : Eq4Feasible u o R) :\n    ∃ (o' : E) (R' : ℝ), Eq4Feasible u o' R' ∧ R' < R\n\ntheorem enclosingBall_radius_nonneg {n : ℕ} (hn : 0 < n) (u : Fin n → E)\n    (o : E) (R : ℝ) (h : ∀ j, ‖u j - o‖ ≤ R) : 0 ≤ R\n\ntheorem Eq4_claim_false :\n    ¬ (∀ (n : ℕ) (_ : 0 < n) (u : Fin n → ℝ),\n        ∃ (o : ℝ) (R : ℝ), Eq4Feasible u o R ∧ 0 ≤ R ∧\n          ∀ (o' : ℝ) (R' : ℝ), Eq4Feasible u o' R' → R ≤ R')",
+          "compiler_feedback": "Paper/TMP.lean:23:34: warning: Variable name `hn` is not explicitly referenced.\nPaper/TMP.lean:25:5: warning: Variable name `hfeas` is not explicitly referenced.\nPaper/TMP.lean:47:0: warning: automatically included section variable(s) unused in theorem `enclosingBall_radius_nonneg`: [InnerProductSpace ℝ E]\n(linter warnings only; zero severity-1 diagnostics)",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::EQUATION::6",
+      "snippet_type": "EQUATION",
+      "location": "3.2.2 Iterative Retrieval",
+      "content": "To balance fusion robustness and feature discrimination, potentially noisy boundary features in $$\\mathcal{U}_i^1$$ are aggregated at the hypersphere center and averaged with cleaner features in $$\\mathcal{U}_i^2$$ to yield the final fused response feature: $$\\bar{u}_i = \\frac{1}{2}\\left(o_i^* + \\frac{1}{|\\mathcal{U}_i^2|} \\sum_{u_i^j \\in \\mathcal{U}_i^2} u_i^j\\right)$$. This fused feature is then input into Equation (3) to obtain an interactive feature prediction $$\\hat{p}_2(\\bar{u}_i)$$.",
+      "route": "verify-math",
+      "route_rationale": "A plain average of two vectors; what is checkable by inspection is well-definedness of its two ingredients.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::6",
+        "verifier_name": "math-equations",
+        "status": "UNVERIFIABLE",
+        "error_detected": false,
+        "confidence": 0.6,
+        "reasoning": "As an arithmetic expression the formula is sound: it is the midpoint of $o_i^*$ and the centroid of $\\mathcal{U}_i^2$. Its well-definedness cannot be established, for two reasons, neither of which is an algebra error inside this snippet. (1) It consumes $o_i^*$ from Eq. (4), which the formal check under paper::EQUATION::5 shows is undefined in the generic case (empty $\\arg\\min$) and never a positive radius otherwise; a mid-point with an undefined argument is not a quantity. (2) The partition into $\\mathcal{U}_i^1$ and $\\mathcal{U}_i^2$ is never given a criterion — \"near the hypersphere boundary\" has no threshold — and the case $|\\mathcal{U}_i^2| = 0$ (all features classified as boundary) is not excluded, which would make $1/|\\mathcal{U}_i^2|$ a division by zero. Both are missing-specification problems rather than demonstrable mathematical mistakes, so no error is flagged here; the defect is charged to Eq. (4) where it originates.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "UNVERIFIABLE",
+      "error_detected": false,
+      "confidence": 0.6
+    },
+    {
+      "snippet_id": "paper::EQUATION::7",
+      "snippet_type": "EQUATION",
+      "location": "3.2.2 Iterative Retrieval",
+      "content": "the initial and interactive predictions are combined through weighted fusion to obtain the final scene retrieval prediction as follows:\n\n$$\\hat{p}_c(u_i) = \\lambda_1 \\hat{p}_1(u_i) + \\lambda_2 \\hat{p}_2(\\bar{u}_i) + \\lambda_3 \\hat{p}_3(s_i),$$ (5)\n\nwhere $$\\hat{p}_c(u_i)$$ is the final retrieval prediction, $$\\lambda_1$$, $$\\lambda_2$$, and $$\\lambda_3$$ are trade-off parameters.",
+      "route": "verify-math",
+      "route_rationale": "Linear mixture of three Eq. (3) distributions; simplex closure is immediate by inspection.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::7",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.65,
+        "reasoning": "Each $\\hat p_k$ is an Eq. (3) softmax, hence a distribution over the $n_c$ scenes (machine-verified under paper::EQUATION::3). Summing Eq. (5) over $j$ therefore gives $\\sum_j \\hat p_c(u_i)_j = \\lambda_1 + \\lambda_2 + \\lambda_3$, so $\\hat p_c$ is itself a probability distribution only under the constraint $\\lambda_1 + \\lambda_2 + \\lambda_3 = 1$, which the paper never states — the $\\lambda_k$ are introduced merely as \"trade-off parameters\" and Figure 3 sweeps them along separate axes. Strictly, the object called a \"prediction\" can then have entries summing above $1$. This is not flagged as an error because Eq. (5) is only ever used to produce a ranking, and for $\\lambda_k \\ge 0$ a common positive rescaling leaves the induced top-$k$ order unchanged, so nothing downstream depends on normalisation. The algebra itself is a valid linear combination.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.65
+    },
+    {
+      "snippet_id": "paper::EQUATION::8",
+      "snippet_type": "EQUATION",
+      "location": "3.3 Interaction Adaptation Tuning",
+      "content": "$$\\mathcal{R}(\\theta) = \\mathcal{R}_{dis}(\\theta) + \\mathcal{R}_{div}(\\theta) = \\mathbb{E}_{\\tilde{\\mathcal{U}}} \\left[ \\left( -\\mathbb{E}_{\\tilde{\\mathcal{U}}^+} \\left\\{ S(\\tilde{u}_i^+, \\tilde{u}_i) \\right\\} \\right) + \\left( \\mathbb{E}_{\\tilde{\\mathcal{U}}^-} \\left\\{ S(\\tilde{u}_i^-, \\tilde{u}_i) \\right\\} \\right) \\right], \\quad (6)$$\n\nwhere the two components $\\mathcal{R}_{dis}(\\theta)$ and $\\mathcal{R}_{div}(\\theta)$ respectively reflect discriminability and diversity risks, $\\mathbb{E}$ denotes expectation, $\\mathbb{E}_{\\tilde{\\mathcal{U}}}$ is taken with respect to the distribution for the target domain features (i.e., augmented text features $\\tilde{\\mathcal{U}} = \\{\\tilde{u}_i\\}_{i=1}^{n_t}$), and $\\tilde{\\mathcal{U}}^+$ and $\\tilde{\\mathcal{U}}^-$ are the distributions for the corresponding positive features $\\tilde{u}_i^+$ and negative features $\\tilde{u}_i^-$, respectively.",
+      "route": "verify-math",
+      "route_rationale": "Decomposition over distributions the paper leaves abstract; the algebraic content is linearity of expectation.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::8",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.8,
+        "reasoning": "The split is valid: by linearity of expectation $\\mathbb{E}_{\\tilde{\\mathcal{U}}}[A + B] = \\mathbb{E}_{\\tilde{\\mathcal{U}}}[A] + \\mathbb{E}_{\\tilde{\\mathcal{U}}}[B]$, so identifying $\\mathcal{R}_{dis} = \\mathbb{E}_{\\tilde{\\mathcal{U}}}[-\\mathbb{E}_{\\tilde{\\mathcal{U}}^+}\\{S\\}]$ and $\\mathcal{R}_{div} = \\mathbb{E}_{\\tilde{\\mathcal{U}}}[\\mathbb{E}_{\\tilde{\\mathcal{U}}^-}\\{S\\}]$ is consistent with the displayed bracket, and the signs are the right way round for a contrastive objective: minimising $\\mathcal{R}$ raises positive-pair similarity and lowers negative-pair similarity. Calling this a \"theoretical risk\" of the retriever is non-standard — no loss, hypothesis class or target error is specified, and nothing here shows that $\\mathcal{R}(\\theta)$ bounds a generalisation error — but that is an unverifiable modelling claim rather than an algebra error. Nothing is flagged in this line; note however that Eq. (9) is later offered as a surrogate for $\\mathcal{R}_{div}$ and moves it in the WRONG direction (see paper::EQUATION::11), so the inconsistency lies downstream of Eq. (6), not in it.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::EQUATION::9",
+      "snippet_type": "EQUATION",
+      "location": "3.3 Interaction Adaptation Tuning",
+      "content": "we mitigate the aforementioned discriminability risk $\\mathcal{R}_{dis}(\\theta)$ by minimizing a negative log-based proxy loss term $\\mathcal{L}_{dis}$, which could be written as follows:\n\n$$\\mathcal{L}_{dis} = -\\sum_{i=1}^{b} \\sum_{j=1}^{n_c} y_{ij} \\log S(\\tilde{u}_i, v_j), \\quad (7)$$\n\nwhere $b$ is the size of the mini-batch.",
+      "route": "verify-math",
+      "route_rationale": "Whether this is a domain violation turns on the range of S, which the paper leaves undefined — an argument about an unpinned domain object, not a formalisable theorem.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::9",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.8,
+        "reasoning": "Eq. (7) applies $\\log$ directly to the similarity $S(\\tilde u_i, v_j)$, not to a normalised probability. $\\log$ requires a strictly positive argument, and nothing in the paper confines $S$ to $(0, \\infty)$: $S$ is introduced only as \"the computation of similarity between features\", and the paper's own Eq. (9) writes $\\log(1 - S(\\tilde u_i, \\tilde u_j))$, which presupposes $S < 1$ — i.e. $S$ is on a bounded similarity scale, the standard such scale being cosine similarity with range $[-1,1]$. On that range $\\log S$ is undefined on the whole of $S \\le 0$, which is a non-trivial and reachable part of the domain for an unnormalised retriever early in adaptation. This is a domain-constraint violation in the printed objective: as written $\\mathcal{L}_{dis}$ is not a real-valued function of the model output. Contrast Eq. (7) with Eq. (3), where the same similarity IS pushed through a softmax first and $\\log$ would be legitimate; the natural repair is $-\\sum_{ij} y_{ij} \\log \\hat p(\\tilde u_i, v_j)$, the usual cross-entropy. Severity is minor: the intended objective is recoverable and the empirical claims do not depend on the printed form. Confidence 0.8 rather than higher because it rests on inferring $S$'s range from the paper's own usage rather than from an explicit definition.",
+        "predicted_error_category": "Domain/Constraint violation",
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::EQUATION::10",
+      "snippet_type": "EQUATION",
+      "location": "3.3 Interaction Adaptation Tuning",
+      "content": "motivated by [50], we attempt to approximate the minimization of the divergence risk $\\mathcal{R}_{div}(\\theta)$ by minimizing its upper bound, i.e.\n\n$$\\sup(\\mathcal{R}_{div}(\\theta)) \\sim \\left\\{ \\mathbb{E}_{\\tilde{u}^- \\sim \\tilde{\\mathcal{U}}^-} \\left( S(\\tilde{u}, \\tilde{u}^-) \\right) ; \\mathbb{V}_{\\tilde{u}^- \\sim \\tilde{\\mathcal{U}}^-} \\left( S(\\tilde{u}, \\tilde{u}^-) \\right) \\right\\}, \\quad (8)$$\n\nwhere $\\sup(\\cdot)$ means the upper bound and $\\mathbb{V}$ is the variance. We can obviously see that the divergence risk is affected by the mean and variance of the selected negative samples.",
+      "route": "verify-math",
+      "route_rationale": "\"~\" is undefined and the right-hand side is a pair rather than a bound; there is no crisp formal content to render.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::10",
+        "verifier_name": "math-equations",
+        "status": "UNVERIFIABLE",
+        "error_detected": false,
+        "confidence": 0.6,
+        "reasoning": "Eq. (8) is not a mathematical statement that can be checked. The relation \"$\\sim$\" is never defined; the right-hand side is a two-element SET $\\{\\mathbb{E}(\\cdot)\\,;\\,\\mathbb{V}(\\cdot)\\}$, not a scalar, so \"$\\sup(\\mathcal{R}_{div}) \\sim \\{\\cdot\\,;\\,\\cdot\\}$\" has no truth value; and no derivation or citation-specific inequality is supplied. There is also a tension with Eq. (6): there $\\mathcal{R}_{div}(\\theta) = \\mathbb{E}_{\\tilde{\\mathcal{U}}}[\\mathbb{E}_{\\tilde{\\mathcal{U}}^-}\\{S\\}]$ is a determinate number once $\\theta$ is fixed, so its supremum is itself and cannot depend on a variance; the variance term only becomes meaningful under a different, unstated object — for instance a supremum over the negative-sample distributions realisable by mini-batch sampling, where a concentration bound would indeed bring in $\\mathbb{V}$. Because the intended object is genuinely ambiguous, no error is flagged: this is reported as unsettled rather than wrong. The substantive consequence the paper draws from Eq. (8) — the weighting term of Eq. (9) — is checked separately under paper::EQUATION::11.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "UNVERIFIABLE",
+      "error_detected": false,
+      "confidence": 0.6
+    },
+    {
+      "snippet_id": "paper::EQUATION::11",
+      "snippet_type": "EQUATION",
+      "location": "3.3 Interaction Adaptation Tuning",
+      "content": "we propose a weighted complementary contrastive loss as a surrogate objective to achieve divergence risk optimization more robustly, which can be formulated as:\n\n$$\\mathcal{L}_{div} = \\sum_{i=1}^{b} \\sum_{j \\neq i}^{b} \\underbrace{\\exp \\left( -\\max \\left( 0, S(\\tilde{u}_i, \\tilde{u}_j) - \\gamma \\right) \\right)}_{\\text{Weighting term}} \\underbrace{\\log \\left( 1 - S(\\tilde{u}_i, \\tilde{u}_j) \\right)}_{\\text{Complementary contrastive term}}, \\quad (9)$$\n\nwhere $\\gamma$ is a threshold, above which samples are assigned lower weights. Minimizing the complementary contrastive term optimizes the expectation over negative pairs, while the weighting component can mitigate the impact of high-variance false-negative samples.",
+      "route": "verify-math-lean",
+      "route_rationale": "Monotonicity and boundedness of the per-pair summand are sharp analytic claims; a machine check settles the direction of the optimisation.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::11",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.95,
+        "reasoning": "Write $f(s) = \\exp(-\\max(0, s - \\gamma))\\,\\log(1 - s)$ for the per-pair summand, $s = S(\\tilde u_i, \\tilde u_j)$. Eq. (6) defines the divergence risk as $\\mathcal{R}_{div} = \\mathbb{E}[S(\\tilde u^-, \\tilde u)]$, so \"optimizes the expectation over negative pairs\" must mean DECREASING $s$. Lean refuted that. (i) `fdiv_strictAnti_below_threshold`: on the regime the paper itself singles out as un-down-weighted, $s \\le \\gamma$, the weighting term is $\\exp(0) = 1$ and $f(s) = \\log(1-s)$, which is STRICTLY DECREASING in $s$; hence for $0 \\le s_1 < s_2 \\le \\gamma < 1$, $f(s_2) < f(s_1)$ — the MORE similar negative pair carries the LOWER loss. Minimising Eq. (9) therefore pulls negative pairs TOGETHER, the exact opposite of minimising $\\mathcal{R}_{div}$. (ii) `fdiv_unbounded_below`: $f$ is unbounded below on $(0,1)$ — the weighting term never falls below $\\exp(-1)$ while $\\log(1-s) \\to -\\infty$, so for every $M$ there is an admissible $s$ with $f(s) < -M$ (witness $s = 1 - \\exp(-A)$, $A = e(|M|+1)$). (iii) `total_loss_unbounded_below`: since the paper reports $\\lambda \\in [0.2, 0.5]$, so $1 - \\lambda > 0$, Eq. (10) inherits this and also has no finite minimum. Gradient descent on the printed objective is thus driven toward complete in-batch feature collapse ($S \\to 1$ for all pairs), with unbounded reward — which would destroy rather than preserve the diversity the term is named for. The sign is inverted: `corrected_sign_is_monotone` confirms that the complementary term needed is $-\\log(1-s)$, which is strictly increasing in $s$ and whose minimisation does push negatives apart. Since the ablation in Table 3 reports that removing $\\mathcal{L}_{div}$ degrades performance, the implemented objective cannot be the one printed. All four theorems compiled clean with standard axioms only.",
+        "predicted_error_category": "Sign/Arithmetic error",
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/14862-IDeal-opus5/paper__EQUATION__11.lean",
+          "formal_statement": "noncomputable def fdiv (γ s : ℝ) : ℝ :=\n  Real.exp (-(max 0 (s - γ))) * Real.log (1 - s)\n\ntheorem fdiv_strictAnti_below_threshold {γ s₁ s₂ : ℝ} (h1 : 0 ≤ s₁)\n    (h12 : s₁ < s₂) (h2 : s₂ ≤ γ) (hγ : γ < 1) : fdiv γ s₂ < fdiv γ s₁\n\ntheorem fdiv_unbounded_below {γ : ℝ} (hγ0 : 0 ≤ γ) (M : ℝ) :\n    ∃ s : ℝ, 0 < s ∧ s < 1 ∧ fdiv γ s < -M\n\ntheorem total_loss_unbounded_below {γ lam Ldis : ℝ} (hγ0 : 0 ≤ γ)\n    (hlam : lam < 1) (M : ℝ) :\n    ∃ s : ℝ, 0 < s ∧ s < 1 ∧ lam * Ldis + (1 - lam) * fdiv γ s < -M\n\ntheorem corrected_sign_is_monotone {s₁ s₂ : ℝ} (h1 : 0 ≤ s₁) (h12 : s₁ < s₂)\n    (h2 : s₂ < 1) : -Real.log (1 - s₁) < -Real.log (1 - s₂)",
+          "compiler_feedback": "Paper/TMP.lean:15:55: warning: Variable name `h1` is not explicitly referenced.\nPaper/TMP.lean:80:48: warning: Variable name `h1` is not explicitly referenced.\n(linter warnings only; zero severity-1 diagnostics)",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::EQUATION::12",
+      "snippet_type": "EQUATION",
+      "location": "3.3 Interaction Adaptation Tuning",
+      "content": "we combine both terms to obtain our loss for domain adaptation tuning, as follows:\n\n$$\\mathcal{L} = \\lambda \\mathcal{L}_{dis} + (1 - \\lambda) \\mathcal{L}_{div}, \\quad (10)$$\n\nwhere $\\lambda$ is a hyperparameter to control the contribution of each component. Minimizing this proxy loss facilitates the reduction of domain adaptation risk, thereby enabling the retriever to better adapt to the domain of interaction text.",
+      "route": "verify-math",
+      "route_rationale": "A convex combination of two previously examined losses; the algebra is immediate.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::12",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.8,
+        "reasoning": "Eq. (10) is a well-formed convex combination for $\\lambda \\in [0,1]$ (Section 4.4 reports $\\lambda \\in [0.2, 0.5]$), and no algebraic defect occurs within the line itself. Two inherited consequences are recorded rather than flagged here, because they belong to the constituent terms. Since $1 - \\lambda > 0$ on the reported range, Eq. (10) inherits the unboundedness below of $\\mathcal{L}_{div}$ — machine-verified as `total_loss_unbounded_below` under paper::EQUATION::11 — so \"minimizing this proxy loss\" has no finite optimum as printed. And it inherits the $\\log S$ domain violation of Eq. (7) (paper::EQUATION::9). The claim that minimising $\\mathcal{L}$ \"facilitates the reduction of domain adaptation risk\" is not established anywhere: no inequality links $\\mathcal{L}$ to $\\mathcal{R}(\\theta)$ of Eq. (6), and given the sign error in $\\mathcal{L}_{div}$ the link runs the wrong way for the divergence component.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::0",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "4.3 Ablation Study (Table 3; identity also used in Tables 1 and 2)",
+      "content": "Table 3: Ablation studies for components of our IDeal on ScanRefer. RSum is the sum of R@1, R@5, R@10. w/o stands for without use.\n\n| Configurations | Configurations | ScanRefer R@1 | ScanRefer R@5 | ScanRefer R@10 | ScanRefer RSum |\n| Adaptation     | w/o IAT        | 16.6          | 48.4          | 64.4           | 129.4          |\n|                | w/o ℒdis       | 34.9          | 69.5          | 84.4           | 188.8          |\n|                | w/o ℒdiv       | 35.1          | 69.4          | 84.1           | 191.7          |\n| Full           | IDeal          | 37.8          | 71.8          | 86.4           | 196.0          |",
+      "route": "verify-math",
+      "route_rationale": "An explicitly stated identity (Rsum = R@1 + R@5 + R@10) instantiated numerically; pure arithmetic, checkable directly.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::0",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.95,
+        "reasoning": "The identity $\\mathrm{Rsum} = \\mathrm{R@1} + \\mathrm{R@5} + \\mathrm{R@10}$ is stated in the Table 1 and Table 3 captions. I evaluated it on all 72 (R@1, R@5, R@10, Rsum) quadruples in Tables 1, 2 and 3. Seventy-one hold exactly. One fails: the Table 3 row \"w/o $\\mathcal{L}_{div}$\" gives $35.1 + 69.4 + 84.1 = 188.6$, whereas the table reports $\\mathrm{RSum} = 191.7$ — an excess of $3.1$. Since every other row is internally exact, this is an isolated arithmetic/transcription error rather than a different definition of Rsum. It is directionally consequential for how the ablation reads: at the stated $191.7$ the \"w/o $\\mathcal{L}_{div}$\" configuration appears to beat \"w/o $\\mathcal{L}_{dis}$\" ($188.8$), while the correct $188.6$ puts it marginally below, inverting the implied relative importance of the two loss terms. The paper's qualitative conclusion — that removing either term degrades performance relative to the full model at $196.0$ — survives either way, so severity is minor.",
+        "predicted_error_category": "Sign/Arithmetic error",
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": [
+          "Table 3, row \"w/o ℒdiv\", column ScanRefer RSum"
+        ]
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.95
+    }
+  ],
+  "findings": [
+    {
+      "snippet_id": "paper::EQUATION::11",
+      "category": "Formally refuted",
+      "severity": "critical",
+      "confidence": 0.95,
+      "evidence": "Lean refuted the stated effect of Eq. (9). With $f(s) = \\exp(-\\max(0, s-\\gamma))\\log(1-s)$ the per-pair summand and $s = S(\\tilde u_i, \\tilde u_j)$, `fdiv_strictAnti_below_threshold` proves that for $0 \\le s_1 < s_2 \\le \\gamma < 1$ one has $f(s_2) < f(s_1)$: in the un-down-weighted regime the loss is strictly DECREASING in the similarity, so the more similar negative pair is rewarded. Minimising Eq. (9) therefore pulls negative pairs together, whereas Eq. (6) defines $\\mathcal{R}_{div} = \\mathbb{E}[S(\\tilde u^-, \\tilde u)]$ to be made SMALL — the surrogate moves its own target the wrong way. Worse, `fdiv_unbounded_below` proves $f$ is unbounded below on $(0,1)$ (the weight never drops below $\\exp(-1)$ while $\\log(1-s) \\to -\\infty$; witness $s = 1 - \\exp(-e(|M|+1))$ gives $f(s) < -M$), and `total_loss_unbounded_below` carries that to Eq. (10) because the reported $\\lambda \\in [0.2, 0.5]$ keeps $1-\\lambda > 0$. So the printed adaptation objective has no finite minimum and its unbounded descent direction is total in-batch feature collapse, $S \\to 1$ for every pair — the destruction of exactly the diversity the term is named for. The required sign is $-\\log(1-s)$, confirmed strictly increasing by `corrected_sign_is_monotone`. Since Table 3 reports that removing $\\mathcal{L}_{div}$ degrades Rsum from $196.0$ to $188.6$, the objective actually trained cannot be the one printed.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "$$\\mathcal{L}_{div} = \\sum_{i=1}^{b} \\sum_{j \\neq i}^{b} \\underbrace{\\exp \\left( -\\max \\left( 0, S(\\tilde{u}_i, \\tilde{u}_j) - \\gamma \\right) \\right)}_{\\text{Weighting term}} \\underbrace{\\log \\left( 1 - S(\\tilde{u}_i, \\tilde{u}_j) \\right)}_{\\text{Complementary contrastive term}}, \\quad (9)$$"
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::0",
+      "category": "Sign/Arithmetic error",
+      "severity": "minor",
+      "confidence": 0.95,
+      "evidence": "The caption defines RSum as the sum of R@1, R@5 and R@10. Across all 72 quadruples in Tables 1, 2 and 3 the identity holds exactly 71 times; the Table 3 \"w/o $\\mathcal{L}_{div}$\" row fails: $35.1 + 69.4 + 84.1 = 188.6$, but $191.7$ is reported — an excess of $3.1$. The error inverts the apparent ordering of the two IAT loss terms: at $191.7$ the row beats \"w/o $\\mathcal{L}_{dis}$\" ($188.8$), at the correct $188.6$ it falls just below. The paper's qualitative ablation conclusion survives, hence minor.",
+      "verifier": "verify-math",
+      "exact_quote": "|                | w/o ℒdiv       | 35.1          | 69.4          | 84.1           | 191.7          |"
+    },
+    {
+      "snippet_id": "paper::EQUATION::2",
+      "category": "Formally refuted",
+      "severity": "critical",
+      "confidence": 0.93,
+      "evidence": "The Density Compensated Factor is applied with the wrong sign. The paper's own density proxy is the mean $k$-NN distance $d(\\mathbf{v})$, which is SMALL in high-density regions, and the factor is $\\rho = 1/(d+\\epsilon)$, hence LARGE there; the correction then multiplies by $\\sqrt{\\rho}$. Lean refuted the stated guarantee in both readings of \"reduced\". `denser_gets_larger_score` proves that for $\\epsilon > 0$, $s > 0$ and $0 \\le d_1 < d_2$, $s\\sqrt{\\rho(d_2)} < s\\sqrt{\\rho(d_1)}$ — the denser scene gets the strictly larger corrected similarity. `correction_amplifies` proves that whenever $d + \\epsilon < 1$, precisely the high-density case given $\\epsilon$ is \"a minimal constant\", the correction strictly increases the score: $s < s\\sqrt{\\rho(d)}$. `paper_density_claim_false` then refutes the paper's assertion outright, witness $\\epsilon = 1$, $s = 1$, $d_1 = 0$, $d_2 = 1$: the dense scene scores $\\sqrt{1} = 1$ against the sparse scene's $\\sqrt{1/2} \\approx 0.707$. The compensation therefore amplifies exactly the over-dense regions it is introduced to suppress, so the \"Bayesian correction\" aggravates the structural density bias instead of mitigating it, and the derived $\\tilde{\\mathcal{E}}$ that gates every routing decision of the questioner is computed from a mis-signed similarity. The repair is $\\tilde{\\mathcal{S}} = \\mathcal{S}/\\sqrt{\\rho} = \\mathcal{S}\\sqrt{d+\\epsilon}$.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "$\\tilde{\\mathcal{S}}(\\mathbf{u}_i^{r-1}, \\mathbf{v}_j) = \\mathcal{S}(\\mathbf{u}_i^{r-1}, \\mathbf{v}_j) \\cdot \\sqrt{\\rho(\\mathbf{v}_j)}$. This formulation ensures that high-density regions receive appropriately reduced similarity scores, consistent with our bias mitigation objective."
+    },
+    {
+      "snippet_id": "paper::EQUATION::5",
+      "category": "Formally refuted",
+      "severity": "critical",
+      "confidence": 0.9,
+      "evidence": "Eq. (4) is not the minimum-enclosing-hypersphere problem it is named as. Written as printed, $u_i^j o_i^\\top$ is the inner product $\\langle u_i^j, o_i \\rangle$, so the program is $\\min_{o,R} R$ subject to $\\langle u^j, o \\rangle \\le R$ for all $j$ — whereas the cited SVDD reference [46] constrains $\\lVert u^j - o \\rVert \\le R$. Lean settled the difference two ways. `Eq4_zero_feasible` proves $(o,R) = (0,0)$ is feasible for every input, so the optimum is always $\\le 0$: Eq. (4) can never return a positive radius. `Eq4_no_minimiser` proves that when the features lie in one open half-space — some $w$ and $c>0$ with $\\langle u^j, w\\rangle \\ge c$ for all $j$, the generic case for $L_2$-normalised features that all describe the SAME target scene, which is exactly where Eq. (4) is applied — the objective is unbounded below: $o = -tw$ with $t = (|R|+1)/c$ beats any feasible pair. The $\\arg\\min$ is then empty and $o_i^*, R_i^*$ do not exist, yet $o_i^*$ is used as the hypersphere centre in $\\bar u_i$ and the \"distance to the boundary\" is used to split $\\mathcal{U}_i^1$ from $\\mathcal{U}_i^2$. For contrast `enclosingBall_radius_nonneg` shows the genuine constraint forces $R \\ge 0$, the opposite sign regime. `Eq4_claim_false` compiles this into an outright refutation. The whole feature-level fusion path — the component Table 3 credits with the second-largest ablation drop, $196.0 \\to 172.0$ Rsum when $\\hat p_2(\\bar u_i)$ is removed — therefore rests on an ill-posed program as written.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "$$(o_i^*, R_i^*) = \\arg \\min_{o_i, R_i} \\left\\{ R_i : u_i^j o_i^\\top \\leq R_i, \\forall j \\right\\},$$ (4)"
+    },
+    {
+      "snippet_id": "paper::EQUATION::9",
+      "category": "Domain/Constraint violation",
+      "severity": "minor",
+      "confidence": 0.8,
+      "evidence": "Eq. (7) takes $\\log$ of the raw similarity $S(\\tilde u_i, v_j)$ rather than of a normalised probability, and nothing in the paper confines $S$ to $(0,\\infty)$ — $S$ is introduced only as \"the computation of similarity between features\", and the paper's own Eq. (9) writes $\\log(1 - S)$, which presupposes $S < 1$ and so places $S$ on a bounded similarity scale (cosine similarity, range $[-1,1]$, being the standard one). On that range $\\log S$ is undefined throughout $S \\le 0$, a reachable region, so as printed $\\mathcal{L}_{dis}$ is not a real-valued function of the model output. Compare Eq. (3), where the same similarity is passed through a softmax first; the natural repair is the cross-entropy $-\\sum_{ij} y_{ij}\\log \\hat p(\\tilde u_i, v_j)$. Minor: the intended objective is recoverable and the empirical results do not depend on the printed form.",
+      "verifier": "verify-math",
+      "exact_quote": "$$\\mathcal{L}_{dis} = -\\sum_{i=1}^{b} \\sum_{j=1}^{n_c} y_{ij} \\log S(\\tilde{u}_i, v_j), \\quad (7)$$"
+    },
+    {
+      "snippet_id": "paper::EQUATION::4",
+      "category": "Formally refuted",
+      "severity": "minor",
+      "confidence": 0.75,
+      "evidence": "The \"weighted linear fusion\" is written as an equation with its unknown on both sides. Lean proved (`fusion_iff_eq`) that in any real vector space, for any $\\alpha \\neq 1$, $x = \\alpha x + (1-\\alpha)y \\iff x = y$, and (`no_nontrivial_fusion_at_three_quarters`) that at the paper's reported $\\alpha = 0.75$ no pair of DISTINCT features satisfies it. Read literally, the line therefore asserts $u_i^j = u_i^{j-1}$ and the fusion is a forced no-op, contradicting the surrounding claim that it \"emphasiz[es] newly introduced details\". Confidence is held below the usual level for a refutation, and severity set to minor, because the authors evidently intend an assignment to a fresh symbol, $\\bar u_i^j := \\alpha u_i^j + (1-\\alpha)u_i^{j-1}$, which `intended_fusion_strictly_between` confirms is a well-behaved convex combination. The defect is in the written mathematics, not the method.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "$$u_i^j = \\alpha u_i^j + (1 - \\alpha)u_i^{j-1}$$"
+    }
+  ],
+  "verdict": "CRITICAL_ERRORS",
+  "verdict_confidence": 0.9,
+  "summary": "Fifteen self-contained mathematical objects were extracted from *Interactive Cross-modal Learning for Text-3D Scene Retrieval* (IDeal) and all fifteen were checked: nine by informal review and six by formalisation in Lean 4 against Mathlib, in the reused project `MATH_VERIFICATION/Paper`. Every Lean snippet returned a decisive verdict — two `PASSED`, four `REFUTED`, zero `FAILED` and zero `NOT_ATTEMPTED` — so no Lean result needed the Step-5 informal fallback and nothing is left unsettled on the formal side. Because two of the six Lean runs came back clean, the refutations are not the output of a verifier that refutes everything.\n\n**Three critical, machine-checked errors sit in the paper's two headline components.** (1) In Eq. (9) the complementary contrastive term has the wrong sign: $\\log(1-S)$ is strictly *decreasing* in $S$, so minimising $\\mathcal{L}_{div}$ rewards making negative pairs *more* similar, the opposite of minimising the divergence risk $\\mathcal{R}_{div} = \\mathbb{E}[S(\\tilde u^-,\\tilde u)]$ that Eq. (6) defines it to surrogate. Lean further proved the term unbounded below, and — since the reported $\\lambda \\in [0.2,0.5]$ keeps $1-\\lambda > 0$ — carried that to the total loss of Eq. (10): the printed IAT objective has no finite minimum and its descent direction is complete in-batch feature collapse. (2) The Density Compensated Factor of Section 3.2.1 is applied with the wrong sign. The paper's own proxy $\\rho = 1/(d+\\epsilon)$ is *large* in dense regions, so $\\tilde{\\mathcal{S}} = \\mathcal{S}\\sqrt{\\rho}$ *amplifies* similarity exactly where the text claims it is \"appropriately reduced\"; Lean refuted the claim under both the comparative and the absolute reading. Every routing decision of the questioner is gated on the $\\tilde{\\mathcal{E}}$ computed from this mis-signed score. (3) Eq. (4) is not the minimum enclosing hypersphere it is named as: the printed constraint is the inner product $\\langle u^j, o\\rangle \\le R$, not the SVDD constraint $\\lVert u^j - o\\rVert \\le R$ of the cited reference [46]. Lean showed $(o,R) = (0,0)$ is always feasible so the optimal \"radius\" is never positive, and that for features in a common half-space — the generic case for normalised features of one target scene — the objective is unbounded below and the $\\arg\\min$ is empty, leaving $o_i^*$ and $R_i^*$ undefined even though both are consumed downstream by $\\bar u_i$ and by the boundary/central split.\n\n**Three further errors are minor.** Eq. (7) applies $\\log$ to a raw similarity that the paper's own use of $\\log(1-S)$ places on a bounded scale, so $\\log S$ is undefined on $S \\le 0$; the weighted linear fusion is printed as a self-referential equation that, read literally, forces $u_i^j = u_i^{j-1}$ (Lean confirmed this, and also that the evidently intended assignment to a fresh symbol is sound — hence the reduced confidence and minor severity); and the stated identity $\\mathrm{Rsum} = \\mathrm{R@1} + \\mathrm{R@5} + \\mathrm{R@10}$, exact in 71 of the 72 quadruples across Tables 1–3, fails for the Table 3 \"w/o $\\mathcal{L}_{div}$\" row, where $35.1 + 69.4 + 84.1 = 188.6$ is reported as $191.7$ — an error that inverts the apparent ranking of the two IAT loss terms.\n\n**Clean results.** Eq. (1)–(2) really is the Shannon entropy of a $k$-point softmax, with $0 \\le \\mathcal{E} \\le \\log k$ proved and the reported $k = 20$, $\\beta = 2.0$ confirmed mutually consistent ($2 < \\log 20$), so the router is not degenerate. Eq. (3) is a genuine distribution over the gallery for an arbitrary real similarity (positivity, sub-unity and normalisation all proved), justifying the word \"probability\". Eq. (6) decomposes correctly by linearity of expectation with the signs the right way round. Eq. (5) and Eq. (10) are algebraically well formed.\n\n**No verifier disagreements arose**, because no snippet was judged twice: every Lean verdict was decisive and the informal reviews covered disjoint snippets. Two snippets are reported `UNVERIFIABLE` rather than wrong. Eq. (8) has no truth value as printed — \"$\\sim$\" is undefined and the right-hand side is a two-element set, not a bound — and the supremum of the determinate expectation of Eq. (6) cannot depend on a variance; because a charitable reading (a supremum over mini-batch-realisable negative distributions, where a concentration bound would involve $\\mathbb{V}$) exists, this is recorded as unsettled. The fused feature $\\bar u_i$ is unverifiable because it consumes the non-existent $o_i^*$ and because $|\\mathcal{U}_i^2| = 0$ is not excluded; that defect is charged to Eq. (4) where it originates.\n\n**Outside this skill's remit, noted for the record and not counted as findings:** Table 2 reports RoMa on ScanRefer as 9.7/33.1/50.2/93.0, numerically identical to the VSE$\\infty$ row and inconsistent with Table 1's 11.4/34.8/54.4/100.6 for the same method; likewise Table 2's \"RoMa$^\\dagger$ + IDeal\" on Nr3D (25.4/60.7/75.7/161.8) disagrees with Table 1's IDeal$^\\dagger$ on Nr3D (26.4/62.7/78.7/167.8) even though IDeal is built on RoMa. Reference [60] (\"Zhang, Wang & Liu, Bayesian Density Correction for Cross-Modal Retrieval, ICLR 2022\"), credited with providing \"the theoretical foundation for Bayesian density correction\", is cited mid-sentence inside the Section 3.2.1 body and does not appear in the reference list. These belong to cross-section-consistency and citation verification respectively.\n\n**Lean project lifecycle.** `MATH_VERIFICATION/Paper` already existed on disk (7.4 GB, with Mathlib built and verification artefacts from several other papers), so Step 0 reused rather than created it. verify-math-lean's deletion rules are explicit that a reused project \"is not yours to remove\", so the project is kept and `lean_project_kept` is `true`; only this run's scratch (`TMP.lean`, `claim.md`) was removed, and the six proofs were preserved under `Paper/Verified/14862-IDeal-opus5/`.\n\n**Verdict: CRITICAL_ERRORS**, at confidence 0.9. Three independent compiling refutations strike the density-compensated routing of IRR, the hypersphere fusion of the retriever, and the divergence loss of IAT — i.e. all three of the paper's own named contributions — and each refutation is a short, hypothesis-free argument rather than a delicate one. The confidence is not higher only because the refutations bear on the mathematics as *printed*; the ablations in Table 3 show that the implemented code cannot share the Eq. (9) sign error, so the most likely reading is that the manuscript misstates several objectives it implements correctly. That is an erratum-scale defect in the paper's mathematics either way."
+}

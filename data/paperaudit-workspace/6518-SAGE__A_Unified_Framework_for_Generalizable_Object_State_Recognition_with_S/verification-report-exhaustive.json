@@ -1,0 +1,70 @@
+{
+  "paper_id": "6518",
+  "title": "SAGE: A Unified Framework for Generalizable Object State Recognition with State-Action Graph Embedding",
+  "paper_category": "cs.CV",
+  "predicted_errors": [
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "3.1 Base Model",
+      "confidence": 0.8,
+      "supporting_evidence": "Section 3.1 states 'All outputs are projected into the discrete state/action spaces, where cross-entropy losses are computed on' (the sentence is grammatically cut off) and defines the objective as 'a weighted sum of the object state recognition loss and action recognition loss', implying supervised frame-level cross-entropy on discrete state/action spaces. Yet the same section later states 'there is a lack of frame-level annotation necessary for calculating the losses' and describes pseudo-labeling via VLM cosine similarity with Viterbi temporal decoding, while the Figure 2 caption says states are decoded 'by measuring the cosine similarities between the predicted embedding Z_t and the possible state or action embeddings from SAGE'. The discrete-space cross-entropy formulation is never reconciled with the SAGE cosine-similarity decoding, leaving the training-supervision mechanism internally contradictory and ambiguous.",
+      "verifier_name": "text",
+      "snippet_id": "6518::SECTION::4"
+    },
+    {
+      "error_category": "Statistical reporting",
+      "error_location": "Table 5 (Ablation Studies, 4.4)",
+      "confidence": 0.8,
+      "supporting_evidence": "In the 'ChangeIt % Pre@1 (△) Novel Obj & Act' column, the reported values and deltas imply different full-model baselines: W/o Visual Descriptions 48.4 + 7.0 = 55.4, whereas W/o Joint Training 47.9 + 4.1 = 52.0 and W/o Dynamic State Locating 48.8 + 3.2 = 52.0. All deltas are defined 'compared to the complete model', so a single full-model value must apply to every row of the column. The implied 55.4 vs 52.0 baselines are mutually incompatible, so at least one reported value or delta (48.4 / -7.0) is wrong. Every other column of Table 5 is internally consistent, isolating the error to this column.",
+      "verifier_name": "statistical",
+      "snippet_id": "6518::TABLE::4"
+    },
+    {
+      "error_category": "Abstract vs Results mismatch",
+      "error_location": "1 Introduction",
+      "confidence": 0.75,
+      "supporting_evidence": "The Introduction claims 'SAGE outperforms the prior state-of-the-art (Xue et al., 2024) across all benchmarks, yielding as much as 14.6% relative precision improvement on state recognition for objects and actions unseen during training'. This is contradicted by the paper's own tables: Table 1 shows exact ties with VidOSC on ChangeIt Trans. Pre@1 (0.83 = 0.83) and HowToChange F1 (0.37 = 0.37) in the action-provided setting, and Table 2(b) shows a 66.7% relative gain on ChangeIt State Pre@1 for novel objects+actions (0.45 vs 0.27), exceeding the 'as much as 14.6%' cap. The Abstract (in contrast) hedges the same result ('up to 14.6% ... However, further evaluation is necessary to confirm its performance consistency'), so the Introduction overstates and conflicts both with the results tables and with the hedged Abstract.",
+      "verifier_name": "cross-section-consistency",
+      "snippet_id": "6518::SECTION::1"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "3.2 State-Action Graph Embeddings",
+      "confidence": 0.7,
+      "supporting_evidence": "Section 3.2 defines action embeddings as the vector difference between the end and initial state embeddings (R(end) - R(initial), 'which naturally accounts for object-specific variations'), but neither Section 3.1 nor Section 3.3 explains how this difference embedding is consumed by the model. Section 3.1 projects outputs into 'discrete state/action spaces, where cross-entropy losses are computed', implying independent discrete action heads, while Section 3.3 uses cosine similarity between Z_CLS and action embeddings at inference. The training-time connection between the difference-based action embedding and the loss or prediction heads is never specified, leaving the method description internally inconsistent.",
+      "verifier_name": "text",
+      "snippet_id": "6518::SECTION::5"
+    },
+    {
+      "error_category": "Data inconsistency",
+      "error_location": "Table A8 (Appendix C Dataset Details)",
+      "confidence": 0.7,
+      "supporting_evidence": "Table A8 reports ChangeIt as having 27 actions and 42 objects. The canonical ChangeIt dataset (Souček et al., CVPR 2022) contains 44 manipulating action categories, confirmed via the original CVPR 2022 paper, its supplementary material, and subsequent citing literature. The paper's other ChangeIt figures (#Videos 35,095, #Training 34,428, #Evaluation 667, avg. duration 276s) match the canonical dataset, but the action count of 27 deviates from the canonical 44 with no statement that a filtered action subset was used, making the dataset statistics internally inconsistent with the published benchmark.",
+      "verifier_name": "citation",
+      "snippet_id": "6518::TABLE::7"
+    },
+    {
+      "error_category": "Data inconsistency",
+      "error_location": "Table 2(b) (4.2 Evaluation on Object State Recognition)",
+      "confidence": 0.7,
+      "supporting_evidence": "In Table 2(b) (novel objects and novel actions), LFC* and VidOSC* are reported at 0.21/0.48 and 0.27/0.59 on ChangeIt State/Trans Pre@1, and 0.23/0.22/0.27 and 0.25/0.28/0.37 on HowToChange F1/Pre/Pre@1, respectively. The text states these are upper bounds obtained by enumerating all specialist models with ground-truth labels; yet VidOSC* drops 0.43->0.27 State Pre@1 from the novel-object setting while LFC* drops only 0.25->0.21 despite the text stating LFC and VidOSC 'cannot generalize to novel actions'. The reported values fall near or below chance level (~0.33 for a 3-way state task on ChangeIt) and the relative degradation across baselines is not explained, indicating a likely data-integrity issue in the reported baseline numbers.",
+      "verifier_name": "statistical",
+      "snippet_id": "6518::TABLE::1"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 40,
+    "snippets_verified": 40,
+    "errors_detected": 6,
+    "verifier_usage": {
+      "text": 23,
+      "statistical": 9,
+      "vision": 8,
+      "citation": 3,
+      "cross_section": 1
+    }
+  },
+  "verdict": "NEEDS_REVIEW",
+  "summary": "Exhaustive-mode verification with lenient strictness on 40 snippets (22 sections, 9 tables, 8 figures, 1 diagram). Six issues were identified. (1) Methodology inconsistency in Section 3.1: the text claims frame-level cross-entropy supervision on discrete state/action spaces ('cross-entropy losses are computed on', grammatically cut off) despite stating 'there is a lack of frame-level annotation' and describing pseudo-labeling with VLM cosine similarity + Viterbi decoding, which is never reconciled with the SAGE cosine-similarity decoding in Figure 2. (2) Arithmetic/data inconsistency in Table 5: the ChangeIt 'Novel Obj & Act' ablation column implies incompatible full-model baselines (48.4+7.0=55.4 vs 47.9+4.1=52.0 vs 48.8+3.2=52.0); all other columns are internally consistent. (3) Claim overstatement in the Introduction ('outperforms ... across all benchmarks, as much as 14.6%') that conflicts with exact ties in Table 1 and with the larger 66.7% relative gain in Table 2(b), and with the hedged Abstract. (4) Unspecified integration of the difference-based action embedding into the base model's loss/prediction heads. (5) Dataset-statistics discrepancy: ChangeIt is reported with 27 actions in Table A8, whereas the canonical ChangeIt benchmark (Souček et al., CVPR 2022) has 44 action categories. (6) Suspiciously low baseline values in Table 2(b) for the open-world novel-action setting, inconsistent with the text's upper-bound enumeration explanation. Minor issues below the reporting threshold: Appendix D refers to 'our main experiments in Table 6' but the statistical comparison corresponds to Table 7's VideoCLIP numbers; the in-text citation (Menon and Vondrick, 2022) is listed as 2023 in the references. The Filippini (1892) 'One Hundred Ways of Cooking Eggs' reference was checked against external records (Library of Congress, NYPL, University of Michigan) and is a genuine published book, so it is NOT a fabricated citation. Figures could not be visually inspected (no image files present) and were verified only for caption/embedded-text integrity. Verdict: NEEDS_REVIEW (multiple medium-confidence findings, none reaching the high-confidence correction threshold).",
+  "uncertainty_map": null
+}

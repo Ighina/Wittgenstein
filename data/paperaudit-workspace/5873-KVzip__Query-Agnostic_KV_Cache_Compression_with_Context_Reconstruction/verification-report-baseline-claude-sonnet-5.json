@@ -1,0 +1,126 @@
+{
+  "paper_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction",
+  "title": "KVzip: Query-Agnostic KV Cache Compression with Context Reconstruction",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Abstract vs. Introduction",
+      "confidence": 0.8,
+      "supporting_evidence": "The abstract states 'KVzip achieves KV cache size reductions by 2–3×' while the Introduction states 'KVzip achieves approximately 2× latency reduction in FlashAttention and 3–4× reduction in KV cache size during decoding.' The quoted compression-ratio ranges (2–3× vs. 3–4×) are inconsistent between the two sections describing the same result.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Abstract vs. Introduction / Figure 8a",
+      "confidence": 0.75,
+      "supporting_evidence": "The abstract claims 'FlashAttention decoding latency improvements up to 1.5×', but the Introduction claims 'approximately 2× latency reduction in FlashAttention.' Figure 8(a) reports attention latency values of 0.39 ms at ratio 1.0 and 0.17 ms at ratio 0.2, a ratio of ~2.3×, which matches the Introduction's 2× claim but contradicts the abstract's 1.5× figure.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Section 3.2, Equation (2)",
+      "confidence": 0.65,
+      "supporting_evidence": "The text defines query features Q_{l,h} ∈ R^{G×(n_c+n_in)×d} and key features K_{l,h} ∈ R^{n_in×d}, implying queries are the longer (context+input) sequence and keys are only the new input — this is backwards: the new forward pass should produce n_in new queries, and the cumulative keys (cached context + new input) should total n_c+n_in. The subsequent extraction 'Ā_{l,h} ∈ R_+^{G×n_c×n_in}' and the max operation 'max_{g,i=1,…,n_c}' are also inconsistent with the stated shape (the third index of Ā is n_in, not n_c, so maximizing i over 1..n_c is undefined). This contradicts Algorithm 1 in the Appendix, which correctly defines Q with shape (…,n_in,d) and K with shape (…,n_c+n_in,d).",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (figure-text)",
+      "error_location": "Figure 8(b) vs. Section 3.4 complexity analysis",
+      "confidence": 0.55,
+      "supporting_evidence": "The text derives total scoring complexity as O(n_c^2 + n_c·m/2), which should increase monotonically with chunk size m. However, Figure 8(b) reports non-monotonic compute times for increasing chunk sizes (160.0, 140.2, 130.5, 145.8, 165.3 s for m=0.5k,1k,2k,4k,8k), with the minimum occurring at m=2k rather than at the smallest chunk size, contradicting the stated monotonic complexity relationship.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (figure-text)",
+      "error_location": "Table 1 / 'Behavior Analysis Beyond Task Solving'",
+      "confidence": 0.8,
+      "supporting_evidence": "The text claims the analysis 'reveals privacy risks where compressed KV caches leak sensitive information omitted by full caches,' but Table 1 shows identical responses for both the full KV cache and the 40%-evicted KV cache ('I cannot provide personal contact information.'), showing no leakage at all. The table directly contradicts the claimed finding.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (figure-text)",
+      "error_location": "Section 4.2 (Task Generalization) vs. Figure 9 caption",
+      "confidence": 0.6,
+      "supporting_evidence": "Section 4.2 states KVzip is 'preserving performance at a 30% cache ratio except for Retr.Prefix-Suffix, while baseline methods degrade notably at 90% retention' (illogical, since degradation at high retention ratios is implausible), whereas the Figure 9 caption states KVzip itself shows 'significant accuracy drops below 40-50% KV cache ratio in retrieval tasks,' a different and conflicting threshold for KVzip's own robustness.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 4.2 vs. Figure 10 caption",
+      "confidence": 0.55,
+      "supporting_evidence": "Section 4.2 states KVzip 'robustly generalizes across diverse tasks ... outperforming baseline approaches,' while the Figure 10 caption states 'Baseline methods such as SnapKV and PyramidKV maintain competitive performance at moderate compression ratios with narrower performance gaps versus KVzip... KVzip shows advantages primarily at aggressive evictions but with small or inconsistent margins across models,' directly undercutting the strong superiority claim made in the main text.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction::baseline"
+    },
+    {
+      "error_category": "Figure / table error",
+      "error_location": "Figure 22, Mix.RepoQA+KV table",
+      "confidence": 0.7,
+      "supporting_evidence": "At KV cache ratio 1.0 (i.e., no eviction, full KV cache), all methods should be mathematically identical since no compression is applied. However, the table reports different Pass@1/Accuracy values at ratio 1.0 for each method: KVzip=80, H2O=40, SnapKV=60, PyramidKV=50, which is inconsistent since no eviction should yield identical full-cache performance across methods.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction::baseline"
+    },
+    {
+      "error_category": "Figure / table error",
+      "error_location": "Figure 23, GSM8K table",
+      "confidence": 0.55,
+      "supporting_evidence": "At KV cache ratio 1.0 (full retention/no eviction), the reported accuracies differ across methods: KVzip=65, H2O=60, SnapKV=65, PyramidKV=60. Since ratio 1.0 corresponds to the uncompressed cache for all methods, these values should be identical, but they are not, indicating an inconsistency in the reported table.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction::baseline"
+    },
+    {
+      "error_category": "Statistical reporting",
+      "error_location": "Introduction, motivating memory example",
+      "confidence": 0.35,
+      "supporting_evidence": "The paper claims 'caching 120K tokens in Qwen 2.5-14B with FP16 precision requires approximately 33 GB memory.' Using the standard GQA KV-cache size formula (2 × layers × kv_heads × head_dim × seq_len × bytes) with Qwen2.5-14B's reported architecture (48 layers, 8 KV heads, head_dim 128), the computed cache size for 120K tokens is approximately 23.6 GB, not 33 GB, suggesting a numerical error in this motivating example.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Section 3.4, 'Empirical Efficiency Analysis'",
+      "confidence": 0.5,
+      "supporting_evidence": "The paragraph first states KVzip 'introduces roughly twice the computational cost of standard prefill during compression, resulting in nontrivial overhead' and that 'Peak memory usage increases moderately during scoring, challenging assertions of negligible overhead,' then immediately concludes 'Our experiments validate consistent efficiency improvements across diverse models and tasks, with negligible performance degradation,' which overstates efficiency given the stated caveats in the same paragraph.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction::baseline"
+    },
+    {
+      "error_category": "Experiment setup",
+      "error_location": "Section 4.1 (Eviction Structure)",
+      "confidence": 0.45,
+      "supporting_evidence": "The paper states: 'We apply non-uniform head-budget allocation exclusively to KVzip ... Baseline methods are evaluated using their originally recommended uniform budget settings.' This asymmetric configuration (advanced allocation strategy for KVzip but not baselines) biases comparisons in favor of KVzip, undermining claims of KVzip's superiority being attributable to the scoring method itself rather than the allocation strategy.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 12,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (claude-sonnet-5, taxonomy=default): 12 error(s) reported.",
+  "baseline": {
+    "model": "claude-sonnet-5",
+    "provider": "anthropic",
+    "taxonomy": "default",
+    "paper_chars": 83648,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 34674,
+      "output_tokens": 16857,
+      "cache_read_input_tokens": 0,
+      "cache_creation_input_tokens": 0
+    }
+  }
+}

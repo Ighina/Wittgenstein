@@ -1,0 +1,110 @@
+{
+  "paper_id": "2625-PhySense__Sensor_Placement_Optimization_for_Accurate_Physics_Sensing",
+  "title": "PhySense: Sensor Placement Optimization for Accurate Physics Sensing",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Appendix A.2, Part 3; Theorem 3.5 and Remark 3.6",
+      "confidence": 0.99,
+      "supporting_evidence": "The proof asserts, for arbitrary field dimension d, that sum_i lambda_i <= (sum_i sqrt(lambda_i))^2 <= 2 sum_i lambda_i. The upper inequality is false except in very restricted cases. For example, with d=3 and lambda_1=lambda_2=lambda_3=1, the middle term is 9 while 2 sum_i lambda_i=6. In general, Cauchy-Schwarz gives (sum_i sqrt(lambda_i))^2 <= d sum_i lambda_i, not 2 sum_i lambda_i. Thus the claimed dimension-free bound 2/pi^2 L_flow^2 <= L_A <= 4/pi^2 L_flow^2 is invalid for the high-dimensional fields used here (e.g. 6,144 to 95,428 mesh values). Consequently, the stated guarantee of near-A-optimal placement does not follow.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "2625-PhySense__Sensor_Placement_Optimization_for_Accurate_Physics_Sensing::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Theorem 3.5, Definition 3.3, and Appendix A.2 Part 1",
+      "confidence": 0.96,
+      "supporting_evidence": "Assumption 3.2 specifies X_1 | (p, X_1(p)) approximately follows N(mu_p, Sigma_p), but Appendix A.2 subsequently assumes without justification that it follows N(0, Sigma_p). Definition 3.3 similarly writes E[(X_1-E X_1)(X_1-E X_1)^T | p,X_1(p)]=Sigma_p, using an apparently unconditional E X_1 rather than the required conditional mean E[X_1 | p,X_1(p)]. This equality is generally false whenever mu_p varies with the observations, as the authors explicitly allow. The covariance derivation needs to center by the conditional mean.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "2625-PhySense__Sensor_Placement_Optimization_for_Accurate_Physics_Sensing::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Appendix A.2, Remark A.1",
+      "confidence": 0.97,
+      "supporting_evidence": "The claim that D- and E-optimality are both polynomially bounded above and below by the A criterion, and hence are controlled 'in both directions,' is false without additional eigenvalue lower/upper bounds. In particular, covariance matrices can have identical positive trace but determinant ranging from zero (e.g. eigenvalues (1,0,...,0)) to a positive value; hence determinant has no positive lower bound as a function of trace alone. E-optimality can be bounded by trace in fixed dimension, but the asserted two-sided extension for D-optimality is invalid.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "2625-PhySense__Sensor_Placement_Optimization_for_Accurate_Physics_Sensing::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Theorem 3.1 and Appendix A.1",
+      "confidence": 0.91,
+      "supporting_evidence": "The proof calls Xbar_1 = X_0 + integral_0^1 v*(X_t,t,...)dt the reconstructed output while X_t is defined as the oracle interpolation tX_1+(1-t)X_0. This path depends on the unknown target X_1 and is not, in general, the path generated at inference by the stated ODE dX_t=v*(X_t,t,...)dt. The tower-property calculation therefore establishes a property of an oracle interpolation-coupled quantity, not of the actual ODE sampler/reconstructor. A separate argument that the conditional flow transports the source distribution to the desired conditional target distribution would be needed.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "2625-PhySense__Sensor_Placement_Optimization_for_Accurate_Physics_Sensing::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Section 3.2 Eq. (2) versus Appendix C.3 ('PhySense')",
+      "confidence": 0.97,
+      "supporting_evidence": "The method repeatedly states that placement is optimized by projected gradient descent, including Eq. (2), but the implementation states: 'we adopt the Adam optimizer to perform gradient-based updates, followed by a projection step.' Projected Adam is not projected gradient descent and has different update dynamics and theoretical properties. The paper should accurately name the implemented algorithm and avoid attaching PGD-based claims to an Adam procedure.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "2625-PhySense__Sensor_Placement_Optimization_for_Accurate_Physics_Sensing::baseline"
+    },
+    {
+      "error_category": "Experiment setup",
+      "error_location": "Section 4 'Implementations' versus Appendix C.3 ('Senseiver')",
+      "confidence": 0.98,
+      "supporting_evidence": "The main text claims that 'All methods of each benchmark maintain identical training configurations including epochs, batch sizes, ADAM optimizer, and maximum learning rate.' Appendix C.3 explicitly says the authors did not enforce the same epoch limit for Senseiver: 'we did not strictly enforce the same training epoch limit used for other baselines' and instead trained it until its default early stopping criterion. This directly contradicts the claimed common training protocol and compromises the fairness/clarity of the baseline comparison.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "2625-PhySense__Sensor_Placement_Optimization_for_Accurate_Physics_Sensing::baseline"
+    },
+    {
+      "error_category": "Statistical reporting",
+      "error_location": "Table 2, 'Relative Promotion,' Turbulent Flow #100",
+      "confidence": 0.99,
+      "supporting_evidence": "The table says promotion is the relative error reduction of PhySense-opt relative to the best baseline. For Turbulent Flow #100, the best non-PhySense-opt baseline is S^3GM at 0.2016, while PhySense-opt is 0.1257. The reduction is (0.2016-0.1257)/0.2016 = 37.65%, not the reported 38.56%. Thus this reported percentage is inconsistent with the table entries and its own definition.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "2625-PhySense__Sensor_Placement_Optimization_for_Accurate_Physics_Sensing::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Section 3.2 ('Optimization objective'), Theorem 3.5, Remark 3.6, Abstract, Introduction, and Conclusion",
+      "confidence": 0.97,
+      "supporting_evidence": "The paper repeatedly says flow-loss minimization 'theoretically guarantees near A-optimal sensor placements' and provides 'theoretical guarantees.' Even setting aside the invalid inequality in Appendix A.2, a two-sided comparison of objective values does not establish that the practical projected optimizer reaches a global or near-global optimum: Eq. (2) is nonconvex, uses nearest-point projections, and is implemented with Adam. The theorem itself is conditioned on an ideal optimal velocity model and a conditional-Gaussian approximation. The broad guarantee language materially overstates what is established.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "2625-PhySense__Sensor_Placement_Optimization_for_Accurate_Physics_Sensing::baseline"
+    },
+    {
+      "error_category": "Citation / attribution",
+      "error_location": "Section 4.4, placement-generalization discussion, item (i) Grid",
+      "confidence": 0.87,
+      "supporting_evidence": "The manuscript says the poor behavior of grid sampling is 'aligning with classical sampling theory [4] that questions the efficacy of grid sampling for complex systems.' Reference [4] is Candès and Tao, 'Near-optimal signal recovery from random projections: Universal encoding strategies?' It concerns compressed sensing/random projections, not a general sampling-theory result establishing that grid sensor sampling is ineffective for complex physical systems. The citation does not support the stated claim.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "2625-PhySense__Sensor_Placement_Optimization_for_Accurate_Physics_Sensing::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Appendix D.5, 'Uncertainty Quantification'",
+      "confidence": 0.9,
+      "supporting_evidence": "The paper computes a pixelwise sample variance from only three reconstructions and concludes that a very small variance 'indicates high confidence.' Small variation across three samples can instead indicate mode collapse or under-dispersed, miscalibrated conditional samples; no calibration, coverage, likelihood, or comparison to actual conditional error is provided. Therefore the claimed uncertainty/confidence conclusion is unsupported by the reported analysis.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "2625-PhySense__Sensor_Placement_Optimization_for_Accurate_Physics_Sensing::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 10,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (gpt-5.6-terra, taxonomy=default): 10 error(s) reported.",
+  "baseline": {
+    "model": "gpt-5.6-terra",
+    "provider": "openai",
+    "taxonomy": "default",
+    "paper_chars": 85257,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 21549,
+      "output_tokens": 4709,
+      "cache_read_input_tokens": null,
+      "cache_creation_input_tokens": null
+    }
+  }
+}

@@ -1,0 +1,110 @@
+{
+  "paper_id": "6518-SAGE__A_Unified_Framework_for_Generalizable_Object_State_Recognition_with_S",
+  "title": "SAGE: A Unified Framework for Generalizable Object State Recognition with S",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 3.2, “Multimodal Graph Refinement”",
+      "confidence": 0.94,
+      "supporting_evidence": "Graph refinement is presented as part of constructing SAGE before model training, but its ranking score uses Z_f: “score is calculated as ... cos_sim(E_text(c), Z_f).” Elsewhere Z_t is defined as the output of the temporal Transformer after processing frame embeddings, i.e., a learned model output. The paper never specifies an already-trained model used to produce Z_f, an iterative training/refinement procedure, or how circular dependence is avoided. Thus the stated graph-construction algorithm cannot be executed as written.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "6518-SAGE__A_Unified_Framework_for_Generalizable_Object_State_Recognition_with_S::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Section 3.2, “Multimodal Graph Refinement”",
+      "confidence": 0.91,
+      "supporting_evidence": "Refinement ranks concepts using “the video frames containing the object state,” denoted F, although the method repeatedly states that training videos lack frame-level annotations and uses pseudo-labels. It never specifies whether F is defined by pseudo-labels, manual ground truth, or another model, nor whether only training/validation videos are used. If ground-truth state frames or evaluation videos are used, this is label/test leakage; if pseudo-labels are used, the exact selection procedure is essential for reproducibility. This missing detail directly affects the core reported refinement result.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "6518-SAGE__A_Unified_Framework_for_Generalizable_Object_State_Recognition_with_S::baseline"
+    },
+    {
+      "error_category": "context_misalignment_incoherence",
+      "error_location": "Section 4.1 Implementation; Section 3.2 refinement description; Table 4",
+      "confidence": 0.89,
+      "supporting_evidence": "The implementation states that GPT-4o-mini is used “to generate 5 visual concepts for each object state.” Yet refinement is claimed to begin from an “over-complete concept list” and select the top 5 concepts, while Table 4 reports both an unrefined graph with 5 concepts and one with 15 concepts. A five-concept generation cannot support selecting five concepts from an over-complete candidate set, and the source/size of the 15-concept graph is not specified. These descriptions of the actual graph-construction protocol are mutually incomplete or contradictory.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "6518-SAGE__A_Unified_Framework_for_Generalizable_Object_State_Recognition_with_S::baseline"
+    },
+    {
+      "error_category": "evidence_data_integrity",
+      "error_location": "Table 5 versus Tables 1 and 2",
+      "confidence": 0.9,
+      "supporting_evidence": "The ablation deltas imply full-model scores that materially disagree with the paper’s main tables without identifying a different protocol. For example, Table 5 implies complete-model ChangeIt Seen Pre@1 = 49.8 + 11.6 = 61.4%, Novel Object = 50.3 + 6.8 = 57.1%, and Novel Object & Action = 48.4 + 7.0 = 55.4%. Tables 1–2 report the corresponding SAGE scores as 51%, 49%, and 45%, respectively. Likewise, Table 5 implies HowToChange Seen/Novel/Novel-Action Pre@1 values of 54.8%, 49.7%, and 45.3%, whereas Tables 1–2 report 52%, 50%, and 45%. Some discrepancies are large (e.g., 61.4% versus 51%; 55.4% versus 45%). No altered split, privileged-input setting, seed, or metric definition is stated for Table 5, so the results cannot be reconciled.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "6518-SAGE__A_Unified_Framework_for_Generalizable_Object_State_Recognition_with_S::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Appendix D and Table A9",
+      "confidence": 0.94,
+      "supporting_evidence": "The reported Student t-tests are not reproducible or validly interpretable from the disclosed protocol. The paper gives no number of runs, sample unit (videos, frames, classes, or seeds), whether tests are paired, variance estimates, or treatment of the strong dependence among frames from the same video. This is particularly problematic because Section 4.1 acknowledges run-to-run standard deviations up to 3%, while Table A9 presents extremely small p-values. Moreover, Section 4.5 compares SAGE with “reported results of baselines,” for which repeated matched experimental samples are generally unavailable; the paper does not explain how p-values comparing against those reported baselines were computed.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "6518-SAGE__A_Unified_Framework_for_Generalizable_Object_State_Recognition_with_S::baseline"
+    },
+    {
+      "error_category": "context_misalignment_incoherence",
+      "error_location": "Appendix D, first sentence",
+      "confidence": 0.99,
+      "supporting_evidence": "Appendix D says, “We conduct Student’s t-test to evaluate the statistical significance of the results of our main experiments in Table 6.” But Table 6 is the VLM-backbone comparison (CLIP/SigLIP/MetaCLIP) and contains no LFC, MTC, or VidOSC results. Table A9 instead compares SAGE against LFC, MTC, and VidOSC and has columns matching Table 7. The cross-reference is wrong and leaves unclear which experiments were statistically tested.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "6518-SAGE__A_Unified_Framework_for_Generalizable_Object_State_Recognition_with_S::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Appendix D, concluding sentence",
+      "confidence": 0.9,
+      "supporting_evidence": "The text concludes that SAGE “significantly outperforms VidOSC for novel objects,” but Table A9 itself reports several non-significant or null comparisons involving novel objects: HowToChange F1 novel has p = 9.3e-02, ChangeIt State Pre@1 seen has p = 2.7e-01, and HowToChange Precision seen has p = 3.5e-01; several entries are explicitly marked ✗. A blanket claim of significant superiority over VidOSC is not supported by the table.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "6518-SAGE__A_Unified_Framework_for_Generalizable_Object_State_Recognition_with_S::baseline"
+    },
+    {
+      "error_category": "rhetorical_presentation_manipulation",
+      "error_location": "Section 4.5 and Conclusion",
+      "confidence": 0.88,
+      "supporting_evidence": "Section 4.5 says SAGE is “slightly better than all baselines on seen objects,” and the conclusion says it “outperforms all baselines.” Table 7 contains exact ties with VidOSC on seen HowToChange F1 (46.4 versus 46.4) and on seen ChangeIt transition Pre@1 (0.89 versus 0.89). Table 1 also contains ties with VidOSC for the action-provided/no-object setting (ChangeIt Trans. Pre@1 0.83 versus 0.83; HowToChange F1 0.37 versus 0.37). “Outperforms all” is therefore stronger than the displayed evidence.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "6518-SAGE__A_Unified_Framework_for_Generalizable_Object_State_Recognition_with_S::baseline"
+    },
+    {
+      "error_category": "reference_background_fabrication",
+      "error_location": "Related Work, paragraph 3; References entry for Menon and Vondrick",
+      "confidence": 0.97,
+      "supporting_evidence": "The text cites “Menon and Vondrick, 2022,” whereas the bibliography identifies the cited work, “Visual classification via description from large language models,” as ICLR 2023. The in-text citation year and bibliography disagree and should be corrected.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "6518-SAGE__A_Unified_Framework_for_Generalizable_Object_State_Recognition_with_S::baseline"
+    },
+    {
+      "error_category": "context_misalignment_incoherence",
+      "error_location": "Paper title/header",
+      "confidence": 0.98,
+      "supporting_evidence": "The supplied paper title is truncated as “SAGE: A Unified Framework for Generalizable Object State Recognition with S,” while the title immediately under the Abstract is “SAGE: A Unified Framework for Generalizable Object State Recognition with State-Action Graph Embedding.” This is a bibliographic/presentational inconsistency that must be corrected in the document metadata/header.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "6518-SAGE__A_Unified_Framework_for_Generalizable_Object_State_Recognition_with_S::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 10,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (gpt-5.6-terra, taxonomy=paperaudit): 10 error(s) reported.",
+  "baseline": {
+    "model": "gpt-5.6-terra",
+    "provider": "openai",
+    "taxonomy": "paperaudit",
+    "paper_chars": 63672,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 14581,
+      "output_tokens": 4201,
+      "cache_read_input_tokens": null,
+      "cache_creation_input_tokens": null
+    }
+  }
+}

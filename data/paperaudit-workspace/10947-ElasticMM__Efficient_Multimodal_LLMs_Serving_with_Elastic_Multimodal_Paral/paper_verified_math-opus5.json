@@ -1,0 +1,411 @@
+{
+  "paper_name": "paper",
+  "paper_path": "/Users/iacopoghinassi/Documents/Github/Wittgenstein/data/paperaudit-workspace/10947-ElasticMM__Efficient_Multimodal_LLMs_Serving_with_Elastic_Multimodal_Paral/paper.md",
+  "tag": "opus5",
+  "lean_project": "MATH_VERIFICATION/Paper10947ElasticMM",
+  "lean_project_kept": false,
+  "totals": {
+    "snippets_extracted": 14,
+    "routed_to_math": 7,
+    "routed_to_lean": 7,
+    "lean_passed": 4,
+    "lean_refuted": 3,
+    "lean_failed": 0,
+    "fallbacks_run": 0,
+    "errors_detected": 5
+  },
+  "results": [
+    {
+      "snippet_id": "paper::EQUATION::0",
+      "snippet_type": "EQUATION",
+      "location": "3.1 Modality-Aware Load Balancing",
+      "content": "Following previous work [37], our goal in allocation is to maximize the minimum burst tolerance across modality groups. Burst tolerance (bt) is defined as the difference between peak load and idle capacity normalized by total instances, as formalized in Equation 1. This metric captures the system's ability to absorb sudden traffic spikes by measuring the gap between maximum observed load and the baseline resource allocation. To achieve this, we employ a fast and effective greedy strategy: incrementally assigning each instance to the group currently with the lowest burst tolerance, continuing until resources are fully allocated.\n\nbt(i) = (# Instances i can use for its peak load) / (# Instances i can use for its average load) = N_i^{peak} / N_i^{avg} (1)",
+      "route": "verify-math",
+      "route_rationale": "The quantities N^peak/N^avg are never pinned down numerically and the claim is a definitional/consistency one, not a formalisable theorem.",
+      "lean_result": null,
+      "fallback_result": null,
+      "verifier": "verify-math",
+      "reasoning": "The prose and the formula define two structurally different functions. The text says burst tolerance is *the difference between peak load and idle capacity normalized by total instances*, i.e. an expression of the shape $(\\text{peak} - \\text{idle})/N_{\\text{total}}$, and restates this as *the gap between maximum observed load and the baseline resource allocation*. Equation (1) instead gives a **ratio**, $bt(i) = N_i^{peak}/N_i^{avg}$. A difference normalized by a total is not a ratio of two counts: they disagree in sign behaviour, in scale, and in units. There is a second, independent mismatch inside the same sentence: the prose denominator quantity is *idle capacity*, whereas the formula's denominator is the instance count for *average load*. Since the allocator is a greedy max-min procedure driven entirely by $bt$, which of the two forms is intended changes the resulting allocation, so this is not a cosmetic slip. I do not flag the further suspicion that the ratio is oriented backwards (a group whose peak demand far exceeds its average demand has a *large* $N^{peak}/N^{avg}$ yet *less* headroom), because the operational meaning of '# instances i can use' is too underspecified to settle.",
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::EQUATION::1",
+      "snippet_type": "EQUATION",
+      "location": "3.2 Elastic Partition Scheduling (Stage Allocation)",
+      "content": "Once the prefill request set $R_p$ is formed, the system allocates a set of elastic instances $E_p$ to serve it... If the available KV cache slots in idle instances are insufficient, $R_p$ is permitted to preempt the instance set $E_d$ in the decoding stage $B_d$. The instance with maximum unused slots is denoted as $e_{max}$... The gain-cost model is formulated as follows:\n\n$$\\text{Gain} = \\sum_{r \\in R_p} \\frac{T(R_p, E_p) - T(R_p, E_p \\cup e_{max})}{r.\\text{input\\_len}} \\quad \\text{Cost} = \\sum_{r \\in B_d} \\frac{M(e_{max}) + w \\cdot L(B_d, E_d - e_{max})}{r.\\text{output\\_len}}$$ (2)\n\nThe gain of preemption is quantified as the acceleration gained by adding $e_{max}$ to the prefill process. The cost accounts for both migration overhead $M(e_{max})$ and the performance impact $L$ on the preempted computation. A tunable penalty factor $w$ is introduced to control the aggressiveness of preemption.",
+      "route": "verify-math",
+      "route_rationale": "A modelling heuristic over functions $T$, $M$, $L$ that the paper never defines; no formalisable mathematical content.",
+      "lean_result": null,
+      "fallback_result": null,
+      "verifier": "verify-math",
+      "reasoning": "No derivation-invalidating error. The numerators of both sums are independent of the summation index $r$, so each sum collapses to a constant times $\\sum_r 1/r.\\text{len}$; that is an unusual but coherent inverse-length weighting of a batch-level latency delta, not an algebraic mistake. Writing $E_p \\cup e_{max}$ and $E_d - e_{max}$ for set/element operations is standard abuse of notation. I note two weaknesses that fall below the flagging bar because $T$, $M$ and $L$ are never defined, so neither can be established from the text: Gain and Cost are normalized over different index sets ($R_p$ vs $B_d$) and by different quantities (input vs output length), so the comparison $\\text{Gain}$ vs $\\text{Cost}$ that drives the preemption decision is not obviously dimensionally commensurable.",
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.6
+    },
+    {
+      "snippet_id": "paper::EQUATION::2",
+      "snippet_type": "EQUATION",
+      "location": "3.2 Elastic Partition Scheduling (Elastic Auto-Scaling)",
+      "content": "Scaling up first tries to allocate idle instances from the same group. If that fails, it first selects a candidate instance $e_{max}$ from intra-group prefill instances and a candidate $e'_{max}$ from inter-group instances, using the following gain-cost model to estimate the trade-off between potential speedup and migration overhead. The instance with the highest net gain is selected for preemption.\n\n$$\\text{Gain} = \\sum_{r \\in B_d} \\frac{\\text{AvgLat}_d - T(B_d, E_d \\cup e_{max})}{r.\\text{output\\_len}} \\quad \\text{Cost} = \\sum_{r \\in R'_p} \\frac{M(e_{max}) + \\beta \\cdot L(R'_p, E'_p - e_{max})}{r.\\text{input\\_len}}$$ (3)",
+      "route": "verify-math",
+      "route_rationale": "Same as Equation (2): an undefined-function scheduling heuristic, not a formalisable claim.",
+      "lean_result": null,
+      "fallback_result": null,
+      "verifier": "verify-math",
+      "reasoning": "No derivation-invalidating error established. Two observations recorded but not flagged. (i) The penalty factor is written $\\beta$ here, whereas Equation (2) introduced and named $w$ as 'a tunable penalty factor'; $\\beta$ is never defined anywhere in the paper. That is a notational defect, not a mathematical one. (ii) The Gain numerator subtracts $T(B_d, E_d \\cup e_{max})$ from $\\text{AvgLat}_d$, mixing what reads as a per-request *average* latency with what in Equation (2) was a *batch* execution time; in Equation (2) both terms of the difference were the same kind of object. If $T$ really is a batch time this subtraction is incommensurable, but $T$ and $\\text{AvgLat}_d$ are both undefined, so this cannot be settled from the paper and I do not flag it.",
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.55
+    },
+    {
+      "snippet_id": "paper::THEOREM::0",
+      "snippet_type": "THEOREM",
+      "location": "Appendix B.2 Inference Equivalence Theorem",
+      "content": "**Theorem 1** (Inference Equivalence). For any multimodal model $\\mathcal{M}$ with inference function $f_\\mathcal{M}$, the Elastic Multimodal Parallelism framework produces outputs identical to the standard sequential execution, i.e.\n$$f_\\mathcal{M}(\\mathcal{I}, \\mathcal{T}) = g_D\\big(g_P(g_E(\\mathcal{I}), \\mathcal{T})\\big) = f_\\mathcal{M}^{EMP}(\\mathcal{I}, \\mathcal{T}) \\tag{4}$$\nwhere $f_\\mathcal{M}^{EMP}$ represents the inference function under the EMP framework.\n\nStanding definitions (B.1): $g_E : \\mathcal{I} \\to \\mathcal{V}$ encoding; $g_P : \\mathcal{V} \\times \\mathcal{T} \\to \\mathcal{H} \\times \\mathcal{K}$ prefill; $g_D : \\mathcal{H} \\times \\mathcal{K} \\to \\mathcal{O}$ decoding.",
+      "route": "verify-math-lean",
+      "route_rationale": "An equality of function compositions — formalisable, and the paper supplies the hypotheses (stage factorisation, lossless transfer) explicitly in Lemma 2.",
+      "lean_result": {
+        "snippet_id": "paper::THEOREM::0",
+        "verifier_name": "math-lean",
+        "lean": {
+          "project": "MATH_VERIFICATION/Paper10947ElasticMM",
+          "project_kept": false,
+          "lean_status": "PASSED",
+          "theorem_name": "ElasticMM.inference_equivalence",
+          "axioms": [],
+          "formal_statement": "theorem inference_equivalence\n    (g_E : Img → Vis) (g_P : Vis × Txt → Hid × Kv) (g_D : Hid × Kv → Out)\n    (f f_emp : Img × Txt → Out)\n    (h_std : ∀ i t, f (i, t) = g_D (g_P (g_E i, t)))\n    (h_emp : ∀ i t, f_emp (i, t) = g_D (g_P (g_E i, t))) :\n    ∀ i t, f (i, t) = g_D (g_P (g_E i, t)) ∧ g_D (g_P (g_E i, t)) = f_emp (i, t) :=\n  fun i t => ⟨h_std i t, (h_emp i t).symm⟩",
+          "compiler_feedback": "lake env lean exit 0; no diagnostics; 'ElasticMM.inference_equivalence' does not depend on any axioms"
+        },
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85
+      },
+      "fallback_result": null,
+      "verifier": "verify-math-lean",
+      "reasoning": "Lean accepts the theorem as stated, with no axioms at all beyond the kernel. The statement is therefore not mathematically wrong. It is, however, **vacuous**: once the paper's own standing hypothesis that EMP executes exactly the three stage functions $g_E, g_P, g_D$ in order with lossless transfer (Lemma 2, eqs. (6)–(8)) is granted, eq. (4) is a two-step rewrite and the proof term is literally $\\langle h_{std}, h_{emp}^{-1}\\rangle$. All of the content sits in the hypothesis $h_{emp}$, which is an assumption about the implementation rather than something the appendix proves. Vacuity is a presentational weakness, not a mathematical error, so this is recorded and not flagged.",
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::PROOF::0",
+      "snippet_type": "PROOF",
+      "location": "Appendix B.2 Inference Equivalence Theorem",
+      "content": "*Proof.* We prove this by examining each component of our EMP framework and demonstrating that they maintain computational equivalence. □",
+      "route": "verify-math",
+      "route_rationale": "A one-sentence prose proof body with no formal content to compile.",
+      "lean_result": null,
+      "fallback_result": null,
+      "verifier": "verify-math",
+      "reasoning": "The proof body of the appendix's headline theorem contains no argument: it announces a method and closes with $\\square$. Read in isolation this is an empty proof. Read in context it is defensible as a forward reference — Lemmas 1–6 in B.3–B.7 are exactly the per-component arguments it gestures at, and together with the stage factorisation they do discharge eq. (4) (confirmed independently: the Lean formalisation of Theorem 1 compiles from those hypotheses). Since the charitable reading is available and the mathematics is not wrong, I do not flag this. It is a presentational defect: the $\\square$ should not close a proof whose steps are deferred without saying so.",
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.6
+    },
+    {
+      "snippet_id": "paper::LEMMA::0",
+      "snippet_type": "LEMMA",
+      "location": "Appendix B.3 Modality-Level Equivalence",
+      "content": "**Lemma 1** (Modality-Level Equivalence). The separation of requests into modality groups preserves inference equivalence.\n\n*Proof.* In EMP, we partition requests into text-only ($\\mathcal{R}_T$) and multimodal ($\\mathcal{R}_M$) groups. For any request $r \\in \\mathcal{R}_T$, the computation involves only $g_P$ and $g_D$ on text inputs, while for $r \\in \\mathcal{R}_M$, it involves the complete pipeline $g_E$, $g_P$, and $g_D$.\n\nFor any request $r = (i, t)$ where $i \\in \\mathcal{I}$ and $t \\in \\mathcal{T}$:\n\n1. If $i = \\emptyset$ (text-only request), then $f_\\mathcal{M}(i, t) = g_D\\big(g_P(\\emptyset, t)\\big)$.\n2. If $i \\neq \\emptyset$ (multimodal request), then $f_\\mathcal{M}(i, t) = g_D\\big(g_P(g_E(i), t)\\big)$.\n\nOur modality-aware load balancer ensures requests are routed to appropriate groups without altering their computation path. Therefore, for any request $r$, the output remains identical regardless of group assignment. □",
+      "route": "verify-math-lean",
+      "route_rationale": "A case split plus an invariance claim over a routing function — directly formalisable.",
+      "lean_result": {
+        "snippet_id": "paper::LEMMA::0",
+        "verifier_name": "math-lean",
+        "lean": {
+          "project": "MATH_VERIFICATION/Paper10947ElasticMM",
+          "project_kept": false,
+          "lean_status": "PASSED",
+          "theorem_name": "ElasticMM.modality_level_equivalence",
+          "axioms": [],
+          "formal_statement": "theorem modality_level_equivalence\n    (g_E : Img → Vis) (g_P : Vis × Txt → Hid × Kv) (g_D : Hid × Kv → Out)\n    (emptyImg : Img) (emptyVis : Vis) (h_empty : g_E emptyImg = emptyVis)\n    (f : Img × Txt → Out)\n    (h_std : ∀ i t, f (i, t) = g_D (g_P (g_E i, t)))\n    (exec : Grp → Img × Txt → Out)\n    (h_route : ∀ gr i t, exec gr (i, t) = g_D (g_P (g_E i, t))) :\n    (∀ t, f (emptyImg, t) = g_D (g_P (emptyVis, t))) ∧\n    (∀ i t, f (i, t) = g_D (g_P (g_E i, t))) ∧\n    (∀ gr gr' i t, exec gr (i, t) = exec gr' (i, t))",
+          "compiler_feedback": "lake env lean exit 0; no diagnostics; 'ElasticMM.modality_level_equivalence' does not depend on any axioms"
+        },
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85
+      },
+      "fallback_result": null,
+      "verifier": "verify-math-lean",
+      "reasoning": "Lean accepts both branches of the case split and the routing-invariance conclusion, with no axioms. Two notes that do not rise to findings. First, the paper writes $g_P(\\emptyset, t)$ although $g_P$ is declared on $\\mathcal{V} \\times \\mathcal{T}$, so $\\emptyset$ is being used for both the absent image and the empty visual-token sequence; the formalisation makes this explicit as $g_E(\\emptyset_\\mathcal{I}) = \\emptyset_\\mathcal{V}$, which is the natural reading and is harmless. Second, under that reading case 1 is a special case of case 2, so the split is redundant — redundant, not wrong. As with Theorem 1 the lemma is true but trivial: 'routing does not alter the computation path' is assumed, and the conclusion follows immediately.",
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::LEMMA::1",
+      "snippet_type": "LEMMA",
+      "location": "Appendix B.4 Stage-Level Equivalence",
+      "content": "**Lemma 2** (Inference Stage Separation). The decoupling of encoding, prefill, and decoding stages across separate computational resources preserves computational equivalence.\n\n*Proof.* In the standard sequential execution, a multimodal request $r = (i, t)$ undergoes:\n$$o = g_D\\big(g_P(g_E(i), t)\\big) \\tag{5}$$\nEMP disaggregates this pipeline into independently scheduled stages that may execute on different hardware instances:\n$$v = g_E(i)$$ (Encoding stage on instance $E$) (6)\n$$(h, k) = g_P(v, t)$$ (Prefill stage on instance $P$) (7)\n$$o = g_D(h, k)$$ (Decode stage on instance $D$) (8)\n\nFor this disaggregation to preserve equivalence, we must ensure: 1. Lossless intermediate representation... 2. Computational state preservation... 3. Execution determinism...\n\nTherefore, by induction on the stages:\n$$v_{EMP} = v_{standard}$$ (9)\n$$(h_{EMP}, k_{EMP}) = (h_{standard}, k_{standard})$$ (10)\n$$o_{EMP} = o_{standard}$$ (11)",
+      "route": "verify-math-lean",
+      "route_rationale": "Equality propagation through a staged composition with interposed transfer maps — formalisable as stated.",
+      "lean_result": {
+        "snippet_id": "paper::LEMMA::1",
+        "verifier_name": "math-lean",
+        "lean": {
+          "project": "MATH_VERIFICATION/Paper10947ElasticMM",
+          "project_kept": false,
+          "lean_status": "PASSED",
+          "theorem_name": "ElasticMM.stage_separation_equivalence",
+          "axioms": [],
+          "formal_statement": "theorem stage_separation_equivalence\n    (g_E : Img → Vis) (g_P : Vis × Txt → Hid × Kv) (g_D : Hid × Kv → Out)\n    (transE : Vis → Vis) (transP : Hid × Kv → Hid × Kv)\n    (h_lossless : ∀ v, transE v = v)\n    (h_state : ∀ hk, transP hk = hk)\n    (i : Img) (t : Txt) :\n    let v_emp := transE (g_E i)\n    let hk_emp := transP (g_P (v_emp, t))\n    let o_emp := g_D hk_emp\n    v_emp = g_E i ∧ hk_emp = g_P (g_E i, t) ∧ o_emp = g_D (g_P (g_E i, t))",
+          "compiler_feedback": "lake env lean exit 0; no diagnostics; 'ElasticMM.stage_separation_equivalence' does not depend on any axioms"
+        },
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85
+      },
+      "fallback_result": null,
+      "verifier": "verify-math-lean",
+      "reasoning": "Eqs. (9)–(11) do follow from the paper's three stated hypotheses, and Lean confirms it with no axioms. The inter-instance transfers were modelled explicitly as maps $\\text{transE}$, $\\text{transP}$ assumed to be the identity (the paper's 'lossless' and 'state preservation' conditions), and determinism is captured by modelling each stage as a function — which is exactly the paper's hypothesis 3. Worth recording: hypothesis 3 is where the real content lies, and it is asserted about the implementation ('deterministic CUDA operations', 'fixing random seeds') rather than proved. The appendix's 'by induction on the stages' is a three-step rewrite, not an induction.",
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::LEMMA::2",
+      "snippet_type": "LEMMA",
+      "location": "Appendix B.4 Stage-Level Equivalence",
+      "content": "Lemma 3 (Dynamic Parallelism Invariance). Changes in the degree of parallelism within each inference stage do not affect output correctness.\n\nProof. ... For the encoding stage $g_E$ executed under parallelism strategy $\\Pi_E$, we denote the execution as $g_E^{\\Pi_E}$. We must prove that:\n$$g_E^{\\Pi_E^1}(i) = g_E^{\\Pi_E^2}(i)$$ (12)\nfor any image input $i$ and any two valid parallelism strategies $\\Pi_E^1$ and $\\Pi_E^2$.\n\nOur implementation primarily uses data parallelism, where computation is partitioned across multiple devices and results are gathered using deterministic reduction operations. For data parallelism with $n$ devices:\n$$g_E^{DP_n}(i) = \\text{Gather}(\\{g_E^1(i_1), g_E^2(i_2), \\ldots, g_E^n(i_n)\\})$$ (13)\nwhere $i_1, i_2, \\ldots, i_n$ represent partitions of input $i$, and $g_E^j$ represents the computation on device $j$.\n\nSince the Gather operation performs deterministic aggregation (using synchronous all-reduce operations with fixed-order reduction), the parallelism strategy does not affect the mathematical result. The same property holds for $g_P$ and $g_D$.\n\nTherefore, for any valid parallelism strategies:\n$$g_E^{\\Pi_1}(i) = g_E^{\\Pi_2}(i)$$ (14)\n$$g_P^{\\Pi_1}(v,t) = g_P^{\\Pi_2}(v,t)$$ (15)\n$$g_D^{\\Pi_1}(h,k) = g_D^{\\Pi_2}(h,k)$$ (16)",
+      "route": "verify-math-lean",
+      "route_rationale": "Eq. (13) is a crisp, unconditional identity and the justification for (14)–(16) is a crisp implication — both decidable by a counterexample in Lean.",
+      "lean_result": {
+        "snippet_id": "paper::LEMMA::2",
+        "verifier_name": "math-lean",
+        "lean": {
+          "project": "MATH_VERIFICATION/Paper10947ElasticMM",
+          "project_kept": false,
+          "lean_status": "REFUTED",
+          "theorem_name": "ElasticMM.dp_partition_gather_refuted, ElasticMM.radd_not_assoc, ElasticMM.determinism_does_not_imply_strategy_invariance",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "formal_statement": "def attnEnc (l : List ℕ) : List ℕ := l.map (fun _ => l.sum)\n\ntheorem dp_partition_gather_refuted :\n    ¬ (∀ (g : List ℕ → List ℕ) (i₁ i₂ : List ℕ), g (i₁ ++ i₂) = g i₁ ++ g i₂) :=\n  fun h => absurd (h attnEnc [1] [1]) (by decide)\n\ndef radd (a b : ℚ) : ℚ := (⌈a + b⌉ : ℚ)   -- rounded (truncating) addition\n\ntheorem radd_not_assoc :\n    ∃ a b c : ℚ, radd (radd a b) c ≠ radd a (radd b c) :=\n  ⟨1, 3/5, 3/5, by norm_num [radd]⟩\n\ntheorem determinism_does_not_imply_strategy_invariance :\n    ¬ (∀ (Strat Inp Outp : Type) (g : Strat → Inp → Outp), ∀ s s' x, g s x = g s' x)",
+          "compiler_feedback": "lake env lean exit 0; no severity-1 diagnostics. 'ElasticMM.dp_partition_gather_refuted' depends on axioms: [propext]; 'ElasticMM.radd_not_assoc' depends on axioms: [propext, Classical.choice, Quot.sound]; 'ElasticMM.determinism_does_not_imply_strategy_invariance' does not depend on any axioms. No sorryAx anywhere.",
+          "counterexamples": [
+            "Eq. (13): take $g_E$ = 'every output position is the sum of all input positions' (the defining property of self-attention, which the paper's ViT encoder has), $i = [1,1]$, $i_1 = i_2 = [1]$. Then $g_E(i) = [2,2]$ but $\\text{Gather}(g_E(i_1), g_E(i_2)) = [1,1]$.",
+            "Justification for (14)–(16): rounded addition is non-associative. With truncating rounding, $(1 \\oplus 0.6) \\oplus 0.6 = 1$ but $1 \\oplus (0.6 \\oplus 0.6) = 2$."
+          ]
+        },
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.92
+      },
+      "fallback_result": null,
+      "verifier": "verify-math-lean",
+      "reasoning": "Lean refuted two distinct parts of this lemma, both by compiling proofs of the negation.\n\n**(a) Equation (13) is not an identity.** The paper asserts $g_E^{DP_n}(i) = \\text{Gather}(\\{g_E^1(i_1), \\ldots, g_E^n(i_n)\\})$ unconditionally, 'where $i_1, \\ldots, i_n$ represent partitions of input $i$'. Splitting a single input across devices and concatenating the per-device outputs reproduces the whole-input result only for encoders that do not mix information across the partition boundary. A vision transformer's self-attention mixes across *all* patches, so it is precisely the kind of function for which the identity fails. Lean compiles the counterexample: for $g_E(l)_j = \\sum_k l_k$, $g_E([1,1]) = [2,2]$ while the gathered result is $[1,1]$.\n\n**(b) The justification offered for (14)–(16) does not support them.** The paper reasons that 'Since the Gather operation performs deterministic aggregation (using synchronous all-reduce operations with fixed-order reduction), the parallelism strategy does not affect the mathematical result.' Determinism of each individual strategy is automatic — it is what makes $g^\\Pi$ a function — and carries no information about whether two *different* strategies agree; Lean refutes that implication outright. The concrete obstruction is that a 'fixed-order reduction' over $n$ partitions groups the summands differently for different $n$, and rounded floating-point addition is non-associative, which Lean also refutes with an explicit triple. The paper's own Proposition 1 concedes this ('the order of reduction operations could theoretically affect floating-point summation due to non-associativity'), contradicting the justification given here.\n\n**Severity.** Minor. Under the charitable reading that data parallelism partitions a *batch of independent requests* rather than a single input $i$, eq. (13) becomes trivially true and the system's actual behaviour is sound; the paper's B.9 measurement of bit-identical outputs is consistent with a fixed reduction order being used in practice. What is refuted is the appendix's reasoning and the literal content of eqs. (13)–(16), not ElasticMM's correctness.",
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.92
+    },
+    {
+      "snippet_id": "paper::LEMMA::3",
+      "snippet_type": "LEMMA",
+      "location": "Appendix B.5 Data Integrity During Migration",
+      "content": "Lemma 4 (KV Cache Migration Fidelity). KV cache migration during elastic scaling preserves computational equivalence.\n\nProof. ... For each tensor $T \\in \\mathcal{K}_s$, the migration process performs:\n$$T_d = \\text{Copy}(T_s)$$ (17)\n... To formalize this further, let $\\mathcal{K} = \\{T_1, T_2, \\ldots, T_m\\}$ be the set of tensors in the KV cache. We define a migration function $\\mu : \\mathcal{K}_s \\to \\mathcal{K}_d$. For each tensor $T_i \\in \\mathcal{K}_s$:\n$$\\mu(T_i) = T_i + \\epsilon_i$$ (18)\nwhere $\\epsilon_i$ represents any potential error introduced during migration.\n\nOur implementation guarantees that:\n$$\\|\\epsilon_i\\|_\\infty = 0 \\quad \\forall i \\in \\{1, 2, \\ldots, T_m\\}$$ (19)\n\nTherefore, $\\mu(T_i) = T_i$ for all $i$, ensuring $\\mathcal{K}_s = \\mathcal{K}_d$.",
+      "route": "verify-math-lean",
+      "route_rationale": "The inference $\\|\\epsilon\\|_\\infty = 0 \\Rightarrow \\epsilon = 0 \\Rightarrow \\mu = \\mathrm{id}$ is a formalisable normed-space argument.",
+      "lean_result": {
+        "snippet_id": "paper::LEMMA::3",
+        "verifier_name": "math-lean",
+        "lean": {
+          "project": "MATH_VERIFICATION/Paper10947ElasticMM",
+          "project_kept": false,
+          "lean_status": "PASSED",
+          "theorem_name": "ElasticMM.kv_migration_fidelity",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "formal_statement": "theorem kv_migration_fidelity\n    {m d : ℕ} (T ε : Fin m → (PiLp ⊤ fun _ : Fin d => ℝ))\n    (μ : Fin m → (PiLp ⊤ fun _ : Fin d => ℝ))\n    (h_mu : ∀ i, μ i = T i + ε i)        -- eq. (18)\n    (h_eps : ∀ i, ‖ε i‖ = 0) :             -- eq. (19)\n    (∀ i, μ i = T i) ∧ Set.range μ = Set.range T",
+          "compiler_feedback": "lake env lean exit 0; no severity-1 diagnostics; 'ElasticMM.kv_migration_fidelity' depends on axioms: [propext, Classical.choice, Quot.sound] (standard Mathlib axioms, no sorryAx)"
+        },
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85
+      },
+      "fallback_result": null,
+      "verifier": "verify-math-lean",
+      "reasoning": "The inference is valid and Lean confirms it: with tensors modelled as vectors in an $\\ell^\\infty$ space, $\\|\\epsilon_i\\| = 0$ gives $\\epsilon_i = 0$ by `norm_eq_zero`, hence $\\mu(T_i) = T_i$ and $\\mathcal{K}_s = \\mathcal{K}_d$. Only the standard Mathlib axioms appear; no `sorryAx`.\n\nTwo defects recorded but deliberately not flagged. First, eq. (19) quantifies over $i \\in \\{1, 2, \\ldots, T_m\\}$, but $T_m$ is the $m$-th *tensor*, not an integer; the index set should be $\\{1, \\ldots, m\\}$. That is a typo in the index bound, which this verifier is instructed never to flag. Second, and more substantively, the argument is circular as *mathematics*: eq. (18) introduces $\\epsilon_i$ to represent migration error and eq. (19) then assumes it is zero, so the lemma reduces to 'if there is no error, there is no error'. The real claim — that NVLink/NCCL transfers with checksums are bit-exact — is an engineering assertion, correct in practice but not established by this derivation. Neither issue makes the stated implication false.",
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::LEMMA::4",
+      "snippet_type": "LEMMA",
+      "location": "Appendix B.6 Non-blocking Encoding Equivalence",
+      "content": "Lemma 5 (Non-blocking Encoding Correctness). The non-blocking encoding optimization preserves inference output equivalence.\n\nProof. ... In standard execution:\n$$o = g_D(g_P(g_E(i), t))$$ (20)\nWith non-blocking encoding, we have:\n$$v = g_E(i) \\quad \\text{(executes asynchronously)}$$ (21)\n$$(h, k) = g_P(v, t) \\quad \\text{(waits for } v \\text{ to be available)}$$ (22)\n$$o = g_D(h, k)$$ (23)\n\nBecause our implementation ensures proper synchronization before the prefill stage accesses the encoded visual tokens, the data dependencies are preserved. Specifically, the prefill stage $g_P$ will not begin execution until the encoding result $v = g_E(i)$ is complete and available. ... Therefore, non-blocking encoding preserves inference equivalence while improving computational efficiency. □",
+      "route": "verify-math",
+      "route_rationale": "A scheduling/dataflow argument; the mathematical content is identical to Lemma 2 and there is nothing new to formalise.",
+      "lean_result": null,
+      "fallback_result": null,
+      "verifier": "verify-math",
+      "reasoning": "No error. The argument is correct and, unusually for this appendix, it is also the right argument: asynchrony changes *when* operations run, not what they compute, provided the read-after-write dependency $v \\to g_P$ is enforced by a barrier — which eq. (22) states explicitly. Eqs. (20)–(23) are the same composition as eqs. (5)–(8), so equivalence follows from Lemma 2, which Lean verified. The one thing left implicit is that the overlap is *inter*-request (encoding request $r'$ while prefilling $r$), since for a single request eq. (22) serialises the pipeline exactly as before; that is a clarity issue, not a mathematical one.",
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::LEMMA::5",
+      "snippet_type": "LEMMA",
+      "location": "Appendix B.7 Unified Multimodal Prefix Caching Correctness",
+      "content": "Lemma 6 (Prefix Cache Correctness). The unified multimodal prefix caching mechanism preserves inference equivalence.\n\nProof. ... For any request $r = (i, t)$, we maintain a cache that maps inputs to their computed representations:\n$$C_V : \\mathcal{I} \\to \\mathcal{V} \\quad \\text{(Visual token cache)}$$ (24)\n$$C_K : \\mathcal{V} \\times \\mathcal{T} \\to \\mathcal{K} \\quad \\text{(KV cache prefix)}$$ (25)\nFor cached visual tokens, we must show that:\n$$\\forall i \\in \\mathcal{I} : C_V(i) = g_E(i)$$ (26)\n... When a cache hit occurs, ElasticMM reuses the cached computations as follows:\n$$v = \\begin{cases} C_V(i) & \\text{if } i \\text{ is in cache} \\\\ g_E(i) & \\text{otherwise} \\end{cases}$$ (28)\n\nStanding facts stated by the paper: 'each cache pool is managed with a Least Recently Used (LRU) dynamic eviction strategy to keep memory usage under control' (§3.3); 'the eviction manager releases KV nodes based on least-recently-used order when the cache pool reaches its limit' (Appendix A).",
+      "route": "verify-math-lean",
+      "route_rationale": "A total-vs-partial function claim — decidable in Lean against the paper's own finiteness/eviction assumption.",
+      "lean_result": {
+        "snippet_id": "paper::LEMMA::5",
+        "verifier_name": "math-lean",
+        "lean": {
+          "project": "MATH_VERIFICATION/Paper10947ElasticMM",
+          "project_kept": false,
+          "lean_status": "REFUTED",
+          "theorem_name": "ElasticMM.prefix_cache_totality_refuted, ElasticMM.prefix_cache_soundness_suffices",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "formal_statement": "theorem prefix_cache_totality_refuted\n    (g_E : ℕ → ℕ) (S : Finset ℕ) (C_V : ℕ → Option ℕ)\n    (h_resident : ∀ i, (C_V i).isSome ↔ i ∈ S) :\n    ¬ (∀ i, C_V i = some (g_E i))\n\ntheorem prefix_cache_soundness_suffices\n    (g_E : ℕ → ℕ) (C_V : ℕ → Option ℕ)\n    (h_sound : ∀ i v, C_V i = some v → v = g_E i) :\n    ∀ i, (match C_V i with | some v => v | none => g_E i) = g_E i",
+          "compiler_feedback": "lake env lean exit 0; no severity-1 diagnostics. 'ElasticMM.prefix_cache_totality_refuted' depends on axioms: [propext, Classical.choice, Quot.sound]; 'ElasticMM.prefix_cache_soundness_suffices' depends on axioms: [propext]. No sorryAx.",
+          "counterexamples": [
+            "Any finite resident set $S$ over an infinite input domain admits an $i \\notin S$ on which $C_V$ is undefined, so $C_V(i) = g_E(i)$ cannot hold for all $i \\in \\mathcal{I}$."
+          ]
+        },
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.88
+      },
+      "fallback_result": null,
+      "verifier": "verify-math-lean",
+      "reasoning": "Equation (26) is false as written, and Lean compiles a proof of its negation. The paper declares $C_V : \\mathcal{I} \\to \\mathcal{V}$ as a *total* function and then asserts $\\forall i \\in \\mathcal{I} : C_V(i) = g_E(i)$ — i.e. that the cache already holds the encoding of every possible image. The paper contradicts this twice over: eq. (28), two lines later, branches on 'if $i$ is in cache', which only makes sense if some inputs are not; and §3.3 and Appendix A state the pool is finite with LRU eviction, which guarantees misses. Formalising the cache faithfully as a lookup defined exactly on a finite resident set $S$, eq. (26) is unsatisfiable over an infinite input domain.\n\nLean also compiles the repaired statement: the property the proof actually argues for, and the only one the system needs, is cache *soundness* — $\\forall i, v : C_V(i) = v \\Rightarrow v = g_E(i)$, every *resident* entry agrees with the encoder. Under soundness the hit/miss dispatch of eq. (28) returns $g_E(i)$ on every input, which is exactly the equivalence Lemma 6 wants.\n\n**Severity.** Minor: the error is a misplaced quantifier (total where it should be guarded), and the correct statement is provable and sufficient, so Lemma 6's conclusion survives.",
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.88
+    },
+    {
+      "snippet_id": "paper::PROPOSITION::0",
+      "snippet_type": "PROPOSITION",
+      "location": "Appendix B.8 Analysis of Numerical Stability",
+      "content": "Proposition 1 (Numerical Stability). Any numerical differences introduced by EMP are bounded and negligible.\n\nProof. The primary sources of potential numerical differences in EMP are: ... 3. Mixed precision operations: When using mixed precision, the accumulation of partial results might vary slightly. However, these differences are typically on the order of ε ≈ 10^{-7} for fp16 operations, which is far below the threshold of affecting logical model outputs.\n\nFor token generation specifically, let p(w_t|w_{<t}) be the probability of generating token w_t given previous tokens. The maximum variation in these probabilities due to numerical differences is bounded by:\n\n|Δp(w_t|w_{<t})| < ε_max (32)\n\nwhere ε_max ≈ 10^{-7} for fp16 operations.\n\nSince token selection uses argmax operations, these minute differences do not affect the final output unless two candidate tokens have probability differences smaller than ε_max, which is statistically negligible. □",
+      "route": "verify-math-lean",
+      "route_rationale": "The fp16 roundoff scale is a concrete numeric claim Lean can decide outright.",
+      "lean_result": {
+        "snippet_id": "paper::PROPOSITION::0",
+        "verifier_name": "math-lean",
+        "lean": {
+          "project": "MATH_VERIFICATION/Paper10947ElasticMM",
+          "project_kept": false,
+          "lean_status": "REFUTED",
+          "theorem_name": "ElasticMM.fp16_epsilon_scale_refuted, ElasticMM.ten_pow_neg_seven_is_the_fp32_scale, ElasticMM.per_step_bound_does_not_give_sequence_equality",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "formal_statement": "theorem fp16_epsilon_scale_refuted :\n    (10:ℝ) ^ (-7:ℤ) < (2:ℝ) ^ (-11:ℤ) ∧\n      4000 * (10:ℝ) ^ (-7:ℤ) < (2:ℝ) ^ (-11:ℤ) ∧\n      9000 * (10:ℝ) ^ (-7:ℤ) < (2:ℝ) ^ (-10:ℤ) := by norm_num\n\ntheorem ten_pow_neg_seven_is_the_fp32_scale :\n    (2:ℝ) ^ (-24:ℤ) < (10:ℝ) ^ (-7:ℤ) ∧ (10:ℝ) ^ (-7:ℤ) < (2:ℝ) ^ (-23:ℤ) := by norm_num\n\ntheorem per_step_bound_does_not_give_sequence_equality\n    (p : ℝ) (hp : 0 < p) (hp1 : p < 1) :\n    Filter.Tendsto (fun n : ℕ => 1 - (1 - p) ^ n) Filter.atTop (nhds 1)",
+          "compiler_feedback": "lake env lean exit 0; no severity-1 diagnostics. All three theorems depend on axioms: [propext, Classical.choice, Quot.sound] (standard Mathlib). No sorryAx.",
+          "counterexamples": [
+            "fp16 (IEEE 754 binary16) has a 10-bit stored significand, so unit roundoff $2^{-11} \\approx 4.88 \\times 10^{-4}$ and machine epsilon $2^{-10} \\approx 9.77 \\times 10^{-4}$; both exceed the paper's $10^{-7}$ by more than three orders of magnitude.",
+            "$10^{-7}$ is the fp32 scale: $2^{-24} \\approx 5.96 \\times 10^{-8} < 10^{-7} < 2^{-23} \\approx 1.19 \\times 10^{-7}$."
+          ]
+        },
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.95
+      },
+      "fallback_result": null,
+      "verifier": "verify-math-lean",
+      "reasoning": "Lean refutes the numerical constant on which the whole proposition rests. IEEE 754 binary16 ('fp16') carries a 10-bit stored significand, so its unit roundoff is $2^{-11} \\approx 4.88 \\times 10^{-4}$ and its machine epsilon is $2^{-10} \\approx 9.77 \\times 10^{-4}$. The paper states $\\varepsilon \\approx 10^{-7}$ and $\\varepsilon_{\\max} \\approx 10^{-7}$ 'for fp16 operations'. Lean certifies that even the smaller fp16 constant exceeds $10^{-7}$ by a factor greater than $4000$ — the stated figure is wrong by roughly four orders of magnitude. Lean also certifies the likely provenance of the mistake: $10^{-7}$ lies strictly between $2^{-24}$ and $2^{-23}$, i.e. it is the **fp32** roundoff scale, so the two precisions have been conflated.\n\nThis is not a cosmetic slip, because the proposition's conclusion is quantitative. Eq. (32) bounds the per-token probability perturbation by $\\varepsilon_{\\max}$, and the proof then argues that argmax token selection is unaffected 'unless two candidate tokens have probability differences smaller than $\\varepsilon_{\\max}$, which is statistically negligible'. With the correct fp16 figure the admissible perturbation is $\\sim 5 \\times 10^{-4}$ rather than $10^{-7}$, and near-ties at that scale are common in LLM decoding, so the 'statistically negligible' step loses its support. A third Lean theorem makes the structural half of the point: a per-step disagreement probability $p > 0$ drives the probability of some disagreement over an $n$-token generation to $1$ as $n \\to \\infty$, so a per-token bound does not by itself license a sequence-level equality claim.\n\n**Severity.** Critical: Proposition 1's argument does not survive the correction, and the appendix leans on it (via B.10) to assert that ElasticMM's speedups come 'without any sacrifice in model accuracy'. The paper's own B.9 measurement of bit-identical outputs supports that conclusion by other means, so the *system* is not impugned — the stated proof is.",
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::0",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "Abstract / 1 Introduction / 4.2 End-to-End Performance / 6 Conclusion",
+      "content": "Abstract: \"Experiments on diverse real-world datasets show that ElasticMM outperforms state-of-the-art (SOTA) serving systems, reducing TTFT by up to 6.8× and achieving 5.1–7.2× higher throughput while meeting service-level objectives (SLOs).\"\n\nIntroduction (contributions): \"Compared to the SOTA baseline vLLM [16], ElasticMM reduces TTFT by up to 4.2× and achieves a 3.2×–4.5× throughput improvement while meeting service-level objective (SLO) requirements.\"\n\n§4.2: \"On the ShareGPT-4o dataset, ElasticMM reduces TTFT by up to 4.2× and 3.5× for Qwen2.5-VL (decoder-only) and LLaMA3.2-Vision (encoder-decoder), respectively. On VisualWebInstruct, TTFT is reduced by up to 3.7× and 2.9×.\" ... \"Using the ShareGPT-4o dataset, it delivers up to 4.5× and 3.2× higher throughput than vLLM on Qwen-2.5-VL and Llama-3.2-Vision\".\n\nConclusion: \"ElasticMM achieves up to 4.2× reduction in TTFT and 3.2–4.5× higher throughput compared to vLLM\".",
+      "route": "verify-math",
+      "route_rationale": "An internal-consistency check over reported ratios; nothing to formalise, and the comparison is between plain-text statements.",
+      "lean_result": null,
+      "fallback_result": null,
+      "verifier": "verify-math",
+      "reasoning": "The abstract's headline numbers contradict every other statement of the same results in the paper. The abstract claims TTFT reduced 'by up to $6.8\\times$' and throughput '$5.1$–$7.2\\times$ higher'. The contributions list, the evaluation section and the conclusion all state 'up to $4.2\\times$' and '$3.2$–$4.5\\times$', and §4.2's per-model breakdown ($4.2\\times$, $3.5\\times$, $3.7\\times$, $2.9\\times$ for TTFT; $4.5\\times$ and $3.2\\times$ for throughput) is consistent only with the latter. The abstract therefore overstates the paper's own best measured TTFT result by about $62\\%$ ($6.8/4.2$) and its throughput range by about $60\\%$ ($7.2/4.5$), with a *lower* bound ($5.1\\times$) that exceeds the *upper* bound reported everywhere else ($4.5\\times$). Since §4.2 reports the per-dataset, per-model maxima explicitly, no reading of the experiments supports the abstract's figures.\n\nNot flagged: the transcribed Figure 6 table attaches speedup factors that do not match the ratios of its own listed throughputs (e.g. '$\\sim$250' for vLLM against '$\\sim$450 ($4.5\\times$)' for DistServe, where $450/250 = 1.8$). The row/column associations in that table are plainly damaged by figure-to-markdown extraction, so the inconsistency cannot be attributed to the manuscript.",
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "Appendix B.9 Empirical Validation / B.10 Conclusion",
+      "content": "To empirically verify our theoretical guarantees, we conducted an experiment comparing outputs from standard sequential inference and EMP-based inference across 1,000 diverse prompts from our evaluation datasets.\n\n| Model | Identical Outputs (%) | Avg. Token Probability Diff. |\n| Qwen2.5-VL 7B | 100% | < 10^{-8} |\n| Llama3.2-Vision 11B | 100% | < 10^{-8} |\n\nThe outputs were bit-identical in 100% of cases, confirming that our EMP framework preserves inference equivalence in practice, including when stages are separated across different computational resources.",
+      "route": "verify-math",
+      "route_rationale": "Reported experimental measurements — explicitly outside what a formal prover can settle.",
+      "lean_result": null,
+      "fallback_result": null,
+      "verifier": "verify-math",
+      "reasoning": "No provable error. Two tensions recorded, neither of which rises to a finding. (i) If outputs are 'bit-identical in 100% of cases' then the average token probability difference is exactly $0$; reporting it as '$< 10^{-8}$' is uninformative but not false, since $0 < 10^{-8}$. (ii) The reported bound $< 10^{-8}$ is smaller than the per-operation roundoff the paper itself claims in Proposition 1 ($\\varepsilon \\approx 10^{-7}$) and roughly five orders of magnitude below the true fp16 roundoff ($\\approx 4.9 \\times 10^{-4}$, see `paper::PROPOSITION::0`); the measurement is only coherent with the paper's own error model if the difference is identically zero, i.e. if a fixed reduction order is used throughout. That is plausible and would also explain the bit-identity, but it is not what Lemma 3 argues. Finally, B.2/B.10 assert *exact* equivalence while B.8 analyses nonzero differences; the appendix frames this as theory-versus-practice ('While the mathematical equivalence is guaranteed in theory, practical implementations may introduce minor numerical differences'), which is a coherent framing rather than a contradiction.",
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.5
+    }
+  ],
+  "findings": [
+    {
+      "snippet_id": "paper::PROPOSITION::0",
+      "category": "Formally refuted — incorrect numerical constant",
+      "severity": "critical",
+      "confidence": 0.95,
+      "evidence": "Lean refuted the fp16 error scale that Proposition 1 and eq. (32) rest on. IEEE 754 binary16 has a 10-bit stored significand, giving unit roundoff $2^{-11} \\approx 4.88 \\times 10^{-4}$ and machine epsilon $2^{-10} \\approx 9.77 \\times 10^{-4}$. The paper asserts $\\varepsilon_{\\max} \\approx 10^{-7}$ 'for fp16 operations'. Lean certifies $4000 \\cdot 10^{-7} < 2^{-11}$, so the stated figure is low by more than four orders of magnitude, and certifies $2^{-24} < 10^{-7} < 2^{-23}$, i.e. that $10^{-7}$ is the **fp32** scale — the two precisions have been conflated. The proposition's conclusion is quantitative: with the correct figure the admissible per-token perturbation is $\\sim 5 \\times 10^{-4}$ rather than $10^{-7}$, and near-ties at that scale are not rare in LLM decoding, so the step 'these minute differences do not affect the final output ... which is statistically negligible' loses its support. A companion Lean theorem adds that a per-step disagreement probability $p > 0$ sends the probability of some disagreement over an $n$-token generation to $1$, so a per-token bound cannot by itself license the sequence-level claim.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "where ε_max ≈ 10^{-7} for fp16 operations."
+    },
+    {
+      "snippet_id": "paper::LEMMA::2",
+      "category": "Formally refuted — invalid identity and invalid inference",
+      "severity": "minor",
+      "confidence": 0.92,
+      "evidence": "Lean refuted two parts of Lemma 3. **Eq. (13)** is asserted unconditionally as $g_E^{DP_n}(i) = \\text{Gather}(\\{g_E^1(i_1), \\ldots, g_E^n(i_n)\\})$ for $i_1, \\ldots, i_n$ a partition of the single input $i$. That identity holds only for encoders that do not mix information across the partition boundary, and a ViT's self-attention mixes across all patches. Lean compiles the counterexample: for $g_E(l)_j = \\sum_k l_k$, $g_E([1,1]) = [2,2]$ while $\\text{Gather}(g_E([1]), g_E([1])) = [1,1]$. **The justification for eqs. (14)–(16)** — 'Since the Gather operation performs deterministic aggregation ... the parallelism strategy does not affect the mathematical result' — is also invalid: Lean refutes the implication, since each strategy being a deterministic function says nothing about whether two different strategies agree. The concrete obstruction is that a fixed-order reduction groups summands differently for different partition counts, and rounded addition is non-associative: Lean exhibits $(1 \\oplus 0.6) \\oplus 0.6 = 1$ against $1 \\oplus (0.6 \\oplus 0.6) = 2$. The paper's own Proposition 1 concedes the non-associativity, contradicting this proof. Severity is minor because under the charitable reading that data parallelism partitions a *batch of independent requests* rather than a single input, eq. (13) is trivially true and the system remains sound.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "$$g_E^{DP_n}(i) = \\text{Gather}(\\{g_E^1(i_1), g_E^2(i_2), \\ldots, g_E^n(i_n)\\})$$ (13)"
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::0",
+      "category": "Internal numerical inconsistency — abstract contradicts the evaluation",
+      "severity": "critical",
+      "confidence": 0.9,
+      "evidence": "The abstract's headline figures contradict every other report of the same results. The abstract claims TTFT reduced 'by up to $6.8\\times$' and throughput '$5.1$–$7.2\\times$ higher'. The contributions list, §4.2 and the conclusion all state 'up to $4.2\\times$' and '$3.2$–$4.5\\times$', and §4.2's explicit per-model maxima ($4.2\\times$, $3.5\\times$, $3.7\\times$, $2.9\\times$ for TTFT; $4.5\\times$ and $3.2\\times$ for throughput) are consistent only with the latter. The abstract therefore overstates the paper's own best measured TTFT gain by about $62\\%$ and its throughput range by about $60\\%$; its lower bound of $5.1\\times$ exceeds the upper bound of $4.5\\times$ reported everywhere else, so no reading of the experiments reconciles the two.",
+      "verifier": "verify-math",
+      "exact_quote": "reducing TTFT by up to 6.8× and achieving 5.1–7.2× higher throughput while meeting service-level objectives (SLOs)."
+    },
+    {
+      "snippet_id": "paper::LEMMA::5",
+      "category": "Formally refuted — misquantified claim",
+      "severity": "minor",
+      "confidence": 0.88,
+      "evidence": "Lean refuted eq. (26). The paper declares $C_V : \\mathcal{I} \\to \\mathcal{V}$ total and asserts $\\forall i \\in \\mathcal{I} : C_V(i) = g_E(i)$, i.e. that the visual cache already holds the encoding of every possible input. The paper contradicts this twice: eq. (28), two lines later, branches on 'if $i$ is in cache'; and §3.3 and Appendix A state the pool is finite with LRU eviction, which guarantees misses. Modelling the cache faithfully as a lookup defined exactly on a finite resident set, Lean proves eq. (26) unsatisfiable over an infinite input domain. Lean also compiles the repaired statement — cache *soundness*, $C_V(i) = v \\Rightarrow v = g_E(i)$ — and shows it suffices to make eq. (28)'s hit/miss dispatch return $g_E(i)$ on every input. Severity is minor: the defect is a misplaced quantifier and Lemma 6's conclusion survives under the corrected form.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "$$\\forall i \\in \\mathcal{I} : C_V(i) = g_E(i)$$ (26)"
+    },
+    {
+      "snippet_id": "paper::EQUATION::0",
+      "category": "Definition–formula inconsistency",
+      "severity": "minor",
+      "confidence": 0.8,
+      "evidence": "The prose and Equation (1) define two structurally different quantities. The text defines burst tolerance as 'the difference between peak load and idle capacity normalized by total instances' — an expression of the form $(\\text{peak} - \\text{idle})/N_{\\text{total}}$ — and restates it as 'the gap between maximum observed load and the baseline resource allocation'. Equation (1) instead gives a ratio, $bt(i) = N_i^{peak}/N_i^{avg}$. A difference normalized by a total is not a ratio of two counts. There is a second mismatch within the same sentence: the prose denominator is *idle capacity*, the formula's is the instance count for *average load*. Because the allocator is a greedy max-min procedure driven entirely by $bt$, the two forms yield different allocations, so the ambiguity is consequential rather than cosmetic.",
+      "verifier": "verify-math",
+      "exact_quote": "Burst tolerance (bt) is defined as the difference between peak load and idle capacity normalized by total instances, as formalized in Equation 1."
+    }
+  ],
+  "verdict": "CRITICAL_ERRORS",
+  "verdict_confidence": 0.9,
+  "summary": "Extracted 14 self-contained mathematical objects from ElasticMM: Equations (1)–(3) in the scheduling design (§3.1–§3.2), the whole of Appendix B's 'Mathematical Proof of Inference Equivalence' (Theorem 1, Lemmas 1–6, Proposition 1, eqs. (4)–(32)), and two internal-consistency blocks over reported quantities. Seven went to Lean 4 and seven to informal review; all seven Lean runs completed (4 PASSED, 3 REFUTED, 0 FAILED, 0 NOT_ATTEMPTED), so no Step-5 informal fallbacks were needed and there are no unsettled claims.\n\n**What Lean settled.** Theorem 1 (eq. (4)), Lemma 1 (modality-group separation), Lemma 2 (eqs. (5)–(11), stage disaggregation) and Lemma 4 (eqs. (17)–(19), KV-cache migration) all compile clean with no `sorry` and only standard Mathlib axioms — the appendix's core equivalence chain is valid *given its hypotheses*. The caveat worth stating is that these four are near-vacuous: once the paper's standing assumption that EMP executes exactly $g_E, g_P, g_D$ in order with lossless transfer is granted, Theorem 1's proof term is a two-step rewrite, and Lemma 4 introduces a migration error $\\epsilon_i$ in eq. (18) only to assume it zero in eq. (19). The substance of these claims is engineering assertion (deterministic kernels, fixed seeds, checksummed NCCL transfers), not derivation.\n\n**What Lean refuted.** Three compiling refutations, the strongest form of evidence this skill produces. (1) **Proposition 1 / eq. (32)** puts the fp16 roundoff at $\\varepsilon_{\\max} \\approx 10^{-7}$. IEEE binary16 has a 10-bit significand, so the true figure is $2^{-11} \\approx 4.9 \\times 10^{-4}$ (unit roundoff) or $2^{-10} \\approx 9.8 \\times 10^{-4}$ (machine epsilon) — wrong by over four orders of magnitude; Lean also certifies that $10^{-7}$ lies between $2^{-24}$ and $2^{-23}$, i.e. it is the fp32 scale, so the precisions were conflated. This is critical because the proposition's conclusion is quantitative: at $\\sim 5 \\times 10^{-4}$ the 'statistically negligible' argmax argument no longer holds. (2) **Lemma 3, eq. (13)** states a partition-and-gather identity that fails for any encoder mixing information across the partition boundary — which self-attention does; and its stated justification for eqs. (14)–(16) (per-strategy determinism ⇒ cross-strategy agreement) is an invalid inference, with rounded addition's non-associativity as the concrete obstruction. (3) **Lemma 6, eq. (26)** asserts $\\forall i \\in \\mathcal{I} : C_V(i) = g_E(i)$ for a cache the paper itself describes as finite and LRU-evicting, and whose eq. (28) branches on cache misses two lines later; Lean proves the universally quantified form unsatisfiable and proves that the guarded form (cache soundness) is both provable and sufficient. Lemmas 3 and 6 are scored *minor*: in both cases the intended claim is true and the system remains correct — what is refuted is the appendix's reasoning.\n\n**Informal review.** Equation (1)'s prose definition ('the difference between peak load and idle capacity normalized by total instances') is incompatible with the ratio $N_i^{peak}/N_i^{avg}$ it is said to formalise, and since the greedy max-min allocator is driven entirely by $bt$ the two forms give different allocations (flagged, minor). Separately, the **abstract** claims TTFT reduced 'by up to $6.8\\times$' and throughput '$5.1$–$7.2\\times$ higher', whereas the contributions list, §4.2 and the conclusion all state $4.2\\times$ and $3.2$–$4.5\\times$; the abstract's lower bound exceeds the upper bound reported everywhere else, so it overstates the paper's own measurements by roughly $60\\%$ (flagged, critical). Equations (2) and (3), the Theorem 1 proof body, Lemma 5 and the B.9 validation table came back clean, though I record below the undefined penalty factor $\\beta$ in eq. (3) (eq. (2) names it $w$), the `$\\forall i \\in \\{1,\\ldots,T_m\\}$` index-set typo in eq. (19), and the one-sentence proof body under Theorem 1 — none of which meet the bar for a finding.\n\n**Disagreements.** None: no snippet was judged by both verifiers, since no Lean run returned FAILED. Lean and informal review are mutually consistent where they touch — the informal reading of B.9 (bit-identity is only coherent with the paper's own error model if a fixed reduction order makes the difference identically zero) lines up with Lean's refutation of Lemma 3's partition-independence argument.\n\n**Verdict.** CRITICAL_ERRORS. Two confident critical findings — one a machine-checked refutation of Proposition 1's central constant, one a plain-text contradiction between the abstract and the evaluation — plus three confident minor findings. Confidence in the verdict is high: it rests on three compiling refutations and four compiling proofs, not on stalled proof searches. Scope note: these are defects in the appendix's proofs and in the abstract's reporting. None of them shows ElasticMM itself to be incorrect, and the paper's own B.9 measurement supports the equivalence claim by independent means.\n\n**Lean project lifecycle.** `PAPER_NAME` is `paper`, so the skill's derivation would give project name `Paper` — which already exists under `MATH_VERIFICATION/` and was being written to by a concurrent run six minutes before this one started. Deleting it on the final call would have destroyed another run's 7.4 GB Mathlib build, so this run used a distinct project, `Paper10947ElasticMM`, with `.lake/packages` symlinked to the shared Mathlib so nothing was rebuilt. All seven Lean snippets ran serially in that one project; the final call deleted it (symlink removed first, shared target verified intact). The seven proof/refutation files were copied to `MATH_VERIFICATION/Paper/Paper/Verified/10947-ElasticMM-opus5/` before deletion, matching the per-run convention already in use there."
+}

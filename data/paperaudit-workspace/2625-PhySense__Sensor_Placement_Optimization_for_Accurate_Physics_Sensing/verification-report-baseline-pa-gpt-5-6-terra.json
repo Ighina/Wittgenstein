@@ -1,0 +1,118 @@
+{
+  "paper_id": "2625-PhySense__Sensor_Placement_Optimization_for_Accurate_Physics_Sensing",
+  "title": "PhySense: Sensor Placement Optimization for Accurate Physics Sensing",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Appendix A.2, Part 3; Theorem 3.5",
+      "confidence": 0.99,
+      "supporting_evidence": "The proof claims \\((\\sum_i \\sqrt{\\lambda_i})^2 \\leq 2\\sum_i\\lambda_i\\), and consequently \\(\\frac{2}{\\pi^2}L_{flow}^2\\leq L_A\\leq\\frac{4}{\\pi^2}L_{flow}^2\\). The claimed inequality is false for dimension greater than two. For example, if \\(d=100\\) and every \\(\\lambda_i=1\\), then \\((\\sum_i\\sqrt{\\lambda_i})^2=10000\\), while \\(2\\sum_i\\lambda_i=200\\). The applicable bound is \\((\\sum_i\\sqrt{\\lambda_i})^2\\leq d\\sum_i\\lambda_i\\), not a dimension-free factor of 2. Thus the stated theorem, its constants, and the advertised theoretical guarantee are invalid for the high-dimensional fields used in the experiments.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "2625-PhySense__Sensor_Placement_Optimization_for_Accurate_Physics_Sensing::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Remark 3.6 and Method Sections 3.2 / Overall design",
+      "confidence": 0.95,
+      "supporting_evidence": "The paper concludes that the asserted polynomial bounds imply that minimizing flow loss yields a placement in a 'bounded neighborhood' of A-optimality and repeatedly calls this a 'theoretical guarantee for achieving near A-optimal sensor placement.' Even a valid comparison of objective values with dimension-dependent constants would not establish near-optimality of the minimizer without a quantified approximation ratio, normalization, and assumptions controlling the constants. Since the displayed bound is itself false, the stronger near-A-optimality conclusion is unsupported.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "2625-PhySense__Sensor_Placement_Optimization_for_Accurate_Physics_Sensing::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Appendix A.2, Remark A.1",
+      "confidence": 0.98,
+      "supporting_evidence": "The assertion that D- and E-optimality are 'polynomially bounded above and below by \\(L_A\\)' is false for D-optimality. For PSD covariance matrices with fixed trace, the determinant can be zero (e.g., eigenvalues \\((1,0,\\ldots,0)\\)) or positive (e.g., equal positive eigenvalues), so no nontrivial lower bound of determinant by trace exists. In addition, the paper earlier defines D-optimality as maximizing information, whereas Remark A.1 sets \\(L_D=\\det(\\Sigma_p)\\) without resolving whether it should be minimized as posterior uncertainty or maximized as an information matrix determinant. The claimed bidirectional D-optimality control does not follow.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "2625-PhySense__Sensor_Placement_Optimization_for_Accurate_Physics_Sensing::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Theorem 3.1 and Appendix A.1",
+      "confidence": 0.9,
+      "supporting_evidence": "The theorem defines the alleged reconstruction as \\(\\bar X_1=X_0+\\int_0^1 v^*(X_t,t,p,X_1(p))dt\\), where \\(X_t=tX_1+(1-t)X_0\\) is the training interpolation containing the unknown true target \\(X_1\\). Actual generation is instead an ODE trajectory whose state evolves according to \\(d\\hat X_t=v^*(\\hat X_t,t,\\cdot)dt\\). The proof establishes an expectation identity for an oracle quantity evaluated along the true interpolation, not for the model's generated ODE output. Therefore it does not prove that the deployed reconstructor is an unbiased conditional estimator, as claimed.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "2625-PhySense__Sensor_Placement_Optimization_for_Accurate_Physics_Sensing::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Section 3.2, Eq. (2), and Sections 4.1–4.3",
+      "confidence": 0.9,
+      "supporting_evidence": "The placement objective is the flow loss, which explicitly requires the full target field through \\((X_1-X_0)\\) and also requires measurements \\(X_1(p)\\) at every candidate, changing placement. Yet the experimental protocol never specifies whether optimized placements are learned once from training fields only, optimized separately using test fields, or evaluated with another held-out design set. This distinction is essential: optimizing Eq. (2) on a test instance uses unavailable ground truth and is an oracle procedure, whereas a fixed training-derived placement is deployable. The omission prevents assessment of data leakage and reproducibility of all 'PhySense-opt' results.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "2625-PhySense__Sensor_Placement_Optimization_for_Accurate_Physics_Sensing::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 3.2, Eq. (2), and Appendix C.3",
+      "confidence": 0.87,
+      "supporting_evidence": "The method requires gradients with respect to sensor coordinates, including the dependence of the observation \\(X_1(p)\\) on location. However, all reported datasets are discretized grids or an unstructured mesh, and the paper specifies neither a differentiable interpolation/sensor observation operator nor how derivatives through changing sampled values are computed. A nearest-point projection is only specified after an update and does not make mesh/grid sampling differentiable. Without this missing operation, \\(\\nabla_p L_{flow}\\) is undefined or, if sensor values are held fixed, optimizes position labels rather than realizable measurements.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "2625-PhySense__Sensor_Placement_Optimization_for_Accurate_Physics_Sensing::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 3.2 ('Projected gradient descent') versus Appendix C.3 ('PhySense')",
+      "confidence": 0.94,
+      "supporting_evidence": "The central algorithm is consistently described as projected gradient descent and Eq. (2) is a plain gradient-descent update. Appendix C.3 instead states: 'we adopt the Adam optimizer to perform gradient-based updates, followed by a projection step.' Projected Adam is not projected gradient descent and has different update dynamics and convergence properties. The discrepancy matters because the claimed method and any theoretical interpretation are stated for PGD, while experiments use another optimizer.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "2625-PhySense__Sensor_Placement_Optimization_for_Accurate_Physics_Sensing::baseline"
+    },
+    {
+      "error_category": "evidence_data_integrity",
+      "error_location": "Table 2, 'Relative Promotion,' Turbulent Flow #100",
+      "confidence": 0.99,
+      "supporting_evidence": "The reported 38.56% promotion is inconsistent with the table's own values and definition. The best baseline at 100 sensors is S³GM at 0.2016, while PhySense-opt is 0.1257. The relative reduction is \\((0.2016-0.1257)/0.2016=37.65\\%\\), not 38.56%. No other listed baseline gives the stated number.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "2625-PhySense__Sensor_Placement_Optimization_for_Accurate_Physics_Sensing::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Section 4, 'Implementations,' versus Appendix C.3, 'Senseiver'",
+      "confidence": 0.96,
+      "supporting_evidence": "The main text says that 'All methods of each benchmark maintain identical training configurations including epochs, batch sizes, ADAM optimizer, and maximum learning rate.' Appendix C.3 contradicts this by stating that Senseiver was not held to the common epoch limit and was trained until its own default early-stopping criterion. It also says its architecture hyperparameters were separately tuned. The claimed common-budget comparison is therefore false and the actual training budgets for the baseline are not reported.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "2625-PhySense__Sensor_Placement_Optimization_for_Accurate_Physics_Sensing::baseline"
+    },
+    {
+      "error_category": "rhetorical_presentation_manipulation",
+      "error_location": "Section 4.3, Table 3, and Abstract/Introduction claims of state-of-the-art performance",
+      "confidence": 0.82,
+      "supporting_evidence": "For the car benchmark, Table 3 explicitly reports only 'the best deterministic baseline and generative baseline' 'due to resource constraints,' rather than the full baseline suite used elsewhere. Nevertheless, the abstract and introduction claim consistent state-of-the-art performance across all three benchmarks. A state-of-the-art claim on the 3D benchmark cannot be supported by a selectively restricted comparison, especially when the criteria and results used to decide which baselines were the 'best' are not provided.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "2625-PhySense__Sensor_Placement_Optimization_for_Accurate_Physics_Sensing::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Section 4.3, final paragraph",
+      "confidence": 0.84,
+      "supporting_evidence": "The paper states that the optimized simulation-derived placement 'can be deployed in real-world settings' and 'enables correction of discrepancies in simulation results and even of underlying physical systems,' reducing real experiments and the sim-to-real gap. No real measurements, transfer experiment, calibration procedure, or analysis of sensor noise/model mismatch is provided. The experiments use only OpenFOAM simulations of one mesh, so these real-world correction and sim-to-real claims substantially exceed the evidence.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "2625-PhySense__Sensor_Placement_Optimization_for_Accurate_Physics_Sensing::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 11,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (gpt-5.6-terra, taxonomy=paperaudit): 11 error(s) reported.",
+  "baseline": {
+    "model": "gpt-5.6-terra",
+    "provider": "openai",
+    "taxonomy": "paperaudit",
+    "paper_chars": 85257,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 21528,
+      "output_tokens": 4301,
+      "cache_read_input_tokens": null,
+      "cache_creation_input_tokens": null
+    }
+  }
+}

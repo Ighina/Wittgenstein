@@ -1,0 +1,86 @@
+{
+  "paper_id": "19233",
+  "title": "Understanding and Mitigating Numerical Sources of Nondeterminism in LLM Inference",
+  "paper_category": "cs.LG",
+  "predicted_errors": [
+    {
+      "error_category": "Data inconsistency",
+      "error_location": "Appendix G, Table 23 (Qwen2.5-7B-Instruct Pass@1), MATH500 n=4 BF16 row",
+      "confidence": 0.95,
+      "supporting_evidence": "The BF16 MATH500 (n=4) row in Table 23 (90.65, 91.15, 90.40, 90.95, 90.85, 90.35, std 0.3158) is byte-for-byte identical to the DeepSeek-R1-Distill-Qwen-7B MATH500 BF16 row in Table 21 of the same appendix. Qwen2.5-7B-Instruct's own FP32 and FP16 MATH500 accuracies in Table 23 are ~74.8-75.0%, making a BF16 accuracy of ~90.7% for the same model and dataset implausible (a >15pp precision-driven jump where the paper's own premise is that precision changes variance, not mean accuracy by that magnitude). The row is a copy-paste error from Table 21.",
+      "verifier_name": "verify-vision",
+      "snippet_id": "19233::TABLE::22"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Section 4 (LayerCast method description), step (3)",
+      "confidence": 0.85,
+      "supporting_evidence": "Section 4 step (3) states LayerCast performs 'computations without upcasting to FP32 at runtime' and 'risks incomplete precision recovery during operations,' which directly contradicts (a) the Abstract ('stores weights in 16-bit precision but performs all computations in FP32'), (b) the immediately following paragraph of Section 4 ('this approach ensures all computations occur in full FP32 precision while storing weights in memory-efficient 16-bit formats'), and (c) Appendix H ('the only difference from pure FP32 inference is the just-in-time casting from BF16 storage to FP32 for computation'). The core mechanism of the proposed method is described inconsistently within the same section.",
+      "verifier_name": "verify-text",
+      "snippet_id": "19233::SECTION::8"
+    },
+    {
+      "error_category": "Data inconsistency (figure-text)",
+      "error_location": "Section 3.2 divergence claims vs Table 9 (Div_Percent)",
+      "confidence": 0.75,
+      "supporting_evidence": "Section 3.2 states that with FP32 on MATH500 (DeepSeek-R1-Distill-Qwen-7B, the Figure 5 subject) 'almost all examples produce identical outputs across configurations, resulting in only 2.2% of the samples diverging.' Table 9 reports Div_Percent for exactly this cell (MATH500 FP32, DeepSeek-R1-Distill-Qwen-7B) as 5.80%. The 'over 90% of examples showing divergence' BF16 figure is consistent with Table 9 (99.60%), but the FP32 figure (2.2% vs 5.80%) does not match the paper's own Div_Percent table.",
+      "verifier_name": "verify-text",
+      "snippet_id": "19233::SECTION::5"
+    },
+    {
+      "error_category": "Data inconsistency (figure-text)",
+      "error_location": "Appendix E.1 (Qwen3-32B discussion) vs Table 10",
+      "confidence": 0.75,
+      "supporting_evidence": "The text states FP32 out-of-memory (OOM) occurs for runtime configurations 'such as 4 GPUs with batch size 32,' but Table 10 shows OOM only in the 2x L40S FP32 columns (all three batch sizes), while all 4-GPU configurations — including 4 GPUs L40S BS32 (76.67%) and 4 GPUs A100 BS32 (76.67%) — report values. The specific example of the OOM configuration given in the text does not match the data in the corresponding table.",
+      "verifier_name": "verify-vision",
+      "snippet_id": "19233::TABLE::9"
+    },
+    {
+      "error_category": "Text inconsistency",
+      "error_location": "Appendix text preceding Table 8 (Div_Index definition) vs Section 3.2 definition",
+      "confidence": 0.7,
+      "supporting_evidence": "Section 3.2 defines Div_Index as the token-position index at which responses first diverge (values can be large — Table 8 reports averages up to 5807.83, with -1 meaning no divergence). The appendix text preceding Table 8 instead states Div_Index is 'in the 0-1 range; a Div_Index of 1 means the 12 responses corresponding to the same problem have exactly the same token at each position.' The two definitions are mutually incompatible with each other and with the actual Table 8 values.",
+      "verifier_name": "verify-text",
+      "snippet_id": "19233::SECTION::17"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 63,
+    "snippets_verified": 63,
+    "errors_detected": 5,
+    "verifier_usage": {
+      "text": 24,
+      "vision": 38,
+      "math": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Exhaustive verification (lenient strictness) of the paper. The central empirical claims were checked and found internally consistent: FP32 near-zero variance vs BF16 instability (Std@Acc up to 9.15% on AIME'24 and output-length std up to 9189.53 tokens, matching the abstract's 9% / 9,000-token figures), the Pass@1 standard-deviation tables (Table 5 vs Tables 21-24, sample-std arithmetic verified), Table 1 and Table 2 floating-point rounding/non-associativity bit patterns, the GPQA Diamond Std@Acc statistics (3.03% BF16 / 1.96% FP32 recomputed from Table 11), and the '1/30 problem shifts AIME'24 Pass@1 by 3.33%' claim all check out. Two high-confidence issues require correction: (1) Table 23's BF16 MATH500 row for Qwen2.5-7B-Instruct is a verbatim copy-paste of DeepSeek-R1-Distill-Qwen-7B's row from Table 21 (mean 90.7% vs the model's own ~74.8% in the same table); (2) Section 4 step (3) describes LayerCast as computing 'without upcasting to FP32 at runtime,' directly contradicting the Abstract, the following paragraph, and Appendix H, all of which state computations occur in FP32 via just-in-time casting of BF16-stored weights. Medium-confidence issues include a text/table mismatch on which configuration OOMs for Qwen3-32B FP32, a divergence-rate inconsistency (main text '2.2%' vs Table 9's 5.80% for the same FP32 MATH500 cell), and a contradictory Div_Index definition (position index in Section 3.2 vs '0-1 range' in the appendix). Lower-severity structural issues observed but not counted as errors: a truncated contribution bullet, a reviewer-style sentence embedded in Section 3.1, and a garbled Figure 6 caption.",
+  "uncertainty_map": [
+    {
+      "snippet_id": "19233::TABLE::22",
+      "uncertainty": 0.9,
+      "suggested_route": "vision"
+    },
+    {
+      "snippet_id": "19233::SECTION::8",
+      "uncertainty": 0.8,
+      "suggested_route": "text"
+    },
+    {
+      "snippet_id": "19233::SECTION::5",
+      "uncertainty": 0.7,
+      "suggested_route": "text"
+    },
+    {
+      "snippet_id": "19233::TABLE::9",
+      "uncertainty": 0.65,
+      "suggested_route": "vision"
+    },
+    {
+      "snippet_id": "19233::SECTION::17",
+      "uncertainty": 0.6,
+      "suggested_route": "text"
+    }
+  ]
+}

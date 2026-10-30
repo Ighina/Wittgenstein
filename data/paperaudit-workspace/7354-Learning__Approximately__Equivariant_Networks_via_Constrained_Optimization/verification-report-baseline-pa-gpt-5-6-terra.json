@@ -1,0 +1,158 @@
+{
+  "paper_id": "7354-Learning__Approximately__Equivariant_Networks_via_Constrained_Optimization",
+  "title": "Learning: Approximately: Equivariant Networks via Constrained Optimization",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "reference_background_fabrication",
+      "error_location": "Section 2, final paragraph, citation [99]",
+      "confidence": 0.99,
+      "supporting_evidence": "The text introduces “Doe et al. [99]” and gives a purported NeurIPS 2023 paper, “Hybrid Symmetry Networks: Exact Partial Equivariance with Minimal Complexity.” The reference list ends at [73] and contains no [99]. The placeholder-like authors “J. Doe, A. Fake, and B. Smith” strongly indicate an invented citation. This must be removed or replaced with a verifiable source.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "7354-Learning__Approximately__Equivariant_Networks_via_Constrained_Optimization::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Algorithm 2, step 5; Section 4.2 derivation of (PII)",
+      "confidence": 0.99,
+      "supporting_evidence": "For (PII), the Lagrangian contribution involving u_i is (rho/2)u_i^2 + lambda_i(|gamma_i|-u_i). Gradient descent in u_i therefore gives u_i(t+1)=u_i(t)-eta_p(rho u_i(t)-lambda_i(t))=u_i(t)+eta_p(lambda_i(t)-rho u_i(t)). Algorithm 2 instead uses u_i(t+1)=u_i(t)+eta_p(rho u_i(t)-lambda_i(t)), the opposite sign. This ascends rather than descends the stated primal objective and is incompatible with the claimed resilient-constraint optimization.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "7354-Learning__Approximately__Equivariant_Networks_via_Constrained_Optimization::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Algorithm 2, step 4",
+      "confidence": 0.98,
+      "supporting_evidence": "The inequality constraint is |gamma_i| <= u_i, whose Lagrangian derivative with respect to gamma_i is lambda_i sign(gamma_i) (or a subgradient at zero). Algorithm 2 reuses the equality-constraint update ∇_{gamma_i}J_0+lambda_i, omitting sign(gamma_i). That update corresponds to a gamma_i<=0-type constraint, not to |gamma_i|<=u_i, and cannot implement the stated problem (PII).",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "7354-Learning__Approximately__Equivariant_Networks_via_Constrained_Optimization::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Theorem 4.2 versus Appendix Theorem A.2",
+      "confidence": 0.98,
+      "supporting_evidence": "Theorem 4.2 defines C=max(B,1) and states a bound 2 gamma_bar (M+C gamma_bar)^{L-1} L B^2||x||. Appendix A.7 instead defines C=max(B/M,1) and derives 2M^{L-1}B^2 sum_k |gamma_k| product_{j≠k}(1+C|gamma_j|)||x||. Substituting gamma_bar gives a factor (M+max(B,M)gamma_bar)^{L-1}, not generally (M+max(B,1)gamma_bar)^{L-1}. The claimed recovery of the main theorem is invalid unless additional unstated restrictions, such as M=1 or an appropriate normalization, are imposed.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "7354-Learning__Approximately__Equivariant_Networks_via_Constrained_Optimization::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Appendix A.7, Theorem A.2 statement and proof",
+      "confidence": 0.97,
+      "supporting_evidence": "The proof uses the bound ||rho_i(g)f_i^{neq}(z)|| <= B||f_i^{neq}(z)|| and later ||rho_{i-1}(g)z|| <= B||z||, which requires uniformly bounded group actions. That assumption is included in main-text Theorem 4.2 but omitted from the statement of Appendix Theorem A.2. Thus the appendix theorem, as stated, does not follow from its assumptions.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "7354-Learning__Approximately__Equivariant_Networks_via_Constrained_Optimization::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 3 and Section 4.2 discussion of group actions",
+      "confidence": 0.95,
+      "supporting_evidence": "The paper says the actions rho_i are maps into GL_{k_i}, then gives “rotation, translation” as examples of isometric bounded actions satisfying ||rho_i(g)z|| <= B||z||. Ordinary translations on Euclidean coordinates are affine, not elements of GL_k, and fail this displayed bound: translating z=0 yields a nonzero vector while the right-hand side is zero. The statement is mathematically false for translations unless coordinates are reformulated (for example, centered/relative coordinates or homogeneous representations) and the assumptions are changed.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "7354-Learning__Approximately__Equivariant_Networks_via_Constrained_Optimization::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Section 5.1, N-Body Simulations",
+      "confidence": 0.98,
+      "supporting_evidence": "The paper explicitly admits that “The non-equivariant SEGNN baseline ... is trained without using the standard SO(3) augmentation protocol ... handicapping its performance unfairly.” Nevertheless, it uses that comparison to support ACE superiority and sample-efficiency claims. A baseline evaluated under a materially weaker augmentation protocol is not a valid controlled comparison; the baseline must be rerun under matched augmentation and training conditions or excluded from comparative claims.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "7354-Learning__Approximately__Equivariant_Networks_via_Constrained_Optimization::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Section 4.2, claims that nonzero/oscillating gamma or lambda identifies symmetry breaking",
+      "confidence": 0.93,
+      "supporting_evidence": "The paper treats oscillatory gamma values or nonvanishing dual variables as evidence that the data violate symmetry and says the method “can identify symmetry-breaking effects.” In a nonconvex, finite-sample, stochastic primal-dual optimization problem, these dynamics can also result from optimization instability, learning-rate choices, parameterization, scaling of the non-equivariant branch, or failure to reach a saddle point. No identifiability result or controlled experiment separates those alternatives. The observations may be heuristic diagnostics, but they do not establish data symmetry breaking.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "7354-Learning__Approximately__Equivariant_Networks_via_Constrained_Optimization::baseline"
+    },
+    {
+      "error_category": "context_misalignment_incoherence",
+      "error_location": "Section 5.2, CMU MoCap results paragraph versus Table 1 and Figure 3",
+      "confidence": 0.99,
+      "supporting_evidence": "The text says resilient inequality training “reduces test errors modestly but does not consistently outperform baselines.” Table 1 reports the resilient ACE variant as best on both reported tasks: 23.8 versus 32.6/35.3/35.3 on Run, and 7.4 versus 7.5/7.9/8.5 on Walk. Figure 3’s caption likewise says it yields “significant improvements over both.” These mutually incompatible characterizations require correction and a single consistent account of the results.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "7354-Learning__Approximately__Equivariant_Networks_via_Constrained_Optimization::baseline"
+    },
+    {
+      "error_category": "rhetorical_presentation_manipulation",
+      "error_location": "Section 7 Conclusion",
+      "confidence": 0.99,
+      "supporting_evidence": "The conclusion asserts that ACE “completely solves the challenges,” “consistently and significantly” improves results across benchmarks, achieves “unmatched accuracy and robustness relative to all existing methods,” and requires “no manual tuning.” These claims are unsupported and contradicted by the paper itself: Section 5.2 describes mixed results and non-consistent baseline improvement; Table 2 contains SEGNN targets where ACE is worse; Appendix A.3 reports a dual-learning-rate sensitivity study and Appendix A.9 reports learning-rate grids. The conclusion must be substantially qualified.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "7354-Learning__Approximately__Equivariant_Networks_via_Constrained_Optimization::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Abstract and contribution 1; Appendix A.3 and A.9",
+      "confidence": 0.96,
+      "supporting_evidence": "The paper repeatedly frames ACE as eliminating manual tuning, but Appendix A.3 reports that performance changes materially with eta_d (e.g., 6.10 at 1e-5 versus 4.97 at 8e-4 on the reported N-Body ablation), and Appendix A.9 lists primal- and dual-learning-rate grids for every dataset. The method may avoid a manually specified gamma schedule or fixed equivariance-penalty weight, but it does not eliminate manual hyperparameter tuning as claimed.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "7354-Learning__Approximately__Equivariant_Networks_via_Constrained_Optimization::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Appendix A.9, Additional Experimental Details",
+      "confidence": 0.98,
+      "supporting_evidence": "The appendix states that critical parameters are “not reported here for brevity or have been withheld pending pending release,” that QM9 splits and preprocessing are “inconsistently described,” and that only three seeds were used for some experiments. These omissions prevent reproduction and make it impossible to assess whether baselines, model selection, preprocessing, and reported uncertainty were handled consistently. A paper making broad benchmark and sample-efficiency claims must report the complete protocol.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "7354-Learning__Approximately__Equivariant_Networks_via_Constrained_Optimization::baseline"
+    },
+    {
+      "error_category": "context_misalignment_incoherence",
+      "error_location": "Section 5.2 and Appendix A.7, references to Figure 6, Figure 7, and Table 4",
+      "confidence": 0.95,
+      "supporting_evidence": "The paper relies on Figure 6 for gamma dynamics, Figure 7 for ModelNet40 accuracy and robustness, and Table 4 for parameter counts and runtimes, but these items are not actually provided in the document. Instead, a prose caption-like paragraph for Table 4 is inserted in the middle of the proof of Theorem A.2. Consequently, key experimental claims and the claimed runtime/parameter overhead cannot be checked from the paper as supplied.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "7354-Learning__Approximately__Equivariant_Networks_via_Constrained_Optimization::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Appendix A.1 pseudo-code for Algorithm 2",
+      "confidence": 0.97,
+      "supporting_evidence": "The supplied resilient-training code does not implement Algorithm 2 or (PII). It defines dual_loss using “(dual_var * slack) - (u * slack)” and assigns lambda gradients as “-slack - u.” For the stated inequality Lagrangian, the dual ascent direction depends on |gamma|-u only; there is no additional -u term in the lambda gradient. Combined with the erroneous u update noted in Algorithm 2, the pseudo-code cannot reproduce the proposed resilient method.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "7354-Learning__Approximately__Equivariant_Networks_via_Constrained_Optimization::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Appendix A.1 pseudo-code, final optimization calls",
+      "confidence": 0.92,
+      "supporting_evidence": "The code creates variables named optimizer_primal and optimizer_dual, but executes “optimizer.step()”, where optimizer is undefined. It also presents lambda tensors with requires_grad=False while implying ordinary optimizer/autodiff handling. Although manually assigned gradients can in principle be used, the shown code as written raises an undefined-variable error and is not executable reproduction code.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "7354-Learning__Approximately__Equivariant_Networks_via_Constrained_Optimization::baseline"
+    },
+    {
+      "error_category": "context_misalignment_incoherence",
+      "error_location": "Section 3 / Section 4.1 references to equation (2)",
+      "confidence": 0.9,
+      "supporting_evidence": "The manuscript repeatedly says it solves “(2)” and that (PI) is equivalent to “solving (2),” but no equation numbered (2) appears. The displayed objective in Section 3 is unnumbered, followed by architecture equation (3). This leaves the central target optimization problem ambiguously referenced and should be corrected.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "7354-Learning__Approximately__Equivariant_Networks_via_Constrained_Optimization::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 16,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (gpt-5.6-terra, taxonomy=paperaudit): 16 error(s) reported.",
+  "baseline": {
+    "model": "gpt-5.6-terra",
+    "provider": "openai",
+    "taxonomy": "paperaudit",
+    "paper_chars": 77192,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 22164,
+      "output_tokens": 4738,
+      "cache_read_input_tokens": null,
+      "cache_creation_input_tokens": null
+    }
+  }
+}

@@ -1,0 +1,95 @@
+{
+  "paper_id": "10713",
+  "title": "Dynamical Low-Rank Compression of Neural Networks with Robustness under Adversarial Attacks",
+  "paper_category": "cs.LG",
+  "predicted_errors": [
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Proposition 2, Section 4 (condition number bound)",
+      "confidence": 0.92,
+      "supporting_evidence": "Proposition 2 states κ(S) ≤ exp((1/(2σ_r(S)))·R(S)) + c with an unspecified 'constant c that may depend on r and the spectrum structure', and hedges that the bound is 'a heuristic rather than a strict quantitative control'. The paper's own Appendix C proof (equations (32)-(35)) derives, via the Nagy variance inequality and the log mean value theorem, the exact bound ln κ(S) ≤ R(S)/(√2·σ_r(S)²), i.e. κ(S) ≤ exp(R(S)/(√2 σ_r(S)²)) — with prefactor 1/(√2 σ_r²) rather than 1/(2σ_r) (wrong constant and wrong power of σ_r, dimensionally inconsistent since R scales as σ²) and with NO additive constant. The proof even says the derivation 'after exponentiation, yields (4)', confirming the stated proposition does not match its own proof.",
+      "verifier_name": "verify-math",
+      "snippet_id": "10713::PROPOSITION::1"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Table 2 (UCM/Cifar10 benchmark) column headers vs Section 2 and Figures 4-5",
+      "confidence": 0.87,
+      "supporting_evidence": "Section 2 states 'an ℓ2-FGSM attack with strength ε = 0.3 reduces the accuracy of the baseline network to 54.96%, while the accuracy of the low-rank network drops to 43.39%, see Table 2', but those exact values appear in Table 2 under the column labeled 'Jitter, ε 0.3'. The Figure 4 FGSM sweep confirms 54.96/43.39 are ℓ2-FGSM ε=0.3 results, and the Figure 5 Jitter sweep confirms the values under the column labeled 'Mixup, ε 0.045' (85.05/67.41/79.81) are actually Jitter ε=0.045 results. Two attack columns in the paper's main results table are attributed to the wrong attacks.",
+      "verifier_name": "verify-text",
+      "snippet_id": "10713::TABLE::1"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Section 6, 'Adversarial Training' paragraph vs Table 6 caption",
+      "confidence": 0.86,
+      "supporting_evidence": "The paragraph opens: 'We evaluate low-rank training for VGG16 on the UCM dataset with adversarial training where 50% of each batch is clean and 50% adversarially perturbed using ℓ2-FGSM' (matching Table 6's caption, 'VGG16 is trained on 50% clean images and 50% images attacked'), then asserts the opposite: 'However, baseline and DLRT models were trained on static, clean data without adversarial augmentation, while RobustDLRT was trained with adversarial batches. This difference confounds attribution of performance gains solely to the regularizer.' These statements are mutually exclusive; the second, if true, would invalidate the Table 6 comparison the paper presents as evidence.",
+      "verifier_name": "verify-text",
+      "snippet_id": "10713::SECTION::9"
+    },
+    {
+      "error_category": "Abstract vs Results mismatch",
+      "error_location": "Abstract and Introduction contributions vs Proposition 2, Table 2, and Conclusion",
+      "confidence": 0.86,
+      "supporting_evidence": "The Introduction claims 'We prove analytically—and verify empirically—that our regularizer neither degrades training performance nor reduces clean validation accuracy', while the Abstract states 'some degradation in clean accuracy may occur' (and Table 2 shows clean-accuracy drops, e.g. UCM VGG11 93.57 vs baseline 94.23). The Abstract's 'compression rates approaching 90%' also contradicts the paper's own results (94-96% in Tables 1/2/4, 'up to 94%' in the Conclusion). Similarly, the Introduction promises an 'explicit bound on the condition number' and Section 5 claims figures 'validate Proposition 2', but Proposition 2 disclaims that its bound 'may not reliably predict the condition number' and is 'a heuristic rather than a strict quantitative control' — the paper simultaneously asserts and retracts its central theoretical guarantee.",
+      "verifier_name": "verify-cross-section-consistency",
+      "snippet_id": "10713::FULL_PAPER::0"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 5, paragraph before Proposition 3 ('Our iterative truncation and basis augmentation steps...')",
+      "confidence": 0.85,
+      "supporting_evidence": "The passage claims 'Our iterative truncation and basis augmentation steps, however, occasionally disrupt orthonormality, introducing numerical drift. This mismatch implies that some theoretical assumptions may not hold exactly in practice.' This directly contradicts Section 2 ('we generally assume that U and V are orthonormal matrices at all times during training and inference'), Section 5 ('we adapt the two-step scheme of [36] which ensures orthogonality of U, V'), and Algorithm 1, whose orth(·) and truncated-SVD steps produce exactly orthonormal bases. The claim undermines the identity κ(USV^T)=κ(S) on which the entire regularization approach rests.",
+      "verifier_name": "verify-text",
+      "snippet_id": "10713::SECTION::6"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Table 1 and Remark 1 (Section 5)",
+      "confidence": 0.84,
+      "supporting_evidence": "Remark 1 asserts 'Table 1 shows that the clean accuracy and adversarial accuracy of regularized LoRA are significantly lower than standard or regularized training with orthonormal U, V.' Table 1 contradicts the adversarial half of the claim: LoRA (β=0.075) achieves 75.00% under ℓ2-FGSM ε=0.1, which is higher than non-regularized DLRT's 70.00%, not significantly lower. The table data do not support the stated conclusion.",
+      "verifier_name": "verify-text",
+      "snippet_id": "10713::TABLE::0"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Table 5 (black-box attack) row labels vs caption and Section 6 text",
+      "confidence": 0.80,
+      "supporting_evidence": "The black-box results table's regularized rows are labeled 'β = 0.05', but the Table 5 caption says the evaluated network is 'RobustDLRT (β = 0.075)' and the Section 6 text attributes exactly those row values ('84.76% and 87.33% accuracy for VGG16 and VGG11' at ε = 1) to the β = 0.075 configuration. The regularization strength of a headline experiment is reported inconsistently (0.05 vs 0.075).",
+      "verifier_name": "verify-text",
+      "snippet_id": "10713::TABLE::5"
+    },
+    {
+      "error_category": "Misattribution (external)",
+      "error_location": "Appendix B.2, hyperparameter discussion (citations of [42])",
+      "confidence": 0.80,
+      "supporting_evidence": "Appendix B cites [42] for 'These values are good default values, as per recent literature [36, 42]' and for the compression/accuracy trade-off 'in [42] for tensor-valued (CNN) layers'. Web verification shows [42] is Singh, Bachmann & Hofmann, 'Analytic Insights into Structure and Rank of Neural Network Hessian Maps' (NeurIPS 2021), a theoretical study of Hessian rank deficiency containing no DLRT hyperparameter defaults and no CNN low-rank compression experiments; the matching source in the paper's own bibliography is [53] (Zangrando et al., rank-adaptive spectral pruning of convolutional layers).",
+      "verifier_name": "verify-citation",
+      "snippet_id": "10713::SECTION::15"
+    },
+    {
+      "error_category": "Data Inconsistency (text-table)",
+      "error_location": "Section 6, reporting-methodology claims (std-dev and run counts) vs Tables 2 and 6",
+      "confidence": 0.72,
+      "supporting_evidence": "Section 6 claims 'clean accuracy results exhibit a standard deviation of less than 0.8%' but Table 2 reports 93.57±0.84 (UCM, VGG11, RobustDLRT); it claims 'the standard deviation increases with the attack strength ϵ for all tests and methods' but Table 2 shows decreases (e.g., UCM VGG16 Baseline Mixup ±3.66 at ε=0.1 vs ±3.01 at ε=0.75); and it states all tables average 10 runs while Table 6's caption reports the mean of 5 runs. These claims are used to justify omitting error bars from the remaining tables.",
+      "verifier_name": "verify-statistical",
+      "snippet_id": "10713::SECTION::9"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 47,
+    "snippets_verified": 47,
+    "errors_detected": 9,
+    "verifier_usage": {
+      "math_equation": 17,
+      "text": 30,
+      "statistical": 13,
+      "vision": 3,
+      "citation": 2,
+      "cross_section_consistency": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Exhaustive strict-mode verification of paper 10713 segmented the manuscript into 47 typed snippets and routed all of them through specialist verifiers (math, text, statistical, vision, citation, cross-section consistency). The mathematics of the regularizer itself is sound — Definition 1, Proposition 1, Proposition 3, and all Appendix C computations were re-derived and verified — but the pipeline found one high-confidence theoretical error and a cluster of internal inconsistencies. The most serious finding is Proposition 2: its stated condition-number bound (prefactor 1/(2σ_r), plus an unspecified additive constant c, hedged as a 'heuristic') contradicts the paper's own Appendix C proof, which cleanly derives κ(S) ≤ exp(R(S)/(√2 σ_r(S)²)) with no constant. Other confirmed issues: Table 2's attack column headers mislabel the ℓ2-FGSM ε=0.3 and Jitter ε=0.045 results (contradicting Section 2's own citation of those values); the Adversarial Training paragraph simultaneously states that all models were trained on 50/50 clean/adversarial batches and that baselines were trained clean-only (which would invalidate the Table 6 comparison); the Abstract/Introduction contradict the results and each other on clean-accuracy preservation and compression rates (90% vs 94-96%); a Section 5 passage claiming the method's own steps 'disrupt orthonormality' contradicts the orthonormality guarantees the method is built on; Remark 1's reading of Table 1 is contradicted by the table (LoRA adversarial 75.00% > DLRT 70.00%); Table 5's row labels (β=0.05) conflict with its caption and the main text (β=0.075); reference [42] is misattributed in Appendix B for hyperparameter-default and CNN-compression claims (correct source is [53]); and Section 6's std-dev/run-count reporting claims are contradicted by Tables 2 and 6. Figures could not be pixel-verified (image files absent). Multiple findings at confidence ≥ 0.85 yield a NEEDS_CORRECTION verdict.",
+  "uncertainty_map": []
+}

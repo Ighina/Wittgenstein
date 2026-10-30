@@ -1,0 +1,87 @@
+{
+  "paper_id": "21919",
+  "title": "High-Dimensional Calibration from Swap Regret",
+  "paper_category": "cs.LG",
+  "predicted_errors": [
+    {
+      "error_category": "Equation / proof",
+      "error_location": "2.3 From swap regret to calibration — Equation (7), Bregman divergence definition",
+      "confidence": 0.8,
+      "supporting_evidence": "The definition as printed is D_R(y || p) := R(p) - R(y) - <∇R(y), p - y>, i.e. the gradient is evaluated at the FIRST argument y (the reversed-Bregman convention, tangent at y, 'from p to y'). Everywhere else the paper uses the standard tangent-at-second-argument convention: the footnote under the definition says to replace the '∇R(p) term' with the subgradient at p (contradicting the printed ∇R(y)); Section 2.4's α-strong-convexity equivalence D_R(y||p) ≥ α‖y-p‖² requires D_R(y||p) = R(y) - R(p) - <∇R(p), y - p>; Lemma 2.1's proof computes E[D_R(y||p)] = E[R(y) - R(p) - <∇R(p), y - p>] (standard convention), and its conclusion that the loss is minimized at p = ȳ holds only under the standard convention. Under the printed reversed definition the minimizer of E[D_R(y||p)] is NOT ȳ in general, so the proper-scoring-rule property (Lemma 2.1) and the reduction in Lemma 2.2 would fail. The correct definition is D_R(y || p) := R(y) - R(p) - <∇R(p), y - p>.",
+      "verifier_name": "verify-math",
+      "snippet_id": "21919::EQUATION::7"
+    },
+    {
+      "error_category": "Statistical reporting",
+      "error_location": "4 Lower bound — Theorem 4.3, exponent min{d^{1/7}, ε^{-1/6}}",
+      "confidence": 0.75,
+      "supporting_evidence": "Theorem 4.3 states the lower bound holds for T ≤ exp(c · min{d^{1/7}, ε^{-1/6}}). Its own proof contradicts this: it uses Lemma D.1 to move to dimension d' = ⌊(d-1)/2⌋ and then invokes Theorem 4.1, whose threshold is exp(c_4.1 · min{(d')^{1/14}, ε^{-1/6}}) ≈ exp(c · min{d^{1/14}, ε^{-1/6}}). The informal statement Theorem 1.4 in the Introduction also states min{d^{1/14}, ε^{-1/6}}. The 'd^{1/7}' in Theorem 4.3 is therefore inconsistent with both the proof and the informal statement; it should be d^{1/14}.",
+      "verifier_name": "verify-statistical",
+      "snippet_id": "21919::THEOREM::7"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "C.2 Proof of the main theorem — Claim C.3 / Equation (9)",
+      "confidence": 0.7,
+      "supporting_evidence": "Claim C.3 states Cal_T^{‖·‖²}(x) - 2·Cal_T^{‖·‖²}(x̃) ≥ (2·diam(P)²/H²)·T (a LOWER bound). The proof of the claim, however, establishes the opposite-direction UPPER bound: the chain from Equation (11) (using ‖ν-p‖² ≤ 2‖ν-p̃‖² + 2‖p-p̃‖² and Lemma C.4) yields Cal - 2Cal̃ ≤ 2·T·diam(P)²/H, with H (not H²) in the denominator. Then Theorem 3.1's proof applies (9) as an upper bound 'Cal(x) ≤ 2·Cal(x̃) + (2·diam(P)²/H²)·T', which requires the ≤ direction and an H² constant that the proof of the claim does not establish. Direction and the power of H are mutually inconsistent across the claim statement, its proof, and its application. (The final rate is unaffected since H = Θ(diam²/ε) absorbs the constant, but the lemma as stated is wrong.)",
+      "verifier_name": "verify-math",
+      "snippet_id": "21919::PROPOSITION::0"
+    },
+    {
+      "error_category": "Abstract vs Results mismatch",
+      "error_location": "Abstract — ℓ1/simplex upper bound exponent",
+      "confidence": 0.7,
+      "supporting_evidence": "The Abstract claims ε-calibrated forecasts after T = exp(O(log d/ε)) = d^{O(1/ε)} rounds for ℓ1-calibration over the d-simplex. The body contradicts this exponent: Theorem 1.1's simplex application and Corollary C.5 give T ≥ (diam/ε)^{O(Rate/ε²)} = (1/ε)^{O(log d/ε²)} = d^{O(1/ε²)} (with ρ = log d for the negative-entropy regularizer). The abstract's 1/ε exponent differs from the body's 1/ε² exponent.",
+      "verifier_name": "verify-cross-section-consistency",
+      "snippet_id": "21919::SECTION::0"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "1 Introduction — dangling citation [ZKL23]",
+      "confidence": 0.7,
+      "supporting_evidence": "[ZKL23] is cited in the Introduction ('As demonstrated by [ZKL23], until recently, no known algorithm achieved a sub-exponential dependence on d...') but no [ZKL23] entry exists in the References section. A scripted cross-check of all in-text citation keys against the bibliography confirms [ZKL23] is the only key without a matching reference entry (all other keys, e.g. DDF^+24/DDFG24/DFG^+24/H^+16, resolve to entries).",
+      "verifier_name": "verify-citation",
+      "snippet_id": "21919::SECTION::1"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "2.1 Calibration — Cal_T^D definition (factor 1/T)",
+      "confidence": 0.65,
+      "supporting_evidence": "The formal definition Cal_T^D(x_{1:T}, y_{1:T}) := Σ_{p∈P} (1/T · Σ_t x_t(p)) · D(ν_p, p) includes a 1/T normalization. Every theorem and proof uses the summed (unnormalized) convention instead: the Introduction's display equation defines Cal_T^{‖·‖} = Σ_t ‖p_t - ν_{p_t}‖ with no 1/T; the proof of Corollary C.5 writes '(1/T) Cal_T^{‖·‖} = (1/T) Σ_p (Σ_t x_t(p)) · ‖ν_p - p‖' (i.e. Cal itself has no 1/T); and Theorem 3.1's bound 'Cal_T^{‖·‖²} ≤ εT for T ≥ (diam/√ε)^{O(ρ/ε)}' is only scale-meaningful under the summed convention (the averaged version is ≤ diam² always, making the exponential T lower bound vacuous). As printed, the Section 2.1 definition is inconsistent with the rest of the paper.",
+      "verifier_name": "verify-text",
+      "snippet_id": "21919::SECTION::4"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "1.1 Our results — Theorem 1.1 and the simplex (ℓ1) application",
+      "confidence": 0.6,
+      "supporting_evidence": "Theorem 1.1 is presented as an informal restatement of Corollary C.5, which bounds T ≥ (diam/ε)^{O(Rate(P,‖·‖)/ε²)} where Rate(P,‖·‖) is defined (Section 2.4) via a BOUNDED Bregman divergence. The simplex application, however, uses the negative-entropy regularizer R(x) = Σ x_i log x_i with 'range ρ = log d', and Section 2.4 itself states that negative entropy 'has bounded range over the simplex but unbounded Bregman divergence'. Thus ρ = log d (a range bound) does not give a finite Rate(P,‖·‖) for the simplex, and the advertised d^{O(1/ε²)} ℓ1 bound is not directly supported by the formal Bregman-rate-based Corollary C.5. The informal (range-based) and formal (Bregman-based) notions of ρ are conflated.",
+      "verifier_name": "verify-cross-section-consistency",
+      "snippet_id": "21919::THEOREM::0"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Abstract — ℓ1 lower-bound exponent",
+      "confidence": 0.55,
+      "supporting_evidence": "The Abstract claims any εT-ℓ1-calibrated algorithm over the d-simplex 'requires T ≥ exp(Ω(1/ε)) (assuming d ≥ poly(1/ε))'. The formal Theorem 4.3/1.4 lower bound is T ≥ exp(Ω(min{d^{1/14}, ε^{-1/6}})), and since min{d^{1/14}, ε^{-1/6}} ≤ ε^{-1/6} for all d, the strongest implied bound is exp(Ω(ε^{-1/6})), not exp(Ω(1/ε)). The abstract's ε^{-1} exponent overstates the ε^{-1/6} bound. (Lower confidence because the abstract may be using 'Ω(1/ε)' loosely as 'exponential in a polynomial of 1/ε'.)",
+      "verifier_name": "verify-statistical",
+      "snippet_id": "21919::SECTION::0"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 65,
+    "snippets_verified": 65,
+    "errors_detected": 8,
+    "verifier_usage": {
+      "math_equation": 33,
+      "text": 61,
+      "statistical": 12,
+      "vision": 4,
+      "citation": 6,
+      "cross_section": 1
+    }
+  },
+  "verdict": "NEEDS_REVIEW",
+  "summary": "Verified 'High-Dimensional Calibration from Swap Regret' (a NeurIPS 2025 theory paper connecting multi-dimensional online calibration to swap-regret minimization via the TreeCal/TreeSwap algorithms) in exhaustive mode with lenient strictness. The paper was segmented into 65 snippets (22 sections, 33 equations, 11 theorems, 1 proposition, 9 lemmas, 15 proofs, 3 algorithms, 4 figures) and routed to math, text, statistical, citation, vision, and cross-section verifiers. Eight findings survived scrutiny, none at erratum-certainty (≥0.85) but several at medium-high confidence. The most significant: (1) the Bregman-divergence definition in Eq. (7) is written in the reversed convention (gradient at the first argument), inconsistent with its use in Lemma 2.1/2.2, the footnote, and the strong-convexity equivalence — as printed the proper-scoring-rule minimizer would not be ȳ; (2) Theorem 4.3's exponent min{d^{1/7}, ε^{-1/6}} conflicts with its own proof and with informal Theorem 1.4, which both use d^{1/14}; (3) Claim C.3/Eq. (9) states a lower bound with an H² denominator while its proof establishes the opposite-direction upper bound with H, and Theorem 3.1's proof applies it as an upper bound with H²; (4) the abstract's simplex upper bound d^{O(1/ε)} differs from the body's d^{O(1/ε²)}; (5) citation [ZKL23] is missing from the references; (6) the formal Cal_T^D definition carries a 1/T factor that is inconsistent with the summed convention used in the intro and all theorems/proofs; (7) Theorem 1.1's range-based ρ = log d for the simplex is conflated with the formal Bregman-based Rate used by Corollary C.5 (negative entropy has unbounded Bregman divergence, as the paper itself notes); (8) the abstract's exp(Ω(1/ε)) lower bound overstates the formal exp(Ω(ε^{-1/6})) bound. The main theorems' asymptotic rates appear internally consistent once these statement-level inconsistencies are corrected, but the paper warrants review before acceptance.",
+  "uncertainty_map": []
+}

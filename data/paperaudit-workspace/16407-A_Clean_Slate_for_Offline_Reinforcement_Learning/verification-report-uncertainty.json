@@ -1,0 +1,145 @@
+{
+  "paper_id": "16407",
+  "title": "A Clean Slate for Offline RL",
+  "paper_category": "cs.LG",
+  "predicted_errors": [
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Appendix I.2, Equation 8 vs Section 4.2 (Actor Objective)",
+      "confidence": 0.82,
+      "supporting_evidence": "Section 4.2 defines the unified actor loss as L_actor = β_q·L_q + β_BC·L_BC − β_H·H(π(·|s_t)) + β_div·L_div + β_dyn·L_dyn, and explicitly states 'The critic diversity loss L_div and dynamics model regularization L_dyn (when applicable) are included with respective coefficients β_div and β_dyn, to cover all prior algorithmic components comprehensively.' However, Equation 8 in Appendix I.2 gives L_actor = β_q·L_q + β_BC·L_BC − β_H·H(π(·|s_t)) and omits the β_div·L_div and β_dyn·L_dyn terms entirely. The formal definition of the paper's central unified objective contradicts the main-text definition.",
+      "verifier_name": "math-equations",
+      "snippet_id": "16407::EQUATION::7"
+    },
+    {
+      "error_category": "Data Inconsistency (figure-text)",
+      "error_location": "Figure 14 caption (Appendix J)",
+      "confidence": 0.78,
+      "supporting_evidence": "Figure 14's caption reads 'Full comparison of TD3-AWR to prior model-based methods across all datasets.' But TD3-AWR is a model-free method (Section 5.1), and the figure's own legend lists IQL, REBRAC, and TD3-AWR — all model-free. Figure 15 correctly labels the model-based comparison (COMBO, MOPO, MOReL, MoBRAC). The Figure 14 caption is mislabeled.",
+      "verifier_name": "vision",
+      "snippet_id": "16407::FIGURE::17"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 5.2 (Improving Policy Optimization for Model-Based Offline RL)",
+      "confidence": 0.72,
+      "supporting_evidence": "The evaluation paragraph first states 'Figure 7 shows how MoBRAC outperforms other model-based methods for all datasets, except for MOPO in maze2d-large-v1' (naturally read as a loss to MOPO on maze2d), then states 'MoBRAC outperforms the other model-based methods in 6 out of 9 datasets and is tied with MOPO for 3 others.' The latter implies no losses (6 wins + 3 ties = 9 datasets). These two claims about the identical result cannot both hold for maze2d-large-v1 and should be reconciled.",
+      "verifier_name": "text",
+      "snippet_id": "16407::SECTION::18"
+    },
+    {
+      "error_category": "Misattribution (external)",
+      "error_location": "Related Work L.2 (PureJaxRL citation) / References [35]",
+      "confidence": 0.70,
+      "supporting_evidence": "The text states 'PureJaxRL [35] also follows the single-file approach and is implemented in JAX,' but bibliography entry [35] is 'Discovered policy optimisation' by Chris Lu, Jakub Kuba, et al. (NeurIPS 2022) — a different work (a policy-optimization paper, not the PureJaxRL library/repository). The in-text citation and the bibliography reference do not match.",
+      "verifier_name": "citation",
+      "snippet_id": "16407::SECTION::48"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 6 Related Work (Rainbow/Muesli citation numbers)",
+      "confidence": 0.65,
+      "supporting_evidence": "Section 6 states 'The unification concept traces back to online RL architectures like Rainbow [38] and Muesli [39].' However, in the bibliography [38] is Stable-Baselines3 and [39] is SpinningUp; Rainbow is [25] and Muesli is [26] (as correctly referenced in Appendix L.3). The citation numbers in Section 6 are wrong.",
+      "verifier_name": "citation",
+      "snippet_id": "16407::SECTION::21"
+    },
+    {
+      "error_category": "Data Inconsistency (text-table)",
+      "error_location": "Introduction / Section 4.1 speedup claims vs Appendix F Table 2",
+      "confidence": 0.62,
+      "supporting_evidence": "The abstract/Introduction claim 'average training speedups of 131.5× and 74.8× against OfflineRL-Kit and CORL', and Figure 5's per-algorithm speedups (e.g., BC 16x, CQL 14x, ReBRAC 8x, EDAC 4x), cannot be reproduced from Table 2's training times under the same stated conditions (1M steps, L40S GPU). E.g., CORL BC 15.0 min vs Unifloral 1.7 min = 8.8x (not 16x); CORL ReBRAC 8.7 vs 6.8 = 1.3x (not 8x); arithmetic and geometric means across the table also do not yield 131.5x or 74.8x. No computation shown in the paper reconciles these headline numbers.",
+      "verifier_name": "statistical",
+      "snippet_id": "16407::SECTION::27"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 4.1 (LB-SAC reimplementation list)",
+      "confidence": 0.58,
+      "supporting_evidence": "Section 4.1 lists 'LB-SAC' among the reimplemented model-free methods (BC, TD3-BC, ReBRAC, IQL, SAC-N, LB-SAC, EDAC, CQL, DT), but LB-SAC is never described in Appendix A, never appears in the hyperparameter table (Table 5), the speedup tables (Figure 5 / Table 2), or the evaluation (Figure 8). The reference is dangling.",
+      "verifier_name": "text",
+      "snippet_id": "16407::SECTION::15"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Appendix I.1, Equation 5",
+      "confidence": 0.55,
+      "supporting_evidence": "Equation 5 defines the value target as v̂_{t+1} = v_{t+1} + α_BC·(ã_{t+1} − a_{t+1}) + α_H·H(π(·|s_{t+1})). The behaviour-cloning term α_BC·(ã_{t+1} − a_{t+1}) is a vector-valued difference of actions in the action space, which cannot be added to the scalar value target v_{t+1} without a norm, projection, or metric. As printed the equation is dimensionally inconsistent.",
+      "verifier_name": "math-equations",
+      "snippet_id": "16407::EQUATION::4"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Appendix I.1 Equation 7 vs Figure 12 code (EDAC diversity loss)",
+      "confidence": 0.5,
+      "supporting_evidence": "Equation 7 defines the EDAC critic diversity penalty as a sum of gradient inner products, (α_div/(N−1))·Σ_{i≠j}⟨∇_{a_t} q_i, ∇_{a_t} q_j⟩, but the EDAC code shown in Figure 12 computes the penalty as 'q_std = current_q.std(0).mean(); diversity_loss = -self.eta * q_std' — a standard deviation over the ensemble's Q-values, not a gradient-similarity penalty. The two formulations do not agree.",
+      "verifier_name": "math-equations",
+      "snippet_id": "16407::EQUATION::6"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 95,
+    "snippets_verified": 95,
+    "errors_detected": 9,
+    "verifier_usage": {
+      "triage": 95,
+      "text": 30,
+      "math_equation": 10,
+      "statistical": 8,
+      "citation": 6,
+      "vision": 12,
+      "cross_section": 1
+    }
+  },
+  "verdict": "NEEDS_REVIEW",
+  "summary": "Uncertainty-mode verification (lenient strictness) of 'A Clean Slate for Offline RL'. All 95 snippets were triaged; the high-uncertainty subset was routed to math, text, statistical, citation, and vision specialist checks. Nine findings survived, the strongest being: (1) the unified actor loss in Appendix I.2 Equation 8 omits the β_div·L_div and β_dyn·L_dyn terms that Section 4.2 explicitly states are included (conf 0.82); (2) Figure 14's caption mislabels a model-free comparison (TD3-AWR vs IQL/ReBRAC) as 'model-based methods' (conf 0.78); (3) Section 5.2's two claims about MoBRAC vs MOPO on maze2d-large-v1 (a loss vs a tie) are mutually inconsistent (conf 0.72); (4) citation mismatches: 'PureJaxRL' cited as [35] which is actually 'Discovered policy optimisation', and Rainbow/Muesli cited as [38]/[39] which are Stable-Baselines3/SpinningUp (conf 0.70/0.65). Lower-confidence issues concern the unverifiable 131.5x/74.8x speedup headline numbers (conf 0.62), the dangling LB-SAC reference (conf 0.58), the dimensionally inconsistent Equation 5 (conf 0.55), and an EDAC diversity-loss formulation that differs between Equation 7 and the Figure 12 code (conf 0.50). No single finding reached the 0.85 high-confidence bar for NEEDS_CORRECTION, but the cluster of medium-confidence inconsistencies — especially the core actor-objective equation and the mislabeled/contradictory result statements — warrant author review before publication.",
+  "uncertainty_map": [
+    {
+      "snippet_id": "16407::SECTION::18",
+      "snippet_type": "SECTION",
+      "location": "Section 5.2",
+      "uncertainty": 0.68,
+      "route": "text",
+      "reason": "Two sentences describe incompatible MoBRAC-vs-MOPO outcomes on maze2d-large-v1."
+    },
+    {
+      "snippet_id": "16407::EQUATION::7",
+      "snippet_type": "EQUATION",
+      "location": "Appendix I.2",
+      "uncertainty": 0.7,
+      "route": "math",
+      "reason": "Actor-loss definition conflicts with Section 4.2 which includes extra L_div and L_dyn terms."
+    },
+    {
+      "snippet_id": "16407::FIGURE::17",
+      "snippet_type": "FIGURE",
+      "location": "Appendix J Figure 14",
+      "uncertainty": 0.6,
+      "route": "vision",
+      "reason": "Caption claims model-based methods but comparison is model-free."
+    },
+    {
+      "snippet_id": "16407::SECTION::48",
+      "snippet_type": "SECTION",
+      "location": "Related Work L.2",
+      "uncertainty": 0.55,
+      "route": "citation",
+      "reason": "PureJaxRL cited as [35] which resolves to a different paper."
+    },
+    {
+      "snippet_id": "16407::SECTION::21",
+      "snippet_type": "SECTION",
+      "location": "Section 6 Related Work",
+      "uncertainty": 0.55,
+      "route": "citation",
+      "reason": "Rainbow/Muesli citation numbers point to wrong references."
+    },
+    {
+      "snippet_id": "16407::SECTION::27",
+      "snippet_type": "SECTION",
+      "location": "Appendix F Table 2",
+      "uncertainty": 0.55,
+      "route": "statistics",
+      "reason": "Speedup claims not reproducible from the reported training times."
+    }
+  ]
+}

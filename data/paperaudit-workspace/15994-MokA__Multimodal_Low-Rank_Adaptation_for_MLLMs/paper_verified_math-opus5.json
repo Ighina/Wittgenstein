@@ -1,0 +1,409 @@
+{
+  "paper_name": "paper",
+  "paper_path": "/Users/iacopoghinassi/Documents/Github/Wittgenstein/data/paperaudit-workspace/15994-MokA__Multimodal_Low-Rank_Adaptation_for_MLLMs/paper.md",
+  "tag": "opus5",
+  "lean_project": "MATH_VERIFICATION/Paper",
+  "lean_project_kept": true,
+  "totals": {
+    "snippets_extracted": 12,
+    "routed_to_math": 7,
+    "routed_to_lean": 5,
+    "lean_passed": 4,
+    "lean_refuted": 1,
+    "lean_failed": 0,
+    "fallbacks_run": 0,
+    "errors_detected": 3
+  },
+  "results": [
+    {
+      "snippet_id": "paper::EQUATION::0",
+      "snippet_type": "EQUATION",
+      "location": "2.1 Rethinking of low-rank adaptation in the multimodal scenario",
+      "content": "LoRA parameterises the update $\\Delta W \\in \\mathbb{R}^{d \\times k}$ to a pre-trained matrix $W_0 \\in \\mathbb{R}^{d \\times k}$ as the product of two much smaller matrices $B \\in \\mathbb{R}^{d \\times r}$ and $A \\in \\mathbb{R}^{r \\times k}$, with $r \\ll \\min(d,k)$; the fine-tuned weight is $W_0 + \\Delta W = W_0 + BA$. Therefore, for $h = W_0\\mathbf{x}$, the modified update forward pass yields\n\n$$h = W_0\\mathbf{x} + \\Delta W \\mathbf{x} = W_0\\mathbf{x} + BA\\mathbf{x}.$$ (1)\n\n$A$ is initialized using a uniform Kaiming distribution and $B$ is initialized to zero, leading to an initial update $\\Delta W = BA = 0$ at the beginning of fine-tuning.",
+      "route": "verify-math-lean",
+      "route_rationale": "Dimensional well-formedness of $BA$ and the zero-initialisation claim $B = 0 \\Rightarrow \\Delta W = 0$ are crisply formalisable over Mathlib's `Matrix` types.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::0",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.95,
+        "reasoning": "Formalised Eq. (1) as the conjunction of (a) $(W_0 + BA)x = W_0 x + B(Ax)$ over `Matrix (Fin d) (Fin k)` / `Matrix (Fin d) (Fin r)` / `Matrix (Fin r) (Fin k)` with `x : Fin k -> R`, and (b) $B = 0 \\Rightarrow BA = 0$. Both shape constraints stated in the paper are carried by the Lean types, so the declaration elaborating at all confirms the dimensions compose. The proof is `Matrix.add_mulVec` + `Matrix.mulVec_mulVec` and `Matrix.zero_mul`. Compiles clean, exit 0, no diagnostics, no `sorryAx`; axioms are the three standard Mathlib ones.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean",
+          "theorem_name": "moka_eq1_lora_forward",
+          "formal_statement": "theorem moka_eq1_lora_forward\n    (d k r : ℕ) (W0 : Matrix (Fin d) (Fin k) ℝ)\n    (B : Matrix (Fin d) (Fin r) ℝ) (A : Matrix (Fin r) (Fin k) ℝ)\n    (x : Fin k → ℝ) :\n    (W0 + B * A).mulVec x = W0.mulVec x + B.mulVec (A.mulVec x)\n      ∧ (B = 0 → B * A = 0) := by\n  refine ⟨?_, ?_⟩\n  · rw [Matrix.add_mulVec, Matrix.mulVec_mulVec]\n  · intro hB\n    rw [hB, Matrix.zero_mul]",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::EQUATION::1",
+      "snippet_type": "EQUATION",
+      "location": "2.1 Rethinking of low-rank adaptation in the multimodal scenario",
+      "content": "$$h = W_0\\mathbf{x} + \\Delta W \\mathbf{x} = W_0\\mathbf{x} + \\sum_{i=1}^n \\Delta W_i \\mathbf{x}^{m_i} + \\Delta W_{\\mathrm{cross}} \\mathbf{x},$$\n\nwhere $n$ is the number of modalities, $\\mathbf{x}^{m_i}$ denotes tokens of modality $i$, $\\Delta W_i$ captures unimodal updates for modality $i$, and $\\Delta W_{\\mathrm{cross}}$ applies cross-modal adaptation across all modalities jointly.",
+      "route": "verify-math-lean",
+      "route_rationale": "The checkable content is whether a sum of per-modality terms with differing token counts can equal the block concatenation the paper later writes in Eq. (13); that is formalisable as a zero-masking identity.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::1",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "The summands $\\Delta W_i \\mathbf{x}^{m_i}$ carry different token counts $N_{m_i}$, so the sum is only well-defined under the reading that $\\mathbf{x}^{m_i}$ is the full-length sequence with all other modalities' tokens zeroed out. I formalised exactly that reading for $n = 2$ (the general case is identical): with `x : Fin N1 + Fin N2 -> Fin k -> R` and zero-masked restrictions `maskL`/`maskR`, the zero-masked sum equals the block concatenation `Sum.elim`. Proof: `funext`, case split, `simp`. Compiles clean, exit 0, no diagnostics, no `sorryAx`. Faithfulness caveat recorded: the Lean statement adopts the zero-masking reading; the literal expression as printed (summing blocks of differing token counts) is an abuse of notation rather than a well-typed sum. Since Eq. (13) spells out the intended concatenation and the two agree, this is notational and not a derivation error.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean",
+          "theorem_name": "moka_eq2_sum_eq_concat",
+          "formal_statement": "noncomputable def maskL {N1 N2 k : ℕ} (x : Fin N1 ⊕ Fin N2 → Fin k → ℝ) :\n    Fin N1 ⊕ Fin N2 → Fin k → ℝ :=\n  Sum.elim (fun i => x (Sum.inl i)) (fun _ => 0)\n\nnoncomputable def maskR {N1 N2 k : ℕ} (x : Fin N1 ⊕ Fin N2 → Fin k → ℝ) :\n    Fin N1 ⊕ Fin N2 → Fin k → ℝ :=\n  Sum.elim (fun _ => 0) (fun i => x (Sum.inr i))\n\ntheorem moka_eq2_sum_eq_concat\n    (d k N1 N2 : ℕ) (W1 W2 : Matrix (Fin d) (Fin k) ℝ)\n    (x : Fin N1 ⊕ Fin N2 → Fin k → ℝ) :\n    (fun j => W1.mulVec (maskL x j) + W2.mulVec (maskR x j))\n      = Sum.elim (fun i => W1.mulVec (x (Sum.inl i)))\n                 (fun i => W2.mulVec (x (Sum.inr i))) := by\n  funext j\n  cases j with\n  | inl i => simp [maskL, maskR]\n  | inr i => simp [maskL, maskR]",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::EQUATION::2",
+      "snippet_type": "EQUATION",
+      "location": "2.2.1 Unimodal matrix A",
+      "content": "For an arbitrary pretrained weight $W_0$ the input sequence is $\\mathbf{x} = [x_1^a; \\cdots; x_{N_a}^a; x_1^v; \\cdots; x_{N_v}^v; x_1^t; \\cdots; x_{N_t}^t] = [\\mathbf{x}^a; \\mathbf{x}^v; \\mathbf{x}^t]$, where $\\{N_i\\}_{i \\in \\{a,v,t\\}}$ is the token length of modality $i$. Matrix $A$ is designed to be individual for each modality, so the compressed sequence after matrix $A$ is:\n\n$$A\\mathbf{x} = [A^a\\mathbf{x}^a; A^v\\mathbf{x}^v; A^t\\mathbf{x}^t],$$\n(4)\n\nwhere $\\{A_i\\}_{i \\in \\{a,v,t\\}}$ is the parameter of modality $i$.",
+      "route": "verify-math",
+      "route_rationale": "The question is whether writing $A\\mathbf{x}$ for a modality-dependent map is legitimate notation; there is no crisp formal content beyond what Eq. (10)/(13) already formalise.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::EQUATION::2",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.8,
+        "reasoning": "Eq. (4) is correct once $A$ is read as the block-diagonal operator $\\mathrm{diag}(A^a, A^v, A^t)$ acting on the concatenated sequence: each block $A^i$ is $r \\times k$ and acts token-wise on $\\mathbf{x}^i$, so the right-hand side is the honest description of the left-hand side. Writing a single symbol $A$ for an operator that is no longer a single $r \\times k$ matrix is an abuse of notation, and the surrounding prose slips between subscripts ($\\{A_i\\}$) and superscripts ($A^a$), but neither invalidates any derivation. No algebraic, sign, fractional, or domain error is present.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::EQUATION::3",
+      "snippet_type": "EQUATION",
+      "location": "2.2.2 Task-centric cross-attention",
+      "content": "$$\\text{Att}\\left(A^a\\mathbf{x}^a, A^t\\mathbf{x}^t, A^t\\mathbf{x}^t\\right) = \\text{softmax}\\left(\\frac{(A^a\\mathbf{x}^a)(A^t\\mathbf{x}^t)^\\top}{\\sqrt{d}}\\right) A^t\\mathbf{x}^t,$$\n\n$$\\text{Att}\\left(A^v\\mathbf{x}^v, A^t\\mathbf{x}^t, A^t\\mathbf{x}^t\\right) = \\text{softmax}\\left(\\frac{(A^v\\mathbf{x}^v)(A^t\\mathbf{x}^t)^\\top}{\\sqrt{d}}\\right) A^t\\mathbf{x}^t,$$\n\nwhere $d$ is the dimensionality of the projected token embeddings, ensuring correct normalization during attention calculation.\n(6)\n\n[Context: $W_0 \\in \\mathbb{R}^{d \\times k}$, $B \\in \\mathbb{R}^{d \\times r}$, $\\{A^i \\in \\mathbb{R}^{r \\times k}\\}$, $r \\ll \\min(d,k)$. Appendix B restates the same two equations as Eqs. (14)-(15) with $\\sqrt{N_t}$ in place of $\\sqrt{d}$.]",
+      "route": "verify-math",
+      "route_rationale": "Correctness turns on what the symbol $d$ denotes and on consistency with Appendix B's $\\sqrt{N_t}$ — a cross-reference and symbol-binding check, not a theorem.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::EQUATION::3",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.8,
+        "reasoning": "The softmax normaliser is specified inconsistently, in two compounding ways.\n\n(1) **$d$ is double-bound.** Section 2.1 and Section 2.2.4 both fix $W_0 \\in \\mathbb{R}^{d \\times k}$ and $B \\in \\mathbb{R}^{d \\times r}$, so $d$ is the *output* width of the frozen layer. The tokens entering the cross-attention have already been compressed by $A^i \\in \\mathbb{R}^{r \\times k}$, so the 'projected token embeddings' live in $\\mathbb{R}^{r}$, not $\\mathbb{R}^{d}$. The gloss '$d$ is the dimensionality of the projected token embeddings' therefore either rebinds $d$ to a second, different quantity inside the same section, or specifies the wrong normaliser: the scaled-dot-product constant for these queries and keys is $\\sqrt{r}$. Since the whole premise of the method is $r \\ll \\min(d,k)$, the two readings differ by an unbounded factor $\\sqrt{d/r}$.\n\n(2) **The paper contradicts itself across sections.** Appendix B reprints these two equations verbatim as Eqs. (14)-(15) with identical left-hand sides $\\text{Att}(A^a\\mathbf{x}^a, A^t\\mathbf{x}^t, A^t\\mathbf{x}^t)$ but divides by $\\sqrt{N_t}$ — the text-token count — instead of $\\sqrt{d}$. Equations (16)-(17) in the same appendix also use $\\sqrt{N_t}$. The same quantity is thus given two different definitions, and at most one can be the implemented one.\n\nThis does not break the softmax's well-definedness (any positive constant yields a row-stochastic matrix), so the method and its experiments survive; but the attention temperature is a specified quantity of the method and the specification is not reproducible as printed.",
+        "predicted_error_category": "Dimensional/notational inconsistency",
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::EQUATION::4",
+      "snippet_type": "EQUATION",
+      "location": "2.2.2 Task-centric cross-attention",
+      "content": "Then, the enhanced audio and visual tokens are:\n\n$$A^a\\mathbf{x}^a + \\text{Att}\\left(A^a\\mathbf{x}^a, A^t\\mathbf{x}^t, A^t\\mathbf{x}^t\\right),$$\n(7)\n\n$$A^v\\mathbf{x}^v + \\text{Att}\\left(A^v\\mathbf{x}^v, A^t\\mathbf{x}^t, A^t\\mathbf{x}^t\\right).$$\n(8)\n\nFinally, the sequence after cross-attention is:\n\n$$A\\mathbf{x} = [A^a\\mathbf{x}^a + \\text{Att}_{a,t,t}; A^v\\mathbf{x}^v + \\text{Att}_{v,t,t}; A^t\\mathbf{x}^t].$$\n(9)\n\n[Standing conventions: Eq. (1) writes $h = W_0\\mathbf{x}$ with $W_0 \\in \\mathbb{R}^{d \\times k}$ and Eq. (4) writes $A\\mathbf{x} = [A^a\\mathbf{x}^a; A^v\\mathbf{x}^v; A^t\\mathbf{x}^t]$ with $A^i \\in \\mathbb{R}^{r \\times k}$, so tokens are columns and $A^i\\mathbf{x}^i \\in \\mathbb{R}^{r \\times N_i}$. Att is defined in Eqs. (5)-(6) as $\\text{softmax}((A^a\\mathbf{x}^a)(A^t\\mathbf{x}^t)^\\top/\\sqrt{d})\\,A^t\\mathbf{x}^t$.]",
+      "route": "verify-math-lean",
+      "route_rationale": "Shape consistency of the residual addition $A^a\\mathbf{x}^a + \\mathrm{Att}(\\cdot)$ is exactly what Lean's dependently-typed `Matrix` indices decide.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::4",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.85,
+        "reasoning": "I first transcribed Eqs. (5)-(7) faithfully under the paper's own column-token convention, the one fixed by Eq. (1) ($h = W_0\\mathbf{x}$) and Eq. (4) ($A\\mathbf{x} = [A^a\\mathbf{x}^a; \\ldots]$): with $A^i \\in \\mathbb{R}^{r \\times k}$ left-multiplying a token matrix $\\mathbf{x}^i \\in \\mathbb{R}^{k \\times N_i}$, the compressed block $A^i\\mathbf{x}^i$ is $r \\times N_i$. Lean rejected the expression outright: `failed to synthesize instance of type class HMul (Matrix (Fin r) (Fin Na) R) (Matrix (Fin Nt) (Fin r) R)`. The Gram product $(A^a\\mathbf{x}^a)(A^t\\mathbf{x}^t)^\\top$ asks to multiply an $r \\times N_a$ matrix by an $N_t \\times r$ matrix, which is undefined unless $N_a = N_t$.\n\nI then proved the obstruction — a faithful formalisation of the *negation* of the implicit well-formedness claim — as `moka_attention_shape_obstruction`, which compiles clean. It establishes: (i) any index bijection $\\mathrm{Fin}\\,N_a \\simeq \\mathrm{Fin}\\,N_t$ forces $N_a = N_t$, so the Gram product of Eq. (5) exists only in that degenerate case; (ii) in that case it is $r \\times r$, i.e. the softmax would be taken over the two latent-rank axes rather than over token axes, which is not attention; (iii) the Eq. (5) output is then $r \\times N_t$, whereas Eq. (7) adds it to the $r \\times N_a$ block $A^a\\mathbf{x}^a$; and (iv) under the row-token convention (queries $N_a \\times r$, keys/values $N_t \\times r$, weights $N_a \\times N_t$) the whole of Eqs. (5)-(7) is well-formed for arbitrary $N_a, N_t$ and the residual is $N_a \\times r$, matching the query block.\n\nSo the manuscript uses two incompatible conventions: Eqs. (1)-(4) require tokens as columns, Eqs. (5)-(9) require tokens as rows. Under either single convention one of the two groups is ill-typed: with columns, Eq. (5)'s product and Eq. (7)'s addition fail; with rows, $A^i\\mathbf{x}^i$ itself fails and must be written $\\mathbf{x}^i (A^i)^\\top$. Classified `REFUTED` under the skill's definition because the compiling theorem is the negation of the paper's implicit claim, not the claim. Severity is minor: the intended operation is unambiguous and the obstruction is resolved by a single transpose, so no downstream result depends on it.",
+        "predicted_error_category": "Formally refuted",
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean",
+          "theorem_name": "moka_attention_shape_obstruction",
+          "formal_statement": "theorem moka_attention_shape_obstruction (r Na Nt : ℕ) :\n    -- (i) the Gram product of Eq. (5) is well-formed only if Nₐ = Nₜ\n    (∀ _e : Fin Na ≃ Fin Nt, Na = Nt)\n    -- (ii) and is then r × r, not Nₐ × Nₜ\n    ∧ (∀ Q K : Matrix (Fin r) (Fin Nt) ℝ,\n         (Q * Kᵀ : Matrix (Fin r) (Fin r) ℝ) = Q * Kᵀ)\n    -- (iii) so the Eq. (5) output is r × Nₜ\n    ∧ (∀ (Q K : Matrix (Fin r) (Fin Nt) ℝ)\n         (f : Matrix (Fin r) (Fin r) ℝ → Matrix (Fin r) (Fin r) ℝ),\n         (f (Q * Kᵀ) * K : Matrix (Fin r) (Fin Nt) ℝ) = f (Q * Kᵀ) * K)\n    -- (iv) the row-token convention makes Eqs. (5)-(7) well-formed for any Nₐ, Nₜ\n    ∧ (∀ (Q : Matrix (Fin Na) (Fin r) ℝ) (K V : Matrix (Fin Nt) (Fin r) ℝ)\n         (f : Matrix (Fin Na) (Fin Nt) ℝ → Matrix (Fin Na) (Fin Nt) ℝ),\n         (Q + f (Q * Kᵀ) * V : Matrix (Fin Na) (Fin r) ℝ) = Q + f (Q * Kᵀ) * V) := by\n  refine ⟨?_, fun _ _ => rfl, fun _ _ _ => rfl, fun _ _ _ _ => rfl⟩\n  intro e\n  simpa using Fintype.card_congr e",
+          "compiler_feedback": "Attempt 1 -- faithful transcription of Eqs. (5)-(7) under the paper's own\ncolumn-token convention (tokens as columns, Aa : Matrix (Fin r) (Fin k), xa : Matrix (Fin k) (Fin Na)):\n\nPaper/TMP.lean:15:5: error(lean.synthInstanceFailed): failed to synthesize instance of type class\n  HMul (Matrix (Fin r) (Fin Na) ℝ) (Matrix (Fin Nt) (Fin r) ℝ) ?m.14\n\nHint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.\nPaper/TMP.lean:16:10: error(lean.synthInstanceFailed): failed to synthesize instance of type class\n  HMul (Matrix (Fin r) (Fin Na) ℝ) (Matrix (Fin Nt) (Fin r) ℝ) ?m.29\n\nHint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.\nPaper/TMP.lean:18:10: error(lean.synthInstanceFailed): failed to synthesize instance of type class\n  HMul (Matrix (Fin r) (Fin Na) ℝ) (Matrix (Fin Nt) (Fin r) ℝ) ?m.44\n\nHint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.\nPaper/TMP.lean:19:13: error(lean.synthInstanceFailed): failed to synthesize instance of type class\n  HMul (Matrix (Fin r) (Fin Na) ℝ) (Matrix (Fin Nt) (Fin r) ℝ) ?m.67\n\nHint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.\nEXIT=1\n\nAttempt 2 -- the refutation (obstruction) theorem `moka_attention_shape_obstruction`:\nEXIT=0\nlean_diagnostic_messages: {\"partial\":false,\"success\":true,\"timed_out\":false,\"items\":[],\"failed_dependencies\":[]}\nlean_verify: {\"axioms\":[\"propext\",\"Classical.choice\",\"Quot.sound\"],\"trust\":\"standard\",\"non_standard_axioms\":[]}",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::EQUATION::5",
+      "snippet_type": "EQUATION",
+      "location": "2.2.3 Shared multimodal matrix $B$",
+      "content": "After unimodal compression and explicit cross-modal interaction enhancement, a shared multimodal matrix $B$ projects the resulting unimodal representations into a shared space. The final output of the MokA pathway is thus given by:\n\n$$BA\\mathbf{x} = [B(A^a\\mathbf{x}^a + \\text{Att}_{a,t,t}); B(A^v\\mathbf{x}^v + \\text{Att}_{v,t,t}); BA^t\\mathbf{x}^t].$$\n(10)",
+      "route": "verify-math-lean",
+      "route_rationale": "Block identity: applying the shared $B$ to a token-axis concatenation equals the concatenation of $B$ applied blockwise.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::5",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.95,
+        "reasoning": "Formalised Eq. (10) as: applying the shared $B \\in \\mathbb{R}^{d \\times r}$ token-wise to the concatenated post-cross-attention sequence of Eq. (9) equals the concatenation of $B$ applied to each of the three blocks. Index type `Fin Na + (Fin Nv + Fin Nt)` with `Sum.elim`; proof is `funext` plus case analysis, each case `rfl`. The identity needs no hypothesis beyond $B$ acting token-wise, which is how $W_0$ itself acts in Eq. (1). Compiles clean, exit 0, no diagnostics, no `sorryAx`.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean",
+          "theorem_name": "moka_eq10_shared_B",
+          "formal_statement": "theorem moka_eq10_shared_B\n    (d r Na Nv Nt : ℕ) (B : Matrix (Fin d) (Fin r) ℝ)\n    (ua : Fin Na → Fin r → ℝ) (ata : Fin Na → Fin r → ℝ)\n    (uv : Fin Nv → Fin r → ℝ) (atv : Fin Nv → Fin r → ℝ)\n    (ut : Fin Nt → Fin r → ℝ) :\n    (fun j => B.mulVec\n        (Sum.elim (fun i => ua i + ata i)\n          (Sum.elim (fun i => uv i + atv i) ut) j))\n      = Sum.elim (fun i => B.mulVec (ua i + ata i))\n          (Sum.elim (fun i => B.mulVec (uv i + atv i))\n                    (fun i => B.mulVec (ut i))) := by\n  funext j\n  rcases j with i | j\n  · rfl\n  · rcases j with i | i <;> rfl",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::EQUATION::6",
+      "snippet_type": "EQUATION",
+      "location": "2.2.4 Overview",
+      "content": "$$h = W_0\\mathbf{x} + \\Delta W\\mathbf{x} = W_0\\mathbf{x} + \\Delta W[\\mathbf{x}^a; \\mathbf{x}^v; \\mathbf{x}^t],$$\n(11)\n\n$$= W_0\\mathbf{x} + [B(A^a\\mathbf{x}^a + \\text{Att}_{a,t,t}); B(A^v\\mathbf{x}^v + \\text{Att}_{v,t,t}); BA^t\\mathbf{x}^t],$$\n(12)\n\n$$= W_0\\mathbf{x} + \\underbrace{[BA^a\\mathbf{x}^a; BA^v\\mathbf{x}^v; BA^t\\mathbf{x}^t]}_{\\text{unimodal adaptation}} + \\underbrace{[B\\text{Att}_{a,t,t}; B\\text{Att}_{v,t,t}; B\\mathbf{0}_{N_t}]}_{\\text{cross-modal adaptation}},$$\n(13)\n\nwhere $\\mathbf{0}_{N_t}$ denotes the zero vector of dimension $N_t$, since text tokens remain unchanged after cross-attention. Also, $A^i$ is initialized using the uniform Kaiming distribution, while $B$ is initialized to zero. It leads to an initial update $\\Delta W = 0$ at the beginning of fine-tuning.",
+      "route": "verify-math-lean",
+      "route_rationale": "The step (12) → (13) is the paper's central derivation — a linearity/distributivity identity over block concatenations — and is directly formalisable.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::6",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.95,
+        "reasoning": "Formalised the load-bearing step (12) → (13) as `moka_eq13_decomposition`: over the index type `Fin Na + (Fin Nv + Fin Nt)`, the post-cross-attention output splits exactly into the unimodal term $[BA^a\\mathbf{x}^a; BA^v\\mathbf{x}^v; BA^t\\mathbf{x}^t]$ plus a cross-modal term whose third (text) block is $B\\mathbf{0} = \\mathbf{0}$. Proof: `funext`, three-way case split, `Matrix.mulVec_add` on the audio and visual blocks and `simp` (via `Matrix.mulVec_zero`) on the text block. The decomposition holds with no hypothesis beyond linearity of $B$, so Eq. (13) is a correct consequence of Eq. (12). A companion theorem `moka_zero_init_vanishes` confirms the stated zero-initialisation claim: $0 \\cdot A^i = 0$ for each modality, so the initial update vanishes. Both compile clean, exit 0, no diagnostics, no `sorryAx`, standard axioms only.\n\nOne faithfulness note, which the Lean types make explicit rather than hide: the zero fed to $B$ in the third block must inhabit $\\mathbb{R}^r$ (`Fin r -> R`) repeated over the $N_t$ text tokens — an $r \\times N_t$ zero block — and not, as the prose says, 'the zero vector of dimension $N_t$'. Because $B \\cdot 0 = 0$ either way, Eq. (13) is unaffected; see `paper::DEFINITION::0`.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean",
+          "theorem_name": "moka_eq13_decomposition",
+          "formal_statement": "theorem moka_eq13_decomposition\n    (d r Na Nv Nt : ℕ) (B : Matrix (Fin d) (Fin r) ℝ)\n    (ua ata : Fin Na → Fin r → ℝ)\n    (uv atv : Fin Nv → Fin r → ℝ)\n    (ut : Fin Nt → Fin r → ℝ) :\n    Sum.elim (fun i => B.mulVec (ua i + ata i))\n        (Sum.elim (fun i => B.mulVec (uv i + atv i)) (fun i => B.mulVec (ut i)))\n      = Sum.elim (fun i => B.mulVec (ua i))\n          (Sum.elim (fun i => B.mulVec (uv i)) (fun i => B.mulVec (ut i)))\n        + Sum.elim (fun i => B.mulVec (ata i))\n            (Sum.elim (fun i => B.mulVec (atv i))\n                      (fun _ : Fin Nt => B.mulVec (0 : Fin r → ℝ))) := by\n  funext j\n  rcases j with i | j\n  · simp [Matrix.mulVec_add]\n  · rcases j with i | i\n    · simp [Matrix.mulVec_add]\n    · simp\n\ntheorem moka_zero_init_vanishes\n    (d r k : ℕ) (Aa Av At : Matrix (Fin r) (Fin k) ℝ) :\n    (0 : Matrix (Fin d) (Fin r) ℝ) * Aa = 0\n      ∧ (0 : Matrix (Fin d) (Fin r) ℝ) * Av = 0\n      ∧ (0 : Matrix (Fin d) (Fin r) ℝ) * At = 0 := by\n  refine ⟨Matrix.zero_mul _, Matrix.zero_mul _, Matrix.zero_mul _⟩",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::DEFINITION::0",
+      "snippet_type": "DEFINITION",
+      "location": "2.2.4 Overview",
+      "content": "where $\\mathbf{0}_{N_t}$ denotes the zero vector of dimension $N_t$, since text tokens remain unchanged after cross-attention.\n\n[Used in Eq. (13) as the third block of the cross-modal term, $[B\\text{Att}_{a,t,t}; B\\text{Att}_{v,t,t}; B\\mathbf{0}_{N_t}]$, with $B \\in \\mathbb{R}^{d \\times r}$.]",
+      "route": "verify-math",
+      "route_rationale": "Asserts a dimension for $\\mathbf{0}_{N_t}$ that could be false; a label check best done by inspection against $B$'s shape.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::DEFINITION::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.75,
+        "reasoning": "The dimension label is wrong: $B \\in \\mathbb{R}^{d \\times r}$, so any operand of $B$ must have $r$ rows. For $B\\mathbf{0}_{N_t}$ to be the $d \\times N_t$ text block of Eq. (13), $\\mathbf{0}_{N_t}$ must be the $r \\times N_t$ zero block — the $r$-dimensional zero vector repeated across the $N_t$ text tokens — not 'the zero vector of dimension $N_t$'. The subscript names the token count, not the vector's dimension. This is a mislabel in prose accompanying the equation rather than a derivation error: $B \\cdot 0 = 0$ for a zero block of any width, so Eq. (13) is correct regardless, as the Lean proof of `moka_eq13_decomposition` confirms (its third block is `fun _ : Fin Nt => B.mulVec (0 : Fin r -> R)`). Per this verifier's rules, descriptive slips in accompanying text are not flagged; recorded for the authors' attention, not as a finding.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.75
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "2.2.4 Overview",
+      "content": "In conclusion, in MokA, for a pretrained weight matrix $W_0 \\in \\mathbb{R}^{d \\times k}$, its update $\\Delta W \\in \\mathbb{R}^{d \\times k}$ is parameterized as the product of much smaller matrices: $B \\in \\mathbb{R}^{d \\times r}$ and $\\{A^i \\in \\mathbb{R}^{r \\times k}\\}_{i \\in \\{a,v,t\\}}$, with $r \\ll \\min(d, k)$. For input sequence $\\mathbf{x}$, the forward pass yields [Eqs. (11)-(13)] ... Based on Equation 13, MokA ensures both unimodal and cross-modal adaptation, offering a more tailored solution for fine-tuning MLLMs.\n\n[Compare the design desideratum of Section 2.1: $h = W_0\\mathbf{x} + \\Delta W \\mathbf{x} = W_0\\mathbf{x} + \\sum_{i=1}^n \\Delta W_i \\mathbf{x}^{m_i} + \\Delta W_{\\mathrm{cross}} \\mathbf{x}$, where '$\\Delta W_{\\mathrm{cross}}$ applies cross-modal adaptation across all modalities jointly'.]",
+      "route": "verify-math",
+      "route_rationale": "Whether Eq. (13) instantiates the desideratum Eq. (2) is an interpretive modelling question about the stated parameterisation, not a formalisable identity.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.8,
+        "reasoning": "The stated parameterisation is not satisfiable by the method the paper describes. Two independent reasons, both reading directly off Eq. (13):\n\n(1) **No single $\\Delta W \\in \\mathbb{R}^{d \\times k}$ exists.** In Eq. (1) the update acts exactly as $W_0$ does — one $d \\times k$ matrix applied token-wise — which is what makes $W' = W_0 + BA$ a weight matrix. MokA's pathway is neither. Its unimodal term applies a *different* operator $BA^i$ to each modality's block, so the map is position-dependent; and its cross-modal term $\\text{Att}_{i,t,t} = \\text{softmax}((A^i\\mathbf{x}^i)(A^t\\mathbf{x}^t)^\\top/\\sqrt{d})A^t\\mathbf{x}^t$ is both token-mixing and *nonlinear* in $\\mathbf{x}$ (softmax). A token-wise linear map cannot mix tokens, and no linear map at all can reproduce a softmax. Hence 'its update $\\Delta W \\in \\mathbb{R}^{d \\times k}$ is parameterized as the product of much smaller matrices' is false as written, and the expression $\\Delta W\\mathbf{x}$ in Eqs. (11)-(12) does not denote a matrix-vector product. Concretely: scaling the input, $\\mathbf{x} \\mapsto \\lambda\\mathbf{x}$, scales any genuine $\\Delta W\\mathbf{x}$ by $\\lambda$, whereas MokA's cross-modal term does not scale linearly because the softmax argument is quadratic in $\\mathbf{x}$ — so the two cannot be equal for all inputs. A corollary the paper never addresses is that, unlike LoRA, MokA cannot be merged into $W_0$ at inference time.\n\n(2) **The cross-modal term is not 'across all modalities jointly'.** Section 2.1 posits a single $\\Delta W_{\\mathrm{cross}}$ applied to the whole sequence $\\mathbf{x}$. In Eq. (13) the cross-modal block is $[B\\text{Att}_{a,t,t}; B\\text{Att}_{v,t,t}; B\\mathbf{0}_{N_t}]$, identically zero on the text block by construction. So MokA's realised cross-modal adaptation acts on non-text modalities only; it does not instantiate the desideratum it is introduced to satisfy. The paper's own ablation is consistent with the method working regardless, so this is a mismatch between the formal framing and the construction.\n\nSeverity minor: the algorithm, its implementation, and the experimental claims are unaffected — what is wrong is the algebraic type ascribed to the update in Section 2.2.4 and its claimed correspondence to Eq. (2).",
+        "predicted_error_category": "Invalid parameterisation claim",
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": []
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::EQUATION::7",
+      "snippet_type": "EQUATION",
+      "location": "B MokA with linear projection",
+      "content": "In MokA, linear projections (W_q, W_k, and W_v) are not included in the cross-attention module:\n\nAtt(A^a\\mathbf{x}^a, A^t\\mathbf{x}^t, A^t\\mathbf{x}^t) = softmax(((A^a\\mathbf{x}^a)(A^t\\mathbf{x}^t)^\\top)/\\sqrt{N_t}) A^t\\mathbf{x}^t,\n(14)\n\nAtt(A^v\\mathbf{x}^v, A^t\\mathbf{x}^t, A^t\\mathbf{x}^t) = softmax(((A^v\\mathbf{x}^v)(A^t\\mathbf{x}^t)^\\top)/\\sqrt{N_t}) A^t\\mathbf{x}^t.\n(15)",
+      "route": "verify-math",
+      "route_rationale": "Inconsistency check against Eqs. (5)-(6); no new formal content of its own.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::EQUATION::7",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.8,
+        "reasoning": "Taken on its own this is a well-formed attention block: $\\sqrt{N_t}$ is an unusual temperature (the scaled-dot-product convention is the square root of the key dimension, here $r$), but any positive constant leaves the softmax row-stochastic and the expression valid. No algebraic, sign, fractional, or domain error is present within the snippet. The problem is a cross-section one — these are the same two equations as Eqs. (5)-(6), with the same left-hand sides, but normalised by $\\sqrt{N_t}$ rather than $\\sqrt{d}$. That contradiction is reported once, against `paper::EQUATION::3`, where $d$ is defined; it is not double-counted here. The row/column convention issue of `paper::EQUATION::4` applies verbatim to Eqs. (14)-(15) as well.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::EQUATION::8",
+      "snippet_type": "EQUATION",
+      "location": "B MokA with linear projection",
+      "content": "The concrete attention mechanism with linear projection is conducted as follows, and the notation is consistent with the main manuscript:\n\nAtt(A^a\\mathbf{x}^a, A^t\\mathbf{x}^t, A^t\\mathbf{x}^t) = softmax(((W_q^aA^a\\mathbf{x}^a)(W_k^tA^t\\mathbf{x}^t)^\\top)/\\sqrt{N_t}) W_v^tA^t\\mathbf{x}^t,\n(16)\n\nAtt(A^v\\mathbf{x}^v, A^t\\mathbf{x}^t, A^t\\mathbf{x}^t) = softmax(((W_q^vA^v\\mathbf{x}^v)(W_k^tA^t\\mathbf{x}^t)^\\top)/\\sqrt{N_t}) W_v^tA^t\\mathbf{x}^t.\n(17)\n\nHere, W_q^a is the linear projection of the audio query, and the others are similar. In addition, projections of key and value are shared in this case (A^t).",
+      "route": "verify-math",
+      "route_rationale": "Shape and consistency of the projection-augmented attention; inspection suffices.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::EQUATION::8",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.8,
+        "reasoning": "Inserting square projections $W_q^i, W_k^t, W_v^t$ acting on the $r$-dimensional compressed embeddings preserves every shape relation of Eqs. (14)-(15), so Eqs. (16)-(17) are shape-consistent exactly to the extent those are, and introduce no new error. Sharing a single $W_k^t$ and $W_v^t$ across the audio and visual branches is a legitimate parameter-sharing choice and is correctly described. No algebraic, sign, fractional, or domain error. The same row/column convention caveat recorded under `paper::EQUATION::4` applies.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::EQUATION::9",
+      "snippet_type": "EQUATION",
+      "location": "4.6 Efficiency evaluation",
+      "content": "Also, although MokA incurs a slight increase in inference latency compared to standard LoRA, it achieves a notable performance gain of 3.95% on the POPE benchmark.\n\n[Table 6: LoRA POPE Acc = 70.28, MokA POPE Acc = 74.23.]",
+      "route": "verify-math",
+      "route_rationale": "A derived arithmetic claim over two reported values, checkable by inspection.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::EQUATION::9",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "The arithmetic checks out: $74.23 - 70.28 = 3.95$, matching Table 6 exactly, and the same two values appear consistently in Tables 2, 4, 5 and 11. Reporting an absolute accuracy difference of $3.95$ points as '3.95%' is the standard convention in this literature; the relative gain would be $3.95/70.28 \\approx 5.62\\%$, but the paper does not claim a relative gain. No error.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    }
+  ],
+  "findings": [
+    {
+      "snippet_id": "paper::EQUATION::4",
+      "category": "Formally refuted — dimensional inconsistency (transpose convention)",
+      "severity": "minor",
+      "confidence": 0.85,
+      "evidence": "Eqs. (1) and (4) fix tokens as **columns**: $W_0 \\in \\mathbb{R}^{d \\times k}$ acts as $W_0\\mathbf{x}$ and $A^i \\in \\mathbb{R}^{r \\times k}$ as $A^i\\mathbf{x}^i$, so each compressed block $A^i\\mathbf{x}^i$ is $r \\times N_i$. Under that convention Lean refuses the paper's own expression: the Gram product $(A^a\\mathbf{x}^a)(A^t\\mathbf{x}^t)^\\top$ of Eq. (5) asks for an $r \\times N_a$ matrix times an $N_t \\times r$ matrix — `failed to synthesize instance of type class HMul (Matrix (Fin r) (Fin Na) ℝ) (Matrix (Fin Nt) (Fin r) ℝ)`. The obstruction theorem `moka_attention_shape_obstruction` compiles clean and proves: any well-formed instantiation forces $N_a = N_t$; in that degenerate case the Gram matrix is $r \\times r$, so the softmax would be taken over the two latent-rank axes rather than over token axes; the attention output is then $r \\times N_t$, which Eq. (7) adds to the $r \\times N_a$ block $A^a\\mathbf{x}^a$; and the whole block is well-formed for arbitrary $N_a, N_t$ only under the **row**-token convention (queries $N_a \\times r$, keys/values $N_t \\times r$, weights $N_a \\times N_t$, residual $N_a \\times r$). The manuscript therefore uses two incompatible conventions — Eqs. (1)-(4) need columns, Eqs. (5)-(9) and (14)-(17) need rows — and no single reading types-checks throughout. The fix is one transpose: write $\\mathbf{x}^i (A^i)^\\top$, or equivalently transpose the attention arguments.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "$$A^a\\mathbf{x}^a + \\text{Att}\\left(A^a\\mathbf{x}^a, A^t\\mathbf{x}^t, A^t\\mathbf{x}^t\\right),$$"
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+      "category": "Invalid parameterisation claim — the update is not a $d \\times k$ matrix",
+      "severity": "minor",
+      "confidence": 0.8,
+      "evidence": "Section 2.2.4 asserts that MokA's update is a matrix, $\\Delta W \\in \\mathbb{R}^{d \\times k}$, parameterised by $B$ and $\\{A^i\\}$, and writes the forward pass as $h = W_0\\mathbf{x} + \\Delta W\\mathbf{x}$. No such $\\Delta W$ exists. Eq. (13)'s unimodal term applies a *different* operator $BA^i$ to each modality's token block, so the map is position-dependent rather than a single token-wise matrix; and its cross-modal term $\\text{Att}_{i,t,t} = \\text{softmax}\\!\\big((A^i\\mathbf{x}^i)(A^t\\mathbf{x}^t)^\\top/\\sqrt{d}\\big)A^t\\mathbf{x}^t$ both mixes tokens and is **nonlinear** in $\\mathbf{x}$. A linear map $\\Delta W$ satisfies $\\Delta W(\\lambda\\mathbf{x}) = \\lambda\\,\\Delta W\\mathbf{x}$, whereas the softmax argument above is quadratic in $\\mathbf{x}$, so MokA's term does not scale linearly and cannot equal $\\Delta W\\mathbf{x}$ for all inputs. Separately, Section 2.1's desideratum requires a single $\\Delta W_{\\mathrm{cross}}$ that 'applies cross-modal adaptation across all modalities jointly', but Eq. (13)'s cross-modal block $[B\\text{Att}_{a,t,t}; B\\text{Att}_{v,t,t}; B\\mathbf{0}_{N_t}]$ is identically zero on text, so it acts on non-text modalities only and does not instantiate Eq. (2) as claimed. An unaddressed corollary is that, unlike LoRA's $W' = W_0 + BA$, MokA cannot be merged into $W_0$ at inference.",
+      "verifier": "verify-math",
+      "exact_quote": "its update $\\Delta W \\in \\mathbb{R}^{d \\times k}$ is parameterized as the product of much smaller matrices: $B \\in \\mathbb{R}^{d \\times r}$ and $\\{A^i \\in \\mathbb{R}^{r \\times k}\\}_{i \\in \\{a,v,t\\}}$, with $r \\ll \\min(d, k)$"
+    },
+    {
+      "snippet_id": "paper::EQUATION::3",
+      "category": "Dimensional/notational inconsistency — contradictory softmax normaliser",
+      "severity": "minor",
+      "confidence": 0.8,
+      "evidence": "The attention temperature is specified two incompatible ways. (i) $d$ is already bound by Sections 2.1 and 2.2.4 as the output width of the frozen layer ($W_0 \\in \\mathbb{R}^{d \\times k}$, $B \\in \\mathbb{R}^{d \\times r}$), but the tokens entering the cross-attention have been compressed by $A^i \\in \\mathbb{R}^{r \\times k}$ and so live in $\\mathbb{R}^{r}$. The gloss '$d$ is the dimensionality of the projected token embeddings' thus rebinds $d$ to a second quantity, or else names the wrong normaliser — the scaled-dot-product constant for these queries and keys is $\\sqrt{r}$. Because the method's premise is $r \\ll \\min(d,k)$, the two readings differ by an unbounded factor $\\sqrt{d/r}$. (ii) Appendix B reprints the identical equations as Eqs. (14)-(15), same left-hand sides, dividing by $\\sqrt{N_t}$ instead of $\\sqrt{d}$; Eqs. (16)-(17) use $\\sqrt{N_t}$ too. At most one of $\\sqrt{d}$, $\\sqrt{N_t}$, $\\sqrt{r}$ is what was implemented, and the manuscript does not say which. The softmax remains row-stochastic under any positive constant, so the method and results stand; the specification is not reproducible as printed.",
+      "verifier": "verify-math",
+      "exact_quote": "where $d$ is the dimensionality of the projected token embeddings, ensuring correct normalization during attention calculation."
+    }
+  ],
+  "verdict": "MINOR_ERRORS",
+  "verdict_confidence": 0.78,
+  "summary": "**Scope.** MokA is a methods paper: its mathematics is the eight-equation specification of the adapter in Section 2.2 plus its restatement in Appendix B. Twelve self-contained mathematical objects were extracted; five were routed to Lean 4 and seven to informal review. There are no theorems, lemmas or proofs in the manuscript, so there is no convergence or bound to settle — what is checkable is dimensional consistency and whether the derivation (11)→(13) and the stated parameterisation actually hold.\n\n**What Lean settled.** All five Lean snippets compiled, each with exit 0, empty `lean_diagnostic_messages`, and only the three standard Mathlib axioms (`propext`, `Classical.choice`, `Quot.sound`) — no `sorry`, no `sorryAx`. Four came back `PASSED`:\n- Eq. (1): $(W_0 + BA)x = W_0x + B(Ax)$ with the stated shapes, and $B = 0 \\Rightarrow BA = 0$ (`moka_eq1_lora_forward`).\n- Eq. (2) vs Eq. (13): under the zero-masking reading of $\\mathbf{x}^{m_i}$, the per-modality *sum* of Eq. (2) agrees token-by-token with the block *concatenation* Eq. (13) writes (`moka_eq2_sum_eq_concat`).\n- Eq. (10): the shared $B$ distributes over the token-axis concatenation (`moka_eq10_shared_B`).\n- Eqs. (11)→(13), the paper's central derivation: the output splits exactly into the unimodal term and a cross-modal term whose text block vanishes, needing nothing beyond linearity of $B$ (`moka_eq13_decomposition`), with the zero-initialisation claim confirmed separately (`moka_zero_init_vanishes`).\n\nSo the load-bearing algebra of the method is formally correct. Eq. (13) is a sound consequence of Eq. (12), and the paper's headline structural claim — that MokA's update decomposes into a unimodal and a cross-modal part — is machine-checked.\n\n**What Lean refuted.** One snippet, Eq. (7), came back `REFUTED`. Transcribing Eqs. (5)–(7) faithfully under the column-token convention that Eqs. (1) and (4) themselves fix, Lean rejected the paper's expression outright (`failed to synthesize instance of type class HMul (Matrix (Fin r) (Fin Na) ℝ) (Matrix (Fin Nt) (Fin r) ℝ)`), and the obstruction theorem `moka_attention_shape_obstruction` then compiled clean: a well-formed instantiation forces $N_a = N_t$, the Gram matrix is $r \\times r$ rather than $N_a \\times N_t$, and the attention output is $r \\times N_t$ where Eq. (7) adds it to an $r \\times N_a$ block. The block is well-formed for arbitrary token counts only under the row-token convention, which in turn makes $A^i\\mathbf{x}^i$ itself ill-formed. The manuscript genuinely uses two incompatible conventions; the fix is a single transpose and nothing downstream depends on it, hence `minor`.\n\n**What informal review added.** Two further minor findings, neither of which Lean was the right tool for. The softmax normaliser is specified three ways across the paper — $\\sqrt{d}$ in Eqs. (5)–(6) with $d$ double-bound (it is the frozen layer's output width, while the projected embeddings live in $\\mathbb{R}^{r}$), versus $\\sqrt{N_t}$ in Appendix B's verbatim restatement as Eqs. (14)–(17) — so the temperature is not reproducible as printed. And Section 2.2.4's assertion that the update is a matrix $\\Delta W \\in \\mathbb{R}^{d \\times k}$ applied as $\\Delta W\\mathbf{x}$ is false: the cross-modal term is token-mixing and nonlinear in $\\mathbf{x}$ (its softmax argument is quadratic, so it fails $\\Delta W(\\lambda\\mathbf{x}) = \\lambda\\Delta W\\mathbf{x}$), and the unimodal term applies a different $BA^i$ per block; relatedly, Eq. (13)'s cross-modal block is identically zero on text and so does not instantiate Eq. (2)'s requirement of adaptation 'across all modalities jointly'. A consequence the paper never addresses is that, unlike LoRA, MokA cannot be merged into $W_0$ at inference.\n\n**Disagreements and clean results.** None of the three findings is contradicted by a Lean result, and no Lean run returned `FAILED` or `NOT_ATTEMPTED`, so no informal fallbacks were required and the two verifiers never disagree. Eq. (4), Appendix B's Eqs. (14)–(17), and the arithmetic of the $3.95$-point POPE gain ($74.23 - 70.28$, consistent across Tables 2, 4, 5, 6 and 11) all came back clean. Two further slips were recorded but deliberately *not* raised as findings, since both are prose-level and leave every derivation intact: the gloss calling $\\mathbf{0}_{N_t}$ 'the zero vector of dimension $N_t$' when $B\\mathbf{0}_{N_t}$ requires an $r \\times N_t$ zero block, and the subscript/superscript drift between $\\{A_i\\}$ and $A^a$.\n\n**Verdict.** `MINOR_ERRORS`. Three confident findings, all minor: the paper's central derivation and its decomposition claim are formally verified, and every defect found concerns the written specification — a transpose convention, a contradictory normalisation constant, and an over-strong algebraic type for the update — rather than the algorithm or its experimental claims. Confidence 0.78: high on the four `PASSED` core identities and on the refuted shape clash, lower on the overall verdict because the two informal findings rest on reading the authors' intent for symbols the paper binds inconsistently, and because this skill checks only mathematics — the experimental tables were out of scope.\n\n**Out of scope, noted in passing.** Table 2 reports LLaMA2 + LoRA MME as $90.85$, whereas Tables 4 and 11 report $908.52$ for the same cell; and Table 5's 'Multiple LoRA' / 'MokA' AIR-Bench entries ($31.97$, $39.64$) disagree with Table 3's ($32.80$, $36.70$), as does Table 4's 'Multiple LoRA' AVE entry. These are experimental-reporting inconsistencies, outside this skill's mathematical remit; `/verify-vision` or `/verify-consistency` is the right route for them."
+}

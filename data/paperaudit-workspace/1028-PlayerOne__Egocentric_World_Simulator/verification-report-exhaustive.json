@@ -1,0 +1,135 @@
+{
+  "paper_id": "1028-PlayerOne__Egocentric_World_Simulator",
+  "title": "PlayerOne: Egocentric World Simulator",
+  "paper_category": "cs.CV",
+  "predicted_errors": [
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Equation 3, Sec 3.2 Model Components (Part-disentangled motion injection)",
+      "confidence": 0.95,
+      "supporting_evidence": "The rotation matrix is printed as R = I + sinθ·[u]× + (1 + cosθ)·[u]×². Rodrigues' formula requires (1 − cosθ), not (1 + cosθ). Counterexample: at θ = 0 the printed formula yields R = I + 2[u]×² ≠ I, which violates RᵀR = I and is not a rotation matrix. This invalidates the camera-extrinsics construction used to inject head-orientation view changes.",
+      "verifier_name": "math-equations",
+      "snippet_id": "1028-PlayerOne::EQUATION::2"
+    },
+    {
+      "error_category": "Abstract vs Results mismatch",
+      "error_location": "Abstract ('30 FPS') vs Sec 4.1 and Appendix A (Latency)",
+      "confidence": 0.92,
+      "supporting_evidence": "The Abstract claims 'achieving true real-time generation at 30 FPS', but Sec 4.1 states 'The generated video runs at eight frames per second' and 'After distillation, our method can achieve 8 FPS', and Appendix A reports measured end-to-end latency of ~119 ms/frame ≈ 8.4 FPS. 30 FPS would require ≤33.3 ms/frame, ~3.6× faster than the paper's own measurement. The headline real-time claim is contradicted by the paper's own numbers.",
+      "verifier_name": "cross-section-consistency",
+      "snippet_id": "1028-PlayerOne::SECTION::0"
+    },
+    {
+      "error_category": "Methodology vs Results mismatch",
+      "error_location": "Sec 4.1 Benchmark vs Table 1 (training datasets) vs Appendix A (Evaluation on Nymeria)",
+      "confidence": 0.85,
+      "supporting_evidence": "Sec 4.1 states the benchmark uses '100 videos collected from the Nymeria [25] dataset, which is not included for training', but Table 1 explicitly lists Nymeria [24] (Size 1,200) as a training dataset. Additionally, Appendix A says the benchmark was 'reconstructed' by selecting '100 videos featuring full-body actions from the test sets of four different datasets: EgoExo-4D, Nymeria, FT-HID, EgoExo-Fitness' — contradicting the main text's claim that it is drawn from Nymeria alone. The evaluation set both is and is not part of the training data as written.",
+      "verifier_name": "cross-section-consistency",
+      "snippet_id": "1028-PlayerOne::SECTION::6"
+    },
+    {
+      "error_category": "Conclusion vs Evidence mismatch",
+      "error_location": "Sec 5 Conclusion and Sec 1 Introduction vs Limitations (Sec 5, Appendix C) and Table 14",
+      "confidence": 0.85,
+      "supporting_evidence": "The Conclusion claims PlayerOne 'ensures coherent world generation across all scenarios without exception' and the Introduction claims it 'completely solves the long-standing challenge of egocentric world simulation and eliminates all limitations of prior methods'. These are directly contradicted by the paper's own Limitations ('our performance in game scenarios is slightly inferior to realistic ones', 'in highly dynamic scenes, predictions may falter') and Table 14's measurably worse game-domain results (FVD 248.95 vs 226.12, DINO 65.40 vs 67.80).",
+      "verifier_name": "cross-section-consistency",
+      "snippet_id": "1028-PlayerOne::SECTION::9"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Table 19 vs 'Investigation on the impact of filtering' (Appendix A)",
+      "confidence": 0.82,
+      "supporting_evidence": "The text concludes 'the absence of filtering also causes performance deterioration... a filtering ratio of 10% optimizes performance', but Table 19 shows ratio 0 (no filtering) is BETTER than ratio 10 on 4 of 7 metrics: MPJPE 123.50 vs 127.16, MRRPE 158.10 vs 163.62, FVD 228.50 vs 236.12, LPIPS 0.0587 vs 0.0663 (ratio 10 only wins on DINO 67.8 vs 64.2, CLIP 88.2 vs 85.0, PSNR 50.3 vs 47.5). The table as printed does not support the claimed optimality of a 10% filtering ratio.",
+      "verifier_name": "text",
+      "snippet_id": "1028-PlayerOne::TABLE::18"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Table 18 (CUT3R row) vs Tables 2, 3, 7, 9, 13",
+      "confidence": 0.8,
+      "supporting_evidence": "Table 18's CUT3R row is the full PlayerOne model, yet reports MRRPE 163.62, PSNR 50.3, FVD 236.12, while Tables 2/3/7/9/13 report the same configuration on the same benchmark as MRRPE 151.62, PSNR 52.6, FVD 226.12 — with DINO (67.8), CLIP (88.2), MPJPE (127.16) and LPIPS (0.0663) identical. Identical values on four metrics rule out a different evaluation setting; three metrics are irreconcilably different for the same model. Table 19's ratio-10 row reproduces the Table 18 values (163.62/50.3/236.12), so two mutually inconsistent 'full model' number sets appear in the paper.",
+      "verifier_name": "text",
+      "snippet_id": "1028-PlayerOne::TABLE::17"
+    },
+    {
+      "error_category": "Misattribution (external)",
+      "error_location": "Sec 4.1 Benchmark, reference [2]",
+      "confidence": 0.8,
+      "supporting_evidence": "Sec 4.1 states 'we use Qwen2.5-VL [2] to enrich the captions for competitors', but reference [2] is 'Qwen Technical Report, arXiv:2309.16609, 2023'. Web verification of arXiv:2309.16609 confirms it describes the text-only Qwen LLM series (Qwen/Qwen-Chat, with only a brief mention of the previously released Qwen-VL); it does not describe Qwen2.5-VL, which is a distinct, later vision-language model (arXiv:2502.13923, 2025). The cited work cannot be the VLM used to caption videos.",
+      "verifier_name": "citation",
+      "snippet_id": "1028-PlayerOne::SECTION::6"
+    },
+    {
+      "error_category": "Methodology vs Results mismatch",
+      "error_location": "Sec 4.1 Metrics vs all results tables",
+      "confidence": 0.8,
+      "supporting_evidence": "Sec 4.1 states 'PSNR, SSIM, and LPIPS [48] are employed to evaluate the video fidelity' and introduces a 'frame consistency' metric 'to evaluate the temporal coherence and consistency of the generated video frames over time', but no results table reports SSIM or frame consistency; instead every table reports FVD (Fréchet Video Distance), a metric never introduced or defined in the Metrics section. The stated evaluation protocol does not match the reported results.",
+      "verifier_name": "cross-section-consistency",
+      "snippet_id": "1028-PlayerOne::SECTION::6"
+    },
+    {
+      "error_category": "Data Inconsistency (mislabeled row)",
+      "error_location": "Table 2 final row, Sec 4.2 Ablation Study",
+      "confidence": 0.78,
+      "supporting_evidence": "Table 2's final row is labeled 'PlayerOne (ours, indoor scenes only)' but carries the exact same numbers as the full-benchmark 'PlayerOne (ours)' row in Table 3 (DINO 67.8, CLIP 88.2, MPJPE 127.16, MRRPE 151.62, PSNR 52.6, FVD 226.12, LPIPS 0.0663). The 'indoor scenes only' qualifier is never explained in the text, the benchmark is described as covering 'diverse realistic scenarios', and it is implausible that an indoor-only subset yields byte-identical metrics to the full benchmark. This implies either a misleading subset label or an error in the reported numbers.",
+      "verifier_name": "vision",
+      "snippet_id": "1028-PlayerOne::TABLE::1"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Sec 4.3 User study vs Appendix A (Definition of evaluation criteria)",
+      "confidence": 0.7,
+      "supporting_evidence": "Sec 4.3 states 'We let 20 annotators rate 25 groups of videos, where each group contains the generated video of each method and the text description', but Appendix A's 'Definition of evaluation criteria' states annotators 'viewed both the generated video and the motion condition signal... for all 100 videos'. The user-study protocol is described with 25 rated groups in the main text and 100 videos in the appendix.",
+      "verifier_name": "cross-section-consistency",
+      "snippet_id": "1028-PlayerOne::SECTION::8"
+    },
+    {
+      "error_category": "Equation / proof (undefined notation)",
+      "error_location": "Equation 1, Sec 3.1 Overview",
+      "confidence": 0.65,
+      "supporting_evidence": "The training objective is written as L = E_{t~U(0,1), ε~N(0,I)}[||ε − εθ(zt, t)||₂²] with zt = αt·z0 + βt·δt·ε, followed by 'where t = 1, …, T; αt² + δt² = 1'. The coefficient βt is never defined, and the stated constraint αt² + δt² = 1 involves only αt and δt, leaving the role of βt (which multiplies the noise term) unexplained. The forward noising schedule is therefore ambiguous as written.",
+      "verifier_name": "math-equations",
+      "snippet_id": "1028-PlayerOne::EQUATION::0"
+    },
+    {
+      "error_category": "Internal inconsistency (enumeration)",
+      "error_location": "Sec 1 Introduction, paragraph 3",
+      "confidence": 0.6,
+      "supporting_evidence": "The Introduction states the human motion sequence 'is partitioned into three groups (i.e., head, hands, feet and body)' — enumerating FOUR items (head, hands, feet, body) while claiming three groups. Sec 3.2 later gives the consistent three-way split 'body and feet, hands, and head'. The introduction's parenthetical is internally inconsistent with both its own 'three groups' and the method section.",
+      "verifier_name": "text",
+      "snippet_id": "1028-PlayerOne::SECTION::1"
+    },
+    {
+      "error_category": "Misattribution (bibliography)",
+      "error_location": "Sec 2 Related Work (MuZero), reference [39]",
+      "confidence": 0.6,
+      "supporting_evidence": "The text states 'MuZero [39] runs the self-play of Monte Carlo tree search to build world models for Atari', but reference [39] is 'MuZero General: Open reimplementation of MuZero' (a GitHub repository by Werner Duvaud and Aurèle Hainaut), not the original MuZero paper (Schrittwieser et al., 'Mastering Atari, Go, Chess and Shogi by Planning with a Learned Model', Nature 2020). The method is attributed to a third-party reimplementation rather than the primary source.",
+      "verifier_name": "citation",
+      "snippet_id": "1028-PlayerOne::SECTION::2"
+    },
+    {
+      "error_category": "Novelty over-claim",
+      "error_location": "Abstract, final sentence",
+      "confidence": 0.55,
+      "supporting_evidence": "The Abstract states 'It marks the first endeavor into egocentric real-world simulation', but the paper's own Related Work cites prior egocentric/real-scene world-simulation works — Wonderland [23] (navigating 3D scenes from a single image) and Gen3C [31] (3D-informed world-consistent video generation with precise camera control) — which overlap substantially with egocentric world simulation. Combined with the paper's guarded phrasing elsewhere ('We introduce PlayerOne, an egocentric realistic world simulator', deliberately avoiding 'the first'), the absolute novelty claim is overstated relative to the cited prior art.",
+      "verifier_name": "citation",
+      "snippet_id": "1028-PlayerOne::SECTION::0"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 54,
+    "snippets_verified": 54,
+    "errors_detected": 14,
+    "verifier_usage": {
+      "math_equation": 5,
+      "text": 35,
+      "statistical": 20,
+      "citation": 4,
+      "vision": 14,
+      "cross_section_consistency": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Exhaustive lenient-mode verification of 'PlayerOne: Egocentric World Simulator' (54 snippets: 16 sections, 5 equations, 19 tables, 14 figures) found 14 above-threshold errors, 5 of them high-confidence (≥0.85). Most severe: (1) Equation 3 prints (1 + cosθ) instead of (1 − cosθ) in Rodrigues' rotation formula, yielding a provably non-orthogonal matrix; (2) the Abstract's 'true real-time generation at 30 FPS' contradicts the paper's own 8 FPS (Sec 4.1) and measured ~119 ms/frame ≈ 8.4 FPS (Appendix); (3) the benchmark is claimed to come from Nymeria 'which is not included for training' while Table 1 lists Nymeria as a training dataset, and the Appendix additionally contradicts the main text by stating the benchmark was built from four datasets' test sets; (4) the Conclusion's 'coherent world generation across all scenarios without exception' and the Introduction's 'completely solves... eliminates all limitations' contradict the paper's own Limitations and Table 14's worse game-domain results; (5) the text claims a 10% filtering ratio is optimal while Table 19 shows ratio 0 (no filtering) outperforms ratio 10 on 4 of 7 metrics. Additional confirmed issues: Table 18's full-model row disagrees with Tables 2/3 on MRRPE/PSNR/FVD while matching on the other four metrics; reference [2] cites the 2023 text-only Qwen Technical Report (arXiv:2309.16609, web-verified) for the vision-language model Qwen2.5-VL; the Metrics section promises SSIM/frame-consistency but every table reports FVD instead; Table 2's 'PlayerOne (ours, indoor scenes only)' row is numerically identical to the full-benchmark row in Table 3. Lenient-mode additions (lower confidence): the undefined βt coefficient in Eq 1 conflicting with the αt²+δt²=1 constraint; the Introduction's 'three groups (i.e., head, hands, feet and body)' enumerating four items; reference [39] attributing MuZero to a GitHub reimplementation rather than the original paper; and the Abstract's 'first endeavor into egocentric real-world simulation' overstating novelty relative to the cited Wonderland/Gen3C prior art. Sub-threshold observation (not counted): the absence of an anonymization statement for the real-person data despite Sec 4.1 noting the action videos were shot with the front camera. The Matrix-Game reference [49] was web-verified as existing (arXiv:2506.18701) and is therefore not flagged. Figure images are placeholders in the workspace, so pixel-level integrity checks were not possible. Verdict: NEEDS_CORRECTION.",
+  "uncertainty_map": []
+}

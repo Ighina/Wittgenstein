@@ -1,0 +1,110 @@
+{
+  "paper_id": "12633-Adaptive_Surrogate_Gradients_for_Sequential_Reinforcement_Learning_in_Spik",
+  "title": "Adaptive Surrogate Gradients for Sequential Reinforcement Learning in Spik",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "reference_background_fabrication",
+      "error_location": "Introduction, paragraph describing RL successes; reference [8]",
+      "confidence": 0.99,
+      "supporting_evidence": "The paper states that RL has been used for \"drone racing [8].\" Reference [8] is Wurman et al., \"Outracing champion Gran Turismo drivers with deep reinforcement learning,\" which concerns the Gran Turismo car-racing video game, not drone racing.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "12633-Adaptive_Surrogate_Gradients_for_Sequential_Reinforcement_Learning_in_Spik::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Sections 3.1 and 3.4, description of critic inputs",
+      "confidence": 0.98,
+      "supporting_evidence": "Section 3.1 says, \"Both the guiding policy and the non-spiking critic receive privileged information in the form of action histories.\" Section 3.4 directly contradicts this: \"the critic is a feedforward ANN, which receives all observed states without any action history.\" These are materially different critic inputs and change the claimed asymmetric-training setup.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "12633-Adaptive_Surrogate_Gradients_for_Sequential_Reinforcement_Learning_in_Spik::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 4.1 and Figure 2, state/input dimensionality",
+      "confidence": 0.99,
+      "supporting_evidence": "The text claims the Crazyflie provides \"18-dimensional state vectors\" and Section 3.2 specifies an SNN input size of 18. But Figure 2 and its caption enumerate only position (3), velocity (3), orientation (3), and angular velocity (3): 12 variables total. No additional six state variables are identified, so the deployed/trained input representation is not defined consistently.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "12633-Adaptive_Surrogate_Gradients_for_Sequential_Reinforcement_Learning_in_Spik::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 3.3 and Appendix 8.1, surrogate-gradient/\"true gradient\" analysis",
+      "confidence": 0.97,
+      "supporting_evidence": "The main text treats the steep surrogate k=100 as a proxy for the \"true gradient\" and assesses shallow gradients against it. Appendix 8.1 instead defines an ordinary sigmoid network whose true derivative is sigma'(z), which corresponds to k=1 under its own definition tilde-sigma'_k(z)=sigma'(kz)/k. Thus the paper uses incompatible definitions of the reference/true gradient. More fundamentally, for the stated spiking Heaviside neuron there is no ordinary finite true derivative to which k=100 can simply be equated.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "12633-Adaptive_Surrogate_Gradients_for_Sequential_Reinforcement_Learning_in_Spik::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Appendix 8.1, \"Bias in Gradient Magnitude\" and \"Effect on Deep Layers\"",
+      "confidence": 0.99,
+      "supporting_evidence": "The appendix claims that for the surrogate tilde-sigma'_k(z)=sigma'(kz), \"tilde-sigma'_k(z) > sigma'(z) for most z\" for k>1, and hence claims positive gradient-magnitude bias. This is mathematically backwards: sigmoid derivative sigma'(x) is maximized at x=0 and decreases as |x| increases. Therefore for k>1 and z not equal to zero, sigma'(kz) < sigma'(z), not greater. The asserted accumulating positive bias and its interpretation are unsupported.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "12633-Adaptive_Surrogate_Gradients_for_Sequential_Reinforcement_Learning_in_Spik::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Table 1 versus Table 6, warm-up settings for BC and TD3BC",
+      "confidence": 0.98,
+      "supporting_evidence": "Table 1 states that BC and TD3BC do not use warm-up (both are marked \"✗\" in the Warm-up column). Table 6 lists \"Warm-up steps 50\" for both BC and TD3BC. Since warm-up is central to the paper's proposed advantage and to the comparison between sequential and non-sequential methods, this contradiction prevents determination of what baseline protocol was actually evaluated.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "12633-Adaptive_Surrogate_Gradients_for_Sequential_Reinforcement_Learning_in_Spik::baseline"
+    },
+    {
+      "error_category": "evidence_data_integrity",
+      "error_location": "Table 2 and Section 5.3, ANN architecture/operation-count comparison",
+      "confidence": 0.98,
+      "supporting_evidence": "Table 2 labels the ANN as a \"256-128 architecture\" but reports only 13.7×10^3 dense SynOps and a 55.3 kb footprint. An 18-input, 256-hidden, 128-hidden, 4-output dense ANN has 18×256 + 256×128 + 128×4 = 37,888 weights/SynOps per inference, not 13.7k; at 32-bit weights it alone requires about 151.6 kB, not 55.3 kb. The SNN row correctly reports 37.9k dense SynOps for this same stated topology. Thus the ANN row cannot describe the architecture claimed, invalidating the resource comparison.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "12633-Adaptive_Surrogate_Gradients_for_Sequential_Reinforcement_Learning_in_Spik::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Equation (1), Table 6, and Algorithm 1 hyperparameter definitions",
+      "confidence": 0.9,
+      "supporting_evidence": "Table 6 and Algorithm 1 introduce alpha as the \"TD3BC weight\" (alpha=2.0), but Equation (1), the only stated actor objective, contains no alpha and instead uses a decaying lambda BC coefficient. The text calls the method TD3BC+JSRL while describing a nonstandard decaying BC objective. It is therefore impossible to determine whether alpha is used, how it interacts with lambda, or whether the implemented method is actually the stated objective.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "12633-Adaptive_Surrogate_Gradients_for_Sequential_Reinforcement_Learning_in_Spik::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Appendix 8.4, Algorithm 1",
+      "confidence": 0.96,
+      "supporting_evidence": "The purported complete pseudocode terminates at line 10, immediately after assigning the guiding-policy action during warm-up. It omits the non-warm-up spiking-policy branch, replay-buffer insertion, sequence sampling, critic target and critic losses, actor update, target-network updates, BC decay, jump-start schedule, and adaptive surrogate-slope update. These are core components of the claimed algorithm, so the stated pseudocode does not provide a reproducible implementation.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "12633-Adaptive_Surrogate_Gradients_for_Sequential_Reinforcement_Learning_in_Spik::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Section 3.3 and Figure 1 caption",
+      "confidence": 0.91,
+      "supporting_evidence": "The paper concludes from cosine similarity approaching zero that shallow-slope updates in deep networks become \"essentially random,\" and the Figure 1 caption further claims this \"aids RL exploration but hinders supervised convergence.\" Cosine similarity to an arbitrarily selected steep surrogate does not establish randomness relative to the optimization objective, nor does it establish a causal exploration mechanism. No exploration metric, controlled parameter-noise comparison, or statistical test supporting this causal interpretation is reported.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "12633-Adaptive_Surrogate_Gradients_for_Sequential_Reinforcement_Learning_in_Spik::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 10,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (gpt-5.6-terra, taxonomy=paperaudit): 10 error(s) reported.",
+  "baseline": {
+    "model": "gpt-5.6-terra",
+    "provider": "openai",
+    "taxonomy": "paperaudit",
+    "paper_chars": 55407,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 13627,
+      "output_tokens": 3572,
+      "cache_read_input_tokens": null,
+      "cache_creation_input_tokens": null
+    }
+  }
+}

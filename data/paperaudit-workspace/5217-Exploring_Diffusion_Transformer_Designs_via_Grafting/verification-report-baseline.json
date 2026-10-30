@@ -1,0 +1,103 @@
+{
+  "paper_id": "5217-Exploring_Diffusion_Transformer_Designs_via_Grafting",
+  "title": "Exploring Diffusion Transformer Designs via Grafting",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Abstract and Table 5",
+      "confidence": 0.95,
+      "supporting_evidence": "The abstract claims 'achieving a 1.43× speedup' for PixArt-Σ, but Table 5 shows two different speedup values: 1.21× for 29% ratio and 1.59× for 50% ratio. The text in Section 5 states '1.43× speedup' which doesn't match either table value. The closest is 1.59× for the 50% model, but the abstract should either specify which model or report the correct number.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5217-Exploring_Diffusion_Transformer_Designs_via_Grafting::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 1 (Introduction) and Section 6 (Case Study)",
+      "confidence": 0.98,
+      "supporting_evidence": "Section 1 states the grafted depth-to-width model 'yields better quality (FID: 2.77) than other models of comparable depth' and claims it 'surpasses even the original DiT-XL/2 (FID=2.27) when evaluated on a held-out test set.' However, Section 6 and Table 6 show FID=2.77 vs baseline FID=2.27, which is worse, not better. The claim that it 'surpasses' the baseline contradicts the numerical evidence (2.77 > 2.27 means worse FID).",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5217-Exploring_Diffusion_Transformer_Designs_via_Grafting::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Section 7 (Conclusion)",
+      "confidence": 0.99,
+      "supporting_evidence": "The conclusion states 'grafting completely solves the problem of architecture design for diffusion transformers' and 'grafting universally outperforms training from scratch across all tasks, modalities, and model scales.' These are extreme overstatements. The paper only tests on ImageNet-1K class-conditional generation and one text-to-image model (PixArt-Σ), plus one LLM experiment in the appendix. This does not constitute 'all tasks, modalities, and model scales.' The claim of 'completely solves' is also unsupported hyperbole.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5217-Exploring_Diffusion_Transformer_Designs_via_Grafting::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Table 4 and text description",
+      "confidence": 0.85,
+      "supporting_evidence": "Table 4 shows Hyena-X (K=4) at 100% replacement with '✗' marks indicating failure (FID > 50), but the ΔFLOPs values are still reported as -99.81%, +0.26%, +0.33%. If the experiment failed to produce valid results, these efficiency metrics should either be marked as invalid or explained. The same issue appears for Hyena-Y and SWA at 100%.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5217-Exploring_Diffusion_Transformer_Designs_via_Grafting::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 4.2 and Table 4",
+      "confidence": 0.9,
+      "supporting_evidence": "Section 4.2 states 'several interleaved hybrid architecture designs achieve FID scores between 2.38 and 2.64 (DiT-XL/2 256x256 baseline: 2.27)' but Table 4 shows the baseline FID as 2.27 and self-grafting achieves 2.49 (MHA) and 2.54 (MLP). The text claims hybrids achieve 2.38-2.64, but the MLP r=6 at 50% achieves 2.38, which is better than self-grafting (2.54), yet the text presents this range as if all values are comparable quality.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5217-Exploring_Diffusion_Transformer_Designs_via_Grafting::baseline"
+    },
+    {
+      "error_category": "Statistical reporting",
+      "error_location": "Table 6",
+      "confidence": 0.75,
+      "supporting_evidence": "Table 6 reports 'Speedup ↑' values of '2×¶' for the grafted models with a footnote stating 'Speedup is measured for a single forward pass on an Nvidia H100 (batch size=2).' However, the depth reduction from 28 to 14 layers should theoretically provide close to 2× speedup, but this is highly dependent on batch size and implementation. The footnote in Section D states 'the reported speedup values are expected to decrease with large batch sizes,' which contradicts presenting a fixed '2×' value without caveats in the main table.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5217-Exploring_Diffusion_Transformer_Designs_via_Grafting::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Equation 2",
+      "confidence": 0.7,
+      "supporting_evidence": "Equation 2 defines the regression loss as L(θ) = E[||g_θ^l(z_t, t) - f_ϕ^l(z_t, t)||_p^p] but then states 'Note that L_reg(·,·) = ||·||_p^p when using L_p norms.' This notation is confusing because L_reg should be a function that takes two arguments (predicted and target), but the equation shows it as just the norm. The relationship between L(θ) and L_reg is unclear.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5217-Exploring_Diffusion_Transformer_Designs_via_Grafting::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 5 and Table E.1",
+      "confidence": 0.8,
+      "supporting_evidence": "Section 5 states 'Stage 2 (finetuning): We use LoRA (rank=64) [29] for finetuning... The full 12k synthetic dataset is used in this stage.' However, Table E.1 shows 'Iterations: 18k' and 'Batch Size: 64 (with gradient accumulation)' but doesn't specify the total training data amount. If 12k samples are used with batch size 64 for 18k iterations, that would be 18k × 64 = 1.152M sample presentations, which is 96 epochs over 12k samples. This seems inconsistent with the 'lightweight finetuning' description.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5217-Exploring_Diffusion_Transformer_Designs_via_Grafting::baseline"
+    },
+    {
+      "error_category": "Citation / attribution",
+      "error_location": "Footnote 1 and Reference [4]",
+      "confidence": 0.85,
+      "supporting_evidence": "Footnote 1 states 'Recent work by Goldschmidt et al. [4] has shown that the principles of biological grafting—particularly the concept of 'activation transfer' between scion and rootstock—can be directly applied to neural network architectures, providing a theoretical foundation for our two-stage distillation procedure.' However, Reference [4] is 'Eliezer Goldschmidt. Plant grafting: New mechanisms, evolutionary implications. Frontiers in Plant Science, 5:727, December 2014.' This is a plant biology paper, not a machine learning paper, and it's highly unlikely to discuss 'activation transfer' in neural networks or provide theoretical foundation for distillation procedures.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5217-Exploring_Diffusion_Transformer_Designs_via_Grafting::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Abstract and Section 4.2",
+      "confidence": 0.75,
+      "supporting_evidence": "The abstract states 'all tested hybrid designs achieve excellent quality (FID: 2.15–2.38 vs. 2.27 for DiT-XL/2)' but the range 2.15-2.38 doesn't appear in Table 4. The best FID in Table 4 for hybrids is 2.38 (MLP r=6 at 50%), and there's no 2.15 value reported anywhere. This appears to be an error in the abstract's FID range.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5217-Exploring_Diffusion_Transformer_Designs_via_Grafting::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 10,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (claude-sonnet-4-5-20250929, taxonomy=default): 10 error(s) reported.",
+  "baseline": {
+    "model": "claude-sonnet-4-5-20250929",
+    "taxonomy": "default",
+    "paper_chars": 91564,
+    "truncated": false
+  }
+}

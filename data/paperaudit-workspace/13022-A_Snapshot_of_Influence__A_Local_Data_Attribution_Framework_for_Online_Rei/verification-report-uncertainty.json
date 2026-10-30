@@ -1,0 +1,93 @@
+{
+  "paper_id": "13022",
+  "title": "A Snapshot of Influence: A Local Data Attribution Framework for Online Reinforcement Learning",
+  "paper_category": "cs.LG",
+  "predicted_errors": [
+    {
+      "error_category": "Sign/Arithmetic error",
+      "error_location": "3.1 A framework of local data attribution (Target functions, f^{return})",
+      "confidence": 0.8,
+      "supporting_evidence": "The target function is defined as f^{return}(θ) = E_{τ∼π^{ref},(s,a)∼τ}[ log π_θ(a|s) · (−Â^{ref}(s,a)) ], and the text states 'Maximizing f^{return}(θ) encourages increasing the probability of better-than-average actions and decreasing worse-than-average ones'. This is inconsistent: for a better-than-average action (Â>0), the contribution −log π_θ(a|s)·Â is maximized by making log π_θ(a|s) as small (negative) as possible, i.e., by DECREASING the action probability. Maximizing the function as written therefore decreases good-action probabilities, the opposite of the claim. The REINFORCE-with-baseline objective it claims to be 'directly derived from' is E[log π_θ·Â] (positive sign). Corroborating inconsistency: the analogous RLHF objective f^{seq}(θ) = E[log π_θ(y|x)·Â^{ref}_{−1}] (Sec. 5.3) uses the positive sign. Either the minus sign or the 'Maximizing' wording is wrong.",
+      "verifier_name": "math-equations",
+      "snippet_id": "13022::EQUATION::5"
+    },
+    {
+      "error_category": "Citation",
+      "error_location": "1 Introduction",
+      "confidence": 0.85,
+      "supporting_evidence": "The text cites 'Kumar et al. [2024]' twice, including the substantive claim that 'data attribution methods can be directly applied to online RL without modification, achieving state-of-the-art results across multiple benchmarks', but there is no Kumar et al. entry anywhere in the References section. This is a missing reference. The claim also creates novelty tension with the paper's assertion that it presents 'the first comprehensive and definitive study of data attribution for online RL'.",
+      "verifier_name": "citation-verifier",
+      "snippet_id": "13022::SECTION::1"
+    },
+    {
+      "error_category": "Data/statistical inconsistency",
+      "error_location": "A.2 Experimental setups for standard RL",
+      "confidence": 0.8,
+      "supporting_evidence": "The appendix states n_steps=2048 for all environments and reports '1,024,000 for BipedalWalker (1000 rounds)'. Since rounds = total_timesteps / n_steps, 1,024,000/2048 = 500, not 1000. The identical arithmetic checks out for the other five environments (50/40/50/100/150 rounds), so the BipedalWalker figure is an internal inconsistency: either total_timesteps should be 2,048,000 or the round count should be 500.",
+      "verifier_name": "statistical-verifier",
+      "snippet_id": "13022::SECTION::22"
+    },
+    {
+      "error_category": "Data/statistical inconsistency",
+      "error_location": "5.2 Experiments in traditional RL environments (Results)",
+      "confidence": 0.6,
+      "supporting_evidence": "The results text claims 'IIF achieves substantial sample efficiency gains, showing a 20–67% reduction in training rounds required to match the standard training performance across environments', but the paper's own Fig. 6(b) reports SE_ave in [38.4%, 78.5%] and SE_peak in [28.7%, 82.3%] across the six environments. The quoted '20–67%' range is inconsistent with both reported metrics.",
+      "verifier_name": "statistical-verifier",
+      "snippet_id": "13022::SECTION::15"
+    },
+    {
+      "error_category": "Data/statistical inconsistency",
+      "error_location": "5.2 (Fig. 6b) vs B.9 / Table 5",
+      "confidence": 0.5,
+      "supporting_evidence": "The same metric RT_peak (reduction of runtime at peak performance) is reported with substantially different values in two places: Fig. 6(b) gives 38.9%±2.1 (FrozenLake), 67.8%±0.8 (Acrobot), 81.7%±1.2 (MiniGrid), 72.3%±0.9 (Highway), 58.6%±1.8 (LunarLander), 42.1%±0.9 (BipedalWalker), while Table 5 reports 31.27%±3.28, 55.16%±1.04, 71.59%±1.05, 59.89%±0.72, 44.11%±2.29, 29.16%±0.66 for the same environments. Differences exceed the reported error bars in every case. The two sources use different seed counts (5 vs 3), but this is not reconciled, and Appendix B.9's summary range '29%–67%' does not match Table 5's own max of 71.59%.",
+      "verifier_name": "statistical-verifier",
+      "snippet_id": "13022::TABLE::6"
+    },
+    {
+      "error_category": "Unsupported claim",
+      "error_location": "Abstract",
+      "confidence": 0.5,
+      "supporting_evidence": "The abstract claims IIF 'completely eliminates sample inefficiency, achieves unprecedented training speed, and solves the long-standing challenge of training instability in online RL'. The reported results (Fig. 6) show partial, not complete, improvements (SE_ave 38.4–78.5%, SE_peak 28.7–82.3%, RT_peak 38.9–81.7%). 'Completely eliminates' and 'unprecedented' are not supported by the paper's own quantitative results.",
+      "verifier_name": "text-verifier",
+      "snippet_id": "13022::SECTION::0"
+    },
+    {
+      "error_category": "Internal inconsistency",
+      "error_location": "3.1 Method of attribution (influence score I_i)",
+      "confidence": 0.5,
+      "supporting_evidence": "The definition I_i := ∑_j η_j ⟨∇_θ f(θ_0^{(k)}), ∇_θ L^{PPO}(θ_j^{(k)}, z_i)⟩ evaluates the target-function gradient at the round-initial checkpoint θ_0^{(k)}, but the immediately following sentence states '∇_θ f(θ_j^{(k)}) is the gradient of the target function evaluated at θ_j^{(k)}' (per-step checkpoint). The explanation does not match the formula. Sec. 5.1 later clarifies that only θ^{(k)} is used, suggesting the Sec. 3.1 explanation is a leftover from the vanilla TracIn description.",
+      "verifier_name": "text-verifier",
+      "snippet_id": "13022::EQUATION::6"
+    },
+    {
+      "error_category": "Internal inconsistency",
+      "error_location": "B.7 Evaluating IIF with the Adam optimizer",
+      "confidence": 0.55,
+      "supporting_evidence": "B.7 states 'Our main experiments in traditional RL environments are conducted using the SGD optimizer', but A.2 specifies that BipedalWalker uses '3e-4 with Adam' in the main experiments, and the RLHF experiments (Sec. 5.3) also use Adam. The blanket claim that main experiments use SGD is contradicted by the paper's own setup description.",
+      "verifier_name": "text-verifier",
+      "snippet_id": "13022::SECTION::30"
+    },
+    {
+      "error_category": "Data/statistical inconsistency",
+      "error_location": "5.2 (Fig. 6a captions) vs A.2",
+      "confidence": 0.45,
+      "supporting_evidence": "The Fig. 6(a) descriptions give x-axis round ranges that do not match the total rounds stated in A.2: FrozenLake 30 vs 50, Acrobot 5–20 vs 50, Highway 25 vs 100, LunarLander 100 vs 150, BipedalWalker 150 vs 1000 (MiniGrid 40 matches). While the figure captions are image-derived descriptions, the document as written is internally inconsistent about training duration for five of six environments.",
+      "verifier_name": "statistical-verifier",
+      "snippet_id": "13022::FIGURE::5"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 75,
+    "snippets_verified": 75,
+    "errors_detected": 9,
+    "verifier_usage": {
+      "math_equation": 6,
+      "statistical": 9,
+      "text": 15,
+      "citation": 4,
+      "vision": 11
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Uncertainty-mode verification of the paper (75 snippets; 37 sections, 12 equations, 9 tables, 16 figures, 1 algorithm) routed high-uncertainty snippets to math, text, statistical, and citation verifiers and found 9 issues. The most significant are: (1) a sign inconsistency in the f^{return} target function — maximizing E[log π_θ·(−Â)] as written decreases, rather than increases, better-than-average action probabilities, contradicting the prose and the +Â convention of the analogous f^{seq}; (2) an in-text citation 'Kumar et al. [2024]' with no corresponding entry in the References section, which also undercuts the paper's 'first comprehensive study' novelty claim; (3) an arithmetic inconsistency for BipedalWalker (1,024,000 timesteps at n_steps=2048 implies 500 rounds, not the stated 1000). Additional moderate/low-confidence issues include a text/table mismatch for sample-efficiency gains ('20–67%' vs SE_ave 38.4–78.5% / SE_peak 28.7–82.3%), different RT_peak values in Fig. 6(b) vs Table 5, an unsupported abstract claim ('completely eliminates sample inefficiency'), a formula/explanation mismatch for the influence-score gradient checkpoint, a contradictory claim in B.7 that main experiments used SGD while BipedalWalker and RLHF used Adam, and round-range inconsistencies between Fig. 6(a) captions and Appendix A.2. Because the highest-confidence findings (citation missing, sign error, arithmetic inconsistency) would require corrections, the overall verdict is NEEDS_CORRECTION. Note the verification ran in lenient (broader-sensitivity) mode, so the lower-confidence items are flagged as candidates for author review rather than confirmed erratum-level errors."
+}

@@ -1,0 +1,134 @@
+{
+  "paper_id": "14339-Rethinking_Joint_Maximum_Mean_Discrepancy_for_Visual_Domain_Adaptation",
+  "title": "Rethinking Joint Maximum Mean Discrepancy for Visual Domain Adaptation",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Introduction, paragraph beginning “Specifically, when JMMD is considered...” and Eq. (2)",
+      "confidence": 0.98,
+      "supporting_evidence": "The introduction explicitly calls the derivation a “heuristic deduction” that “approximat[es] T^T psi(x)” and states that “the exact elimination of the tensor product remains an open problem.” Eq. (2), however, subsequently asserts an exact equality between the original projected-JMMD objective and the B-based trace expression. These cannot both be true. If the representer substitution is only an approximation/restriction, Eq. (2) must be written as an approximation or as the objective under an explicitly restricted parameterization, not as an identity.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "14339-Rethinking_Joint_Maximum_Mean_Discrepancy_for_Visual_Domain_Adaptation::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Sections 3.2–3.5 and Section 4.1",
+      "confidence": 0.98,
+      "supporting_evidence": "The proposed label kernels K^2, K^3, and K^4 require target class membership and target class counts, e.g., conditions such as “x_i in D^{t,c}” and factors involving n^{t,c}. But the stated DA problem is explicitly unlabeled-target adaptation: “Y^t is not available during the training process.” The paper never specifies a complete pseudo-labeling/update protocol for constructing these target-dependent kernels, handling soft labels, or preventing degenerate/empty target classes. Thus the proposed training objective is not implementable under the stated setting as written.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "14339-Rethinking_Joint_Maximum_Mean_Discrepancy_for_Visual_Domain_Adaptation::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Section 4.1, hyperparameter paragraph",
+      "confidence": 0.96,
+      "supporting_evidence": "The paper states that it “performed targeted manual tuning per dataset for the other two variants to maximize performance, with selective reporting of best results.” In unsupervised domain adaptation, target labels are unavailable; selecting parameters to maximize target-domain accuracy would leak target test labels unless a source-only or otherwise unsupervised selection criterion is defined. No validation split, selection criterion, parameter grid, or protocol is provided. This makes the reported improvements vulnerable to target-test tuning and irreproducible.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "14339-Rethinking_Joint_Maximum_Mean_Discrepancy_for_Visual_Domain_Adaptation::baseline"
+    },
+    {
+      "error_category": "evidence_data_integrity",
+      "error_location": "Section 4.2 and Table 1 (Office-31)",
+      "confidence": 0.99,
+      "supporting_evidence": "Section 4.2 says the proposed variants are better than both SPL and OGL2P and claims OGL2P+JMMD-HSIC improves by 0.9% on Office-31. Table 1 instead reports OGL2P = 90.7 and OGL2P+JMMD-HSIC = 90.1, a decrease of 0.6 percentage points. The subsequent claim that OGL2P+JMMD-HSIC is the best average method and exceeds RSDA-MSTN by 0.3% is also contradicted by Table 1: RSDA-MSTN is 91.2, above 90.1.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "14339-Rethinking_Joint_Maximum_Mean_Discrepancy_for_Visual_Domain_Adaptation::baseline"
+    },
+    {
+      "error_category": "evidence_data_integrity",
+      "error_location": "Table 3 versus Table 1",
+      "confidence": 0.99,
+      "supporting_evidence": "For the same stated dataset and feature setting—Office-31 with ResNet-50 features—Table 3 reports “OGLP+JMMD-HSIC” accuracy of 91.5 ± 1.3, while Table 1 reports the apparently same method, “OGL2P+JMMD-HSIC,” at 90.1. The baseline is likewise 90.7 in both locations. A 1.4-point discrepancy cannot be reconciled by the stated tables and requires correction or an explanation of different protocols.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "14339-Rethinking_Joint_Maximum_Mean_Discrepancy_for_Visual_Domain_Adaptation::baseline"
+    },
+    {
+      "error_category": "evidence_data_integrity",
+      "error_location": "Appendix F, Table 6 and the paragraph immediately following Table 7",
+      "confidence": 0.99,
+      "supporting_evidence": "The Appendix claims that the proposed OGL2P+JMMD-HSIC improves OGL2P by 0.4% on Office10-Caltech10 and is best among compared methods. Table 6 reports OGL2P = 94.6 and OGL2P+Our = 94.3 ± 0.7, i.e. a 0.3-point decrease, and the unmodified OGL2P is the best listed average. The prose directly reverses the table’s result.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "14339-Rethinking_Joint_Maximum_Mean_Discrepancy_for_Visual_Domain_Adaptation::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Theorem 1 / Eq. (3), and Appendix Theorem 5",
+      "confidence": 0.97,
+      "supporting_evidence": "The proof says “K^2 ⊙ M^J = M^{C,c}” and “K^3 ⊙ M^J = M^{WC,c}.” This is false as written: K^2 and K^3 have nonzero blocks for every class c, whereas M^{C,c} and M^{WC,c} in Eqs. (33) and (35) are matrices for one particular class. The correct relationship would be K^2 ⊙ M^J = sum_c M^{C,c} and similarly for weighted conditional MMD. The current proof does not establish the claimed theorem using its own notation.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "14339-Rethinking_Joint_Maximum_Mean_Discrepancy_for_Visual_Domain_Adaptation::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Theorem 1, Eq. (3)",
+      "confidence": 0.96,
+      "supporting_evidence": "Theorem 1 defines “K^1 = I_{n×n}” while simultaneously saying it is “a matrix whose elements are all 1.” The identity matrix and the all-ones matrix are different. The Appendix changes this to K^1 = 1_{n×n}. This is mathematically consequential: I ⊙ M^J retains only diagonal terms and does not recover ordinary MMD, whereas the all-ones matrix does.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "14339-Rethinking_Joint_Maximum_Mean_Discrepancy_for_Visual_Domain_Adaptation::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 3.3, Eq. (4), and Sections 3.4–3.5",
+      "confidence": 0.95,
+      "supporting_evidence": "The matrix M^H used to define the alleged concise HSIC in Eq. (4) is never defined anywhere in the paper or appendix. Consequently, neither the claimed HSIC objective, the graph weights in Eq. (7), nor the combined loss in Eq. (9) can be independently reconstructed. This is particularly serious because the paper switches from saying HSIC “aims to maximize” dependence to jointly “minimizing (4),” relying on an unspecified M^H and sign convention.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "14339-Rethinking_Joint_Maximum_Mean_Discrepancy_for_Visual_Domain_Adaptation::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 3.4, Eqs. (6) and (8); Appendix Eq. (45)",
+      "confidence": 0.92,
+      "supporting_evidence": "For a symmetric weight matrix and Laplacian L = Q − W, the standard identity is sum_{i,j} w_ij ||z_i−z_j||^2 = 2 tr(Z L Z^T), not tr(Z L Z^T) as asserted in Eq. (6). The same missing factor propagates to Eq. (8). Appendix Eq. (45) similarly asserts x^T G^4 x = sum_{i,j} w_ij(x_i−x_j)^2, whereas for the stated Laplacian construction it differs by a factor of 2. Although the sign-based intuition may survive rescaling, the claimed equalities and PSD proof need correction.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "14339-Rethinking_Joint_Maximum_Mean_Discrepancy_for_Visual_Domain_Adaptation::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Abstract, Introduction, and Conclusions; claims that JMMD “align[s]” or measures distance between joint probability distributions",
+      "confidence": 0.87,
+      "supporting_evidence": "The paper treats its JMMD quantities as genuine joint-distribution distances and says minimizing them aligns joint distributions. Such a conclusion requires an appropriate characteristic product kernel/injective mean embedding. No characteristic-kernel condition is stated, and the proposed K^1–K^4 are finite-rank, label/class/domain-dependent Gram constructions. Therefore equality or reduction of the reported objective does not generally imply equality or alignment of full joint distributions; at most it aligns the selected kernel moments.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "14339-Rethinking_Joint_Maximum_Mean_Discrepancy_for_Visual_Domain_Adaptation::baseline"
+    },
+    {
+      "error_category": "reference_background_fabrication",
+      "error_location": "Section 4.1, description of D² ImageCLEF-DA",
+      "confidence": 0.95,
+      "supporting_evidence": "The paper describes ImageCLEF-DA as “a constructed dataset synthesized for this study.” ImageCLEF-DA is an established public domain-adaptation benchmark, conventionally formed from the Caltech-256, ImageNet ILSVRC 2012, and Pascal VOC 2012 domains; it was not constructed by this study. This misstates dataset provenance and omits an appropriate benchmark citation.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "14339-Rethinking_Joint_Maximum_Mean_Discrepancy_for_Visual_Domain_Adaptation::baseline"
+    },
+    {
+      "error_category": "reference_background_fabrication",
+      "error_location": "Reference [55] and Tables 1, 2, 6, and 7",
+      "confidence": 0.9,
+      "supporting_evidence": "Reference [55] is listed as IEEE TNNLS volume 34(1), pages 264–277, “2022,” while the tables identify the same work as “TNNLS'23.” Volume 34 issue 1 corresponds to the 2023 issue publication. The parenthetical claim that the reference was adjusted to the “last officially verified publication year” conflicts with the bibliographic year actually printed and with the paper’s own tables.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "14339-Rethinking_Joint_Maximum_Mean_Discrepancy_for_Visual_Domain_Adaptation::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 13,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (gpt-5.6-terra, taxonomy=paperaudit): 13 error(s) reported.",
+  "baseline": {
+    "model": "gpt-5.6-terra",
+    "provider": "openai",
+    "taxonomy": "paperaudit",
+    "paper_chars": 93467,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 30966,
+      "output_tokens": 4735,
+      "cache_read_input_tokens": null,
+      "cache_creation_input_tokens": null
+    }
+  }
+}

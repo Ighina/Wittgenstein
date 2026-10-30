@@ -1,0 +1,134 @@
+{
+  "paper_id": "6278-Learning_to_Learn_with_Contrastive_Meta-Objective",
+  "title": "Learning to Learn with Contrastive Meta-Objective",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Appendix B.2, proof of Theorem 1",
+      "confidence": 0.99,
+      "supporting_evidence": "The proof claims that the minimum of U is attained iff sup_{||v||≤1} E[<v,X>^2]=0, and then asserts this is attained iff the distribution of X is symmetric: P(X)=P(-X). This is false. A symmetric nondegenerate distribution, e.g. X=+1 or -1 with equal probability, has E[X^2]=1, not 0. The displayed supremum is zero only when X=0 almost surely. Therefore the claimed connection between symmetry, minimization of U, and the contrastive objective does not follow.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "6278-Learning_to_Learn_with_Contrastive_Meta-Objective::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Appendix B.2, claimed minimum of the contrastive objective",
+      "confidence": 0.99,
+      "supporting_evidence": "For cosine distance, L_c=d_in-d_out=(-cos_pos+cos_neg). The paper claims min_theta L_c≥-1 and that the minimum is achieved with positive-pair cosine similarity 1 and inter-task cosine similarity 0. This is not the global lower bound: with two tasks, take same-task representations equal and the two task representations antipodal. Then cos_pos=1 and cos_neg=-1, giving L_c=-2. Thus the asserted lower bound, minimizer characterization, and ensuing theorem are mathematically false.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "6278-Learning_to_Learn_with_Contrastive_Meta-Objective::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Appendix B.1, proof of Lemma 1",
+      "confidence": 0.98,
+      "supporting_evidence": "The proof applies a scalar universal-approximation result to the vector-valued representation psi:H→R^d, then writes F(X_g)∈R and treats ||F(X_g)|| as ||psi(X_g)||. It also drops the output coefficients v_i from the cited universal-approximation form when replacing F by sum_k sigma(<w_k,X_g>). Neither ||psi(X_g)||≤||X_g|| nor sum_k||w_k||^2≤N is implied by the definition of psi or by universal approximation. These unsupported steps invalidate the derived upper bound U.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "6278-Learning_to_Learn_with_Contrastive_Meta-Objective::baseline"
+    },
+    {
+      "error_category": "Citation / attribution",
+      "error_location": "Appendix B, Lemma 2, attributed to Maurer, Pontil, and Romera-Paredes [28]",
+      "confidence": 0.94,
+      "supporting_evidence": "Lemma 2 attributes to [28] an exact bound Delta≤C1 sqrt(E||psi(g((x,y);theta))||^2)+C2 for arbitrary meta-learners and arbitrary projection psi. Such a bound cannot follow merely from the stated setup: scaling an arbitrary psi changes its right-hand side without changing the learner's risk, and no complexity, loss, sample-size, or relationship between psi and predictions is specified. The cited multitask-representation-learning work does not justify the stated unrestricted lemma. This unsupported attribution is central to the claimed generalization theorem.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "6278-Learning_to_Learn_with_Contrastive_Meta-Objective::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Section 3.2, especially the sentence claiming ConML gives a lower generalization-error upper bound than 'any other meta-learners'",
+      "confidence": 0.98,
+      "supporting_evidence": "Even if a valid surrogate upper bound had been minimized, that would not establish lower actual generalization error than every other meta-learner. Here the theorem is additionally invalid for the reasons in Appendix B. The broad 'safeguard' and superiority claim is therefore unsupported.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "6278-Learning_to_Learn_with_Contrastive_Meta-Objective::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Section 3.1 and Algorithms 3/9, subset sampling pi_kappa for metric-based methods",
+      "confidence": 0.95,
+      "supporting_evidence": "The general method permits kappa to be any sampled subset of D_tr union D_val, but ProtoNet's representation requires c_j=(1/|kappa_{k,j}|) sum_{(x,y) in kappa_{k,j}} f(x) for every class j. Arbitrary subsets can omit one or more classes, making these prototypes undefined. No class-stratified sampling constraint, handling of missing classes, or definition of pi_kappa sufficient to make Algorithm 9 valid is supplied.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "6278-Learning_to_Learn_with_Contrastive_Meta-Objective::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Section 3.3, metric-based representation psi(g(D;theta))=[c_1|...|c_N]",
+      "confidence": 0.91,
+      "supporting_evidence": "The proposed concatenation relies on a 'label-aware order' across tasks. In standard episodic few-shot classification, class indices are episode-local and are normally randomly relabeled; class 1 in one task need not correspond semantically to class 1 in another. The inter-task distance therefore depends on arbitrary label permutations rather than solely on learned models/tasks. The paper does not specify a consistent global label ordering or a permutation-invariant alternative, contradicting the claim that the construction is learner- and problem-agnostic.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "6278-Learning_to_Learn_with_Contrastive_Meta-Objective::baseline"
+    },
+    {
+      "error_category": "Experiment setup",
+      "error_location": "Appendix A.1 and Algorithm 5, claimed ICL/LLM computational overhead",
+      "confidence": 0.96,
+      "supporting_evidence": "Appendix A.1 claims ConML costs only K/n additional computation because it 'simply' adds a token. But Algorithm 5 explicitly performs separate forward passes g([kappa_k,u];theta) for every subset and g([D_tau,u];theta), in addition to the normal task-loss passes. These are not merely one-token extensions of the original sequence, and transformer cost is not generally linear in sequence length. The K/n overhead claim ignores the required extra subset/full-context forwards and is inconsistent with the algorithm.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "6278-Learning_to_Learn_with_Contrastive_Meta-Objective::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Appendix A.2 and Section 3.1, complexity argument for ordinary meta-learners",
+      "confidence": 0.95,
+      "supporting_evidence": "The complexity calculation compares only h→loss with h→psi→L_c, while ConML's dominant added work is obtaining K subset models plus a full-data model, i.e. repeated g(D;theta) computations. For MAML these include gradient-based adaptation and potentially higher-order differentiation; they cannot be dismissed as the lightweight extraction of weights. Table 4 itself reports memory increasing from 1331 MB to 2801 MB for MAML at K=1 and from 7955 MB to 14167 MB for ProtoNet, contradicting the presentation that the added computation is negligible.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "6278-Learning_to_Learn_with_Contrastive_Meta-Objective::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Abstract, Introduction contributions, and Sections 4.1-4.2",
+      "confidence": 0.99,
+      "supporting_evidence": "The manuscript repeatedly claims that ConML 'universally improves' various learners and gives 'consistent improvement.' Yet Section 4.1 explicitly admits that Table 2 is selected, that baselines and negative/degrading cases were excluded, hyperparameters were optimized post-hoc for the strongest settings, and runs with large fluctuations were excluded. Those practices make the reported comparisons biased and cannot support universal or consistent-improvement claims.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "6278-Learning_to_Learn_with_Contrastive_Meta-Objective::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 4.2, statement 'As shown, ConML brings consistent improvement' versus Table 3",
+      "confidence": 0.98,
+      "supporting_evidence": "Table 3 reports fo-Proto-MAML on Birds as 68.6 both without and with ConML. This is no improvement, contrary to the statement that the table shows consistent improvement.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "6278-Learning_to_Learn_with_Contrastive_Meta-Objective::baseline"
+    },
+    {
+      "error_category": "Figure / table error",
+      "error_location": "Section 4.4, reference to Table 5",
+      "confidence": 0.99,
+      "supporting_evidence": "The text states, 'Table 5 reports means and standard deviations for relative minimal error and shot spare metrics,' but no Table 5 appears anywhere in the supplied paper. Consequently the stated ICL quantitative evidence and the accompanying assessment of its uncertainty cannot be checked.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "6278-Learning_to_Learn_with_Contrastive_Meta-Objective::baseline"
+    },
+    {
+      "error_category": "Statistical reporting",
+      "error_location": "Section 4.1, reporting for Table 2",
+      "confidence": 0.99,
+      "supporting_evidence": "The paper acknowledges excluding runs with large fluctuations and choosing hyperparameters post-hoc for the strongest-performing configurations, while presenting the remaining means and intervals as comparative results. Excluding unfavorable runs makes the reported uncertainty estimates systematically optimistic; the intervals no longer describe an unbiased prespecified experimental sample and cannot substantiate the claimed gains.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "6278-Learning_to_Learn_with_Contrastive_Meta-Objective::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 13,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (gpt-5.6-terra, taxonomy=default): 13 error(s) reported.",
+  "baseline": {
+    "model": "gpt-5.6-terra",
+    "provider": "openai",
+    "taxonomy": "default",
+    "paper_chars": 78896,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 23429,
+      "output_tokens": 3980,
+      "cache_read_input_tokens": null,
+      "cache_creation_input_tokens": null
+    }
+  }
+}

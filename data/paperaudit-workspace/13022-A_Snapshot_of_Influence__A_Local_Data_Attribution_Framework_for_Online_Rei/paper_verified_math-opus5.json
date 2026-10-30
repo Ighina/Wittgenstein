@@ -1,0 +1,656 @@
+{
+  "paper_name": "paper",
+  "paper_path": "/Users/iacopoghinassi/Documents/Github/Wittgenstein/data/paperaudit-workspace/13022-A_Snapshot_of_Influence__A_Local_Data_Attribution_Framework_for_Online_Rei/paper.md",
+  "tag": "opus5",
+  "lean_project": "MATH_VERIFICATION/Paper",
+  "lean_project_kept": true,
+  "totals": {
+    "snippets_extracted": 18,
+    "routed_to_math": 11,
+    "routed_to_lean": 7,
+    "lean_passed": 2,
+    "lean_refuted": 5,
+    "lean_failed": 0,
+    "lean_not_attempted": 0,
+    "fallbacks_run": 0,
+    "errors_detected": 9
+  },
+  "results": [
+    {
+      "snippet_id": "paper::EQUATION::0",
+      "snippet_type": "EQUATION",
+      "location": "2 Preliminaries / 2.1 Online reinforcement learning — TracIn [Pruthi et al., 2020]",
+      "content": "TracIn measures the cumulative change in a target function f(θ) resulting from the optimization steps involving a specific training sample z_i. ... At step j, with parameters θ_j, learning rate η_j, and mini-batch B_j, a first-order Taylor expansion of f(θ) around θ_j gives:\nf(θ_j) − f(θ_{j+1}) ≈ ∇_θ f(θ_j) · (θ_j − θ_{j+1}) = η_j ∑_{i∈B_j} ∇_θ f(θ_j) · ∇_θ ℓ(θ_j, z_i).",
+      "route": "verify-math-lean",
+      "route_rationale": "The exact (non-approximate) half of the identity is an inner-product linearity claim under the SGD update rule — exactly formalisable.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::0",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.95,
+        "reasoning": "Formalised the equality carrying the content: in a real inner product space, if $\\theta_{j+1} = \\theta_j - \\eta\\sum_{i\\in B}G_i$ (the SGD update the paper states), then $\\langle g, \\theta_j-\\theta_{j+1}\\rangle = \\eta\\sum_{i\\in B}\\langle g, G_i\\rangle$ for any $g$, with $g = \\nabla f(\\theta_j)$ and $G_i = \\nabla\\ell(\\theta_j,z_i)$. Hypotheses assumed: only the SGD update rule the paper itself gives; no sign or positivity assumptions added. The `≈` in the paper is the first-order Taylor step and is not an exact claim, so it was not formalised. Lean accepted the proof with no errors, no `sorry`, and only the three standard Mathlib axioms.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__EQUATION__0_opus5run.lean",
+          "formal_statement": "theorem tracin_sgd_step\n    {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]\n    {ι : Type*} (B : Finset ι) (G : ι → E) (g θj θj1 : E) (η : ℝ)\n    (hstep : θj1 = θj - η • ∑ i ∈ B, G i) :\n    (inner ℝ g (θj - θj1) : ℝ) = η * ∑ i ∈ B, (inner ℝ g (G i) : ℝ) := by\n  subst hstep\n  simp [real_inner_smul_right, inner_sum, Finset.mul_sum]",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::EQUATION::1",
+      "snippet_type": "EQUATION",
+      "location": "2 Preliminaries / 2.1 — TracIn score",
+      "content": "Accumulating these contributions over the relevant training iterations yields the TracIn score for z_i:\nTracIn(z_i) = ∑_{j : z_i ∈ B_j} η_j ∇_θ f(θ_j) · ∇_θ ℓ(θ_j, z_i).",
+      "route": "verify-math",
+      "route_rationale": "Definitional accumulation of the per-step quantity established in EQUATION::0; nothing to prove beyond that step.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::EQUATION::1",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "This is the standard TracIn score of Pruthi et al. (2020) and is the consistent accumulation of the per-step first-order change verified formally in `paper::EQUATION::0`: summing $\\eta_j\\langle\\nabla f(\\theta_j),\\nabla\\ell(\\theta_j,z_i)\\rangle$ over exactly the steps $j$ whose mini-batch contains $z_i$. The index set $\\{j : z_i \\in B_j\\}$ is correct (a sample only moves the parameters at steps where it is in the batch). No algebraic defect.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::EQUATION::2",
+      "snippet_type": "EQUATION",
+      "location": "2 Preliminaries / 2.1 — Proximal policy optimization (PPO)",
+      "content": "PPO is a policy gradient method for online RL that optimizes a clipped surrogate function. The core PPO objective, which is typically combined with a value function loss and an entropy bonus during optimization, is defined as:\nL^{PPO}(θ) = E_{(s,a)∼B_j^{(k)}} [ min( (π_θ(a|s)/π_{θ^{(k)}}(a|s)) \\hat{A}(s,a), clip( π_θ(a|s)/π_{θ^{(k)}}(a|s), 1−ε, 1+ε ) \\hat{A}(s,a) ) ],\nwhere ε is a hyperparameter that limits policy changes between rounds and promotes stable learning.",
+      "route": "verify-math",
+      "route_rationale": "A restatement of a known objective; the live question is a loss-vs-objective sign convention, not a formal identity.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::EQUATION::2",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.5,
+        "reasoning": "The displayed expression is a faithful statement of the PPO clipped surrogate of Schulman et al. (2017), including the pessimistic $\\min$ and the symmetric clip range $[1-\\varepsilon, 1+\\varepsilon]$. No algebraic error.\n\nRecorded as a sub-threshold observation, deliberately **not** flagged: this quantity is a surrogate to be **maximised** (\"optimizes a clipped surrogate function\"), yet the TracIn derivation it is substituted into (Sec. 2.1) is derived for a loss being **minimised** by SGD ($\\theta_{j+1} = \\theta_j - \\eta_j\\sum\\nabla\\ell$), and Sec. 3.1 calls $\\nabla_\\theta\\mathcal{L}^{\\text{PPO}}$ \"the per-sample gradient of the PPO training objective\". Under gradient ascent on $\\mathcal{L}^{\\text{PPO}}$ the first-order change is $-I_i$ rather than $+I_i$, flipping the sign of \"positive influence = helpful\". This is a convention left unstated rather than a defect in this snippet, and per this verifier's scope a downstream implication not checkable from the snippet alone is not flagged here. The substantive consequence is captured formally in `paper::EQUATION::3` and `paper::EQUATION::7`.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.5
+    },
+    {
+      "snippet_id": "paper::EQUATION::3",
+      "snippet_type": "EQUATION",
+      "location": "3 Method / 3.1 A framework of local data attribution — Target functions, cumulative return",
+      "content": "To address these challenges, we introduce a stable surrogate objective based on a reference policy π^{ref} and advantage estimates \\hat{A}^{ref}:\nf^{return}(θ) := E_{τ ∼ π^{ref}, (s,a) ∼ τ} [ log π_θ(a | s) · (−\\hat{A}^{ref}(s, a)) ].\nThis target function is directly derived from the REINFORCE with baseline objective [Sutton and Barto, 2018, Section 13.4] ... Maximizing f^{return}(θ) encourages increasing the probability of better-than-average actions and decreasing worse-than-average ones, capturing the essence of improving expected return while being tractable.",
+      "route": "verify-math-lean",
+      "route_rationale": "The paper makes a crisp directional claim about what maximising the target function does; a two-action instance makes it formally decidable.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::3",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.92,
+        "reasoning": "Formalised the paper's own directional claim in the smallest faithful instance: one state $s$, two actions with $\\hat{A}^{\\text{ref}}(s,a_1)=+1$ (better than average) and $\\hat{A}^{\\text{ref}}(s,a_2)=-1$, reference policy uniform, $\\pi_\\theta(a_1|s)=p$, $\\pi_\\theta(a_2|s)=1-p$. Substituting into the paper's definition gives $f^{\\text{return}}(p) = \\tfrac12(\\log(1-p) - \\log p)$.\n\nLean proved this is **strictly decreasing** in $p$ on $(0,1)$, i.e. maximising $f^{\\text{return}}$ as the paper defines it *decreases* the probability of the better-than-average action — the exact opposite of the stated interpretation (its supremum is approached as $p\\to 0$). The same theorem proves the textbook REINFORCE-with-baseline target the paper says it is \"directly derived from\" (identical expression with $+\\hat{A}$) is strictly *increasing* in $p$. So the $(-\\hat{A})$ factor, not the formalisation, is what inverts the direction.\n\nNo hypotheses were added beyond the paper's own definition; the advantage values $\\pm 1$ are a concrete instance of \"better-\" and \"worse-than-average\", which is all the claim quantifies over. The claim is universally quantified over settings, so one counterexample refutes it. Exit 0, no diagnostics, no `sorryAx`.",
+        "predicted_error_category": "Sign/Arithmetic error",
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__EQUATION__3_opus5run.lean",
+          "formal_statement": "noncomputable def fret (p : ℝ) : ℝ :=\n  (1/2) * (Real.log p * (-1)) + (1/2) * (Real.log (1 - p) * (1))\n\nnoncomputable def fpg (p : ℝ) : ℝ :=\n  (1/2) * (Real.log p * (1)) + (1/2) * (Real.log (1 - p) * (-1))\n\ntheorem f_return_direction_refuted :\n    (∀ p q : ℝ, 0 < p → p < q → q < 1 → fret q < fret p)\n    ∧ (∀ p q : ℝ, 0 < p → p < q → q < 1 → fpg p < fpg q) := by\n  constructor\n  · intro p q hp hpq hq\n    have hlogp : Real.log p < Real.log q := Real.log_lt_log hp hpq\n    have hlog1 : Real.log (1 - q) < Real.log (1 - p) :=\n      Real.log_lt_log (by linarith) (by linarith)\n    unfold fret\n    linarith\n  · intro p q hp hpq hq\n    have hlogp : Real.log p < Real.log q := Real.log_lt_log hp hpq\n    have hlog1 : Real.log (1 - q) < Real.log (1 - p) :=\n      Real.log_lt_log (by linarith) (by linarith)\n    unfold fpg\n    linarith",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.92
+    },
+    {
+      "snippet_id": "paper::EQUATION::4",
+      "snippet_type": "EQUATION",
+      "location": "3 Method / 3.1 — Method of attribution",
+      "content": "We adapt TracIn to our online RL setting. For record z_i in the rollout buffer B^{(k)}, we compute its influence score by summing over the optimization steps j within round k:\nI_i := \\sum_{j: z_i \\in B_j^{(k)}} \\eta_j \\langle \\nabla_\\theta f(\\theta_0^{(k)}), \\nabla_\\theta \\mathcal{L}^{\\text{PPO}}(\\theta_j^{(k)}, z_i) \\rangle, \\quad \\text{where } f \\in \\{f^{\\text{action}}, f^{\\text{return}}\\}.\nHere, \\nabla_\\theta f(\\theta_j^{(k)}) is the gradient of the target function evaluated at \\theta_j^{(k)}, and \\nabla_\\theta \\mathcal{L}^{\\text{PPO}}(\\theta_j^{(k)}, z_i) is the per-sample gradient of the PPO training objective for record z_i.",
+      "route": "verify-math",
+      "route_rationale": "The defect is a notational conflict between the displayed formula and its own gloss, not a formal identity Lean could settle.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::EQUATION::4",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.75,
+        "reasoning": "The definition of the paper's central quantity is internally inconsistent in the evaluation point of the target-function gradient. The displayed equation writes $\\nabla_\\theta f(\\theta_0^{(k)})$ — the **fixed** round-initial parameters. The sentence immediately after it says \"Here, $\\nabla_\\theta f(\\theta_j^{(k)})$ is the gradient of the target function evaluated at $\\theta_j^{(k)}$\" — the **per-step** parameters. These are different estimators and cannot both be $I_i$.\n\nA third variant appears in Sec. 5.1: \"Instead of iterating over all intermediate checkpoints, we compute the influence scores for the entire rollout buffer $B^{(k)}$ in round $k$ via $\\langle\\nabla_\\theta f(\\theta^{(k)}), \\nabla_\\theta\\mathcal{L}^{\\text{PPO}}(\\theta^{(k)}, z_i)\\rangle$, using only the initial parameter $\\theta^{(k)}$.\" That is framed as a *departure* from this equation which \"saves a full training pass\" — which only makes sense if the equation here evaluates **both** gradients at the varying $\\theta_j^{(k)}$, as the gloss (and the Sec. 2.1 TracIn definition $\\nabla_\\theta f(\\theta_j)$) says, and contrary to the $\\theta_0^{(k)}$ actually printed.\n\nSo the three statements of the paper's core estimator disagree pairwise, leaving which quantity was computed under-determined. Severity minor: the Sec. 5.1 single-checkpoint variant is evidently what is implemented, and the framework survives under that reading.",
+        "predicted_error_category": "Algebraic manipulation",
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [
+          "Sec. 3.1 displayed influence-score equation",
+          "Sec. 3.1 sentence immediately following it",
+          "Sec. 5.1 design choice (1)"
+        ]
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.75
+    },
+    {
+      "snippet_id": "paper::EQUATION::5",
+      "snippet_type": "EQUATION",
+      "location": "4.2 Temporal analysis of behavior formation / Appendix B.2 — graph roughness",
+      "content": "We quantify these phases by analyzing the roughness (normalized Dirichlet energy) [Von Luxburg, 2007] of a similarity graph, a measure closely related to the graph Laplacian [Chung, 1997]. In this graph, nodes represent records, node values are the ($L_\\infty$-normalized) influence scores $\\tilde{I}_i$, and edge weights $w_{ij}$ capture semantic similarity and decay with embedding distance. Roughness, computed as $\\sum w_{ij}(\\tilde{I}_i-\\tilde{I}_j)^2/\\sum w_{ij}$, is low when semantically similar records have similar influence; this captures the clustering effect.\n[Appendix B.2] $$\\text{Roughness}(\\mathcal{G}_k) = \\frac{\\sum_{i<j} w_{ij}(\\tilde{I}_i - \\tilde{I}_j)^2}{\\sum_{i<j} w_{ij}}.$$ ... We set edge weights by a Gaussian kernel $w_{ij} = \\exp(-\\|e_i - e_j\\|^2/\\sigma^2)$.",
+      "route": "verify-math-lean",
+      "route_rationale": "The Dirichlet-energy / graph-Laplacian identity and the asserted qualitative behaviour are cleanly formalisable.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::5",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "Formalised the three mathematical assertions this snippet makes about the roughness functional, for symmetric non-negative weights $w$ (the Gaussian kernel is both) and arbitrary node values $x$:\n\n1. It is a normalised **Dirichlet energy** equal to twice the **graph-Laplacian** quadratic form: $\\sum_{i,j} w_{ij}(x_i-x_j)^2 = 2\\big(\\sum_i (\\sum_j w_{ij}) x_i^2 - \\sum_{i,j} w_{ij} x_i x_j\\big) = 2\\,x^\\top (D-W) x$. This is exactly the \"normalized Dirichlet energy ... closely related to the graph Laplacian\" claim, and the symmetry of $w$ is what makes the cross terms combine.\n2. It is non-negative, so the normalised ratio is well defined and $\\ge 0$.\n3. It vanishes when all node values agree — the \"low when semantically similar records have similar influence\" direction.\n\nAll three compiled clean. Note also that the main-text form $\\sum w_{ij}(\\cdot)^2/\\sum w_{ij}$ and the Appendix form $\\sum_{i<j}$ agree whenever the diagonal is excluded, since both numerator and denominator pick up the same factor 2; the main text leaves the index range implicit, which the appendix pins down, so this is not treated as a defect.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__EQUATION__5_opus5run.lean",
+          "formal_statement": "theorem roughness_is_normalised_dirichlet_energy\n    (n : ℕ) (w : Fin n → Fin n → ℝ) (x : Fin n → ℝ)\n    (hsymm : ∀ i j, w i j = w j i) (hnn : ∀ i j, 0 ≤ w i j) :\n    (∑ i, ∑ j, w i j * (x i - x j) ^ 2\n        = 2 * ((∑ i, (∑ j, w i j) * x i ^ 2) - ∑ i, ∑ j, w i j * (x i * x j)))\n      ∧ 0 ≤ ∑ i, ∑ j, w i j * (x i - x j) ^ 2\n      ∧ ((∀ i j, x i = x j) → ∑ i, ∑ j, w i j * (x i - x j) ^ 2 = 0)",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::EQUATION::6",
+      "snippet_type": "EQUATION",
+      "location": "5.2 Experiments in traditional RL environments — Metrics",
+      "content": "We quantify sample efficiency by the reduction in training rounds required for IIF to match standard training. For a performance level v (measured by test return), let m_std(v) and m_IIF(v) be the earliest training rounds where standard training and IIF achieve performance at least v, respectively. The reduction at v is defined as (1 − m_IIF(v)/m_std(v)) × 100%. We report two metrics: SE_ave, the mean reduction over a list of strictly increasing performance levels reached by standard training, and SE_peak, the reduction at its peak.",
+      "route": "verify-math",
+      "route_rationale": "A metric definition asserting nothing that could be false; checkable by inspection.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::EQUATION::6",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "Well formed and correctly oriented: $m_{\\text{std}}(v) > 0$ for any level actually reached, so the ratio is defined; the quantity is positive exactly when IIF needs fewer rounds, matching the \"(↑)\" annotation in Fig. 6(b); and restricting $v$ to \"performance levels reached by standard training\" is what makes $m_{\\text{std}}(v)$ finite. $SE_{\\text{ave}}$ as a mean of per-level reductions and $SE_{\\text{peak}}$ as the reduction at the peak level are both consistent with that. No defect in the definition itself — the problems are with the values reported under it (see `paper::FORMULA_BLOCK::0` and `paper::FORMULA_BLOCK::2`).",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::EQUATION::7",
+      "snippet_type": "EQUATION",
+      "location": "5.3 Extending IIF to RLHF for large language models",
+      "content": "To accommodate these differences, we adapt IIF for RLHF by employing a sequence-level objective:\nf^{seq}(θ) = E_{x ∼ D_val, y ∼ π^{ref}(·|x)} [ log π_θ(y|x) · Â^{ref}_{−1}(x, y) ],\nwhere x is a prompt drawn from the validation set D_val, y the generation, log π_θ(y|x) = ∑_i log π_θ(y_i | x, y_0, …, y_{i−1}) the log-probability of the sequence y given x, and Â^{ref}_{−1} the advantage estimate at the last token.\n[Appendix B.11] In the main text (Sec. 5.3), we introduced two target functions for RLHF: the standard one $f^{\\text{return}}$, and an adapted sequence-level objective $f^{\\text{seq}}$.",
+      "route": "verify-math-lean",
+      "route_rationale": "The autoregressive chain rule and the sign relation to $f^{\\text{return}}$ are both formally checkable.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::7",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.85,
+        "reasoning": "Two parts, both compiled.\n\n**Correct:** the stated autoregressive chain rule $\\log\\pi_\\theta(y|x) = \\sum_i \\log\\pi_\\theta(y_i|x,y_{<i})$ follows from $\\pi_\\theta(y|x) = \\prod_i \\pi_\\theta(y_i|x,y_{<i})$ for strictly positive conditionals (`Real.log_prod`). No defect there.\n\n**Refuted:** $f^{\\text{seq}}$ carries the factor $+\\hat{A}^{\\text{ref}}_{-1}$, while $f^{\\text{return}}$ (Sec. 3.1) carries $-\\hat{A}^{\\text{ref}}$. Lean proved that on identical data these are **pointwise negatives**, $f^{\\text{seq}}(p) = -f^{\\text{return}}(p)$, and move in opposite directions: $f^{\\text{seq}}$ strictly increasing and $f^{\\text{return}}$ strictly decreasing in the probability of the better-than-average outcome. Both are nonetheless plugged into the same influence score $I_i$ under the same fixed interpretation (\"records with positive influence benefit ... learning\"), and Appendix B.11 compares them head-to-head as interchangeable target functions. Under opposite sign conventions, the sign of \"helpful\" inverts between the standard-RL and the RLHF experiments.\n\nThis is independent corroboration that the $(-\\hat{A})$ in $f^{\\text{return}}$ is not a benign convention: the paper's own RLHF instantiation uses the opposite sign. Exit 0, no diagnostics, no `sorryAx`.",
+        "predicted_error_category": "Sign/Arithmetic error",
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [
+          "Sec. 3.1 definition of f^return",
+          "Sec. 5.3 definition of f^seq",
+          "Appendix B.11"
+        ],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__EQUATION__7_opus5run.lean",
+          "formal_statement": "theorem f_seq_chain_rule_and_sign_clash :\n    (∀ (n : ℕ) (p : Fin n → ℝ), (∀ i, 0 < p i) →\n        Real.log (∏ i, p i) = ∑ i, Real.log (p i))\n      ∧ (∀ p : ℝ, fseq p = - fret p)\n      ∧ (∀ p q : ℝ, 0 < p → p < q → q < 1 → fret q < fret p ∧ fseq p < fseq q)",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::EQUATION::8",
+      "snippet_type": "EQUATION",
+      "location": "Appendix B.4 Advantage-based heuristic — Implementation",
+      "content": "These heuristics fundamentally rely on obtaining a reliable estimate of the true advantage function, $\\bar{A}^{\\pi}(s, a)$, for each training record. We obtain $\\bar{A}$ using Monte Carlo (MC) estimates, i.e.,\n$$\\bar{A}^{\\pi}(s, a) = \\bar{Q}^{\\pi}(s, a) - \\bar{V}^{\\pi}(s) = \\mathbb{E}\\left[\\sum_{k} \\gamma^k r_{t+k} \\mid s_t = s, a_t = a\\right] - \\mathbb{E}\\left[\\sum_{k} \\gamma^k r_{t+k} \\mid s_t = s\\right].$$",
+      "route": "verify-math",
+      "route_rationale": "Standard advantage definition; checkable by inspection, and formalising it would only restate a definition.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::EQUATION::8",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "Correct: $A^\\pi(s,a) = Q^\\pi(s,a) - V^\\pi(s)$ with both terms written as discounted-return expectations, the $Q$ term conditioning on $(s_t = s, a_t = a)$ and the $V$ term on $s_t = s$ alone (action marginalised under $\\pi$). Signs and discounting are right, and the MC estimator described — empirical averaging over repeated $(s,a)$ and $s$ occurrences in $B^{(k)}$ — is the natural plug-in estimator for it. Minor notational looseness only: the timestep $t$ appears on the right but not the left, and the conditioning on $a\\sim\\pi$ in the $V$ term is implicit. Neither affects correctness.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::EQUATION::9",
+      "snippet_type": "EQUATION",
+      "location": "Appendix B.5 TD error based heuristic — Implementation",
+      "content": "The TD error for record i is defined as:\nδ_i = r_i + γ V^{π_{θ^{(k)}}}(s'_i) − V^{π_{θ^{(k)}}}(s_i),\nwhere V^{π_{θ^{(k)}}} denotes the current value function estimate. ... We sort all transitions in the buffer B^{(k)} in descending order based on the absolute value of their TD error, |δ_i|. The base priority for transition i is set as P_i = 1 / rank(i), where rank(i) denotes the rank of transition i. Then, the probability of sampling record i is\nw_i = P_i^α / ∑_{j∈B^{(k)}} P_j^α, where α = 0.6 ... This weighting scheme ensures that transitions with larger absolute TD errors receive higher emphasis during the PPO optimization steps.",
+      "route": "verify-math",
+      "route_rationale": "Standard definitions plus a monotonicity remark that is immediate by inspection.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::EQUATION::9",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "All three parts check out. (i) $\\delta_i = r_i + \\gamma V(s'_i) - V(s_i)$ is the standard one-step TD error, signs correct. (ii) $w_i = P_i^\\alpha/\\sum_j P_j^\\alpha$ is a valid probability distribution: non-negative and summing to 1. (iii) The asserted monotonicity holds: transitions are sorted in *descending* $|\\delta_i|$, so larger $|\\delta_i|$ means smaller $\\text{rank}(i)$, hence larger $P_i = 1/\\text{rank}(i)$; since $x \\mapsto x^{0.6}$ is strictly increasing on $(0,\\infty)$ and the denominator is a shared constant, $w_i$ is decreasing in rank and therefore increasing in $|\\delta_i|$. The rank-based priority form and $\\alpha = 0.6$ match Schaul et al. (2016) as cited.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::EQUATION::10",
+      "snippet_type": "EQUATION",
+      "location": "Appendix B.8 Statistical significance of final performance gains",
+      "content": "We compute the 95% confidence interval (CI) for the performance gain of IIF over the standard baseline (as shown in Fig. 6(a)). Concretely, we compute half-width = t_{0.975,4} × SE = 2.776 × SE. Results in Table 4 confirm a statistically significant improvement in the performance gain.\nTable 4: 95% CI ... MiniGrid [0.04, 0.33]; LunarLander [22.54, 130.52]; BipedalWalker [24.40, 75.99].",
+      "route": "verify-math",
+      "route_rationale": "Rests on a $t$-distribution quantile table value, which is not formalisable in Mathlib; arithmetic consistency is checkable by inspection.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::EQUATION::10",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "Internally consistent and correctly specified. With 5 random seeds the degrees of freedom are $n-1 = 4$, matching the subscript in $t_{0.975,4}$, and the two-sided 95% critical value is $t_{0.975,4} = 2.7764$, which rounds to the 2.776 used. Back-solving each interval for the implied standard error gives MiniGrid $\\mathrm{SE} \\approx 0.052$ (centre 0.185, half-width 0.145), LunarLander $\\mathrm{SE} \\approx 19.45$ (centre 76.53, half-width 53.99), BipedalWalker $\\mathrm{SE} \\approx 9.29$ (centre 50.20, half-width 25.80) — all positive and of plausible magnitude relative to their point estimates. All three intervals exclude zero, so the \"statistically significant improvement\" conclusion follows from the numbers as given. No impossible or self-contradictory value.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::0",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "5.2 Experiments in traditional RL environments — Results / Fig. 6(b)",
+      "content": "Figure 6(b) Improvement in sample efficiency and runtime:\nSE_ave (↑):  FrozenLake 42.3% ± 1.8%; Acrobot 51.2% ± 4.2%; MiniGrid 78.5% ± 2.1%; Highway 49.8% ± 3.5%; LunarLander 38.4% ± 2.2%; BipedalWalker 44.7% ± 6.3%\nSE_peak (↑): FrozenLake 28.7% ± 4.2%; Acrobot 63.9% ± 1.5%; MiniGrid 82.3% ± 2.8%; Highway 68.4% ± 2.1%; LunarLander 54.2% ± 2.9%; BipedalWalker 39.8% ± 5.4%\n\nThe results are summarized as follows: 1) IIF achieves substantial sample efficiency gains, showing a 20–67% reduction in training rounds required to match the standard training performance across environments.",
+      "route": "verify-math-lean",
+      "route_rationale": "A pure numeric range claim against the paper's own table; `norm_num` settles it decisively.",
+      "lean_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::0",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.9,
+        "reasoning": "Formalised the summary claim that every sample-efficiency reduction reported \"across environments\" lies in $[20\\%, 67\\%]$, against the twelve values the paper itself prints in Fig. 6(b).\n\nLean refuted it: three of the twelve exceed the stated upper bound — MiniGrid $SE_{\\text{ave}} = 78.5\\%$, MiniGrid $SE_{\\text{peak}} = 82.3\\%$, Highway $SE_{\\text{peak}} = 68.4\\%$ — and separately proved that **no** reported value is as low as $28\\%$, so the stated lower bound of $20\\%$ is unattained too. The tight range of the paper's own reported values is $[28.7\\%, 82.3\\%]$, proved in the same theorem.\n\nThe mis-stated range understates the method's best results while claiming a floor it never reaches, so it is a reporting error in both directions. Severity minor: the table is the substantive claim and the qualitative conclusion is unaffected. Exit 0, no diagnostics, no `sorryAx`.",
+        "predicted_error_category": "Domain/Constraint violation",
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": [
+          "Sec. 5.2 Results, item 1)",
+          "Figure 6(b)"
+        ],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__FORMULA_BLOCK__0_opus5run.lean",
+          "formal_statement": "def seVals : List ℝ :=\n  [42.3, 51.2, 78.5, 49.8, 38.4, 44.7, 28.7, 63.9, 82.3, 68.4, 54.2, 39.8]\n\ntheorem se_range_20_67_refuted :\n    (¬ ∀ v ∈ seVals, (20:ℝ) ≤ v ∧ v ≤ 67)\n      ∧ ((78.5:ℝ) ∈ seVals ∧ (82.3:ℝ) ∈ seVals ∧ (68.4:ℝ) ∈ seVals)\n      ∧ (∀ v ∈ seVals, (28.7:ℝ) ≤ v ∧ v ≤ 82.3)\n      ∧ ¬ ∃ v ∈ seVals, v ≤ (28:ℝ)",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::1",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "Appendix A.2 Experimental setups for standard RL — Training hyperparameters",
+      "content": "• Training hyperparameters: We use n_steps=2048 (i.e., n = |B^{(k)}| = 2048), batch_size=64 (i.e., |B_j^{(k)}| = 64), n_epochs=10 ... total_timesteps per environment are: 102,400 for FrozenLake (50 rounds), 81,920 for MiniGrid (40 rounds), 102,400 for Acrobot (50 rounds), 204,800 for Highway (100 rounds), 307,200 for LunarLander (150 rounds), 1,024,000 for BipedalWalker (1000 rounds).",
+      "route": "verify-math-lean",
+      "route_rationale": "An integer-division claim repeated six times; `norm_num` settles each pairing.",
+      "lean_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::1",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.9,
+        "reasoning": "Sec. 2.1 fixes one training round per rollout buffer, and this appendix fixes the buffer size at $n = $ `n_steps` $= 2048$, so rounds $=$ `total_timesteps`$/2048$. Lean checked all six pairings.\n\nFive are consistent: $102400/2048 = 50$ (FrozenLake), $81920/2048 = 40$ (MiniGrid), $102400/2048 = 50$ (Acrobot), $204800/2048 = 100$ (Highway), $307200/2048 = 150$ (LunarLander).\n\nBipedalWalker is refuted: $1{,}024{,}000/2048 = 500$, not the stated 1000 — off by exactly a factor of two. Lean also proved that 1000 rounds would require $1000 \\times 2048 = 2{,}048{,}000$ timesteps. So either the timestep count or the round count for BipedalWalker is wrong.\n\nThat the other five are exactly right makes this a localised slip rather than a different convention. Severity minor: it is an experimental-setup reporting error, though it does make the BipedalWalker training budget ambiguous by 2×. Exit 0, no diagnostics, no `sorryAx`.",
+        "predicted_error_category": "Sign/Arithmetic error",
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": [
+          "Appendix A.2 Training hyperparameters"
+        ],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__FORMULA_BLOCK__1_opus5run.lean",
+          "formal_statement": "theorem rounds_from_total_timesteps :\n    (102400 / 2048 = (50 : ℕ))\n      ∧ (81920 / 2048 = (40 : ℕ))\n      ∧ (204800 / 2048 = (100 : ℕ))\n      ∧ (307200 / 2048 = (150 : ℕ))\n      ∧ (1024000 / 2048 = (500 : ℕ))\n      ∧ (1024000 / 2048 ≠ (1000 : ℕ))\n      ∧ (1000 * 2048 = (2048000 : ℕ))",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::2",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "Appendix B.6 IIF performance under various filtering percentages (Table 2) vs Fig. 6(b)",
+      "content": "Table 2: Sample efficiency comparison across varying filtering percentages ... Results are averaged over three runs.\n[SE_ave]        FrozenLake / Acrobot / MiniGrid / LunarLander\n p = 12.5%      23.5% / 29.2% / 67.5% / 28.2%\n p = 25.0%      30.5% / 35.1% / 60.3% / 22.7%\n p = 50.0%      33.7% / 36.7% / 67.0% / 10.2%\n p = 100.0%     32.7% / 35.0% / 75.4% / 8.9%\n[SE_peak]       FrozenLake / Acrobot / MiniGrid / LunarLander\n p = 12.5%      15.6% / 31.5% / 67.4% / 41.6%\n p = 25.0%      22.1% / 48.5% / 58.8% / 32.9%\n p = 50.0%      19.6% / 48.5% / 50.6% / 15.5%\n p = 100.0%     15.9% / 43.1% / 54.9% / 15.8%\n\n[Sec. 5.1] IIF employs a hyperparameter, p, which determines the amount of records to discard. We evaluate various p's and report the best in Fig. 6.\n[Fig. 6(b)] SE_ave: FrozenLake 42.3%, Acrobot 51.2%, MiniGrid 78.5%, LunarLander 38.4%. SE_peak: FrozenLake 28.7%, Acrobot 63.9%, MiniGrid 82.3%, LunarLander 54.2%.",
+      "route": "verify-math",
+      "route_rationale": "A claim about experimental tables — unformalisable as mathematics, but its internal consistency is checkable by direct comparison.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::2",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.8,
+        "reasoning": "Sec. 5.1 states that Fig. 6 reports the **best** over the evaluated filtering percentages $p$, and Appendix B.6's Table 2 is the ablation over those $p$ for the same two metrics. A value reported as the maximum over a set cannot exceed the maximum of that set — yet it does in **all eight** comparable cells:\n\n$SE_{\\text{ave}}$, best over $p$ in Table 2 vs Fig. 6(b): FrozenLake $33.7 \\to 42.3$ ($+8.6$); Acrobot $36.7 \\to 51.2$ ($+14.5$); MiniGrid $75.4 \\to 78.5$ ($+3.1$); LunarLander $28.2 \\to 38.4$ ($+10.2$).\n$SE_{\\text{peak}}$: FrozenLake $22.1 \\to 28.7$ ($+6.6$); Acrobot $48.5 \\to 63.9$ ($+15.4$); MiniGrid $67.4 \\to 82.3$ ($+14.9$); LunarLander $41.6 \\to 54.2$ ($+12.6$).\n\nEvery one of the eight is higher in Fig. 6(b), by 3.1 to 15.4 percentage points. The two tables do differ in seed count (Table 2: \"averaged over three runs\"; Fig. 6: \"averaged over 5 random seeds\"), which is a legitimate source of some drift — but a uniform one-directional shift in 8/8 cells, several of them many reported standard errors wide (LunarLander $SE_{\\text{ave}}$: $38.4$ vs $28.2 \\pm 1.3$), is not seed noise. The headline sample-efficiency numbers in Fig. 6(b) are therefore not reproducible from the ablation presented as their source.\n\nSeverity critical: Fig. 6(b) is the paper's summary table for its central efficiency claim.",
+        "predicted_error_category": "Domain/Constraint violation",
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": [
+          "Sec. 5.1 (\"report the best in Fig. 6\")",
+          "Figure 6(b)",
+          "Appendix B.6 Table 2"
+        ]
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::3",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "Appendix B.9 Runtime for experiments on traditional RL environments (Table 5) vs Fig. 6(b)",
+      "content": "Finally, we report RT_peak (also presented in Fig. 6(b)), calculated as the reduced percentage of wall clock time for IIF to match standard PPO. In summary, IIF presents a 29%-67% reduction in runtime, effectively speeding up learning.\n\nTable 5 (total runtime, seconds) — IIF \"Matching peak\" / standard \"All rounds\" / RT_peak:\n FrozenLake     64.64 ± 3.98 / 93.85 ± 2.68  / 31.27% ± 3.28%\n Acrobot        35.80 ± 0.79 / 79.87 ± 1.00  / 55.16% ± 1.04%\n MiniGrid      107.43 ± 3.32 / 378.41 ± 2.98 / 71.59% ± 1.05%\n Highway        93.73 ± 1.69 / 233.66 ± 0.24 / 59.89% ± 0.72%\n LunarLander   183.64 ± 6.69 / 328.79 ± 3.65 / 44.11% ± 2.29%\n BipedalWalker 489.55 ± 4.71 / 691.28 ± 13.33 / 29.16% ± 0.66%\n\nFig. 6(b) RT_peak (↑): FrozenLake 38.9% ± 2.1%; Acrobot 67.8% ± 0.8%; MiniGrid 81.7% ± 1.2%; Highway 72.3% ± 0.9%; LunarLander 58.6% ± 1.8%; BipedalWalker 42.1% ± 0.9%",
+      "route": "verify-math-lean",
+      "route_rationale": "Pure arithmetic on the reported runtimes; `norm_num` settles both the recomputation and the table-to-table comparison.",
+      "lean_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::3",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.95,
+        "reasoning": "Appendix B.9 asserts that its $RT_{\\text{peak}}$ row is the same quantity \"also presented in Fig. 6(b)\". Lean checked all three parts of that.\n\n**(a) Table 5 is self-consistent.** Its $RT_{\\text{peak}}$ is reproducible from its own runtimes as $1 - (\\text{IIF matching peak})/(\\text{standard all rounds})$, for every environment, to within 0.2 percentage points (proved in the division-free form $|(a-m)\\cdot 100 - r\\cdot a| \\le 0.2\\,a$). So Table 5's definition, data and result cohere.\n\n**(b) Fig. 6(b) contradicts it in every environment.** Lean proved Fig. 6(b)'s $RT_{\\text{peak}}$ exceeds Table 5's by more than 7 percentage points for all six, always upward: $31.27 \\to 38.9$, $55.16 \\to 67.8$, $71.59 \\to 81.7$, $59.89 \\to 72.3$, $44.11 \\to 58.6$, $29.16 \\to 42.1$ (gaps of 7.6 to 14.5 points). Since (a) shows Table 5's values are the ones entailed by the reported runtimes, Fig. 6(b)'s cannot also be correct under the stated definition. The paper reports its headline runtime-reduction numbers twice with mutually inconsistent values.\n\n**(c) The summary range bounds neither table.** \"29%-67%\" has an upper bound below Table 5's maximum ($71.59 > 67$) and far below Fig. 6(b)'s ($81.7 > 67$), and a lower bound well below Fig. 6(b)'s minimum ($38.9 > 29$). It appears to take its floor from Table 5 and its ceiling from neither.\n\nSeverity critical: runtime reduction is a headline claim (abstract: \"unprecedented training speed\"), and the two reported versions of it cannot be reconciled. Exit 0, no diagnostics, no `sorryAx`.",
+        "predicted_error_category": "Formally refuted",
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": [
+          "Appendix B.9 Table 5 RT_peak row",
+          "Figure 6(b) RT_peak row",
+          "Appendix B.9 summary sentence"
+        ],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__FORMULA_BLOCK__3_opus5run.lean",
+          "formal_statement": "theorem rt_peak_tables_inconsistent :\n    (∀ t ∈ ([(64.64, 93.85, 31.27), (35.80, 79.87, 55.16), (107.43, 378.41, 71.59),\n             (93.73, 233.66, 59.89), (183.64, 328.79, 44.11), (489.55, 691.28, 29.16)]\n            : List (ℝ × ℝ × ℝ)),\n        |(t.2.1 - t.1) * 100 - t.2.2 * t.2.1| ≤ 0.2 * t.2.1)\n      ∧ (∀ u ∈ ([(31.27, 38.9), (55.16, 67.8), (71.59, 81.7),\n                 (59.89, 72.3), (44.11, 58.6), (29.16, 42.1)] : List (ℝ × ℝ)),\n            u.2 - u.1 > 7)\n      ∧ ((71.59 : ℝ) > 67) ∧ ((81.7 : ℝ) > 67) ∧ ((38.9 : ℝ) > 29)",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::4",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "5.3 / Appendix B.12 A breakdown of runtime for the RLHF experiments (Table 6)",
+      "content": "[Sec. 5.3] IIF filters out negative-influence records (∼50% of all), effectively halving the optimization time per round. Furthermore, IIF accelerates learning, requiring less than half the number of rounds to surpass standard training ... Collectively, these factors result in an ∼4× reduction in total runtime.\n[B.12] Beyond this per-round saving, IIF requires fewer rounds to achieve comparable performance with standard PPO (requiring 32.75% ± 1.52% of training rounds, taking up 16.82% ± 1.32% of runtime combined with per-round speedup). Furthermore, IIF reaches convergence to a higher reward faster as well (requiring 48.51% ± 2.44% of training rounds, taking up 24.90% ± 0.80% of wall-clock time). This marks a 4× overall speedup.\nTable 6 (seconds): Response generation & scoring 1.71 / 1.59; Forward 1.03 / 0.99; Influence calculation 2.15 / —; Optimization 40.39 / 85.56; Total per-round runtime 45.28 / 88.15; % 51.37%",
+      "route": "verify-math",
+      "route_rationale": "An arithmetic chain across a table and two prose summaries; fully checkable by inspection.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::4",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "Every link in this chain checks out — notably, in contrast to the standard-RL runtime reporting (`paper::FORMULA_BLOCK::3`).\n\nColumn sums: IIF $1.71 + 1.03 + 2.15 + 40.39 = 45.28$, exactly the reported total. Standard $1.59 + 0.99 + 85.56 = 88.14$ vs 88.15 reported — a 0.01 s rounding artefact of the components.\nRatio: $45.28/88.15 = 51.37\\%$, matching the \"%\" column, and $88.15/45.28 = 1.95 \\approx 2\\times$, supporting \"a 2× speedup per round\".\nCompounding: $32.75\\% \\times 51.37\\% = 16.82\\%$ — exact. $48.51\\% \\times 51.37\\% = 24.92\\%$ vs 24.90% reported, within the rounding of the 51.37% factor.\nOverall: $1/0.2490 = 4.02$, supporting \"a 4× overall speedup\", and consistent with Sec. 5.3's independent \"$\\sim$4× reduction in total runtime\".\nSec. 5.3's \"effectively halving the optimization time per round\" matches $40.39/85.56 = 47.2\\%$.\n\nNo arithmetic defect.",
+        "predicted_error_category": null,
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "4.1 Diagnosis of learning: what features bottom records?",
+      "content": "[Sec. 3.1] Records with positive influence benefit behavior formation or learning, whereas those with negative influence harm it. We refer to records with the most positive influence as top records and those with the most negative influence as bottom records.\n[Sec. 4.1] Our analysis reveals two key aspects of “inaccuracy”: (1) Sign mismatch: A significant proportion of bottom records exhibit opposite signs for the advantage estimate Â and the MC estimate Ā (marked by red points in Fig. 3(c)). (2) Large magnitude errors: These records also have large |Ā − Â|. Together, sign flips and large magnitude errors generate strong but misleading learning signals. Indeed, Spearman’s rank correlation [Spearman, 1904] between each record’s influence and the product Ā · Â is strongly negative (Fig. 3(d)), confirming that misaligned advantages drive harmful gradient steps.\n[Fig. 3 caption] We sort records by decreasing influence (top on the left). ... (d) The product Ā · Â versus record rank, showing a strong negative correlation.",
+      "route": "verify-math",
+      "route_rationale": "Rests on the paper's own sign conventions and a figure; prose reasoning rather than a formalisable identity.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.8,
+        "reasoning": "The stated sign of the correlation is inverted relative to both the paper's own framework and its own figure caption.\n\nFrom the paper's conventions: bottom records are those with the **most negative** influence (Sec. 3.1), and Sec. 4.1 establishes that bottom records exhibit **sign mismatch** between $\\hat{A}$ and $\\bar{A}$, i.e. $\\bar{A}\\cdot\\hat{A} < 0$; top records (most positive influence) have aligned advantages, $\\bar{A}\\cdot\\hat{A} > 0$. Low influence therefore goes with low $\\bar{A}\\cdot\\hat{A}$ and high with high, which is a **positive** rank correlation between influence and $\\bar{A}\\cdot\\hat{A}$ — not \"strongly negative\".\n\nThe figure caption is consistent with the positive reading and inconsistent with the sentence: Fig. 3(d) plots $\\bar{A}\\cdot\\hat{A}$ against record **rank**, where records are \"sorted by decreasing influence (top on the left)\". Rank increasing means influence decreasing, so a negative correlation with *rank* is precisely a positive correlation with *influence*. The text has substituted \"influence\" for \"rank\" and carried the sign over unchanged.\n\nThe sentence as written is also self-defeating: a genuinely negative influence–$(\\bar{A}\\cdot\\hat{A})$ correlation would mean the most harmful records are those with the **best-aligned** advantage estimates, contradicting the entire section it is offered as confirming.\n\nSeverity minor: the underlying empirical finding is stated correctly elsewhere (Fig. 3(d) caption, Appendix B.1, and the B.4 heuristics built on it), so only this one interpretive sentence is wrong.",
+        "predicted_error_category": "Sign/Arithmetic error",
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": [
+          "Sec. 4.1 final sentence",
+          "Figure 3(d) caption",
+          "Sec. 3.1 definition of top/bottom records"
+        ]
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::1",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "Appendix B.6 IIF performance under various filtering percentages — key findings",
+      "content": "• Discarding all negative records (p = 100%) is suboptimal. As shown in Figure 14, setting p = 100% leads to suboptimal final performance, slower learning progress (also reflected in Table 2), and instability in training. This observation aligns with the concept of non-additivity of sample influence [Hu et al., 2024].\n• The optimal filtering percentage varies with environment complexity. In simpler environments (e.g., FrozenLake, Acrobot), removing half of the negative samples (p = 50%) yields the best performance overall ... In contrast, in more complex environments (MiniGrid, LunarLander) ... a gentler filtering (p = 12.5%) can achieve better performance.\n[Table 2, caption] Bold values indicate the best performing value of p; italicized values show the second best.",
+      "route": "verify-math",
+      "route_rationale": "Claims about experimental tables — unformalisable, but checkable against the table's own bolding.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::1",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.7,
+        "reasoning": "The claim \"$p = 100\\%$ ... leads to ... slower learning progress (also reflected in Table 2)\" is contradicted by Table 2 itself for MiniGrid under $SE_{\\text{ave}}$, where $p = 100\\%$ gives $75.4\\% \\pm 3.6\\%$ — the **largest** value in that column and, per the caption (\"Bold values indicate the best performing value of $p$\"), bolded by the authors as the best. The cited table does not support the claim it is cited for in that cell; the sub-claim \"a gentler filtering ($p = 12.5\\%$) can achieve better performance\" also fails there, since $p = 12.5\\%$ gives only $67.5\\%$.\n\nThe neighbouring claims do hold where checkable: $p = 50\\%$ is bolded best for both FrozenLake and Acrobot under $SE_{\\text{ave}}$, and $p = 12.5\\%$ is bolded best for LunarLander under both metrics and for MiniGrid under $SE_{\\text{peak}}$. The hedge \"often suboptimal\" used in Sec. 5.1 is accurate; the unhedged appendix bullet is what overreaches.\n\nSeverity minor: an over-general reading of the authors' own ablation, not a defect in the method. Two presentation issues are noted but deliberately **not** flagged (formatting is out of scope): neither Table 2 sub-table is labelled with which metric it reports, and the LunarLander $SE_{\\text{peak}}$ column carries two italics ($32.9\\%$ and $15.8\\%$) though $15.8\\%$ is fourth, not second best. The row for $p = 6.25\\%$ is also absent although the text says that value was explored and recommends it for BipedalWalker.",
+        "predicted_error_category": "Domain/Constraint violation",
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": [
+          "Appendix B.6 first key finding",
+          "Appendix B.6 third key finding",
+          "Appendix B.6 Table 2, MiniGrid SE_ave column"
+        ]
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.7
+    }
+  ],
+  "findings": [
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::3",
+      "category": "Formally refuted",
+      "severity": "critical",
+      "confidence": 0.95,
+      "verifier": "verify-math-lean",
+      "evidence": "The paper reports its headline runtime-reduction metric $RT_{\\text{peak}}$ **twice, with mutually inconsistent values**, while asserting the two are the same quantity (\"we report RT_peak (also presented in Fig. 6(b))\").\n\nLean proved Table 5 is self-consistent: its $RT_{\\text{peak}}$ is reproducible from its own runtimes as $1 - (\\text{IIF matching peak})/(\\text{standard all rounds})$ to within $0.2$ percentage points for all six environments. It then proved Fig. 6(b)'s values exceed Table 5's by more than $7$ points in **every** environment, always upward:\n\n| env | Table 5 | Fig. 6(b) | gap |\n|---|---|---|---|\n| FrozenLake | $31.27\\%$ | $38.9\\%$ | $+7.6$ |\n| Acrobot | $55.16\\%$ | $67.8\\%$ | $+12.6$ |\n| MiniGrid | $71.59\\%$ | $81.7\\%$ | $+10.1$ |\n| Highway | $59.89\\%$ | $72.3\\%$ | $+12.4$ |\n| LunarLander | $44.11\\%$ | $58.6\\%$ | $+14.5$ |\n| BipedalWalker | $29.16\\%$ | $42.1\\%$ | $+12.9$ |\n\nSince Table 5's values are the ones entailed by the reported wall-clock times, Fig. 6(b)'s cannot also be correct under the stated definition. Lean additionally refuted the summary range: \"$29\\%$-$67\\%$\" has an upper bound below Table 5's maximum ($71.59 > 67$) and far below Fig. 6(b)'s ($81.7 > 67$), and a lower bound well below Fig. 6(b)'s minimum ($38.9 > 29$).",
+      "exact_quote": "Finally, we report RT_peak (also presented in Fig. 6(b)), calculated as the reduced percentage of wall clock time for IIF to match standard PPO. In summary, IIF presents a 29%-67% reduction in runtime, effectively speeding up learning."
+    },
+    {
+      "snippet_id": "paper::EQUATION::3",
+      "category": "Sign/Arithmetic error",
+      "severity": "critical",
+      "confidence": 0.92,
+      "verifier": "verify-math-lean",
+      "evidence": "The paper's central target function is defined with a factor $(-\\hat{A}^{\\text{ref}})$, which makes the sentence interpreting it false.\n\nIn the smallest faithful instance — one state, two actions with $\\hat{A}^{\\text{ref}}(s,a_1)=+1$ and $\\hat{A}^{\\text{ref}}(s,a_2)=-1$, uniform $\\pi^{\\text{ref}}$, $\\pi_\\theta(a_1|s)=p$ — the definition gives\n$$f^{\\text{return}}(p) = \\tfrac{1}{2}\\big(\\log(1-p) - \\log p\\big),$$\nand Lean proved this is **strictly decreasing** on $(0,1)$. So maximising $f^{\\text{return}}$ as defined *decreases* the probability of the better-than-average action, with the supremum approached as $p \\to 0$ — the exact opposite of the stated interpretation. The same theorem proves that the textbook REINFORCE-with-baseline target the paper says it is \"directly derived from\" (identical expression with $+\\hat{A}$) is strictly **increasing** in $p$, so the $(-\\hat{A})$ factor is what inverts the direction.\n\nEither the minus sign or the interpreting sentence must go, and the paper gives no convention that resolves it — its own RLHF target $f^{\\text{seq}}$ uses the opposite sign (see `paper::EQUATION::7`).",
+      "exact_quote": "f^{return}(θ) := E_{τ ∼ π^{ref}, (s,a) ∼ τ} [ log π_θ(a | s) · (−\\hat{A}^{ref}(s, a)) ]."
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::1",
+      "category": "Sign/Arithmetic error",
+      "severity": "minor",
+      "confidence": 0.9,
+      "verifier": "verify-math-lean",
+      "evidence": "With $n_{\\text{steps}} = 2048$ transitions per rollout buffer and one training round per buffer, rounds $=$ total\\_timesteps$/2048$. Lean confirmed five of the six pairings and refuted the sixth:\n\n$102400/2048 = 50$ ✓ · $81920/2048 = 40$ ✓ · $204800/2048 = 100$ ✓ · $307200/2048 = 150$ ✓ · but $1{,}024{,}000/2048 = 500 \\neq 1000$.\n\nThe stated BipedalWalker round count is off by exactly a factor of two; 1000 rounds would require $1000 \\times 2048 = 2{,}048{,}000$ timesteps. That the other five are exact makes this a localised slip, but it leaves the BipedalWalker training budget — the longest run in the paper — ambiguous by $2\\times$.",
+      "exact_quote": "1,024,000 for BipedalWalker (1000 rounds)"
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::0",
+      "category": "Domain/Constraint violation",
+      "severity": "minor",
+      "confidence": 0.9,
+      "verifier": "verify-math-lean",
+      "evidence": "The summary range does not contain the paper's own reported values. Lean checked the claim that every sample-efficiency reduction lies in $[20\\%, 67\\%]$ against the twelve values printed in Fig. 6(b) and refuted it: three exceed the upper bound — MiniGrid $SE_{\\text{ave}} = 78.5\\%$, MiniGrid $SE_{\\text{peak}} = 82.3\\%$, Highway $SE_{\\text{peak}} = 68.4\\%$ — and separately proved **no** reported value is as low as $28\\%$, so the $20\\%$ floor is unattained as well.\n\nThe tight range of the paper's own values, also proved, is $[28.7\\%, 82.3\\%]$. The stated interval thus understates the method's best results while claiming a floor it never reaches.",
+      "exact_quote": "1) IIF achieves substantial sample efficiency gains, showing a 20–67% reduction in training rounds required to match the standard training performance across environments."
+    },
+    {
+      "snippet_id": "paper::EQUATION::7",
+      "category": "Sign/Arithmetic error",
+      "severity": "critical",
+      "confidence": 0.85,
+      "verifier": "verify-math-lean",
+      "evidence": "The two target functions the paper presents as interchangeable carry **opposite sign conventions**. $f^{\\text{return}}$ (Sec. 3.1) multiplies by $-\\hat{A}^{\\text{ref}}$; $f^{\\text{seq}}$ (Sec. 5.3) multiplies by $+\\hat{A}^{\\text{ref}}_{-1}$.\n\nLean proved that on identical data they are **pointwise negatives**, $f^{\\text{seq}}(p) = -f^{\\text{return}}(p)$, and move in opposite directions in the probability of the better-than-average outcome: $f^{\\text{seq}}$ strictly increasing, $f^{\\text{return}}$ strictly decreasing. Yet both are substituted into the same influence score $I_i$ under one fixed interpretation — \"records with positive influence benefit ... learning\" — and Appendix B.11 compares them head-to-head as alternative target functions for the same algorithm. Under opposite signs, the meaning of \"positive influence\" inverts between the standard-RL experiments (Secs. 4–5.2) and the RLHF experiments (Sec. 5.3), so the records IIF filters in one setting are those it would retain in the other.\n\n(The chain rule $\\log\\pi_\\theta(y|x) = \\sum_i \\log\\pi_\\theta(y_i|x,y_{<i})$ stated alongside it was formalised and verified correct.)",
+      "exact_quote": "f^{seq}(θ) = E_{x ∼ D_val, y ∼ π^{ref}(·|x)} [ log π_θ(y|x) · Â^{ref}_{−1}(x, y) ],"
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::2",
+      "category": "Internal data inconsistency",
+      "severity": "critical",
+      "confidence": 0.8,
+      "verifier": "verify-math",
+      "evidence": "Sec. 5.1 states that Fig. 6 reports the **best** over the evaluated filtering percentages $p$, and Appendix B.6's Table 2 is the ablation over those $p$ for the same two metrics. A maximum over a set cannot be exceeded by a member of that set — yet Fig. 6(b) exceeds Table 2's best-over-$p$ in **all eight** comparable cells, always upward:\n\n| metric | env | best over $p$ (Table 2) | Fig. 6(b) | gap |\n|---|---|---|---|---|\n| $SE_{\\text{ave}}$ | FrozenLake | $33.7\\%$ | $42.3\\%$ | $+8.6$ |\n| $SE_{\\text{ave}}$ | Acrobot | $36.7\\%$ | $51.2\\%$ | $+14.5$ |\n| $SE_{\\text{ave}}$ | MiniGrid | $75.4\\%$ | $78.5\\%$ | $+3.1$ |\n| $SE_{\\text{ave}}$ | LunarLander | $28.2\\%$ | $38.4\\%$ | $+10.2$ |\n| $SE_{\\text{peak}}$ | FrozenLake | $22.1\\%$ | $28.7\\%$ | $+6.6$ |\n| $SE_{\\text{peak}}$ | Acrobot | $48.5\\%$ | $63.9\\%$ | $+15.4$ |\n| $SE_{\\text{peak}}$ | MiniGrid | $67.4\\%$ | $82.3\\%$ | $+14.9$ |\n| $SE_{\\text{peak}}$ | LunarLander | $41.6\\%$ | $54.2\\%$ | $+12.6$ |\n\nThe two tables differ in seed count (Table 2: three runs; Fig. 6: five seeds), which legitimately permits some drift — but not a one-directional shift in 8/8 cells, several many reported standard errors wide (LunarLander $SE_{\\text{ave}}$: $38.4$ vs $28.2 \\pm 1.3$). The headline sample-efficiency numbers are not reproducible from the ablation presented as their source.",
+      "exact_quote": "IIF employs a hyperparameter, p, which determines the amount of records to discard. We evaluate various p’s and report the best in Fig. 6."
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+      "category": "Sign/Arithmetic error",
+      "severity": "minor",
+      "confidence": 0.8,
+      "verifier": "verify-math",
+      "evidence": "The reported sign of this correlation is inverted relative to both the paper's framework and its own figure caption.\n\nBy the paper's conventions, bottom records have the **most negative** influence and exhibit sign mismatch, $\\bar{A}\\cdot\\hat{A} < 0$; top records have the most positive influence and aligned advantages, $\\bar{A}\\cdot\\hat{A} > 0$. Low influence therefore pairs with low $\\bar{A}\\cdot\\hat{A}$ and high with high — a **positive** rank correlation, not a \"strongly negative\" one.\n\nThe figure caption confirms the positive reading: Fig. 3(d) plots $\\bar{A}\\cdot\\hat{A}$ against record **rank**, and records are \"sorted by decreasing influence (top on the left)\", so rank is inversely ordered with influence and a negative correlation with *rank* is exactly a positive correlation with *influence*. The text substituted \"influence\" for \"rank\" while keeping the sign.\n\nAs written the sentence also defeats its own purpose: a negative influence–$(\\bar{A}\\cdot\\hat{A})$ correlation would make the most harmful records the ones with the **best-aligned** advantage estimates, contradicting the section it is offered as confirming. The finding is stated correctly elsewhere, so only this sentence is affected.",
+      "exact_quote": "Indeed, Spearman’s rank correlation [Spearman, 1904] between each record’s influence and the product Ā · Â is strongly negative (Fig. 3(d)), confirming that misaligned advantages drive harmful gradient steps."
+    },
+    {
+      "snippet_id": "paper::EQUATION::4",
+      "category": "Notational inconsistency",
+      "severity": "minor",
+      "confidence": 0.75,
+      "verifier": "verify-math",
+      "evidence": "The definition of the paper's central quantity disagrees with its own gloss about where the target-function gradient is evaluated. The displayed equation writes $\\nabla_\\theta f(\\theta_0^{(k)})$ — the **fixed** round-initial parameters — while the very next sentence says \"$\\nabla_\\theta f(\\theta_j^{(k)})$ is the gradient of the target function evaluated at $\\theta_j^{(k)}$\" — the **per-step** parameters. These define different estimators.\n\nA third variant appears in Sec. 5.1: \"Instead of iterating over all intermediate checkpoints, we compute the influence scores ... via $\\langle\\nabla_\\theta f(\\theta^{(k)}), \\nabla_\\theta\\mathcal{L}^{\\text{PPO}}(\\theta^{(k)}, z_i)\\rangle$, using only the initial parameter $\\theta^{(k)}$\" — presented as a cost-saving *departure* from this equation, which only makes sense if the equation evaluates **both** gradients at the varying $\\theta_j^{(k)}$, as the gloss and the Sec. 2.1 TracIn definition $\\nabla_\\theta f(\\theta_j)$ both indicate, and contrary to the $\\theta_0^{(k)}$ printed. The three statements disagree pairwise, leaving which quantity was actually computed under-determined.",
+      "exact_quote": "I_i := \\sum_{j: z_i \\in B_j^{(k)}} \\eta_j \\langle \\nabla_\\theta f(\\theta_0^{(k)}), \\nabla_\\theta \\mathcal{L}^{\\text{PPO}}(\\theta_j^{(k)}, z_i) \\rangle, \\quad \\text{where } f \\in \\{f^{\\text{action}}, f^{\\text{return}}\\}."
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::1",
+      "category": "Internal data inconsistency",
+      "severity": "minor",
+      "confidence": 0.7,
+      "verifier": "verify-math",
+      "evidence": "The claim that $p = 100\\%$ shows \"slower learning progress (also reflected in Table 2)\" is contradicted by Table 2 for MiniGrid under $SE_{\\text{ave}}$, where $p = 100\\%$ gives $75.4\\% \\pm 3.6\\%$ — the largest value in that column, and bolded by the authors, whose caption states \"Bold values indicate the best performing value of $p$\". The companion claim that \"a gentler filtering ($p = 12.5\\%$) can achieve better performance\" in MiniGrid also fails there, since $p = 12.5\\%$ gives only $67.5\\%$.\n\nThe neighbouring claims do hold where checkable ($p = 50\\%$ best for FrozenLake and Acrobot under $SE_{\\text{ave}}$; $p = 12.5\\%$ best for LunarLander under both metrics), and Sec. 5.1's hedged \"often suboptimal\" is accurate — it is the unhedged appendix bullet that overreaches on its own data.",
+      "exact_quote": "• Discarding all negative records (p = 100%) is suboptimal. As shown in Figure 14, setting p = 100% leads to suboptimal final performance, slower learning progress (also reflected in Table 2), and instability in training."
+    }
+  ],
+  "verdict": "CRITICAL_ERRORS",
+  "verdict_confidence": 0.9,
+  "summary": "Extracted 18 self-contained mathematical objects from this NeurIPS 2025 manuscript on local data attribution for online RL and routed them before running anything: 7 to formal Lean 4 verification, 11 to informal review. All 7 Lean snippets were settled by the compiler — **2 PASSED, 5 REFUTED, 0 FAILED, 0 NOT_ATTEMPTED** — so no informal fallbacks were owed under Step 5. Nine of the 18 snippets came back with an error at confidence $\\ge 0.7$.\n\n**What Lean settled as correct.** The exact half of the TracIn first-order identity ($\\langle\\nabla f(\\theta_j), \\theta_j-\\theta_{j+1}\\rangle = \\eta_j\\sum_{i\\in B_j}\\langle\\nabla f(\\theta_j), \\nabla\\ell(\\theta_j,z_i)\\rangle$ under the stated SGD update) is correct. So is the roughness functional of Sec. 4.2/B.2: it genuinely is a normalised Dirichlet energy equal to twice the graph-Laplacian quadratic form $x^\\top(D-W)x$, it is non-negative, and it vanishes when node values agree — all three of its asserted properties hold for symmetric non-negative weights. The autoregressive chain rule for $f^{\\text{seq}}$ was also verified correct.\n\n**What Lean refuted.** Two independent clusters.\n\n*A sign problem in the paper's central construct.* $f^{\\text{return}}$ is defined with a factor $(-\\hat{A}^{\\text{ref}})$, and Lean proved that in the smallest two-action instance this makes $f^{\\text{return}}(p) = \\tfrac12(\\log(1-p)-\\log p)$ strictly **decreasing** in the probability of the better-than-average action — inverting the paper's own sentence that \"maximizing $f^{\\text{return}}$ encourages increasing the probability of better-than-average actions\". The same theorem showed the $+\\hat{A}$ (REINFORCE-with-baseline) form it claims to derive from is strictly increasing, so the minus sign is what flips it. This is not resolvable as a harmless convention, because the paper's own RLHF target $f^{\\text{seq}}$ uses $+\\hat{A}$: Lean proved the two are pointwise negatives and oppositely monotone, even though both feed the same influence score under the same fixed reading that positive influence means helpful. A third, unflagged observation points the same way: $\\mathcal{L}^{\\text{PPO}}$ is defined as a surrogate to be maximised yet substituted into a TracIn derivation built for a minimised loss. The sign convention is genuinely unsettled across the paper, and the definition of the headline estimator $I_i$ is separately ambiguous between $\\theta_0^{(k)}$ and $\\theta_j^{(k)}$.\n\n*Reported numbers that contradict their own tables.* The strongest single finding: $RT_{\\text{peak}}$ is reported twice with incompatible values. Lean verified Table 5 is reproducible from its own wall-clock times as $1-m/a$ (within 0.2 points, all six environments), then proved Fig. 6(b) — which Appendix B.9 asserts is the same quantity — exceeds it by 7.6 to 14.5 points in every environment. One of the two must be wrong. Relatedly, Fig. 6(b)'s sample-efficiency values exceed the best-over-$p$ in the Appendix B.6 ablation that Sec. 5.1 says produced them, in all 8 comparable cells and always upward, which the 3-vs-5 seed difference cannot account for. Two lesser numeric slips: the \"20–67%\" summary range contains neither end of the paper's own $[28.7\\%, 82.3\\%]$ spread, and BipedalWalker's 1,024,000 timesteps is 500 rounds, not the stated 1000. By contrast the RLHF runtime chain in B.12 is arithmetically sound end to end (column sums, the 51.37% ratio, the compounding to 16.82% and 24.90%, and the $4\\times$ claim all check out), as are the TD-error/PER priorities, the MC advantage definition, and the B.8 confidence intervals ($t_{0.975,4}=2.776$ is correct for 5 seeds, and all three intervals exclude zero).\n\n**Disagreements between verifiers:** none. No Lean result was `FAILED`, so no snippet was judged twice and there is nothing to reconcile. Every `error_detected` verdict either rests on a compiling refutation or on a direct table-to-table comparison.\n\n**Verdict CRITICAL_ERRORS at confidence 0.9.** Four confident critical findings, three of them backed by compiling Lean refutations rather than informal judgement, and the two clusters are independent of each other. The qualitative contributions — the local attribution framework, and the finding that filtering negative-influence records helps — are not themselves refuted here; what is refuted is the sign convention defining the target functions and the specific headline numbers quantifying the gains. Note the Lean project `MATH_VERIFICATION/Paper` pre-existed this run; per verify-math-lean's deletion rules a reused project is treated as `--keep-lean` and was not deleted. Only per-snippet scratch (`TMP.lean`, `claim.md`) was removed; the seven proofs are archived under `Paper/Verified/*_opus5run.lean`."
+}

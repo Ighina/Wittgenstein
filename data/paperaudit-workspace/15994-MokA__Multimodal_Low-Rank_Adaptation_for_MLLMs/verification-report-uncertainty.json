@@ -1,0 +1,471 @@
+{
+  "paper_id": "15994",
+  "title": "MokA: Multimodal Low-Rank Adaptation for MLLMs",
+  "paper_category": "cs.LG",
+  "predicted_errors": [
+    {
+      "error_category": "Data Inconsistency (figure-figure)",
+      "error_location": "Table 2 (visual-text benchmarks), MME column, LLaMA2 + LoRA row",
+      "confidence": 0.95,
+      "supporting_evidence": "Table 2 lists LLaMA2+LoRA MME as 90.85, but Tables 4 and 11 report the identical configuration as 908.52. Every other MME value in Table 2 falls in the 774-1292 range, so 90.85 is a dropped-digit corruption of 908.52.",
+      "verifier_name": "vision",
+      "snippet_id": "15994::TABLE::1"
+    },
+    {
+      "error_category": "Conclusion vs Evidence mismatch",
+      "error_location": "Section 6 (Discussion)",
+      "confidence": 0.9,
+      "supporting_evidence": "Section 6 claims MokA 'completely solves the problem of multimodal adaptation' and 'absolutely ensures superior model performance,' yet Table 3 shows Uni-modal LoRA (36.80/36.50) and Uni LoRA + MM LoRA (37.10/37.60) both beat MokA (35.40/36.70) on LLaMA2 speech-text, and the Abstract itself hedges that 'gains vary among backbones and modalities, suggesting further exploration is needed.'",
+      "verifier_name": "text",
+      "snippet_id": "15994::SECTION::18"
+    },
+    {
+      "error_category": "Abstract vs Results mismatch",
+      "error_location": "Abstract vs Section 6 (Discussion)",
+      "confidence": 0.9,
+      "supporting_evidence": "The Abstract says 'gains vary among backbones and modalities, suggesting further exploration is needed to fully assess its generality and robustness,' while Section 6 declares MokA 'completely solves the problem' and paves the way for 'final, conclusive exploration of multimodal-aware adaptation.' The hedged framing and the absolutist conclusion are mutually contradictory.",
+      "verifier_name": "cross-section-consistency",
+      "snippet_id": "15994::SECTION::1"
+    },
+    {
+      "error_category": "Data Inconsistency (figure-figure)",
+      "error_location": "Table 5 (ablation) vs Table 3 (speech-text), AIR-Bench column, LLaMA2",
+      "confidence": 0.85,
+      "supporting_evidence": "For LLaMA2 on AIR-Bench, Table 5 reports Multiple LoRA = 31.97 and MokA = 39.64, while Table 3 reports 32.80 and 36.70 for the identical configurations. Only the shared LoRA baseline (31.75) agrees across the two tables, isolating the discrepancy to the affected rows.",
+      "verifier_name": "vision",
+      "snippet_id": "15994::TABLE::4"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 4.1 (Audio-visual-text scenario)",
+      "confidence": 0.85,
+      "supporting_evidence": "Text claims 'Qwen2.5-VL with LoRA outperforms both LLaMA-2 and Qwen2,' but Table 1 shows Qwen2.5-VL LoRA MUSIC-AVQA (73.00) is below LLaMA2 (73.41), and Qwen2.5-VL LoRA AVE (71.38) is below Qwen2 (72.13). The immediately following frozen-visual-connector explanation only makes sense if Qwen2.5-VL is underperforming, so the claim is inverted.",
+      "verifier_name": "text",
+      "snippet_id": "15994::SECTION::11"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Appendix B, Equations 14-15 (and 16-17)",
+      "confidence": 0.8,
+      "supporting_evidence": "The core cross-attention equations in Section 2.2.2 are normalized by 1/sqrt(d) (d = projection dimensionality), but Appendix B reproduces them with 1/sqrt(N_t) (text token count) while claiming 'the notation is consistent with the main manuscript.' Attention logits must be scaled by sqrt of the feature/key dimension, not the sequence length, so the appendix version is mathematically mis-scaled and inconsistent with the main text.",
+      "verifier_name": "math-equations",
+      "snippet_id": "15994::EQUATION::12"
+    },
+    {
+      "error_category": "Misattribution (external)",
+      "error_location": "Section 5 (Related works)",
+      "confidence": 0.72,
+      "supporting_evidence": "Text states DoRA [21] 'focuses solely on optimizing the gradient direction.' DoRA (Weight-Decomposed Low-Rank Adaptation, ICML 2024) actually decomposes the pretrained weight into magnitude and direction components and learns both via a LoRA-style update on the direction component; it does not focus solely on the gradient direction. The attribution is a mischaracterization of the cited work.",
+      "verifier_name": "citation",
+      "snippet_id": "15994::SECTION::17"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Equation 13 (Section 2.2.4 Overview)",
+      "confidence": 0.7,
+      "supporting_evidence": "Equation 13 writes the cross-modal text contribution as B*0_{N_t}, with 0_{N_t} defined as 'the zero vector of dimension N_t' (the text token count). Since B is in R^{d x r}, B can only multiply a vector in R^r; the zero term should be of the rank r (or output) dimension, not the token count N_t. The stated dimensionality is inconsistent even though the term evaluates to zero.",
+      "verifier_name": "math-equations",
+      "snippet_id": "15994::EQUATION::11"
+    },
+    {
+      "error_category": "Data Inconsistency (text-table)",
+      "error_location": "Section 4.1 (Audio-visual-text scenario)",
+      "confidence": 0.7,
+      "supporting_evidence": "Text claims 'multiple LoRA ... underperforms both standard LoRA and MokA.' On LLaMA2 AVE, Multiple LoRA (71.77) exceeds standard LoRA (69.84), so the claim only holds on MUSIC-AVQA, not on AVE. The categorical 'underperforms both' statement is contradicted by the paper's own Table 1.",
+      "verifier_name": "text",
+      "snippet_id": "15994::SECTION::11"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 75,
+    "snippets_verified": 75,
+    "errors_detected": 9,
+    "verifier_usage": {
+      "math_equation": 13,
+      "text": 9,
+      "statistical": 8,
+      "citation": 1,
+      "vision": 9,
+      "cross_section_consistency": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Verified in uncertainty mode (uncertainty threshold 0.30, lenient strictness). The paper was segmented into 75 snippets (30 sections/appendices, 16 equations, 13 tables, 14 figures, 2 code blocks). Triage scored every snippet; 41 high-uncertainty snippets (uncertainty >= 0.30) were routed to specialist verifiers (math, text, statistical, citation, vision) and the remaining 34 low-risk snippets were recorded as NO_ERROR at confidence 1.0 - uncertainty. A whole-paper cross-section pass was also run. 9 findings survived filtering (math/statistics >= 0.70, text/citation >= 0.70, vision >= 0.75 under lenient strictness), including 3 high-confidence (>= 0.85) errors: (1) the LLaMA2+LoRA MME value in Table 2 (90.85) contradicts the identical configuration reported as 908.52 in Tables 4 and 11; (2) the absolutist Discussion ('completely solves ... absolutely ensures superior performance') contradicts both the hedged Abstract and Table 3, where two baselines beat MokA on LLaMA2 speech-text; (3) the Abstract's 'further exploration is needed' directly conflicts with the Discussion's 'final, conclusive exploration.' Additional findings: Table 5 and Table 3 disagree on LLaMA2 AIR-Bench for Multiple LoRA and MokA; Section 4.1 inverts the Qwen2.5-VL comparison against Table 1; Appendix B re-scales the cross-attention equations by sqrt(N_t) instead of the main text's sqrt(d); DoRA is mischaracterized in Related Works; and Equation 13's B*0_{N_t} term has an inconsistent dimensionality. Figures could not be pixel-verified (no image files are present in the workspace); captions were checked against the text and are consistent. A ground_truth.json exists in the paper directory but findings were derived independently from the paper's own internal evidence.",
+  "uncertainty_map": [
+    {
+      "snippet_id": "15994::SECTION::0",
+      "uncertainty": 0.01,
+      "route": "none"
+    },
+    {
+      "snippet_id": "15994::SECTION::1",
+      "uncertainty": 0.2,
+      "route": "text"
+    },
+    {
+      "snippet_id": "15994::SECTION::2",
+      "uncertainty": 0.55,
+      "route": "text"
+    },
+    {
+      "snippet_id": "15994::SECTION::3",
+      "uncertainty": 0.35,
+      "route": "math"
+    },
+    {
+      "snippet_id": "15994::SECTION::4",
+      "uncertainty": 0.15,
+      "route": "text"
+    },
+    {
+      "snippet_id": "15994::SECTION::5",
+      "uncertainty": 0.2,
+      "route": "text"
+    },
+    {
+      "snippet_id": "15994::SECTION::6",
+      "uncertainty": 0.5,
+      "route": "math"
+    },
+    {
+      "snippet_id": "15994::SECTION::7",
+      "uncertainty": 0.15,
+      "route": "text"
+    },
+    {
+      "snippet_id": "15994::SECTION::8",
+      "uncertainty": 0.4,
+      "route": "math"
+    },
+    {
+      "snippet_id": "15994::SECTION::9",
+      "uncertainty": 0.2,
+      "route": "text"
+    },
+    {
+      "snippet_id": "15994::SECTION::10",
+      "uncertainty": 0.3,
+      "route": "statistics"
+    },
+    {
+      "snippet_id": "15994::SECTION::11",
+      "uncertainty": 0.7,
+      "route": "text"
+    },
+    {
+      "snippet_id": "15994::SECTION::12",
+      "uncertainty": 0.3,
+      "route": "text"
+    },
+    {
+      "snippet_id": "15994::SECTION::13",
+      "uncertainty": 0.3,
+      "route": "text"
+    },
+    {
+      "snippet_id": "15994::SECTION::14",
+      "uncertainty": 0.35,
+      "route": "text"
+    },
+    {
+      "snippet_id": "15994::SECTION::15",
+      "uncertainty": 0.3,
+      "route": "text"
+    },
+    {
+      "snippet_id": "15994::SECTION::16",
+      "uncertainty": 0.3,
+      "route": "statistics"
+    },
+    {
+      "snippet_id": "15994::SECTION::17",
+      "uncertainty": 0.6,
+      "route": "citation"
+    },
+    {
+      "snippet_id": "15994::SECTION::18",
+      "uncertainty": 0.8,
+      "route": "text"
+    },
+    {
+      "snippet_id": "15994::SECTION::19",
+      "uncertainty": 0.01,
+      "route": "none"
+    },
+    {
+      "snippet_id": "15994::SECTION::20",
+      "uncertainty": 0.2,
+      "route": "citation"
+    },
+    {
+      "snippet_id": "15994::SECTION::21",
+      "uncertainty": 0.3,
+      "route": "text"
+    },
+    {
+      "snippet_id": "15994::SECTION::22",
+      "uncertainty": 0.55,
+      "route": "math"
+    },
+    {
+      "snippet_id": "15994::SECTION::23",
+      "uncertainty": 0.45,
+      "route": "statistics"
+    },
+    {
+      "snippet_id": "15994::SECTION::24",
+      "uncertainty": 0.3,
+      "route": "statistics"
+    },
+    {
+      "snippet_id": "15994::SECTION::25",
+      "uncertainty": 0.3,
+      "route": "text"
+    },
+    {
+      "snippet_id": "15994::SECTION::26",
+      "uncertainty": 0.4,
+      "route": "statistics"
+    },
+    {
+      "snippet_id": "15994::SECTION::27",
+      "uncertainty": 0.25,
+      "route": "text"
+    },
+    {
+      "snippet_id": "15994::SECTION::28",
+      "uncertainty": 0.02,
+      "route": "none"
+    },
+    {
+      "snippet_id": "15994::SECTION::29",
+      "uncertainty": 0.35,
+      "route": "statistics"
+    },
+    {
+      "snippet_id": "15994::EQUATION::0",
+      "uncertainty": 0.2,
+      "route": "math"
+    },
+    {
+      "snippet_id": "15994::EQUATION::1",
+      "uncertainty": 0.3,
+      "route": "math"
+    },
+    {
+      "snippet_id": "15994::EQUATION::2",
+      "uncertainty": 0.25,
+      "route": "math"
+    },
+    {
+      "snippet_id": "15994::EQUATION::3",
+      "uncertainty": 0.4,
+      "route": "math"
+    },
+    {
+      "snippet_id": "15994::EQUATION::4",
+      "uncertainty": 0.4,
+      "route": "math"
+    },
+    {
+      "snippet_id": "15994::EQUATION::5",
+      "uncertainty": 0.15,
+      "route": "math"
+    },
+    {
+      "snippet_id": "15994::EQUATION::6",
+      "uncertainty": 0.15,
+      "route": "math"
+    },
+    {
+      "snippet_id": "15994::EQUATION::7",
+      "uncertainty": 0.2,
+      "route": "math"
+    },
+    {
+      "snippet_id": "15994::EQUATION::8",
+      "uncertainty": 0.25,
+      "route": "math"
+    },
+    {
+      "snippet_id": "15994::EQUATION::9",
+      "uncertainty": 0.3,
+      "route": "math"
+    },
+    {
+      "snippet_id": "15994::EQUATION::10",
+      "uncertainty": 0.3,
+      "route": "math"
+    },
+    {
+      "snippet_id": "15994::EQUATION::11",
+      "uncertainty": 0.55,
+      "route": "math"
+    },
+    {
+      "snippet_id": "15994::EQUATION::12",
+      "uncertainty": 0.55,
+      "route": "math"
+    },
+    {
+      "snippet_id": "15994::EQUATION::13",
+      "uncertainty": 0.55,
+      "route": "math"
+    },
+    {
+      "snippet_id": "15994::EQUATION::14",
+      "uncertainty": 0.5,
+      "route": "math"
+    },
+    {
+      "snippet_id": "15994::EQUATION::15",
+      "uncertainty": 0.5,
+      "route": "math"
+    },
+    {
+      "snippet_id": "15994::TABLE::0",
+      "uncertainty": 0.45,
+      "route": "vision"
+    },
+    {
+      "snippet_id": "15994::TABLE::1",
+      "uncertainty": 0.75,
+      "route": "vision"
+    },
+    {
+      "snippet_id": "15994::TABLE::2",
+      "uncertainty": 0.55,
+      "route": "vision"
+    },
+    {
+      "snippet_id": "15994::TABLE::3",
+      "uncertainty": 0.5,
+      "route": "vision"
+    },
+    {
+      "snippet_id": "15994::TABLE::4",
+      "uncertainty": 0.7,
+      "route": "vision"
+    },
+    {
+      "snippet_id": "15994::TABLE::5",
+      "uncertainty": 0.4,
+      "route": "vision"
+    },
+    {
+      "snippet_id": "15994::TABLE::6",
+      "uncertainty": 0.35,
+      "route": "vision"
+    },
+    {
+      "snippet_id": "15994::TABLE::7",
+      "uncertainty": 0.3,
+      "route": "vision"
+    },
+    {
+      "snippet_id": "15994::TABLE::8",
+      "uncertainty": 0.3,
+      "route": "vision"
+    },
+    {
+      "snippet_id": "15994::TABLE::9",
+      "uncertainty": 0.3,
+      "route": "vision"
+    },
+    {
+      "snippet_id": "15994::TABLE::10",
+      "uncertainty": 0.3,
+      "route": "vision"
+    },
+    {
+      "snippet_id": "15994::TABLE::11",
+      "uncertainty": 0.6,
+      "route": "vision"
+    },
+    {
+      "snippet_id": "15994::TABLE::12",
+      "uncertainty": 0.5,
+      "route": "vision"
+    },
+    {
+      "snippet_id": "15994::FIGURE::0",
+      "uncertainty": 0.1,
+      "route": "vision"
+    },
+    {
+      "snippet_id": "15994::FIGURE::1",
+      "uncertainty": 0.1,
+      "route": "vision"
+    },
+    {
+      "snippet_id": "15994::FIGURE::2",
+      "uncertainty": 0.1,
+      "route": "vision"
+    },
+    {
+      "snippet_id": "15994::FIGURE::3",
+      "uncertainty": 0.1,
+      "route": "vision"
+    },
+    {
+      "snippet_id": "15994::FIGURE::4",
+      "uncertainty": 0.1,
+      "route": "vision"
+    },
+    {
+      "snippet_id": "15994::FIGURE::5",
+      "uncertainty": 0.1,
+      "route": "vision"
+    },
+    {
+      "snippet_id": "15994::FIGURE::6",
+      "uncertainty": 0.15,
+      "route": "vision"
+    },
+    {
+      "snippet_id": "15994::FIGURE::7",
+      "uncertainty": 0.15,
+      "route": "vision"
+    },
+    {
+      "snippet_id": "15994::FIGURE::8",
+      "uncertainty": 0.1,
+      "route": "vision"
+    },
+    {
+      "snippet_id": "15994::FIGURE::9",
+      "uncertainty": 0.1,
+      "route": "vision"
+    },
+    {
+      "snippet_id": "15994::FIGURE::10",
+      "uncertainty": 0.1,
+      "route": "vision"
+    },
+    {
+      "snippet_id": "15994::FIGURE::11",
+      "uncertainty": 0.1,
+      "route": "vision"
+    },
+    {
+      "snippet_id": "15994::FIGURE::12",
+      "uncertainty": 0.1,
+      "route": "vision"
+    },
+    {
+      "snippet_id": "15994::FIGURE::13",
+      "uncertainty": 0.2,
+      "route": "vision"
+    },
+    {
+      "snippet_id": "15994::CODE::0",
+      "uncertainty": 0.1,
+      "route": "none"
+    },
+    {
+      "snippet_id": "15994::CODE::1",
+      "uncertainty": 0.1,
+      "route": "none"
+    }
+  ]
+}

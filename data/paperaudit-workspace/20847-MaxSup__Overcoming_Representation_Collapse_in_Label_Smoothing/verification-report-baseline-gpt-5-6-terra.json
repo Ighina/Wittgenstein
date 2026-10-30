@@ -1,0 +1,118 @@
+{
+  "paper_id": "20847-MaxSup__Overcoming_Representation_Collapse_in_Label_Smoothing",
+  "title": "MaxSup: Overcoming Representation Collapse in Label Smoothing",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Theorem 3.3, main text",
+      "confidence": 0.99,
+      "supporting_evidence": "The theorem states \"L_LS ≈ α(z_gt − (1/K)∑z_k) − log∑_j e^{z_j}\". This is incorrect. From Eq. (3), H(uniform,q) − H(y,q) = [−mean(z)+logsumexp(z)] − [−z_gt+logsumexp(z)] = z_gt−mean(z); the log-sum-exp terms cancel exactly. Appendix B itself derives the exact result L_LS = α[z_gt−(1/K)∑z_k] in Eqs. (18), (24)–(26). Thus the main theorem has both an unjustified approximation and an erroneous extra normalization term.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20847-MaxSup__Overcoming_Representation_Collapse_in_Label_Smoothing::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Definition 3.5, Eqs. (6)–(7)",
+      "confidence": 0.98,
+      "supporting_evidence": "Eq. (6) identifies its left-hand side as CE with the soft labels s previously defined by Label Smoothing in Definition 3.1. For those labels, however, H(s,q)=H(y,q)+α(z_gt−mean(z)), whereas Eqs. (7)–(8) make the right-hand side H(y,q)+α(z_max−mean(z)). These are unequal whenever z_max is not z_gt. Eq. (6) therefore cannot be an equality for the paper's defined soft-label target.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20847-MaxSup__Overcoming_Representation_Collapse_in_Label_Smoothing::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Definition 3.5 and Appendix C.1",
+      "confidence": 0.98,
+      "supporting_evidence": "The paper repeatedly calls MaxSup a \"CE with Soft Labels,\" but its implied target is y + α/K − α·1_{k=argmax(q)} (Appendix C.1). On a misclassified example, this assigns the predicted non-ground-truth maximum class target α/K−α=−α(1−1/K)<0 and assigns the ground-truth class 1+α/K>1. Hence this is not a probability distribution or valid soft-label target. It may be used algebraically as a signed logit regularizer, but it must not be represented as ordinary cross-entropy with soft labels, and Eq. (6)'s notation conceals this substantive change.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20847-MaxSup__Overcoming_Representation_Collapse_in_Label_Smoothing::baseline"
+    },
+    {
+      "error_category": "Experiment setup",
+      "error_location": "Table 1 and the accompanying \"Ablation Study on LS Components\" discussion",
+      "confidence": 0.94,
+      "supporting_evidence": "The claimed isolation of LS components is invalid because the rows do not retain the LS component weights. Standard LS is listed with α/K for both sums, but the \"Regularization\" ablation uses α/M and the \"error amplification\" ablations use α/N or α(z_gt−z_max). Since M and N vary per sample and training step, these objectives have different, data-dependent strengths from the respective components of LS. Consequently the table cannot establish that LS's gain \"stems solely\" from one component or that the other component \"consistently reduces accuracy.\"",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20847-MaxSup__Overcoming_Representation_Collapse_in_Label_Smoothing::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Section 3.1/Table 1 discussion and Section 3.2 claims that MaxSup \"faithfully preserv[es]\" LS regularization",
+      "confidence": 0.92,
+      "supporting_evidence": "On an incorrect prediction, the LS regularizer is α(z_gt−mean(z)), while MaxSup is α(z_max−mean(z)). MaxSup is not merely LS with the alleged error-amplification term removed: it changes the reference logit and hence changes every term in the decomposition. In particular, it also promotes logits below z_max, including logits that may be above or below z_gt, rather than preserving the proposed \"regularization\" term relative to z_gt. The paper's component-removal interpretation is therefore not supported by its own objectives.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20847-MaxSup__Overcoming_Representation_Collapse_in_Label_Smoothing::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 4.1.1 discussion of Table 2",
+      "confidence": 0.91,
+      "supporting_evidence": "The text says that \"Logit Penalty occasionally displays increased d̄_within ... compared to the baseline.\" But Table 2 reports lower within-class distance for Logit Penalty than the baseline in both splits: train 0.284 versus 0.311 and validation 0.314 versus 0.331. The claimed increase is not present in the cited table.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20847-MaxSup__Overcoming_Representation_Collapse_in_Label_Smoothing::baseline"
+    },
+    {
+      "error_category": "Citation / attribution",
+      "error_location": "Section 4.3",
+      "confidence": 0.99,
+      "supporting_evidence": "The paper states that semantic segmentation uses the \"MMSegmentation framework [6].\" Reference [6] is Gao et al., \"Towards a better understanding of label smoothing in neural machine translation,\" not MMSegmentation. The cited source does not support the framework attribution.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20847-MaxSup__Overcoming_Representation_Collapse_in_Label_Smoothing::baseline"
+    },
+    {
+      "error_category": "Citation / attribution",
+      "error_location": "Appendix H, Table 13",
+      "confidence": 0.99,
+      "supporting_evidence": "Table 13 labels \"Logit Normalization [3*].\" Reference [3] is HSVA, a hierarchical semantic-visual adaptation paper for zero-shot learning, and is unrelated to logit normalization. The likely relevant bibliography entry is [38], whose title is \"Mitigating neural network overconfidence with logit normalization.\" This is a plainly incorrect citation label.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20847-MaxSup__Overcoming_Representation_Collapse_in_Label_Smoothing::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Section 4.4, final paragraph",
+      "confidence": 0.9,
+      "supporting_evidence": "The paper asserts that \"Further quantitative Grad-CAM overlay metrics (e.g., precision and recall for target regions) confirm\" the visual conclusions, but no such metrics, target-region annotations, protocol, table, or appendix results are provided anywhere in the submitted text. This claims quantitative evidence that is absent from the paper.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20847-MaxSup__Overcoming_Representation_Collapse_in_Label_Smoothing::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Impact statement",
+      "confidence": 0.95,
+      "supporting_evidence": "The Impact section says the authors \"have not observed any additional adverse effects or trade-offs.\" This contradicts the paper's own reported limitations: Table 7 shows 0.0 low-shot accuracy for every MaxSup setting and explicitly raises fairness concerns, while Table 8 shows MaxSup has worse corruption error than both LS and CE and worse corrupted NLL than LS. The categorical no-trade-off claim must be corrected or qualified.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20847-MaxSup__Overcoming_Representation_Collapse_in_Label_Smoothing::baseline"
+    },
+    {
+      "error_category": "Experiment setup",
+      "error_location": "Section 4.2.1 versus Section 4.2.2 discussion of OLS and Zipf-LS",
+      "confidence": 0.83,
+      "supporting_evidence": "Section 4.2.1 says that hyperparameters and training settings were \"re-tuned under each training recipe to ensure optimal performance for each method.\" The results discussion then says that for OLS and Zipf-LS the authors use official code/hyperparameters but \"do not replicate their complete training recipes,\" including their specified epoch counts and schedules. Because the comparison admits that the competing methods were run outside their prescribed recipes while asserting optimized/fair comparisons and schedule sensitivity, the claimed superiority is not supported by a like-for-like baseline protocol.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20847-MaxSup__Overcoming_Representation_Collapse_in_Label_Smoothing::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 11,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (gpt-5.6-terra, taxonomy=default): 11 error(s) reported.",
+  "baseline": {
+    "model": "gpt-5.6-terra",
+    "provider": "openai",
+    "taxonomy": "default",
+    "paper_chars": 83022,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 22070,
+      "output_tokens": 5056,
+      "cache_read_input_tokens": null,
+      "cache_creation_input_tokens": null
+    }
+  }
+}

@@ -1,0 +1,206 @@
+{
+  "paper_id": "10969-Task-Optimized_Convolutional_Recurrent_Networks_Align_with_Tactile_Process",
+  "title": "Task-Optimized Convolutional Recurrent Networks Align with Tactile Processing in the Rodent Brain",
+  "paper_category": "Computational Neuroscience / NeuroAI (task-optimized deep network models of sensory cortex)",
+  "predicted_errors": [
+    {
+      "error_category": "Citation / attribution error (cited work does not concern the claimed subject)",
+      "error_location": "Introduction, paragraph 1: 'specialized insect hairs respond to wind stimuli, providing information essential for flight stability and agility [Sterbing-D'Angelo et al., 2011]'",
+      "confidence": 0.97,
+      "supporting_evidence": "The cited reference (listed in the paper's own bibliography) is Sterbing-D'Angelo et al., PNAS 108(27):11291-11296, 2011, titled 'Bat wing sensors support flight control'. Its abstract states: 'Bats are the only mammals capable of powered flight... its specialized membrane is covered with stiff, microscopically small, domed hairs... neurons in bat primary somatosensory cortex respond with directional sensitivity to stimulation of the wing hairs with low-speed airflow.' The study is about bats, which are mammals, not insects. Verified at https://www.pnas.org/doi/10.1073/pnas.1018740108 (PMID 21690408).",
+      "verifier_name": "verify-citation",
+      "snippet_id": "10969_sec_introduction"
+    },
+    {
+      "error_category": "Data / arithmetic inconsistency (table vs. its own caption)",
+      "error_location": "Appendix A1, Table 1, row (1) 'Total Sweeps' = 316,192 (and caption: 'The total number of sweeps equals the number of sweep augmentation combinations x 9981 objects')",
+      "confidence": 0.92,
+      "supporting_evidence": "Row (1) lists Speed {30 mm/s} x Height {-5, 0 mm} x Rotation {0, 30, 90, 120 deg} x Distance {5, 8 mm} x Size {40 mm} = 1x2x4x2x1 = 16 combinations. 16 x 9981 = 159,696, not 316,192. Moreover 316,192 / 9981 = 31.679..., a non-integer, so NO integer number of augmentation combinations can yield the stated total under the caption's own rule (31 x 9981 = 309,411; 32 x 9981 = 319,392). Row (2) by contrast divides exactly (2,076,048 / 9981 = 208), confirming the rule is intended literally. The reported size of the Low-Variation/High-Fidelity dataset is therefore internally impossible.",
+      "verifier_name": "verify-vision",
+      "snippet_id": "10969_tab_1"
+    },
+    {
+      "error_category": "Citation error (dangling / uncited reference)",
+      "error_location": "References: 'R. A. Grant. Can we study whisker movements to gain insights into the natural sensory behaviours of mammals? The Journal of Physiology, 2025.'",
+      "confidence": 0.9,
+      "supporting_evidence": "A full-text search of the manuscript finds the string 'Grant' only within the reference list. The citation key never appears in the abstract, body, or appendix, so this bibliography entry is never cited.",
+      "verifier_name": "verify-citation",
+      "snippet_id": "10969_sec_references"
+    },
+    {
+      "error_category": "Equation / invalid mathematical definition (circular, false for all but two values)",
+      "error_location": "Appendix A4, 'Spearman-Brown Correction' display equation: RSA~(X, Y) := Corr(RDM(x), RDM(y)) = 2 RSA(X, Y) / (1 + RSA(X, Y))",
+      "confidence": 0.85,
+      "supporting_evidence": "RSA(X, Y) is itself the quantity Corr(RDM(x), RDM(y)) — it is used with exactly that meaning in the numerator of Eq. 11. The displayed line therefore asserts r = 2r/(1+r) for r = Corr(RDM(x), RDM(y)). Solving: r(1+r) = 2r  =>  r^2 + r - 2r = 0  =>  r^2 = r  =>  r in {0, 1}. The identity is false for every other value of r. The Spearman-Brown-corrected quantity must be defined as the transform OF the raw split-half correlation, not set equal to it. This matters materially because RSA~ appears in the denominator of Eq. 11, the noise-correction that produces every reported neural-fit number in the paper.",
+      "verifier_name": "verify-math",
+      "snippet_id": "10969_eq_spearman_brown"
+    },
+    {
+      "error_category": "Data / arithmetic inconsistency (table total contradicts stated sampling scheme)",
+      "error_location": "Appendix A1, Table 1, row (2), Total Sweeps = 2,076,048, with caption 'For dataset (2), the speed, rotation, and size are each sampled from the range 26 times'",
+      "confidence": 0.8,
+      "supporting_evidence": "2,076,048 / 9981 = 208 exactly, so the implied combination count is 208. But the described sampling gives speed 26 x height 3 x rotation 26 x size 26 x distance 1 = 26^3 x 3 = 52,728 combinations, i.e. approximately 5.26 x 10^8 sweeps — about 2,500x the reported total. Nor is 208 factorizable as any subset of the stated grid (208 = 16 x 13 = 26 x 8; it cannot be built from 26, 26, 26, 3). The per-parameter sampling counts and the reported total are mutually inconsistent.",
+      "verifier_name": "verify-math",
+      "snippet_id": "10969_tab_1"
+    },
+    {
+      "error_category": "Statistical reporting inconsistency (same quantity reported with two different values)",
+      "error_location": "Figure 4b caption ('The mean animal-to-animal score is 0.18 and the maximum between all pairs of animals is 0.34'; in-figure annotation '0.34 inter-animal max') vs. Appendix A4, Inter-Animal Consistency ('the mean pooled animal score was 0.175 with a s.e.m. of 0.161 and maximum score of 1.34')",
+      "confidence": 0.8,
+      "supporting_evidence": "Both passages report the same inter-animal consistency statistic and their means agree to rounding (0.18 vs 0.175), confirming they describe the same quantity; the maxima differ by exactly 1.0 (0.34 vs 1.34), a leading-digit slip. The two values cannot both be correct, and the discrepancy is material: the 0.34 line is the NeuroAI-Turing-Test benchmark the Results claim models 'robustly' exceed. If the true maximum is 1.34, no reported model (best neural fit approximately 0.96) exceeds it. Separately, the two passages describe different estimators presented as the same baseline: Methods/Fig. 4b describe pairwise consistency 'computed between one mouse and every other mouse, and then averaged', while A4 describes a pooled hold-one-animal-out comparison against 'a pseudo-population aggregated across units from the remaining animals'. The A4 s.e.m. (0.161) is also nearly as large as its mean (0.175).",
+      "verifier_name": "verify-statistical",
+      "snippet_id": "10969_fig_4"
+    },
+    {
+      "error_category": "Citation / attribution error (method attributed to a work that does not introduce it)",
+      "error_location": "Methods, 'Model Training and Tactile Augmentations': 'autoencoding (AE) [Olshausen and Field, 1996], where we use a 3-layer deconvolution network to reconstruct an image from its sparse latent representation'",
+      "confidence": 0.8,
+      "supporting_evidence": "Olshausen & Field 1996 (Nature 381:607-609), 'Emergence of simple-cell receptive field properties by learning a sparse code for natural images', presents a sparse linear generative (sparse-coding) model of V1 receptive fields. It neither introduces nor describes autoencoders; the standard attributions are Rumelhart et al. 1986 and Hinton & Salakhutdinov 2006. The reference supports the phrase 'sparse code', not the autoencoding objective the paper attributes to it.",
+      "verifier_name": "verify-citation",
+      "snippet_id": "10969_sec_method_training"
+    },
+    {
+      "error_category": "Factual / citation error (numeric claim not present in the cited source and contradicted by measured values)",
+      "error_location": "Methods, dataset generation: 'although adult mice can exhibit maximal bite forces of approximately 8-10 Newtons [Freeman and Lemen, 2008, Table 1]'",
+      "confidence": 0.75,
+      "supporting_evidence": "Freeman & Lemen 2008 (Journal of Zoology 275:418-422) is a morphological predictor study deriving a bite-force index from lower-incisor dimensions across 13 North American rodent species; Mus musculus is not among the species measured, so the quoted figure is not in the cited Table 1. Directly measured in vivo maximum bite force in adult house mice is approximately 3.9 N (mainland WSB strain) to 5.4 N (exceptionally large Gough Island mice) per Parmenter et al. 2020, Anatomical Record, Table 2 (PMC6565519). The stated 8-10 N is roughly 2x published mouse values, and this number is used to justify the +/-1 N simulation clipping range.",
+      "verifier_name": "verify-citation",
+      "snippet_id": "10969_sec_method_dataset"
+    },
+    {
+      "error_category": "Unit / frequency arithmetic error",
+      "error_location": "Methods, 'Neural Data Comparison': 'binned into intervals of approximately 45-50 ms, corresponding neatly with the 15-20 Hz whisking frequency typical of rodents (50 ms per cycle at 20 Hz)'",
+      "confidence": 0.75,
+      "supporting_evidence": "Period = 1/f. The parenthetical is correct (20 Hz -> 50 ms), but 15 Hz -> 1/15 = 66.7 ms, not 45 ms. A 45-50 ms bin corresponds to 20-22.2 Hz, not 15-20 Hz; the 15-20 Hz band maps to 50-66.7 ms. The stated correspondence therefore does not hold at the lower end of the quoted frequency range. (The companion sub-claim, five sub-timesteps of ~9 ms = 45 ms, is arithmetically fine.)",
+      "verifier_name": "verify-statistical",
+      "snippet_id": "10969_sec_method_neural"
+    },
+    {
+      "error_category": "Logical contradiction / conclusion not supported by cited evidence",
+      "error_location": "Figure 3 caption ('Models with the encoder being S4 are excluded as the training losses explode before the first epoch is finished') vs. Results ('ConvRNN encoders... generally outperformed the purely feedforward ResNet18 and SSM (S4) encoders in supervised tactile categorization tasks (Fig. 3)'), Abstract ('superior encoders to purely feedforward and state-space architectures'), and Discussion ('superior in tactile categorization performance... compared to feedforward (ResNet) and state-space models (SSM)')",
+      "confidence": 0.72,
+      "supporting_evidence": "One of the paper's two headline architectural claims is a categorization comparison against S4, but the figure cited in support of that claim explicitly excludes every S4 model because their losses diverged before completing a single epoch. A model that failed to train supplies no valid performance comparison. The inconsistency is compounded because 's4' nevertheless appears in the Fig. 4b encoder legend and S4 configurations are listed in both Table 3 (supervised) and Table 5 (SSL); the text never states which S4 results, if any, exist or were used.",
+      "verifier_name": "verify-text",
+      "snippet_id": "10969_sec_experiments_convrnn"
+    },
+    {
+      "error_category": "Data inconsistency / mischaracterization of tabulated results",
+      "error_location": "Appendix A5, Table 7 caption ('Top-5 categorization task performance improved slightly (~5%), but neural fit scores decreased') and body text ('did not significantly improve the task performance or neural fit score'; Methods: 'found that this did not significantly improve task performance')",
+      "confidence": 0.72,
+      "supporting_evidence": "Table 7 shows Inter+SimCLR neural fit falling 0.96 -> 0.42 with temporal masking: -0.54 absolute, -56.3% relative, for the paper's single best-neural-fit model. That drop is larger than the entire reported inter-animal ceiling (0.18-0.34). Describing a greater-than-half collapse of the headline metric as merely 'decreased' / 'did not significantly improve' mischaracterizes it, and no statistical test or variance estimate is reported to support the 'not significant' wording. The '~5%' figure is also wrong for row 1: 0.15 -> 0.18 is +3 percentage points / +20.0% relative, while 0.23 -> 0.28 is +5 points / +21.7% relative — neither interpretation makes both rows '~5%'.",
+      "verifier_name": "verify-vision",
+      "snippet_id": "10969_tab_7"
+    },
+    {
+      "error_category": "Citation / attribution error (cited work does not address the claim)",
+      "error_location": "Introduction: 'These sensors also struggle to accurately discriminate multiple simultaneous stimuli such as airflow, direct contact, and inertia, unlike biological whiskers [Simon et al., 2023]'",
+      "confidence": 0.7,
+      "supporting_evidence": "Simon et al. 2023 (ICRA) is 'FlowDrone: Wind Estimation and Gust Rejection on UAVs Using Fast-Response Hot-Wire Flow Sensors' (arXiv:2210.05857), which presents MEMS hot-wire anemometry on a multirotor UAV together with a wind-aware residual RL controller. It does not study whisker-inspired tactile sensors nor their inability to disambiguate airflow from direct contact and inertia.",
+      "verifier_name": "verify-citation",
+      "snippet_id": "10969_sec_introduction"
+    },
+    {
+      "error_category": "Logical contradiction (text vs. text and text vs. figure)",
+      "error_location": "Methods ('Applying traditional image augmentations like color jitter or grayscale causes the models to fail to train') and Figure 5c caption ('The models could not be trained with image augmentations') vs. Results ('showed better convergence compared to those trained with standard image-based augmentations... which were less effective under tested conditions') and the 'image aug.' rows plotted in Fig. 5c",
+      "confidence": 0.68,
+      "supporting_evidence": "Models that 'fail to train' / 'could not be trained' cannot simultaneously serve as a scored comparison condition with measured convergence, top-5 accuracy and RSA values plotted in Fig. 5c, and the Results explicitly treat image-augmented SimCLR as a control that was outperformed ('compared to both standard image-based SimCLR augmentations and randomly initialized architecture-fixed controls (Fig. 5c)'). Either the training-failure claim is overstated or the plotted image-aug results are not what the caption says they are.",
+      "verifier_name": "verify-text",
+      "snippet_id": "10969_fig_5"
+    },
+    {
+      "error_category": "Figure legend inconsistency (legend entry with no corresponding described experiment)",
+      "error_location": "Figure 5a legend: 'Loss: SimCLR, SwAV, AE'",
+      "confidence": 0.68,
+      "supporting_evidence": "SwAV appears nowhere else in the paper. Methods define the SSL set as SimCLR, SimSiam, and autoencoding; Fig. 2a repeats 'SimCLR, SimSiam, autoencoding'; Tables 4 and 5 list only SimCLR/SimSiam/AE configurations. Conversely SimSiam, which the paper reports training, is absent from the Fig. 5a legend. Either the SimSiam series is mislabeled as SwAV in the very figure the SSL-vs-supervised conclusion rests on, or an undescribed method is plotted.",
+      "verifier_name": "verify-vision",
+      "snippet_id": "10969_fig_5"
+    },
+    {
+      "error_category": "Unattainable quantitative claim (violates the bound of the metric)",
+      "error_location": "Figure 5 caption (a): 'The task performance of SSL models is about one order of magnitude below the performance of supervised models'",
+      "confidence": 0.65,
+      "supporting_evidence": "Top-5 accuracy is bounded in [0, 1]. Table 7 reports SSL top-5 accuracies of 0.15 (Inter+SimCLR) and 0.23 (Resnet+Mamba+SimCLR). One order of magnitude above these is 1.5 and 2.3 respectively, both greater than 1 and therefore unattainable. Even a perfect supervised model (1.0) is only 6.7x and 4.3x above them; with realistic supervised top-5 accuracy the gap is roughly 3-5x, not ~10x.",
+      "verifier_name": "verify-statistical",
+      "snippet_id": "10969_fig_5"
+    },
+    {
+      "error_category": "Figure legend inconsistency (legend categories with no corresponding described experiments)",
+      "error_location": "Figure A1(a) legend: 'Attender: cnn, gpt, llama, none / Encoder: vanilla, resnet, ugmn, inter, whisking / Loss: supervised, simclr, simsiam, vicreg'",
+      "confidence": 0.62,
+      "supporting_evidence": "'llama', 'cnn', 'whisking', and 'vicreg' appear nowhere in the Methods, Results, or Tables 3-5. The declared search space is Attender {GPT, Mamba, None}, Encoder {Zhuang-ConvRNN variants, ResNet, S4}, and Loss {supervised, SimCLR, SimSiam, AE}. The legend of the figure supporting the parameter-count argument therefore does not describe the paper's actual experiments. 'ugmn' (also 'UGMN' in the Fig. 5b legend) is a misspelling of UGRNN.",
+      "verifier_name": "verify-vision",
+      "snippet_id": "10969_fig_A1"
+    },
+    {
+      "error_category": "Statistical reporting (values unattainable under the stated evaluation procedure)",
+      "error_location": "Appendix A5, Table 6 caption: 'For each of the 6 stimuli, we train a logistic regression model on the 5 other stimuli and test on the 1 held-out stimulus'",
+      "confidence": 0.6,
+      "supporting_evidence": "As described, each model is evaluated over 6 folds, each fold holding out one of six stimuli and yielding a single correct/incorrect prediction, so attainable accuracies are k/6 in {0, 0.167, 0.333, 0.5, 0.667, 0.833, 1}. Of the reported model values (0.56, 0.58, 0.54, 0.50, 0.43, 0.52, 0.48, 0.57), only 0.50 is attainable. Trial-level averaging could explain the 'Animal Neural Data' row (which the caption says was averaged across mice) but the caption describes no such averaging for the deterministic per-model rows, so the evaluation procedure is under-specified or misdescribed.",
+      "verifier_name": "verify-statistical",
+      "snippet_id": "10969_tab_6"
+    },
+    {
+      "error_category": "Claim not supported by the cited figure",
+      "error_location": "Results, 'Validation of Sensor and Dataset via SVM Decoding': 'remaining robust even with increased task difficulty from more object categories' (citing Fig. 1b)",
+      "confidence": 0.6,
+      "supporting_evidence": "Figure 1b's caption states the SVM validation covers 'up to 4 different classes of objects (cups, microwaves, chairs, and trains)' out of the 117 categories used for model training. The figure provides no data beyond 4 classes, so it cannot support a claim of robustness as the number of object categories increases toward the training regime.",
+      "verifier_name": "verify-vision",
+      "snippet_id": "10969_fig_1"
+    },
+    {
+      "error_category": "Logical inconsistency (claim contradicts the paper's own best-model attributions)",
+      "error_location": "Introduction ('ConvRNNs, particularly IntersectionRNNs, as superior in tactile categorization and neural alignment') and Discussion ('ConvRNN encoders, particularly the IntersectionRNN, as currently superior in tactile categorization performance') vs. Figure 3 caption ('The best-performing model is Zhuang+GPT+Supervised') and Appendix A5 ('Zhuang+GPT+Supervised has the best task score; Inter+GPT+Supervised has the best neural score out of supervised models')",
+      "confidence": 0.58,
+      "supporting_evidence": "The paper's own annotations attribute top categorization accuracy to the vanilla Zhuang ConvRNN, not to the IntersectionRNN variant; Appendix A3 independently states 'Zhuang+GPT is the best performing supervised model in terms of classification accuracy'. IntersectionRNN's documented advantage is confined to neural fit. Singling it out for categorization superiority contradicts the reported task scores. (The broader ConvRNN-over-ResNet claim is unaffected.)",
+      "verifier_name": "verify-text",
+      "snippet_id": "10969_sec_discussion"
+    },
+    {
+      "error_category": "Cross-section contradiction (Results vs. Limitations vs. Abstract)",
+      "error_location": "Results ('the best models saturated all of the held-out explainable neural variance'; 'thereby robustly passing the NeuroAI Turing Test on this dataset') vs. Discussion/Limitations ('enabling models to approach and potentially surpass this theoretical ceiling of neural predictivity') vs. Abstract ('closely approximate neural representations in rodent somatosensory cortex under specific conditions, showing a moderate correlation... albeit with limitations imposed by dataset size and stimulus variability')",
+      "confidence": 0.55,
+      "supporting_evidence": "The Results assert the explainable-variance ceiling has already been fully saturated and the inter-animal benchmark already 'robustly' exceeded. The Limitations frame reaching that same ceiling as a future goal contingent on expanded datasets, which presupposes it has not been reached. The Abstract offers a third, substantially weaker characterization. The Introduction adds a fourth ('a direct linear relationship... saturating the currently explainable neural variability'). These are not reconcilable descriptions of one result.",
+      "verifier_name": "verify-cross-section-consistency",
+      "snippet_id": "10969_paper_full"
+    },
+    {
+      "error_category": "Methodology inconsistency (stated control contradicted by reported configuration)",
+      "error_location": "Methods ('we maintained consistent training protocols by scaling batch sizes and epochs to balance model exposure, aiming to reduce performance biases due to dataset differences') vs. Appendix A3 ('For supervised learning, we use a batch size of 256 for all the models and train for 100 epochs')",
+      "confidence": 0.55,
+      "supporting_evidence": "The two datasets differ by roughly 6.6x in sweep count (316,192 vs 2,076,048), so identical batch size and identical epoch count means model exposure was not balanced — it differed by the full dataset-size ratio. The only batch-size variation reported in A3 (1024 for SimSiam) is tied to the loss function following Nayebi* et al. [2023], not to dataset size. Relatedly, the paper never states which of the two datasets the main reported models were trained on.",
+      "verifier_name": "verify-text",
+      "snippet_id": "10969_sec_method_dataset"
+    },
+    {
+      "error_category": "Claim not supported by the tabulated data",
+      "error_location": "Appendix A5: 'this broad representational space may not project well onto the labels, yielding poor decoding despite underlying ethologically aligned representations' (referring to Table 6)",
+      "confidence": 0.55,
+      "supporting_evidence": "Every model exceeds chance on distance decoding: 0.43, 0.52, 0.48, 0.57 against a chance level of 0.33. Resnet+Mamba+SimCLR at 0.57 is 73% above chance and exceeds the Animal Neural Data value (0.45). Shape decoding is near chance (0.50-0.58 vs 0.50), but so is the animal neural data itself (0.60). The table therefore does not support a blanket characterization of 'poor decoding', and the near-chance animal reference weakens rather than explains the models' shape-decoding performance.",
+      "verifier_name": "verify-vision",
+      "snippet_id": "10969_tab_6"
+    },
+    {
+      "error_category": "Statistical reporting inconsistency (one statistic printed with two values)",
+      "error_location": "Figure 5b in-plot annotation 'r = 0.60' vs. Figure 5 caption ('Plotting a best-fit line, we find the correlation r = 0.59') and Results body ('a linear trend between tactile supervised categorization performance and neural fit (r = 0.59, Fig. 5b)')",
+      "confidence": 0.45,
+      "supporting_evidence": "The same best-fit correlation is annotated on the panel as 0.60 and reported in both the caption and the body as 0.59; they differ at the stated precision, so at most one is the computed value (plausibly a rounding of 0.595). This is the paper's single headline performance-vs-neural-fit statistic, and it is separately described as 'moderate' (Abstract), 'a direct linear relationship' (Introduction), and 'strong' (Results), whereas r = 0.59 corresponds to r^2 = 0.35, i.e. 35% of variance explained.",
+      "verifier_name": "verify-statistical",
+      "snippet_id": "10969_fig_5"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 45,
+    "snippets_verified": 45,
+    "errors_detected": 23,
+    "verifier_usage": {
+      "text": 17,
+      "math_equation": 13,
+      "vision": 15,
+      "statistical": 12,
+      "citation": 10,
+      "cross_section_consistency": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Exhaustive verification at strict sensitivity segmented the paper into 45 snippets (17 text sections, 13 equations, 8 figures, 7 tables) and routed every snippet to specialist verifiers (verify-text, verify-math, verify-statistical, verify-vision, verify-citation) plus a whole-paper verify-cross-section-consistency pass. 23 findings survived verification, 4 of them at high confidence (>= 0.85), which sets the verdict to NEEDS_CORRECTION.\n\nThe most serious problems are: (1) Table 1's Low-Variation/High-Fidelity dataset size of 316,192 sweeps is arithmetically impossible under the caption's own rule, since 316,192 is not divisible by the 9981 objects (the listed augmentation grid gives 159,696), and the High-Variation row's implied 208 combinations contradicts its stated 26-sample-per-parameter scheme by a factor of ~250; (2) the Introduction attributes a claim about 'specialized insect hairs' to Sterbing-D'Angelo et al. 2011, which is 'Bat wing sensors support flight control' — a study of bats, not insects (verified against the PNAS record); (3) the Appendix A4 Spearman-Brown definition is circular as printed, asserting r = 2r/(1+r), which holds only at r = 0 or r = 1, and this term is the denominator of the noise correction behind every reported neural-fit number; (4) the reference to Grant (2025) is never cited in the body.\n\nA second cluster concerns the paper's central neural-alignment claim. The inter-animal ceiling — the benchmark the paper says its models 'robustly' surpass — is reported as a maximum of 0.34 in the Figure 4b caption and axis annotation but 1.34 in Appendix A4, and the two sections describe two different estimators (pairwise vs. pooled hold-one-out) as though they were the same baseline. Which value is correct determines whether the headline NeuroAI Turing Test claim holds. The Results, Abstract, Introduction, and Limitations give four mutually incompatible characterizations of whether the explainable-variance ceiling was saturated.\n\nRemaining findings include a categorization comparison against S4 encoders that Figure 3 says were excluded because their losses diverged before one epoch; image-augmentation baselines described as untrainable yet reported as scored conditions in Figure 5c; figure legends naming methods the paper never used (SwAV in Fig. 5a; llama, cnn, whisking, and vicreg in Fig. A1); an impossible 'one order of magnitude' performance-gap claim given that top-5 accuracy is bounded by 1.0 and SSL models score 0.15-0.23; a bin-width/frequency mismatch (45-50 ms corresponds to 20-22 Hz, not the stated 15-20 Hz); Table 6 decoding accuracies that are not attainable as k/6 under the described leave-one-stimulus-out protocol; and a stated exposure-balancing procedure contradicted by the fixed batch size and epoch count in Appendix A3. Three further citation issues (Olshausen & Field 1996 credited for autoencoding, a mouse bite force of 8-10 N that is roughly double measured values and absent from the cited table, and Simon et al. 2023 cited for whisker-sensor limitations when it is a UAV hot-wire anemometry paper) were confirmed against primary sources.\n\nNone of the findings indicate fabrication; the pattern is consistent with reporting and bookkeeping errors, stale figure legends, and overstated claims relative to the evidence presented. The dataset-size arithmetic, the Spearman-Brown definition, the 0.34/1.34 discrepancy, and the insect/bat misattribution require correction before the quantitative claims can be relied upon."
+}

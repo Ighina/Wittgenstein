@@ -1,0 +1,70 @@
+{
+  "paper_id": "5873",
+  "title": "KVzip: Query-Agnostic KV Cache Compression with Context Reconstruction",
+  "paper_category": "cs.LG",
+  "predicted_errors": [
+    {
+      "error_category": "Abstract vs Results mismatch",
+      "error_location": "Abstract vs Section 1 Introduction",
+      "confidence": 0.70,
+      "supporting_evidence": "The Abstract claims 'KV cache size reductions by 2–3×' and 'FlashAttention decoding latency improvements up to 1.5×', and 'context lengths up to 100K tokens'. The Introduction (Section 1) states 'KVzip achieves approximately 2× latency reduction in FlashAttention and 3–4× reduction in KV cache size during decoding with negligible performance loss', and 'contexts up to 170K tokens'. Section 4.1 confirms 'Context lengths range from 100 to 170K tokens'. The headline quantitative claims about the same method differ between Abstract and Introduction on three separate numbers (2–3× vs 3–4× cache reduction; up to 1.5× vs 2× latency; 100K vs 170K context length), and 'moderate performance tradeoffs' (Abstract) conflicts with 'negligible performance loss' (Introduction). The Abstract appears to have been revised toward more conservative claims while the Introduction was not updated.",
+      "verifier_name": "cross-section-consistency",
+      "snippet_id": "5873::SECTION::0"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Section 3.4 Complexity Analysis",
+      "confidence": 0.68,
+      "supporting_evidence": "Two paragraphs in Section 3.4 give mutually contradictory complexity statements about the same chunked scoring procedure. First: 'computational complexity reduces from quadratic O(n_c^2) to linear O(m n_c)' and 'Repeating this computation for all n_c/m chunks yields total complexity O(m n_c), linear with context length.' Then, two paragraphs later: 'FlashAttention incurs O(n_c m + m^2/2) causal-attention FLOPs per chunk, resulting in a total complexity of O(n_c^2 + n_c m/2) across all n_c/m chunks. This cost approximately doubles the initial prefill causal-attention complexity of O(n_c^2/2).' Since O(n_c^2 + n_c m/2) is quadratic in n_c for fixed chunk size m (and the per-chunk term O(n_c m) sums to O(n_c^2) across chunks), the total importance-scoring cost is quadratic, directly contradicting the 'linear O(m n_c)' claim. The paper simultaneously asserts linear and quadratic total complexity for the same procedure; only the score-aggregation step (not the forward pass producing Q/K) is linear.",
+      "verifier_name": "math",
+      "snippet_id": "5873::SECTION::8"
+    },
+    {
+      "error_category": "Data Inconsistency (table-text)",
+      "error_location": "Figure 22, Mix.RepoQA+KV table",
+      "confidence": 0.55,
+      "supporting_evidence": "At a KV cache ratio of 1.0, every eviction method retains 100% of the cache, so all methods must yield identical (full-cache) performance. The Mix.RepoQA+KV table in Figure 22 reports KVzip=80, H2O=40, SnapKV=60, PyramidKV=50 at ratio 1.0 — five-fold disagreement on the full cache. For comparison, Figure 22's Mix.Sum+NIAH table and Figure 23's NIAH/SQuAD tables correctly converge to identical values at ratio 1.0 (70 and 100, respectively). Figure 23's GSM8K table also shows a smaller residual discrepancy (65/60/65/60) at ratio 1.0. This suggests a data reporting/transcription inconsistency in the Mix.RepoQA+KV table.",
+      "verifier_name": "vision",
+      "snippet_id": "5873::FIGURE::21"
+    },
+    {
+      "error_category": "Data Inconsistency (text-table)",
+      "error_location": "Table 1 and 'Behavior Analysis Beyond Task Solving' paragraph",
+      "confidence": 0.50,
+      "supporting_evidence": "The text claims: 'Behavior Analysis Beyond Task Solving reveals privacy risks where compressed KV caches leak sensitive information omitted by full caches.' However, Table 1 shows the full-KV and 40%-compressed responses to be identical ('I cannot provide personal contact information.' in both columns). The presented evidence does not demonstrate any leakage — the compressed cache behaves identically to the full cache. The claim in the text is unsupported by the accompanying table's data.",
+      "verifier_name": "vision",
+      "snippet_id": "5873::TABLE::0"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 3.4 vs Section 4 Figure 8 / Empirical Efficiency Analysis",
+      "confidence": 0.45,
+      "supporting_evidence": "Section 3.4 states peak memory overhead 'is O(m^2), which remains constant with n_c and is negligible compared to model parameters and KV cache sizes.' Figure 8 reports a peak scoring memory of 52.7 GB at the chosen 2K chunk size for LLaMA3.1-8B at 124K context — larger than the 16 GB FP16 model and the 16.3 GB full KV cache combined. The paper's own 'Empirical Efficiency Analysis' paragraph then concedes 'Peak memory usage increases moderately during scoring, challenging assertions of negligible overhead.' The 'negligible' claim in Section 3.4 is thus contradicted by the paper's own Figure 8 data and efficiency discussion.",
+      "verifier_name": "text",
+      "snippet_id": "5873::SECTION::8"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 4.2 Task Generalization",
+      "confidence": 0.40,
+      "supporting_evidence": "The text states: 'Our method significantly outperforms baselines, preserving performance at a 30% cache ratio except for Retr.Prefix-Suffix, while baseline methods degrade notably at 90% retention.' At a 90% retention ratio, baselines retain nearly the full cache and should be near full performance, not 'degrade notably.' The clause appears garbled — it likely intends an aggressive-eviction ratio (e.g., 10% retention / 90% eviction) — but as written it is self-contradictory with the established monotonic behavior of retention ratios.",
+      "verifier_name": "text",
+      "snippet_id": "5873::SECTION::11"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 54,
+    "snippets_verified": 54,
+    "errors_detected": 6,
+    "verifier_usage": {
+      "triage": 54,
+      "cross_section_consistency": 1,
+      "math_equation": 2,
+      "vision": 6,
+      "text": 8,
+      "statistical": 4
+    }
+  },
+  "verdict": "NEEDS_REVIEW",
+  "summary": "Uncertainty-mode verification of KVzip (5873) with lenient strictness. All 54 snippets passed triage; six findings survived specialist review. The strongest are two medium-confidence (~0.68–0.70) internal inconsistencies: (1) the Abstract's headline numbers (2–3× cache reduction, up to 1.5× latency, 100K context) contradict the Introduction's (3–4×, 2×, 170K context) on three separate figures, and (2) Section 3.4 claims total complexity is 'linear O(m n_c)' while its own FLOPs accounting yields 'O(n_c^2 + n_c m/2)', which is quadratic. Four lower-confidence items concern data reporting: Figure 22's Mix.RepoQA+KV table shows different per-method values at ratio 1.0 (where all methods must use the identical full cache), Table 1 does not evidence the privacy-leak claim made in the text, Section 3.4's 'negligible' peak-memory claim conflicts with Figure 8's 52.7 GB figure, and a garbled 'degrade notably at 90% retention' clause in Section 4.2. No single finding reaches high confidence (≥0.85), so the paper requires review rather than outright correction; the abstract-vs-introduction numeric mismatch is the most likely candidate for a correction if confirmed against the published version."
+}

@@ -1,0 +1,118 @@
+{
+  "paper_id": "8054-Representation_Entanglement_for_Generation__Training_Diffusion_Transformers",
+  "title": "Representation Entanglement for Generation: Training Diffusion Transformers",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "evidence_data_integrity",
+      "error_location": "Table 1 (first results table before Section 4) versus Section 4.2 and Appendix Table 9",
+      "confidence": 0.99,
+      "supporting_evidence": "The reported REG FIDs are mutually inconsistent for ostensibly identical ImageNet-256, no-CFG, model/iteration settings. Table 1 gives SiT-B/2+REG at 400K as 21.8, SiT-L/2+REG at 400K as 9.8, and SiT-XL/2+REG at 400K/1M/2.4M/4M as 5.6/4.3/3.8/3.3. Section 4.2 instead states B/2 improves over REPA by 9.2 FID points and L/2 reaches 4.6 at 400K, while Appendix Table 9 gives B/2=15.2, L/2=4.6, and XL/2=3.4/2.7/2.2/1.8. These are not rounding differences and materially alter the central convergence claims.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "8054-Representation_Entanglement_for_Generation__Training_Diffusion_Transformers::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Abstract, Introduction, and Section 4.2 claims about SiT-L/2+REG at 400K and XL/2 baselines",
+      "confidence": 0.98,
+      "supporting_evidence": "The paper claims that 'SiT-L/2 + REG trained for 400K iterations achieves comparable FID scores to SiT-XL/2 + REPA trained for 4M iterations' and later claims L/2+REG achieves 4.6 versus XL/2+REPA's 5.9. But the main Table 1 reports L/2+REG at 400K as 9.8, which is substantially worse than 5.9. Thus the stated conclusion is unsupported by the main table as presented; it depends on the contradictory Appendix Table 9 value of 4.6.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "8054-Representation_Entanglement_for_Generation__Training_Diffusion_Transformers::baseline"
+    },
+    {
+      "error_category": "evidence_data_integrity",
+      "error_location": "Table 2 (main text) versus Appendix Table 8",
+      "confidence": 0.99,
+      "supporting_evidence": "The two tables present the same stated setting—SiT-XL/2+REG on ImageNet 256x256 with CFG at 80, 160, 480, and 800 epochs—but give different results. Main Table 2 reports FID 2.15/1.75/1.38/1.34, whereas Appendix Table 8 reports 1.86/1.59/1.40/1.36. The discrepancies at 80 and 160 epochs are large and are not identified as different seeds, samplers, checkpoints, or protocols.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "8054-Representation_Entanglement_for_Generation__Training_Diffusion_Transformers::baseline"
+    },
+    {
+      "error_category": "evidence_data_integrity",
+      "error_location": "Table 3, repeated DINOv2-B / depth 4 / beta=0.03 configuration",
+      "confidence": 0.98,
+      "supporting_evidence": "The exact same configuration appears repeatedly with incompatible sFID values. The target-representation and depth rows report FID 15.22, sFID 6.89, IS 94.64; the beta-ablation row with the same DINOv2-B, depth 4, and beta 0.03 reports FID 15.22, sFID 6.69, IS 94.64. Appendix Table 9 also uses sFID 6.69. This requires correction or an explicit explanation of a changed evaluation/checkpoint.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "8054-Representation_Entanglement_for_Generation__Training_Diffusion_Transformers::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Equation (9) and its surrounding definition in Section 3.2",
+      "confidence": 0.97,
+      "supporting_evidence": "The alignment-loss indexing is internally incoherent. The text defines n as an aligned transformer-layer depth ('n=4' or 'n=8') and h_t^[n] as the output of the n-th SiT block. Equation (9), however, sums n=1 to N, where N was defined as the number of visual tokens, and repeatedly compares the entire (N+1)-token representation y_* to h_phi(h_t^[n]). This conflates layer indices with token indices and would require hidden states from N different layers, contrary to the claimed single alignment layer. Further, the loss is normalized by N although y_* contains N+1 tokens including the class token. The actual objective is not mathematically specified correctly.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "8054-Representation_Entanglement_for_Generation__Training_Diffusion_Transformers::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Section 4.4, Figure 3(a) discussion",
+      "confidence": 0.98,
+      "supporting_evidence": "The text calls the relationship a 'positive correlation between CKNNA and FID scores' while describing higher CKNNA occurring with lower FID. Numerically, if CKNNA rises as FID falls, the correlation between the two reported scores is negative, not positive. The authors may mean a positive association between CKNNA and generation quality, but that is not what is written and reverses the statistical direction.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "8054-Representation_Entanglement_for_Generation__Training_Diffusion_Transformers::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Appendix A, 'Discriminative semantics in inference'",
+      "confidence": 0.91,
+      "supporting_evidence": "The claimed validation of semantic reconstruction 'during inference' does not test the asserted pure-noise inference setting. It starts from '10,000 ImageNet validation images as input,' encodes them, injects unspecified noise into their latents, and then compares the resulting token to the DINO token of the original input image. At a finite/noise-unspecified timestep, the noised image latent retains information about the original image, so high token similarity can result from conditional reconstruction. This cannot establish that a class token generated jointly from pure Gaussian noise has the claimed semantic capability. The noise level and reconstruction protocol are also omitted.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "8054-Representation_Entanglement_for_Generation__Training_Diffusion_Transformers::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Appendix D, 512x512 ImageNet setup",
+      "confidence": 0.99,
+      "supporting_evidence": "The paper states that Stable Diffusion VAE processing yields '64x64x3 latents.' Elsewhere, including Table 12, it correctly specifies SiT latent inputs as 4-channel (32x32x4 at 256 resolution). The Stable Diffusion VAE latent representation is four-channel, so the 512-resolution counterpart should be 64x64x4, not x3. This is a material architecture/protocol specification error.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "8054-Representation_Entanglement_for_Generation__Training_Diffusion_Transformers::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Section 4.2, statement on three-run statistics and Table 1",
+      "confidence": 0.9,
+      "supporting_evidence": "Section 4.2 says that 'All metrics report the average and standard deviation over three independent runs with different random seeds.' Table 1 reports only a single scalar per metric, no standard deviations, confidence intervals, individual runs, or uncertainty notation. The asserted statistical reporting is therefore absent, preventing verification of claims such as lower variance and comparisons between nearby FID values.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "8054-Representation_Entanglement_for_Generation__Training_Diffusion_Transformers::baseline"
+    },
+    {
+      "error_category": "reference_background_fabrication",
+      "error_location": "Related Work, 'Generative models for image generation' paragraph, citation [28]",
+      "confidence": 0.94,
+      "supporting_evidence": "The paragraph cites [28] as an example of 'multi-scale optimization strategies' for accelerating diffusion-model training. Reference [28] is 'Parameter-inverted image pyramid networks' (Zhu et al., arXiv:2406.04330), which is not identified in the bibliography as a diffusion-model training or multi-scale diffusion optimization method. This is a misattributed citation in the technical background.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "8054-Representation_Entanglement_for_Generation__Training_Diffusion_Transformers::baseline"
+    },
+    {
+      "error_category": "context_misalignment_incoherence",
+      "error_location": "Appendix H, Figure 13 caption",
+      "confidence": 0.99,
+      "supporting_evidence": "Figure 13 labels ImageNet class index 156 as 'Lesser panda.' In the standard ImageNet-1K indexing used throughout the paper, lesser panda is class 387 (which the paper itself correctly uses in Figure 17); index 156 is a dog-class index, not lesser panda. The caption therefore misstates the conditioning label for the displayed samples.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "8054-Representation_Entanglement_for_Generation__Training_Diffusion_Transformers::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 11,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (gpt-5.6-terra, taxonomy=paperaudit): 11 error(s) reported.",
+  "baseline": {
+    "model": "gpt-5.6-terra",
+    "provider": "openai",
+    "taxonomy": "paperaudit",
+    "paper_chars": 70022,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 20278,
+      "output_tokens": 4537,
+      "cache_read_input_tokens": null,
+      "cache_creation_input_tokens": null
+    }
+  }
+}

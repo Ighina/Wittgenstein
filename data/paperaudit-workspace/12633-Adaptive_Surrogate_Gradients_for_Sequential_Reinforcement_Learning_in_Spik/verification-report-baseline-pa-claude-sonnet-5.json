@@ -1,0 +1,110 @@
+{
+  "paper_id": "12633-Adaptive_Surrogate_Gradients_for_Sequential_Reinforcement_Learning_in_Spik",
+  "title": "Adaptive Surrogate Gradients for Sequential Reinforcement Learning in Spik",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Abstract",
+      "confidence": 0.8,
+      "supporting_evidence": "The abstract says 'Combining our method with an adaptive slope schedule for a real-world drone position control task, we achieve an average return of 400 points', but the 400-point reward is reported in Section 5.2 for the simulated curriculum task; the real-world deployment in Section 5.3 only reports qualitative oscillatory behavior and does not report a reward. Presenting the simulation reward as a real-world result overstates the evidence.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "12633-Adaptive_Surrogate_Gradients_for_Sequential_Reinforcement_Learning_in_Spik::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 4.1 / Figure 2 / Section 3.2",
+      "confidence": 0.85,
+      "supporting_evidence": "Section 4.1 calls the state '18-dimensional' and Sections 3.2/Table 2 set the input size to 18, but the components enumerated (position 3, velocity 3, orientation 3, angular velocity 3) sum to 12, and Figure 2 lists only those 12 variables. No explanation is given for the extra 6 inputs.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "12633-Adaptive_Surrogate_Gradients_for_Sequential_Reinforcement_Learning_in_Spik::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 3.1 vs Section 3.4",
+      "confidence": 0.8,
+      "supporting_evidence": "Section 3.1 states 'Both the guiding policy and the non-spiking critic receive privileged information in the form of action histories', while Section 3.4 states the critic 'receives all observed states without any action history'. These descriptions of the critic's input cannot both be true.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "12633-Adaptive_Surrogate_Gradients_for_Sequential_Reinforcement_Learning_in_Spik::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 8.1 (Appendix), surrogate derivative equations",
+      "confidence": 0.85,
+      "supporting_evidence": "The surrogate derivative is written as σ'(kz)/k = σ(kz)(1−σ(kz)); with standard notation σ'(kz)=σ(kz)(1−σ(kz)), so the left side should be σ'(kz), not σ'(kz)/k. The subsequent claim that for k>1 the surrogate gradient satisfies σ̃'_k(z)>σ'(z) 'for most z' is also reversed: σ̃'_k(z)=σ'(kz)<σ'(z) for all z≠0 because σ' is symmetric and decreases in |z|. Thus the 'positive bias'/'overestimation' discussion is wrong.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "12633-Adaptive_Surrogate_Gradients_for_Sequential_Reinforcement_Learning_in_Spik::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Table 6 / Section 4.2",
+      "confidence": 0.7,
+      "supporting_evidence": "Table 6 lists 'Training epochs 1000' and 'Steps per epoch 2M' (2M for most methods), implying 2×10^9 environment/training steps, while Section 4.2 says training completes in 6 hours on a MacBook. This is not plausible and the hyperparameter is likely mislabeled; the table also uses a replay buffer (1M/2M) smaller than one epoch of steps.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "12633-Adaptive_Surrogate_Gradients_for_Sequential_Reinforcement_Learning_in_Spik::baseline"
+    },
+    {
+      "error_category": "evidence_data_integrity",
+      "error_location": "Table 2",
+      "confidence": 0.8,
+      "supporting_evidence": "The ANN row reports only 13.7×10^3 SynOps Dense for an 'ANN (256-128 architecture)' with input 18 and output 4. The same architecture has 18×256 + 256×128 + 128×4 = 37,888 dense operations, equal to the SNN's 37.9×10^3. The row also gives an implausible footprint of 55.3 kB for 37,888 32-bit weights (≈148 kB). The claim that the SNN has 'much higher' dense operations than the ANN is an artifact of these numbers.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "12633-Adaptive_Surrogate_Gradients_for_Sequential_Reinforcement_Learning_in_Spik::baseline"
+    },
+    {
+      "error_category": "evidence_data_integrity",
+      "error_location": "Table 3 / Section 5.3",
+      "confidence": 0.75,
+      "supporting_evidence": "Table 3 lists a position error of 0.25 m for 'ANN no action history [14]' while the table text and Section 5.3 say this network 'did not manage to stabilize the quadrotor' / 'failed to control the drone'. A controller that cannot stabilize has no meaningful position-error measurement; the table contradicts the stated result.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "12633-Adaptive_Surrogate_Gradients_for_Sequential_Reinforcement_Learning_in_Spik::baseline"
+    },
+    {
+      "error_category": "context_misalignment_incoherence",
+      "error_location": "Figure 4b caption / Section 5.2",
+      "confidence": 0.6,
+      "supporting_evidence": "Figure 4b's caption says 'While all methods, except TD3, eventually learn to fly', but the surrounding text and Figure 4a say BC and TD3BC 'fail to exceed -200 points' and 'fail to generalize' under the curriculum. A caption stating that BC and TD3BC learn to fly is inconsistent with the reported final failures.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "12633-Adaptive_Surrogate_Gradients_for_Sequential_Reinforcement_Learning_in_Spik::baseline"
+    },
+    {
+      "error_category": "context_misalignment_incoherence",
+      "error_location": "Section 3.3 / Figure 1",
+      "confidence": 0.7,
+      "supporting_evidence": "The text says 'We analyze a 4-layer SNN, with all layers having 64 neurons; layer 0 corresponds to the input layer, while layer 4 relates to the output.' Figure 1's caption instead says 'layer 0 = first hidden, layer 4 = output' and calls the network '4 layers of 64 neurons'. These layer-count/index descriptions are mutually inconsistent (0..4 is five layers).",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "12633-Adaptive_Surrogate_Gradients_for_Sequential_Reinforcement_Learning_in_Spik::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Section 8.4, Algorithm 1",
+      "confidence": 0.6,
+      "supporting_evidence": "The pseudo-code for TD3BC+JSRL stops mid-specification after the line 'if t < t_warmup then a_t ← π_ctrl(s_t)'; it does not provide the spiking-policy branch, the replay/update steps, or the termination of loops. This omits key details needed to reproduce the algorithm.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "12633-Adaptive_Surrogate_Gradients_for_Sequential_Reinforcement_Learning_in_Spik::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 10,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (claude-sonnet-5, taxonomy=paperaudit): 10 error(s) reported.",
+  "baseline": {
+    "model": "claude-sonnet-5",
+    "provider": "anthropic",
+    "taxonomy": "paperaudit",
+    "paper_chars": 55407,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 108,
+      "output_tokens": 33999,
+      "cache_read_input_tokens": 13440,
+      "cache_creation_input_tokens": 0
+    }
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "paper_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction",
+  "title": "KVzip: Query-Agnostic KV Cache Compression with Context Reconstruction",
+  "paper_category": "cs.LG",
+  "predicted_errors": [
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 3.4 Technical Challenge and Solution (Complexity Analysis)",
+      "confidence": 0.75,
+      "supporting_evidence": "The paper states two mutually exclusive claims about the total complexity of chunked scoring in adjacent paragraphs. First: 'computational complexity reduces from quadratic O(n_c^2) to linear O(m n_c)' and 'Repeating this computation for all n_c/m chunks yields total complexity O(m n_c), linear with context length.' Then: 'FlashAttention incurs O(n_c m + m^2/2) causal-attention FLOPs per chunk, resulting in a total complexity of O(n_c^2 + n_c m/2) across all n_c/m chunks. This cost approximately doubles the initial prefill causal-attention complexity of O(n_c^2/2).' O(n_c^2 + n_c m/2) is quadratic in n_c and is stated to be ~2× the prefill cost, which is the same quantity ('total complexity') previously declared linear O(m n_c). The headline claim that chunking makes scoring linear is contradicted by the paper's own FLOPs accounting, which is quadratic.",
+      "verifier_name": "text",
+      "snippet_id": "5873-KVzip::SECTION::9"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Section 3.2 KV Importance Scoring, Equation (2)",
+      "confidence": 0.65,
+      "supporting_evidence": "Equation (2) reads S_{l,h}[j] = max_{g=1..G; i=1..n_c} \\bar{A}_{l,h}[g, j, i], but \\bar{A}_{l,h} was just declared to lie in R_+^{G x n_c x n_in}, so its third (input/query) dimension has size n_in = n_prompt + n_c, not n_c. The max over the input dimension should run i=1..n_in; Algorithm 1 does exactly this ('S_{l,t} <- max_{g=1..G; i=1..n_in} A[g, :, i]'). Additionally, the preceding sentence gives swapped tensor shapes relative to Algorithm 1: Section 3.2 states Q_{l,h} in R^{G x (n_c + n_in) x d} and K_{l,h} in R^{n_in x d}, while Algorithm 1 (correctly, for an n_in-token input attending over n_c cached keys plus its own keys) uses Q of shape G x H x n_in x d and K of shape H x (n_c + n_in) x d. As printed, Equation (2) indexes a range inconsistent with the declared dimensions of \\bar{A}.",
+      "verifier_name": "math-equations",
+      "snippet_id": "5873-KVzip::EQUATION::1"
+    },
+    {
+      "error_category": "Statistical reporting",
+      "error_location": "Appendix D, Figures 22 and 23 (Mix.RepoQA+KV and GSM8K result tables)",
+      "confidence": 0.65,
+      "supporting_evidence": "At KV cache ratio 1.0 no eviction is performed, so every method runs on the identical full cache and must achieve identical scores. Figure 22 (Mix.RepoQA+KV) reports at ratio 1.0: KVzip 80, H2O 40, SnapKV 60, PyramidKV 50 — four different values. Figure 23 (GSM8K) reports at ratio 1.0: KVzip 65, H2O 60, SnapKV 65, PyramidKV 60. The other Figure 23 tables converge correctly at ratio 1.0 (NIAH and SQuAD all 100), confirming the intended semantics; the divergence in these two tables is internally impossible under the stated protocol that all methods retain the top r% of KV pairs (Section 4.1).",
+      "verifier_name": "vision",
+      "snippet_id": "5873-KVzip::FIGURE::21"
+    },
+    {
+      "error_category": "Abstract vs Results mismatch",
+      "error_location": "Abstract vs Section 1 Introduction",
+      "confidence": 0.6,
+      "supporting_evidence": "The Abstract reports 'KV cache size reductions by 2–3x', 'FlashAttention decoding latency improvements up to 1.5x', and 'context lengths up to 100K tokens'. The Introduction (Section 1) reports 'approximately 2x latency reduction in FlashAttention and 3–4x reduction in KV cache size', 'contexts up to 170K tokens', and Section 4.1 states 'Context lengths range from 100 to 170K tokens'. Web verification of the official KVzip release (arXiv:2505.23416, NeurIPS 2025, snu-mllab/KVzip) confirms the 3–4x memory reduction and ~2x latency-decrease figures, so the Abstract's 2–3x / up-to-1.5x / 100K claims are inconsistent with both the paper's own body and the paper's external record.",
+      "verifier_name": "cross-section-consistency",
+      "snippet_id": "5873-KVzip::SECTION::0"
+    },
+    {
+      "error_category": "Data Inconsistency (figure-text)",
+      "error_location": "Section 3.3 Observation vs Figure 6 caption",
+      "confidence": 0.5,
+      "supporting_evidence": "Section 3.3 states that the first three heatmaps of Figure 6 'show distributions concentrated in the lower-right triangular region, indicating that KV features receiving high attention in reconstruction also receive high attention across other tasks.' But the Figure 6 caption defines a cell (v, w) as the proportion of KV pairs receiving max attention v from the x-axis task and w from the y-axis task, and states 'Bright colors in the lower-right triangular region denote KV pairs receiving higher attention from the x-axis task than from the y-axis task.' A lower-right concentration therefore means high attention from one task and low from the other — the opposite of the 'also receive high attention across tasks' overlap conclusion, which would require upper-right concentration. The figure image is a placeholder in the workspace, so the axis arrangement cannot be confirmed; the textual description as written is internally inconsistent with the caption's geometric definition.",
+      "verifier_name": "cross-section-consistency",
+      "snippet_id": "5873-KVzip::SECTION::8"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 55,
+    "snippets_verified": 55,
+    "errors_detected": 5,
+    "verifier_usage": {
+      "math_equation": 2,
+      "text": 25,
+      "statistical": 4,
+      "citation": 4,
+      "vision": 28,
+      "cross_section_consistency": 1
+    }
+  },
+  "verdict": "NEEDS_REVIEW",
+  "summary": "Exhaustive lenient-mode verification of 'KVzip: Query-Agnostic KV Cache Compression with Context Reconstruction' (55 snippets: 24 sections, 2 equations, 24 figures, 4 tables, 1 algorithm) found 5 errors, 1 of medium confidence and none at erratum-level (>=0.85). Most significant: (1) Section 3.4's complexity analysis is self-contradictory — it first claims chunked scoring is 'linear O(m·n_c)' with 'total complexity O(m n_c), linear with context length', then gives the FlashAttention accounting as 'a total complexity of O(n_c^2 + n_c·m/2)... approximately doubles the initial prefill causal-attention complexity of O(n_c^2/2)', i.e., quadratic; (2) Equation (2) maximizes over i=1..n_c although the sliced attention tensor is declared R^{G x n_c x n_in} (third dimension n_in = n_prompt + n_c), and the surrounding Q/K shapes in Sec 3.2 are swapped relative to Algorithm 1, which correctly uses i=1..n_in; (3) Appendix D tables (Figures 22-23) show different methods scoring differently at KV-cache ratio 1.0 (Mix.RepoQA+KV: 80/40/60/50; GSM8K: 65/60/65/60), which is internally impossible because at ratio 1.0 no eviction occurs and all methods run on the identical full cache (other tables in the same figures converge correctly at 1.0); (4) the Abstract's '2–3x' cache reduction, 'up to 1.5x' latency, and '100K tokens' contradict the Introduction's '3–4x', '~2x', and '170K tokens' — web verification of the official KVzip release (arXiv:2505.23416, NeurIPS 2025, snu-mllab/KVzip) confirms the body's 3–4x / 2x figures, so the Abstract is the odd one out; (5) Sec 3.3's reading of Figure 6's 'lower-right triangular' concentration as evidence of cross-task attention overlap conflicts with the caption's own definition of the lower-right region (higher attention from one task, lower from the other). Citation spot-checks passed: DuoAttention [53] (ICLR 2025) is accurately described (optimization-based head-score profiling requiring multiple GPUs/hours), and the KVzip paper itself is real (NeurIPS 2025 Oral). Internal cross-checks that passed: 16.3 GB full KV cache at 124K tokens matches LLaMA3.1-8B GQA arithmetic (32 layers x 8 KV heads x 128 dim x 2 x 2 bytes x 124K tokens ~ 15.9 GB), the 4-bit + 70% eviction reduction to ~1.2 GB is arithmetically consistent (16.3 x 0.3 / 4), and Figure 8 KV-memory values are proportional to the stated ratios. Figure images are placeholders in the workspace, so pixel-level integrity checks were not possible. Verdict: NEEDS_REVIEW.",
+  "uncertainty_map": []
+}

@@ -1,0 +1,86 @@
+{
+  "paper_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction",
+  "title": "KVzip: Query-Agnostic KV Cache Compression with Context Reconstruction",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Section 3.2, description of attention tensor shapes",
+      "confidence": 0.95,
+      "supporting_evidence": "The text states: 'Forwarding this input through f_LM with KV_c produces query features Q_{l,h} ∈ ℝ^{G × (n_c + n_in) × d} and key features K_{l,h} ∈ ℝ^{n_in × d} ... The attention matrix A_{l,h} = Softmax(Q_{l,h} K_{l,h}^T) then lies in ℝ_+^{G × (n_c + n_in) × n_in}.' This is wrong: the forward pass on the new input generates queries only for the n_in new tokens, not for n_c + n_in; Q should be G × n_in × d. Moreover, the keys include both cached KV and new tokens, so K is (n_c + n_in) × d, making A of size G × n_in × (n_c + n_in), not (n_c + n_in) × n_in. The subsequent slicing to ℝ^{G × n_c × n_in} also transposes dimensions inconsistently. The appended pseudo-code (Algorithm 1) uses correct shapes (Q: G × H × n_in × d), contradicting the text.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Abstract and Introduction",
+      "confidence": 0.9,
+      "supporting_evidence": "Abstract states: 'KVzip achieves KV cache size reductions by 2–3× and FlashAttention decoding latency improvements up to 1.5×'. The Introduction states: 'Specifically, KVzip achieves approximately 2× latency reduction in FlashAttention and 3–4× reduction in KV cache size during decoding'. The numbers for both cache reduction and latency improvement differ between the two sections, creating a direct contradiction.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 4.2, first paragraph under 'Task Generalization'",
+      "confidence": 0.85,
+      "supporting_evidence": "The text says: '...while baseline methods degrade notably at 90% retention.' Since the paper uses 'KV cache ratio' to mean the fraction kept (e.g., 0.3 = 30% kept), '90% retention' means keeping 90% of the cache, only 10% eviction. Under such mild compression, baseline methods would be expected to have minimal degradation, not 'degrade notably.' The authors likely intended '10% retention' (90% eviction) or '90% eviction'. This makes the comparison in the sentence logically inconsistent with the rest of the discussion about aggressive eviction.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 3.4, 'Complexity Analysis' vs 'Empirical Efficiency Analysis'",
+      "confidence": 0.9,
+      "supporting_evidence": "Under 'Complexity Analysis': 'Peak memory overhead is O(m^2), which remains constant with n_c and is negligible compared to model parameters and KV cache sizes.' Immediately after, under 'Empirical Efficiency Analysis': 'Peak memory usage increases moderately during scoring, challenging assertions of negligible overhead.' The latter directly contradicts the former, stating that the memory overhead is not negligible, which undermines the prior claim.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction::baseline"
+    },
+    {
+      "error_category": "Figure / table error",
+      "error_location": "Table 1 in Section 4.3 (Behavior Analysis)",
+      "confidence": 1.0,
+      "supporting_evidence": "Table 1, meant to show behavior analysis on a privacy-related example, contains no actual data: the 'Context', 'Query', and both response columns are entirely replaced by placeholders '[Removed for privacy compliance]' and '[Removed]'. This renders the table empty and the claimed behavioral analysis unsupported. A careful reviewer would demand either the actual data (properly anonymized) or removal of the table.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Abstract vs Experiments (context length claim)",
+      "confidence": 0.8,
+      "supporting_evidence": "Abstract says: 'Evaluations span select models including LLaMA 3.1 and Qwen 2.5 with context lengths up to 100K tokens.' However, the experiments (e.g., Section 4.1, Retr.KV description) mention context lengths up to 170K tokens for Qwen2.5-7B-1M. The abstract understates the maximum context length evaluated, creating a factual inconsistency.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Section 3.2 vs Appendix A pseudo-code",
+      "confidence": 0.9,
+      "supporting_evidence": "The main text claims Q_{l,h} has dimension G × (n_c + n_in) × d and A has shape G × (n_c + n_in) × n_in, which is incompatible with the standard use of KV cache (the model only computes new queries for the input tokens). The later pseudo-code (Algorithm 1) correctly defines Q with shape 'G × H × n_in × d' and the full K as 'H × (n_c + n_in) × d', leading to A of shape G × H × n_in × (m + n_in). The textual description in the method section thus does not match the actual algorithm and contains erroneous dimensions.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 7,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (deepseek-v4-pro, taxonomy=default): 7 error(s) reported.",
+  "baseline": {
+    "model": "deepseek-v4-pro",
+    "provider": "deepseek",
+    "taxonomy": "default",
+    "paper_chars": 83648,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 31,
+      "output_tokens": 10487,
+      "cache_read_input_tokens": 20992,
+      "cache_creation_input_tokens": null
+    }
+  }
+}

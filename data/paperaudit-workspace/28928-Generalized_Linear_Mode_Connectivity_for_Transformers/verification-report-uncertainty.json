@@ -1,0 +1,62 @@
+{
+  "paper_id": "28928",
+  "title": "Generalized Linear Mode Connectivity for Transformers",
+  "paper_category": "cs.LG",
+  "predicted_errors": [
+    {
+      "error_category": "Conclusion vs Evidence mismatch",
+      "error_location": "Section 8 Conclusion",
+      "confidence": 0.92,
+      "supporting_evidence": "The Conclusion first asserts 'permutation symmetries alone are sufficient for achieving linear mode connectivity in Transformers' and 'the discrete neuron reordering approaches of prior work were already adequate, and the additional symmetry classes we explored provide only marginal improvements over standard permutation-based re-basin techniques', then in the very next sentence asserts the opposite: 'Our empirical results show that broader symmetry classes are essential to uncovering the connectedness of modern neural network loss landscapes.' The first two sentences also contradict the paper's own evidence: Table 2 shows permutation-only 'Learned matching (permutations)' yields non-zero barriers (0.45/0.53/0.29/0.63/1.60) while 'Learned matching (ours)' with the richer symmetry classes yields 0.00, and the Abstract/Introduction argue permutations are 'limited in scope' and 'often fail to reveal low-loss paths'. The paragraph is internally contradictory and reverses the paper's central claim.",
+      "verifier_name": "cross-section-consistency",
+      "snippet_id": "28928::SECTION::11"
+    },
+    {
+      "error_category": "Data Inconsistency (text-table)",
+      "error_location": "Section 5 Results / Table 2",
+      "confidence": 0.88,
+      "supporting_evidence": "Section 5 states 'Our learned matching method consistently outperforms all alternative approaches, achieving zero or near-zero barriers on every dataset except BookCorpus', but Table 2 reports 'Learned matching (ours)' = 0.00 ± 0.00 on BookCorpus (and on all five datasets). The later claim 'All tasks, including both vision and language experiments, reliably attain B ≈ 0' likewise contradicts the 'except BookCorpus' caveat. A literally zero mean AND zero standard error (0.00 ± 0.00) across every dataset is additionally implausible for a stochastic training pipeline.",
+      "verifier_name": "statistical",
+      "snippet_id": "28928::SECTION::9"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Equation 3 (Section 4.1 Weight matching)",
+      "confidence": 0.85,
+      "supporting_evidence": "The text states 'we search for a permutation P_ℓ^FF that maximizes alignment', but Eq. 3 writes P_ℓ^FF = argmin_{P ∈ S_d} ⟨W_ℓ^(A), P W_ℓ^(B) O^T⟩_F + ⟨W_ℓ+1^(A), O W_ℓ+1^(B) P^T⟩_F. Maximizing weight similarity corresponds to argmax of these Frobenius inner products (equivalently argmin of their negatives, as in the least-squares formulation of Ainsworth et al. 2022). As printed, the argmin would drive the permutation toward the least-aligned configuration, directly contradicting the stated 'maximizes alignment' objective.",
+      "verifier_name": "math-equations",
+      "snippet_id": "28928::EQUATION::7"
+    },
+    {
+      "error_category": "Misattribution (external)",
+      "error_location": "Section 7 Related work",
+      "confidence": 0.8,
+      "supporting_evidence": "The paper states 'the Git Re-Basin framework, first proposed by Singh and Jaggi [2020] and later extended by Ainsworth et al. [2022]'. Git Re-Basin ('Git Re-Basin: Merging models modulo permutation symmetries', arXiv:2209.04836) was proposed by Ainsworth, Hayase and Srinivasa (2022), who also introduced the three alignment methods (activation matching, weight matching, straight-through estimator). Singh and Jaggi [2020] proposed 'Model fusion via optimal transport' (OT fusion), a different method. The sentence misattributes the origin of the Git Re-Basin framework.",
+      "verifier_name": "citation",
+      "snippet_id": "28928::SECTION::10"
+    },
+    {
+      "error_category": "Abstract vs Results mismatch",
+      "error_location": "Abstract vs Appendix F",
+      "confidence": 0.8,
+      "supporting_evidence": "The Abstract claims the framework 'completely solve[s] the alignment problem across any independently trained models regardless of positional encoding scheme or architectural details', but Appendix F states Rotary Positional Encodings (RoPE) 'enforce block-diagonal constraints on the residual orthogonals... This decomposition breaks the full orthogonal group, necessitating specialized alignment procedures', and that 'Developing such RoPE-aware symmetry mappings is a promising direction' — i.e., future work. Appendix A likewise limits the evaluation to small ViT/GPT-2 models and calls for 'evaluation on larger, more contemporary language models'. The abstract's sweeping 'completely solving... regardless of positional encoding scheme' claim is contradicted by the paper's own appendices.",
+      "verifier_name": "cross-section-consistency",
+      "snippet_id": "28928::SECTION::0"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 74,
+    "snippets_verified": 74,
+    "errors_detected": 5,
+    "verifier_usage": {
+      "math_equation": 17,
+      "text": 2,
+      "statistical": 3,
+      "citation": 3,
+      "vision": 1,
+      "cross_section_consistency": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Uncertainty-mode verification (threshold 0.30, lenient strictness). The paper was segmented into 74 snippets (31 sections, 31 display equations, 3 tables, 14 figures, 1 algorithm) and all were triaged; 27 high-uncertainty snippets were escalated to specialist verifiers (math-equations, statistical, citation, text, vision) plus a full cross-section consistency pass. Five errors were detected. (1) Conclusion mismatch: Section 8 claims permutation symmetries alone are sufficient and additional symmetry classes give only marginal gains, then immediately claims broader symmetry classes are essential — an internal contradiction that also reverses the paper's own results (Table 2). (2) Data inconsistency: Section 5 says learned matching achieves zero/near-zero barriers 'on every dataset except BookCorpus', but Table 2 lists 0.00 ± 0.00 for BookCorpus; a literal 0.00 ± 0.00 across all datasets is also statistically implausible. (3) Equation 3 uses argmin over an alignment-similarity inner-product sum although the text says 'maximizes alignment'; it should be argmax (or argmin of the negatives). (4) Citation misattribution: Git Re-Basin is attributed to Singh and Jaggi [2020] but was introduced by Ainsworth et al. [2022]. (5) Abstract overreach: 'completely solving the alignment problem... regardless of positional encoding scheme' is contradicted by Appendix F (RoPE breaks the framework's orthogonal symmetry and needs future specialized procedures). Verdict: NEEDS_CORRECTION."
+}

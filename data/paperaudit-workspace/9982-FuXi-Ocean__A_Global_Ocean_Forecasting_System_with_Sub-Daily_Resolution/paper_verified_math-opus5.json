@@ -1,0 +1,330 @@
+{
+  "paper_name": "paper",
+  "paper_path": "/Users/iacopoghinassi/Documents/Github/Wittgenstein/data/paperaudit-workspace/9982-FuXi-Ocean__A_Global_Ocean_Forecasting_System_with_Sub-Daily_Resolution/paper.md",
+  "tag": "opus5",
+  "lean_project": "MATH_VERIFICATION/Paper",
+  "lean_project_kept": true,
+  "totals": {
+    "snippets_extracted": 10,
+    "routed_to_math": 6,
+    "routed_to_lean": 4,
+    "lean_passed": 4,
+    "lean_refuted": 0,
+    "lean_failed": 0,
+    "fallbacks_run": 0,
+    "errors_detected": 4
+  },
+  "results": [
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "3.1 Problem Formulation",
+      "content": "Formally, given a sequence of historical observations spanning $$N$$ consecutive time points $$\\{X^{t-N+1}, X^{t-N+2}, \\ldots, X^t\\} \\in \\mathbb{R}^{N \\times C \\times H \\times W}$$, we aim to predict the state at the subsequent time step $$X_{t+1} \\in \\mathbb{R}^{C \\times H \\times W}$$. Here, $$H = 2160$$ and $$W = 4320$$ represent the spatial dimensions of our global grid at 1/12° resolution [...] We discretize the water column into 20 strategically selected depth levels from the surface (0 m) to the deeper ocean (1500 m): 0, 2, 4, 6, 10, 20, 30, 40, 50, 60, 70, 80, 100, 125, 150, 200, 300, 500, 1000, and 1500 m. [...] Consequently, our input and output tensors comprise $$C = 81$$ channels (4 variables × 20 depth levels + SSH). The temporal resolution of our data is set at 6-hour intervals [...] We empirically determine that $$N = 4$$ consecutive time steps (spanning 24 hours) provides sufficient historical context",
+      "route": "verify-math",
+      "route_rationale": "Tensor-shape and channel-count arithmetic a careful reader can check by inspection; no non-trivial formal content.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "Every dimensional claim checks out. The channel count is exact: $4 \\times 20 + 1 = 81 = C$. The listed depth levels number exactly 20 (0, 2, 4, 6, 10, 20, 30, 40, 50, 60, 70, 80, 100, 125, 150, 200, 300, 500, 1000, 1500). The grid dimensions match the stated $1/12°$ resolution: $180° \\div \\tfrac{1}{12}° = 2160 = H$ and $360° \\div \\tfrac{1}{12}° = 4320 = W$. One sub-threshold wrinkle: '$N = 4$ consecutive time steps (spanning 24 hours)' at 6-hour intervals gives only $3 \\times 6 = 18$ hours of elapsed time between the first and last input (Figure 1 confirms the inputs are $X^{t-3}$ through $X^t$); 24 hours of elapsed span would need 5 points. The '24 hours' figure is defensible as '4 samples each covering a 6-hour interval', so this is a loose gloss rather than a derivation-invalidating error. The time index also switches between superscript ($X^t$) and subscript ($X_{t+1}$) within one sentence, which is a typographic inconsistency only.",
+        "predicted_error_category": null,
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::EQUATION::0",
+      "snippet_type": "EQUATION",
+      "location": "3.2.1 Feature Extraction (Eq. 2)",
+      "content": "F_S = M(S) (1)\n\nwhere S contains temporal information (diurnal, seasonal patterns) and spatial data (coordinates, bathymetry). [...] We then modulate the encoder weights using these contextual features through:\n\nF^t = E(X^t, F_S) = Norm(Conv(X^t, W ⊙ F_S)) (2)\n\nwhere W represents the learnable convolution parameters and ⊙ denotes element-wise multiplication. [...] The encoder processes each input time step t − i (i ∈ {0, 1, 2, 3}) to produce feature tensors F^{t−i} ∈ ℝ^{C′×H′×W′}.",
+      "route": "verify-math",
+      "route_rationale": "Architectural definition; the objects ($W$, $F_S$, $M$) are never given shapes, so there is no crisp formal content to state.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::0",
+        "verifier_name": "math-equations",
+        "status": "UNVERIFIABLE",
+        "error_detected": false,
+        "confidence": 0.55,
+        "reasoning": "Eq. (2) cannot be checked as written because neither operand of $\\odot$ is given a shape. $W$ is described as 'the learnable convolution parameters' (a kernel, conventionally shaped $C' \\times C \\times k \\times k$) while $F_S = M(S)$ is a spatiotemporal feature map derived from coordinates and bathymetry (conventionally shaped with spatial extent). An element-wise product between a kernel and a spatially varying map is only defined under a broadcasting convention the paper never states, and if $F_S$ really does vary over space then $\\mathrm{Conv}(X^t, W \\odot F_S)$ is not a convolution (the kernel would no longer be shared across positions). This is under-specification, not a demonstrable algebraic error: no invalid manipulation is performed, and the missing shape declarations are exactly the kind of absent context that must not be flagged. No error reported.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "UNVERIFIABLE",
+      "error_detected": false,
+      "confidence": 0.55
+    },
+    {
+      "snippet_id": "paper::EQUATION::1",
+      "snippet_type": "EQUATION",
+      "location": "3.2.3 Mixture-of-Time Module (Eq. 3)",
+      "content": "Specifically, we maintain a selection matrix V ∈ ℝ^{C×4} that quantifies prediction reliability across temporal scales for each channel (variable and depth combination). For a given channel c and spatial location (h, w), the final prediction is computed as:\n\n\\hat{X}^{t+1}(c, h, w) = (1/K) ∑_{i=0}^{3} TopK_{V(c,i)} · \\tilde{X}_{t−i}^{t+1}(c, h, w)\n(3)\n\nHere, the TopK operator selects the K most reliable temporal windows (corresponding to the smallest values in V) for each channel. Specifically, for each channel c, it assigns a value of 1 to the K smallest elements in the vector V(c, ·) and 0 to all others.",
+      "route": "verify-math-lean",
+      "route_rationale": "The convex-combination / 'weighted average' property is a crisp formalisable claim about the coefficients, and its degenerate cases matter.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::1",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "Formalised Eq. (3) with the mask as the indicator of a selected set `sel : Finset (Fin 4)`, exactly as the paper defines it ('assigns a value of 1 to the K smallest elements ... and 0 to all others'), under the single carried-over hypothesis `sel.card = K` — that is, the paper's intended reading in which the mask really does select $K$ windows. Lean proved: (A) the coefficients $\\tfrac{1}{K}\\mathrm{TopK}_{V(c,i)}$ sum to $1$, so Eq. (3) is a genuine convex combination; (B) consequently the output never leaves the range spanned by the four candidate forecasts; (C) at $K = 1$ (Appendix E's setting) Eq. (3) collapses to $\\hat{X}^{t+1} = \\tilde{X}^{t+1}_{t-i^*}$, a hard selection of one window. Eq. (3) is mathematically sound. Two supplementary theorems record a well-definedness caveat rather than an error: under the paper's literal wording the mask is the indicator of 'the $K$ smallest elements', and when $V(c,\\cdot)$ has tied entries — e.g. a uniformly initialised selection matrix — that set has all four members, so the coefficients sum to $4$ and Eq. (3) returns $4$ on four forecasts all equal to $1$ (`mot_tie_blowup`, `mot_tie_escapes_range`). Ties are measure-zero once training perturbs $V$, so this is a degenerate-case caveat, well below the bar for a reportable error.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/9982-FuXiOcean-opus5/Eq03_MoT_Average.lean",
+          "formal_statement": "noncomputable def mot (K : ℕ) (sel : Finset (Fin 4)) (X : Fin 4 → ℝ) : ℝ :=\n  (1 / (K : ℝ)) * ∑ i : Fin 4, (if i ∈ sel then (1 : ℝ) else 0) * X i\n\ntheorem mot_coeffs_sum_one {K : ℕ} (hK : K ≠ 0) {sel : Finset (Fin 4)}\n    (hcard : sel.card = K) :\n    ∑ i : Fin 4, (1 / (K : ℝ)) * (if i ∈ sel then (1 : ℝ) else 0) = 1\n\ntheorem mot_mem_range {K : ℕ} (hK : K ≠ 0) {sel : Finset (Fin 4)}\n    (hcard : sel.card = K) {X : Fin 4 → ℝ} {a b : ℝ}\n    (hlo : ∀ i, a ≤ X i) (hhi : ∀ i, X i ≤ b) :\n    a ≤ mot K sel X ∧ mot K sel X ≤ b\n\ntheorem mot_K_one (j : Fin 4) (X : Fin 4 → ℝ) : mot 1 {j} X = X j\n\ntheorem mot_tie_blowup : mot 1 Finset.univ (fun _ => (1 : ℝ)) = 4\n\ntheorem mot_tie_escapes_range : ¬ (mot 1 Finset.univ (fun _ => (1 : ℝ)) ≤ 1)",
+          "compiler_feedback": "",
+          "axioms": ["propext", "Classical.choice", "Quot.sound"],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::EQUATION::2",
+      "snippet_type": "EQUATION",
+      "location": "3.2.3 Mixture-of-Time Module (Eq. 4)",
+      "content": "During training, we update the selection matrix based on prediction performance:\n\nV(c, i) = softmax\\left(α \\cdot V(c, i) + (1 - α) \\cdot AvgPool_{H,W}(MAE(\\tilde{X}_{t−i}^{t+1}, X^{t+1}))_c\\right)\n(4)\n\nwhere α controls update momentum, and MAE measures prediction error. The spatially averaged MAE captures the reliability of each temporal window for each variable, which is then normalized through softmax to ensure the selection weights sum to one.",
+      "route": "verify-math-lean",
+      "route_rationale": "Softmax normalisation and the sign/direction convention relative to Eq. (3) are both crisply formalisable.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::2",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "Formalised the softmax of Eq. (4) over the four temporal windows of a fixed channel and proved both properties the paper explicitly asserts: (A) the output is strictly positive and its entries sum to one (`softmax_pos`, `softmax_sum_one`), confirming 'normalized through softmax to ensure the selection weights sum to one'; (B) softmax is strictly increasing, so a larger spatially averaged MAE does yield a larger $V$, which agrees with Eq. (3)'s convention that the *smallest* entries of $V(c,\\cdot)$ are the most reliable windows. There is no sign or direction error between Eqs. (3) and (4). Three supplementary theorems record concerns that fall below the reporting bar because they bear on the paper's prose gloss rather than on the equation: (C) `softmax_preserves_argmin` shows that, within a single update, the softmax cannot change which window TopK selects, so its stated purpose is inert for the selection itself — and Eq. (3)'s weights are $\\tfrac{1}{K}\\mathrm{TopK}$, not $V$, so $V$ summing to one is not what normalises Eq. (3); (D) `softmax_not_identity` and `softmax_shrinks_one_hot` show that at $\\alpha = 1$ — full momentum, no new information — Eq. (4) is $V \\leftarrow \\mathrm{softmax}(V)$, which is *not* the identity ($\\mathrm{softmax}(1,0)_0 = e/(e+1) < 1$), so $\\alpha$ does not act as an exponential-moving-average momentum and iterating the update contracts $V$ toward uniform. That refutes a loose verbal characterisation ('α controls update momentum'), not a stated identity, so it is reported here as a caveat at confidence 0.5 and not raised as a finding. Separately, $\\alpha$ is reused in Eq. (5) for the latitude weight $\\alpha_i$ — a symbol collision, i.e. a notational slip only.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/9982-FuXiOcean-opus5/Eq04_SoftmaxUpdate.lean",
+          "formal_statement": "noncomputable def softmax {n : ℕ} (z : Fin n → ℝ) (i : Fin n) : ℝ :=\n  Real.exp (z i) / ∑ j, Real.exp (z j)\n\ntheorem softmax_pos {n : ℕ} [NeZero n] (z : Fin n → ℝ) (i : Fin n) : 0 < softmax z i\n\ntheorem softmax_sum_one {n : ℕ} [NeZero n] (z : Fin n → ℝ) : ∑ i, softmax z i = 1\n\ntheorem softmax_strictMono {n : ℕ} [NeZero n] (z : Fin n → ℝ) (i j : Fin n) :\n    softmax z i < softmax z j ↔ z i < z j\n\ntheorem softmax_preserves_argmin {n : ℕ} [NeZero n] (z : Fin n → ℝ) (i : Fin n)\n    (hmin : ∀ j, z i ≤ z j) : ∀ j, softmax z i ≤ softmax z j\n\ntheorem softmax_not_identity :\n    softmax (fun i : Fin 2 => if i = 0 then (1 : ℝ) else 0) 0\n      ≠ (fun i : Fin 2 => if i = 0 then (1 : ℝ) else 0) 0\n\ntheorem softmax_shrinks_one_hot :\n    softmax (fun i : Fin 2 => if i = 0 then (1 : ℝ) else 0) 0 < 1",
+          "compiler_feedback": "",
+          "axioms": ["propext", "Classical.choice", "Quot.sound"],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::EQUATION::3",
+      "snippet_type": "EQUATION",
+      "location": "3.3 Training Strategy (Eq. 5)",
+      "content": "$$\\mathcal{L}_{\\text{pred}} = \\frac{1}{C \\times H \\times W} \\sum_{c=1}^{C} \\sum_{i=1}^{H} \\sum_{j=1}^{W} \\alpha_i \\sqrt{(\\hat{\\mathbf{X}}_{c,i,j}^{t+1} - \\mathbf{X}_{c,i,j}^{t+1})^2 + \\epsilon^2}$$ (5)\n\nwhere $\\alpha_i = H \\times \\frac{\\cos \\Phi_i}{\\sum_{i=1}^{H} \\cos \\Phi_i}$ is the latitude-dependent weighting factor at latitude $\\Phi_i$, and $\\epsilon$ is a small constant ensuring differentiability. This approach prevents bias toward high-latitude regions in error calculations, which would otherwise be overrepresented in the rectangular grid projection.",
+      "route": "verify-math-lean",
+      "route_rationale": "Weight-normalisation identity, differentiability of the Charbonnier term, and the monotonic direction of the weighting are all formalisable.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::3",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.92,
+        "reasoning": "All three claims attached to Eq. (5) were formalised and proved. (A) `latWeight_sum`: $\\sum_{i=1}^{H} \\alpha_i = H$ whenever $\\sum_i \\cos\\Phi_i \\neq 0$ — so the weights deliberately sum to $H$, not to $1$. (B) `loss_normalized`: combined with the $\\tfrac{1}{C \\times H \\times W}$ prefactor this makes $\\mathcal{L}_{\\text{pred}}$ a correctly normalised weighted mean — a uniform Charbonnier residual $v$ returns exactly $v$, with no spurious scale factor. The prefactor and the weight normalisation are therefore mutually consistent. (C) `charbonnier_differentiable`: for $\\epsilon \\neq 0$ the term $\\sqrt{x^2 + \\epsilon^2}$ is differentiable at every residual, confirming '$\\epsilon$ is a small constant ensuring differentiability'; and `charbonnier_eps_zero_not_differentiable` confirms the $\\epsilon$ is genuinely load-bearing, since at $\\epsilon = 0$ the term is $|x|$, which is not differentiable at zero residual. (D) `latWeight_antitone`: $\\alpha_i$ strictly decreases as latitude increases on $[0, \\pi]$, so high-latitude rows really are down-weighted — the direction the paper claims. Eq. (5) is correct as printed.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/9982-FuXiOcean-opus5/Eq05_CharbonnierLoss.lean",
+          "formal_statement": "noncomputable def latWeight {H : ℕ} (Φ : Fin H → ℝ) (i : Fin H) : ℝ :=\n  (H : ℝ) * Real.cos (Φ i) / ∑ j, Real.cos (Φ j)\n\ntheorem latWeight_sum {H : ℕ} (Φ : Fin H → ℝ) (hne : ∑ j, Real.cos (Φ j) ≠ 0) :\n    ∑ i, latWeight Φ i = (H : ℝ)\n\ntheorem loss_normalized {C H W : ℕ} (hC : 0 < C) (hH : 0 < H) (hW : 0 < W)\n    (w : Fin H → ℝ) (hw : ∑ i, w i = (H : ℝ)) (v : ℝ) :\n    (1 / ((C : ℝ) * (H : ℝ) * (W : ℝ)))\n        * ∑ _c : Fin C, ∑ i : Fin H, ∑ _j : Fin W, w i * v = v\n\ntheorem charbonnier_differentiable (ε : ℝ) (hε : ε ≠ 0) (x : ℝ) :\n    DifferentiableAt ℝ (fun y : ℝ => Real.sqrt (y ^ 2 + ε ^ 2)) x\n\ntheorem charbonnier_eps_zero_not_differentiable :\n    ¬ DifferentiableAt ℝ (fun y : ℝ => Real.sqrt (y ^ 2 + (0 : ℝ) ^ 2)) 0\n\ntheorem latWeight_antitone {H : ℕ} (Φ : Fin H → ℝ) (i j : Fin H)\n    (hpos : 0 < ∑ k, Real.cos (Φ k)) (hH : 0 < H)\n    (h0 : 0 ≤ Φ i) (hij : Φ i < Φ j) (hj : Φ j ≤ Real.pi) :\n    latWeight Φ j < latWeight Φ i",
+          "compiler_feedback": "",
+          "axioms": ["propext", "Classical.choice", "Quot.sound"],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.92
+    },
+    {
+      "snippet_id": "paper::EQUATION::4",
+      "snippet_type": "EQUATION",
+      "location": "4.3 Metrics (Eq. 6)",
+      "content": "To account for differences in grid-cell sizes across different latitudes, we formulate RMSE as follows:\n\n$$\\mathrm{RMSE}(c,\\tau)=\\frac{1}{|D|}\\sum_{t_0\\in D}\\sqrt{\\frac{1}{H\\times W}\\sum_{i=1}^H\\sum_{j=1}^W a_i\\big(\\hat{X}_{c,i,j}^{\\,t_0+\\tau}-X_{c,i,j}^{\\,t_0+\\tau}\\big)^2}$$\n(6)\n\nwhere $t_0$ denotes the forecast initialization time in the testing dataset $D$, and $\\tau$ represents the lead time steps added to $t_0$.",
+      "route": "verify-math-lean",
+      "route_rationale": "Normalisation consistency and the Jensen relation between mean-of-roots and root-of-mean are both formalisable.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::4",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.82,
+        "reasoning": "Eq. (6) uses a weight $a_i$ that Section 4.3 never defines; the only latitude weight the paper defines is Eq. (5)'s $\\alpha_i$, proved there to sum to $H$. Lean settled both branches. (A) `msE_normalized_sum_H`: if $a_i$ carries Eq. (5)'s normalisation ($\\sum_i a_i = H$) then the $\\tfrac{1}{H \\times W}$ prefactor is exactly right and a uniform squared error $v$ returns $v$ under the root — Eq. (6) is then correct. (B) `msE_deflated_sum_one`: if instead $a_i$ is the conventional latitude weight summing to $1$, the same expression returns $v/H$, deflating the reported RMSE by $\\sqrt{H}$ — a factor of over $46$ at the paper's $H = 2160$ (`deflation_is_real`). Since the paper writes $a_i$ immediately after defining $\\alpha_i$ and introduces Eq. (6) as the same latitude weighting, the intended reading is branch (A), under which the equation is sound; the $a_i$ versus $\\alpha_i$ mismatch is an undefined-symbol slip, which is not a reportable mathematical error. (C) `mean_sqrt_le_sqrt_mean` and `mean_sqrt_strict` confirm a definitional point worth recording: averaging per-initialisation square roots over $D$, as Eq. (6) does, is always at most — and strictly less than, as soon as two initialisations differ from — the root mean square error of the pooled set. Eq. (6) is therefore a mean of per-initialisation RMSEs rather than a pooled RMSE. That is standard practice in operational forecast verification and is not an error, but it makes the metric non-interchangeable with a pooled RMSE when comparing against other systems.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/9982-FuXiOcean-opus5/Eq06_RMSE.lean",
+          "formal_statement": "theorem msE_normalized_sum_H {H W : ℕ} (hH : 0 < H) (hW : 0 < W)\n    (a : Fin H → ℝ) (ha : ∑ i, a i = (H : ℝ)) (v : ℝ) :\n    (1 / ((H : ℝ) * (W : ℝ))) * ∑ i : Fin H, ∑ _j : Fin W, a i * v = v\n\ntheorem msE_deflated_sum_one {H W : ℕ} (hH : 0 < H) (hW : 0 < W)\n    (a : Fin H → ℝ) (ha : ∑ i, a i = 1) (v : ℝ) :\n    (1 / ((H : ℝ) * (W : ℝ))) * ∑ i : Fin H, ∑ _j : Fin W, a i * v\n      = v / (H : ℝ)\n\ntheorem deflation_is_real :\n    Real.sqrt ((1 : ℝ) / 2160) * Real.sqrt 2160 = 1\n\ntheorem mean_sqrt_le_sqrt_mean (a b : ℝ) (ha : 0 ≤ a) (hb : 0 ≤ b) :\n    (Real.sqrt a + Real.sqrt b) / 2 ≤ Real.sqrt ((a + b) / 2)\n\ntheorem mean_sqrt_strict :\n    (Real.sqrt 0 + Real.sqrt 1) / 2 < Real.sqrt (((0 : ℝ) + 1) / 2)",
+          "compiler_feedback": "",
+          "axioms": ["propext", "Classical.choice", "Quot.sound"],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.82
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::1",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "3.2.3 Mixture-of-Time Module",
+      "content": "Specifically, we maintain a selection matrix V ∈ ℝ^{C×4} that quantifies prediction reliability across temporal scales for each channel (variable and depth combination). For a given channel c and spatial location (h, w), the final prediction is computed as: [Eq. 3] [...] V(c, i) = softmax(α · V(c, i) + (1 - α) · AvgPool_{H,W}(MAE(...))_c) [Eq. 4] [...] The spatially averaged MAE captures the reliability of each temporal window for each variable, which is then normalized through softmax to ensure the selection weights sum to one. This adaptive approach enables FuXi-Ocean to dynamically adjust its reliance on different temporal windows for each variable and region.",
+      "route": "verify-math",
+      "route_rationale": "The defect is an index-dependency mismatch between a definition and a prose capability claim; it rests on reading the surrounding text, not on a formalisable identity.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::1",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.8,
+        "reasoning": "The MoT module cannot do what this paragraph claims it does, and the reason is visible in its own definitions. The selection matrix is declared $V \\in \\mathbb{R}^{C \\times 4}$ — indexed by channel $c$ and temporal window $i$ only, with no spatial index. Eq. (4) then populates it from $\\mathrm{AvgPool}_{H,W}(\\mathrm{MAE}(\\cdot))_c$, which averages the error over all $H \\times W$ grid points and so destroys every trace of spatial variation by construction. Eq. (3) applies $\\mathrm{TopK}$ to the vector $V(c, \\cdot)$, which is likewise constant in $(h, w)$. Therefore the selected set of temporal windows is a function of $c$ alone: formally, $\\mathrm{TopK}_{V(c,i)}$ is constant in $(h, w)$, so no choice of inputs can make the module rely on different temporal windows in different regions. The claim 'enables FuXi-Ocean to dynamically adjust its reliance on different temporal windows for each variable and region' is thus false given the paper's own definitions, as is the supporting example about deep currents versus surface temperature insofar as it is meant to be regional. Figure 1's caption states the correct scope — 'performs channel-wise selection' — and Eq. (3)'s preamble 'For a given channel c and spatial location (h, w)' is misleading, since $(h, w)$ is merely carried along, never used in the selection. Severity is minor: the module as defined is coherent and the ablation supports its channel-wise benefit; what fails is the stated per-region adaptivity, which is also asserted in the introduction.",
+        "predicted_error_category": "Domain/Constraint violation",
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": ["3.2.3 Mixture-of-Time Module", "Figure 1 caption", "1 Introduction"]
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::0",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "1 Introduction / 4.1 Data / 5 Results / 5.2 / Appendix C.1 / Appendix D (Table 1)",
+      "content": "[1 Introduction] achieving state-of-the-art performance with only 9 years of training data—significantly less than required by comparable models.\n\n[4.1 Data] We trained on 7 years of HYCOM data (January 2006 to December 2012), used six months (January to June 2013) for validation, and tested on 6 months (July to December 2013), focusing on 20 chosen vertical layers down to 1,500 m.\n\n[5 Results] We first evaluate FuXi-Ocean on the 2015 HYCOM set derived from HYCOM reanalysis data to assess its ability to generate high-frequency (6-hourly) predictions.\n\n[5.2] Note that the most recent training data for FuXi-Ocean does not exceed 2014\n\n[Appendix C.1] Similar to Fig. 3 in the main text, the RMSE here is tested on the HYCOM reanalysis data for 2015.\n\n[Appendix D] While trained on a relatively shorter temporal range (2006-2014) compared to other models nominally trained on 1993-2020 datasets\n\n[Table 1] | FuXi-Ocean        | 2006–2015                | T, S, U, V, SSH                |",
+      "route": "verify-math",
+      "route_rationale": "Cross-section date arithmetic that a careful reader can check by counting years; no formalisable content.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::0",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.88,
+        "reasoning": "The paper states the training span and the test year in mutually exclusive ways, and the arithmetic does not reconcile. Training span, four incompatible values: §4.1 gives '7 years of HYCOM data (January 2006 to December 2012)' — internally consistent, since Jan 2006 to Dec 2012 inclusive is indeed $2012 - 2006 + 1 = 7$ years; §1 claims 'only 9 years of training data'; Appendix D says '(2006-2014)', i.e. $2014 - 2006 + 1 = 9$ years, matching §1 but contradicting §4.1 by two years; Table 1 lists '2006–2015', i.e. $2015 - 2006 + 1 = 10$ years, contradicting all three, and also contradicting §5.2's 'the most recent training data for FuXi-Ocean does not exceed 2014'. Test year, two incompatible values: §4.1 reports testing on 'July to December 2013', while §5 evaluates on 'the 2015 HYCOM set' and Appendix C.1 confirms 'the RMSE here is tested on the HYCOM reanalysis data for 2015'. The two defects compound: under Table 1's training range of 2006–2015, the 2015 evaluation year of §5 and Appendix C.1 lies inside the training set, which would be outright train/test contamination; under §4.1's 2006–2012 it does not. Because the reader cannot determine which span and which test year actually produced the reported RMSEs, the headline skill numbers are not attributable to a known held-out period, and §1's data-efficiency contribution ('only 9 years') is contradicted by the Data section's own 7 years. Severity is critical: this bears directly on the paper's central empirical claim rather than on a peripheral detail.",
+        "predicted_error_category": "Sign/Arithmetic error",
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": ["1 Introduction", "4.1 Data", "5 Results", "5.2", "Appendix C.1", "Appendix D", "Table 1"]
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.88
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::1",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "Appendix D (tables under Figures 8 and 9)",
+      "content": "| Lead Time (hour) | WenHai* | Glory* | FuXi-Ocean |\n| ---------------- | ------- | ------ | ---------- |\n| 0                | 0.17    | 0.17   | 0.12       |\n| 2                | 0.17    | 0.17   | 0.13       |\n| 4                | 0.18    | 0.18   | 0.13       |\n| 6                | 0.18    | 0.18   | 0.14       |\n| 8                | 0.18    | 0.19   | 0.14       |\n| 10               | 0.18    | 0.20   | 0.14       |\n\n[and the identical lead-time column for the V component]\n\nContext: \"The temporal resolution of our data is set at 6-hour intervals\"; \"Fig. 2 shows the global spatial distribution of RMSE for sea surface variables ... at different lead times (6, 24, 120, and 240 hours)\"; \"while our system's forecast accuracy remains robust through 10 days\".",
+      "route": "verify-math",
+      "route_rationale": "Unit/grid-consistency arithmetic on tabulated lead times, checkable against the model's stated temporal resolution.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::1",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.78,
+        "reasoning": "The column header's unit is inconsistent with the model's own temporal grid. FuXi-Ocean is defined throughout on a 6-hour step ('The temporal resolution of our data is set at 6-hour intervals'), so its attainable lead times are the multiples of 6 hours — $0, 6, 12, 18, \\ldots$ — exactly as Fig. 2 reports them ('6, 24, 120, and 240 hours'). The tabulated lead times $0, 2, 4, 6, 8, 10$ include $2$, $4$, and $8$ hours, which are not multiples of $6$ and which the model therefore cannot produce; the comparison is moreover against WenHai and Glory, daily-resolution systems. Read as days, the same sequence $0, 2, 4, 6, 8, 10$ is entirely consistent: it spans $0$–$10$ days, matching Appendix A's 'forecast accuracy remains robust through 10 days' and the day-indexed IV-TT comparison of §5.2, where '6-hourly outputs' are averaged 'to produce daily means that can be directly compared with the daily forecasts of other methods'. The header 'Lead Time (hour)' is thus off by a factor of 24; either the unit should read days or the entries should be multiples of 6. Severity is minor: the RMSE values themselves and the ordering of the three systems are unaffected, but as printed the table misstates the horizon of the comparison by an order of magnitude.",
+        "predicted_error_category": "Domain/Constraint violation",
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": ["Appendix D (Figure 8 table)", "Appendix D (Figure 9 table)", "3.1 Problem Formulation", "5.1 Performance testing"]
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.78
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::2",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "Appendix E Supplementary details",
+      "content": "In practice, we set K = 1 to achieve the best performance of the MoT module. In the module design, we assume that there will always be an optimal moment of information that can optimize the results. Of course, if the number of historical moments involved, N, increases significantly, K = 1 is unlikely to be a good choice.\n\nContext: Figure 1 caption — \"For each channel, MoT identifies the top-K temporal dependencies using matrix V (derived from spatially averaged MAE metrics and softmax) and computes the optimal weighted average to synthesize the final prediction \\hat{X}^{t+1}.\"; Abstract — \"the Mixture-of-Time (MoT) module, which adaptively integrates predictions from multiple temporal contexts by learning variable-specific reliability\".",
+      "route": "verify-math",
+      "route_rationale": "Degenerate-case consistency between a deployed hyperparameter and the module's advertised mechanism; the supporting identities were settled in Lean under EQUATION::1 and EQUATION::2.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::2",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.72,
+        "reasoning": "At the deployed setting $K = 1$ the MoT module does not do what the paper says it does. Substituting $K = 1$ into Eq. (3) gives $\\hat{X}^{t+1}(c,h,w) = \\tilde{X}^{t+1}_{t-i^*(c)}(c,h,w)$ where $i^*(c) = \\arg\\min_i V(c,i)$ — a hard selection of one single temporal window, with the $\\tfrac{1}{K}$ factor equal to $1$ and the remaining three forecasts multiplied by zero. This is exactly the Lean-verified `mot_K_one` under EQUATION::1. Three statements are then incorrect. (i) Figure 1's 'computes the optimal weighted average' is vacuous — no averaging takes place, and the four decoder outputs are not combined at all. (ii) The abstract's and §3.2.3's description of a module that 'adaptively integrates predictions from multiple temporal contexts' / 'adaptively integrates predictions from multiple temporal windows' overstates the mechanism: at $K = 1$ exactly one window contributes to the output, so nothing is integrated; what is adaptive is only which single window is chosen. (iii) The stated role of the softmax — 'normalized through softmax to ensure the selection weights sum to one' — has no effect at $K = 1$, because Eq. (3)'s coefficients are $\\tfrac{1}{K}\\mathrm{TopK}$ rather than $V$ itself, and because softmax is strictly monotone (Lean-verified `softmax_strictMono` under EQUATION::2) and so cannot change which entry of $V(c,\\cdot)$ is smallest. Severity is minor: a per-channel hard selection of the most reliable temporal window is a perfectly coherent mechanism and the ablation in §5.3 supports that it helps; what is wrong is the paper's characterisation of it as a weighted average over multiple contexts.",
+        "predicted_error_category": "Domain/Constraint violation",
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": ["Appendix E Supplementary details", "Figure 1 caption", "Abstract", "3.2.3 Mixture-of-Time Module"]
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.72
+    }
+  ],
+  "findings": [
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::0",
+      "category": "Internal numerical inconsistency",
+      "severity": "critical",
+      "confidence": 0.88,
+      "evidence": "The training span is given four incompatible ways and the test year two. §4.1: 7 years, January 2006 – December 2012 (internally consistent: $2012-2006+1 = 7$). §1: 'only 9 years of training data'. Appendix D: '(2006-2014)', i.e. $2014-2006+1 = 9$ years. Table 1: '2006–2015', i.e. $2015-2006+1 = 10$ years, which also contradicts §5.2's 'the most recent training data for FuXi-Ocean does not exceed 2014'. For the test set, §4.1 reports 'July to December 2013' while §5 and Appendix C.1 both evaluate on 2015. The two defects compound: under Table 1's 2006–2015 range the 2015 evaluation year lies *inside* the training set, which would be train/test contamination, whereas under §4.1's 2006–2012 it does not. The reader therefore cannot attribute the reported RMSEs to any determinate held-out period, and §1's data-efficiency contribution of 9 years is contradicted by the Data section's own 7 years.",
+      "verifier": "verify-math",
+      "exact_quote": "We trained on 7 years of HYCOM data (January 2006 to December 2012), used six months (January to June 2013) for validation, and tested on 6 months (July to December 2013), focusing on 20 chosen vertical layers down to 1,500 m."
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::1",
+      "category": "Model/claim inconsistency",
+      "severity": "minor",
+      "confidence": 0.8,
+      "evidence": "The MoT module cannot adapt by region, because its own definitions remove every spatial degree of freedom. The selection matrix is declared $V \\in \\mathbb{R}^{C \\times 4}$, indexed by channel and temporal window only; Eq. (4) populates it from $\\mathrm{AvgPool}_{H,W}(\\mathrm{MAE}(\\cdot))_c$, which averages over all $H \\times W$ grid points; and Eq. (3) applies $\\mathrm{TopK}$ to $V(c,\\cdot)$. Hence $\\mathrm{TopK}_{V(c,i)}$ is constant in $(h,w)$ and the selected temporal windows are a function of $c$ alone — no input can make the module weight temporal windows differently in different regions. Figure 1's caption states the correct scope ('performs channel-wise selection'), and Eq. (3)'s preamble 'For a given channel c and spatial location (h, w)' is misleading, since $(h,w)$ is carried along but never enters the selection. The argument survives — a channel-wise module is coherent and the §5.3 ablation supports it — so only the per-region capability claim fails.",
+      "verifier": "verify-math",
+      "exact_quote": "This adaptive approach enables FuXi-Ocean to dynamically adjust its reliance on different temporal windows for each variable and region."
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::1",
+      "category": "Unit/grid inconsistency",
+      "severity": "minor",
+      "confidence": 0.78,
+      "evidence": "The tabulated lead times $0, 2, 4, 6, 8, 10$ are labelled hours, but FuXi-Ocean runs on a 6-hour step ('The temporal resolution of our data is set at 6-hour intervals'), so its attainable lead times are multiples of $6$ hours — as Fig. 2 reports them ('6, 24, 120, and 240 hours'). Lead times of $2$, $4$ and $8$ hours are therefore unattainable, and the comparison is against WenHai and Glory, both daily-resolution systems. Read as **days** the sequence is fully consistent: $0$–$10$ days matches Appendix A's 'forecast accuracy remains robust through 10 days' and §5.2's protocol of averaging 'our 6-hourly outputs to produce daily means that can be directly compared with the daily forecasts of other methods'. The header is off by a factor of $24$. The RMSE values and the ranking of the three systems are unaffected, so the argument survives.",
+      "verifier": "verify-math",
+      "exact_quote": "| Lead Time (hour) | WenHai* | Glory* | FuXi-Ocean |"
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::2",
+      "category": "Degenerate-case inconsistency",
+      "severity": "minor",
+      "confidence": 0.72,
+      "evidence": "At the deployed setting $K = 1$, Eq. (3) reduces to $\\hat{X}^{t+1}(c,h,w) = \\tilde{X}^{t+1}_{t-i^*(c)}(c,h,w)$ with $i^*(c) = \\arg\\min_i V(c,i)$ — a hard selection of one window, the other three multiplied by zero (Lean-verified: `mot_K_one`). Three descriptions then fail. Figure 1's 'computes the optimal weighted average' is vacuous, since no averaging occurs. The abstract's 'adaptively integrates predictions from multiple temporal contexts' overstates the mechanism: exactly one context contributes to the output. And 'normalized through softmax to ensure the selection weights sum to one' has no effect, because Eq. (3)'s coefficients are $\\tfrac{1}{K}\\mathrm{TopK}$ rather than $V$, and softmax is strictly monotone (Lean-verified: `softmax_strictMono`) so it cannot change which entry of $V(c,\\cdot)$ is smallest. A per-channel hard selection is a coherent mechanism supported by the §5.3 ablation, so only the characterisation is wrong.",
+      "verifier": "verify-math",
+      "exact_quote": "In practice, we set K = 1 to achieve the best performance of the MoT module."
+    }
+  ],
+  "verdict": "CRITICAL_ERRORS",
+  "verdict_confidence": 0.8,
+  "summary": "Ten mathematical objects were extracted from FuXi-Ocean; four went to Lean 4 and six to informal review. **The paper's formal mathematics is clean.** All four Lean snippets returned `PASSED` — compiled with no severity-1 diagnostics, no `sorry`, and only the standard Mathlib axioms (`propext`, `Classical.choice`, `Quot.sound`) — so there were no `FAILED` or `NOT_ATTEMPTED` results and no informal fallbacks were needed.\n\nWhat Lean settled. Eq. (3)'s MoT combination is a genuine convex combination: its coefficients $\\tfrac{1}{K}\\mathrm{TopK}_{V(c,i)}$ sum to $1$ and the output cannot leave the range of the four candidate forecasts. Eq. (4)'s softmax does what the paper claims — strictly positive entries summing to one — and is strictly increasing, so a larger spatially averaged MAE yields a larger $V$, consistent with Eq. (3)'s convention that the smallest entries are the most reliable windows; there is no sign error between the two equations. Eq. (5) is correct as printed: $\\sum_{i=1}^{H}\\alpha_i = H$, which combines with the $\\tfrac{1}{C \\times H \\times W}$ prefactor to make $\\mathcal{L}_{\\text{pred}}$ a properly normalised weighted mean; $\\epsilon \\neq 0$ genuinely secures differentiability (and is genuinely needed, since the $\\epsilon = 0$ limit $|x|$ is not differentiable at zero residual); and $\\alpha_i$ is strictly decreasing in latitude, the direction the paper claims. For Eq. (6), Lean checked both readings of the undefined weight $a_i$: under Eq. (5)'s normalisation ($\\sum_i a_i = H$) the equation is correctly normalised, while under the conventional sum-to-one convention it would be deflated by $\\sqrt{H} \\approx 46$ at $H = 2160$. The intended reading is the former, so the $a_i$ versus $\\alpha_i$ mismatch is an undefined-symbol slip rather than an error. The dimensional arithmetic of §3.1 also checks out exactly: $4 \\times 20 + 1 = 81 = C$, the 20 listed depth levels number 20, and $180° \\div \\tfrac{1}{12}° = 2160$, $360° \\div \\tfrac{1}{12}° = 4320$.\n\nWhere the errors are. Every confident finding is about the paper's **numbers and descriptions**, not its derivations. The one critical finding is an irreducible inconsistency in the experimental protocol: the training span is stated as 7 years / 2006–2012 (§4.1), 9 years (§1), 2006–2014 (Appendix D) and 2006–2015 (Table 1), while the test set is July–December 2013 (§4.1) in one place and 2015 (§5, Appendix C.1) in another. Under Table 1's range the 2015 evaluation year falls inside the training set; under §4.1's it does not — so the reported skill cannot be attributed to a determinate held-out period, and the 9-year data-efficiency contribution of §1 is contradicted by §4.1's own 7 years. Three minor findings follow: the MoT module is claimed to adapt 'for each variable and region' although $V \\in \\mathbb{R}^{C \\times 4}$ and the $\\mathrm{AvgPool}_{H,W}$ in Eq. (4) make its selection provably constant in $(h,w)$; Appendix D's comparison tables label lead times $0,2,4,6,8,10$ as hours, which is unattainable on a 6-hour grid and is off by a factor of 24 from the 0–10 **days** the numbers evidently span; and at the deployed $K = 1$ the module performs a hard single-window selection, making Figure 1's 'optimal weighted average' vacuous and the abstract's 'integrates predictions from multiple temporal contexts' an overstatement.\n\nDisagreements and recorded caveats. The two verifiers never disagreed — no snippet was judged by both. Two Lean-proved results are recorded as sub-threshold caveats rather than findings, because each refutes a verbal gloss rather than a printed identity: Eq. (4) at $\\alpha = 1$ is $V \\leftarrow \\mathrm{softmax}(V)$, which is not the identity ($\\mathrm{softmax}(1,0)_0 = e/(e+1) < 1$), so $\\alpha$ does not act as an exponential-moving-average momentum and iterating the update contracts $V$ toward uniform; and Eq. (6) averages per-initialisation square roots, which by strict concavity of $\\sqrt{\\cdot}$ is strictly below the pooled RMSE whenever two initialisations differ — standard practice in operational verification, but not interchangeable with a pooled RMSE in cross-system comparisons. Also noted without flagging: $\\alpha$ denotes the momentum in Eq. (4) and the latitude weight $\\alpha_i$ in Eq. (5); '$N = 4$ consecutive time steps (spanning 24 hours)' covers 18 hours of elapsed time at 6-hour spacing; and under the literal tie-breaking in Eq. (3)'s $\\mathrm{TopK}$ definition, a uniformly initialised $V(c,\\cdot)$ selects all four windows and inflates the output by a factor of 4 (Lean-verified, but measure-zero once training perturbs $V$).\n\nThe verdict is CRITICAL_ERRORS on the strength of the protocol inconsistency alone; confidence in the verdict is high for the inconsistency itself, which is quoted verbatim from five sections, and moderate for its grading as critical rather than minor. The Lean project `MATH_VERIFICATION/Paper` was **reused, not created**, by this run; per the skill's lifecycle rule it was therefore kept, with all four proofs archived under `Paper/Verified/9982-FuXiOcean-opus5/` and all per-snippet scratch (`TMP.lean`, `claim.md`) removed."
+}

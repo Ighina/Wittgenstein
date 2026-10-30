@@ -1,0 +1,206 @@
+{
+  "paper_name": "paper",
+  "paper_path": "/Users/iacopoghinassi/Documents/Github/Wittgenstein/data/paperaudit-workspace/27970-Deep_Compositional_Phase_Diffusion_for_Long_Motion_Sequence_Generation/paper.md",
+  "lean_project": "MATH_VERIFICATION/Paper",
+  "lean_project_kept": false,
+  "totals": {
+    "snippets_extracted": 7,
+    "routed_to_math": 7,
+    "routed_to_lean": 0,
+    "lean_passed": 0,
+    "lean_refuted": 0,
+    "lean_failed": 0,
+    "fallbacks_run": 0,
+    "errors_detected": 1
+  },
+  "results": [
+    {
+      "snippet_id": "paper::EQUATION::0",
+      "snippet_type": "EQUATION",
+      "location": "3.1.1 ACT-PAE: Action-Centric Periodic Autoencoder",
+      "content": "To enforce latent space periodicity, these parameters are parameterized into a periodic signal $\\mathbf{Q} \\in \\mathbb{R}^{N \\times Q}$ using the following equation:\n$\\mathbf{Q} = \\mathbf{A} \\sin(\\mathbf{F} \\cdot T + \\mathbf{S}) + \\mathbf{B}.$\n(1)\nHere $T$ represents the normalized time progression of each frame in the motion, where $T \\in [-\\pi, \\pi]$ spans from the start to end of the segment. The sine function parameterizes $\\mathbf{F} \\cdot (T - \\mathbf{S})$ into a periodic sine wave, transforming frequency and phase shift information into a sinusoidal basis.\n\n[Context, Appendix A.2:] \"the time window T \\in R^{N\\times Q} is essential for transforming the fixed-size parameters F, A, B, S into the variable-length periodic signal Q following Equation 1 ... (normT) parameterizes the time window from -1 to 1 over the frame count N ... and (frameT) parameterizes the time window from -N/2 to N/2 to align with the actual time duration. In this work, we employ a mixed linear parameterization (mixT), where Q/2 channels within the time window T are parameterized using frameT, while the other half is parameterized using normT.\"",
+      "route": "verify-math",
+      "route_rationale": "Periodic-signal parameterization (definitional); the checkable content is internal consistency of the phase term and the stated T domain vs the appendix ranges, which is informal rather than a non-trivial formal claim.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::EQUATION::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "The equation Q = A sin(F·T + S) + B is a standard, algebraically valid sinusoidal parameterization (amplitude A, frequency F, phase S, bias B) — the canonical form used in ACT-style periodic autoencoders. There is no invalid algebra, no fractional operation, no inverse-operation error, and no sign-propagation failure within the equation itself. Domain check: sin is total on R, so the formula is well-defined for any T; the stated bound T in [-pi, pi] is an admissible input range, not a violation of any mathematical constraint of the sine function (the skill's 'domain violation' category concerns deriving results outside a concept's defined bounds, which does not occur here). Two internal inconsistencies were noted but do not meet the flagging threshold: (1) the prose states the sine 'parameterizes F·(T - S)' while the equation has F·T + S; since sin(F·T + S) = sin(F·(T + S/F)) and sin(F·(T - S)) = sin(F·T - F·S), the two phase conventions are genuinely non-equivalent in general, but this is an inconsistency between the equation and its accompanying descriptive prose — a typo/slip in the accompanying text (the printed equation matches the standard literature convention sin(frequency*time + phase)), not a provably invalid mathematical step in the equation itself, and the intended convention cannot be determined from this snippet alone. (2) The main text states T in [-pi, pi] while appendix A.2 (mixT) reports normT in [-1,1] and frameT in [-N/2, N/2]; this is a cross-section accuracy/consistency discrepancy that does not invalidate the equation — whichever normalization is actually used, the formula remains mathematically sound, and the true implementation is unverifiable from this snippet alone. Per the skill's threshold (typos in accompanying text and unverifiable downstream claims are NEVER flagged), error_detected = false.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [
+          "Section 3.1.1 prose: sine 'parameterizes F · (T - S)' vs equation (1): argument 'F · T + S'",
+          "Section 3.1.1: 'T in [-pi, pi]' vs Appendix A.2 mixT: 'normT parameterizes the time window from -1 to 1' and 'frameT parameterizes the time window from -N/2 to N/2'"
+        ]
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::EQUATION::1",
+      "snippet_type": "EQUATION",
+      "location": "3.2.1 Compositional Motion Pair Generation",
+      "content": "The predictions from both SPDM and TPDM are then combined using the Phase Mixing Equation:\n$$\\mathbf{P}^0_\\cdot = r \\frac{\\mathbf{P}^0_{\\cdot f} + \\mathbf{P}^0_{\\cdot b}}{2} + (1-r)\\mathbf{P}^0_{\\cdot c} \\tag{2}$$\n\nThe variable r is defined as r = (k/K)³ for semantically conditioned motion segments (i.e., Xₚ and Xₛ), and r = 1 otherwise (i.e., Xₜ). The weighting parameter α controls the balance between transition and semantic information, where α = 0.5 for all segments. Note that the value of r for semantically denoised segments is determined by the ratio of total steps K and current denoising step k, ensuring transition compatibility early and enriching semantic details progressively.\n\n[Context, Algorithm 1 (Appendix A.1):] \"P_p^0 ← (k/K)^3 P_{pb}^0 + (1 - (k/K)^3) P_{pc}^0   ▷ r_p = (k/K)^3\" and \"P_t^0 ← (P_{tf}^0 + P_{tb}^0)/2   ▷ r_t = 1\".",
+      "route": "verify-math",
+      "route_rationale": "Phase-mixing rule (definitional); checkable content is the alpha-vs-r weighting inconsistency and convex-combination weights, which is informal rather than a non-trivial formal claim.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::EQUATION::1",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.85,
+        "reasoning": "(a) Eq. (2) itself is an algebraically valid convex combination: the coefficients sum to r/2 + r/2 + (1-r) = 1, and r is in [0,1] for both cases (r = (k/K)^3 with k <= K, and r = 1), so no domain/constraint violation there. The errors are two erratum-level logical inconsistencies in the weighting specification. (b) Within-snippet contradiction: the prose states 'The weighting parameter α controls the balance between transition and semantic information, where α = 0.5 for all segments,' but α never appears in Eq. (2) and the actual balance weight is r. If α = 0.5 were the transition/semantic weight, then for transition segments Eq. (2) would give 0.5*(P_f+P_b)/2 + 0.5*P_c, which contradicts the stated r = 1 giving (P_f+P_b)/2 with zero P_c contribution; and for semantic segments the weight would be 0.5, contradicting r = (k/K)^3 (equal only at k/K ≈ 0.79). Under the charitable reading (α = forward/backward balance inside the average), the claim that α controls the transition/semantic balance is still false — that is exactly r's role — and α remains undefined in the equation. The sentence and the equation cannot both be true, so the reader cannot determine the true mixing weight. (c) Eq. (2)-to-Algorithm-1 mismatch: for semantic segments Eq. (2) with r = (k/K)^3 evaluates to (k/K)^3*(P_f+P_b)/2 + (1-(k/K)^3)*P_c, whereas Algorithm 1 computes P_p^0 <- (k/K)^3*P_pb^0 + (1-(k/K)^3)*P_pc^0 — the forward prediction P_f is dropped and the 1/2 averaging factor is dropped; the expressions coincide only if P_f = P_b, which is not stated. The transition-segment lines do agree ((P_f+P_b)/2 with r = 1). Hence the semantic-segment mixing is specified two different ways within the same paper. Both contradictions are internal to the excerpt's mathematical specification (not spelling/format typos) and would require an erratum to resolve.",
+        "predicted_error_category": "Algebraic manipulation",
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [
+          "Section 3.2.1: Eq. (2) and the r definitions (r = (k/K)^3 for X_p/X_s; r = 1 for X_t) vs. the same paragraph's prose claiming 'α = 0.5 for all segments' controls the transition/semantic balance — α never appears in Eq. (2), and 0.5 is incompatible with both r = (k/K)^3 and r = 1",
+          "Section 3.2.1 Eq. (2) with r = (k/K)^3 [(k/K)^3*(P_f+P_b)/2 + (1-(k/K)^3)*P_c] vs. Appendix Algorithm 1 line 'P_p^0 <- (k/K)^3 P_pb^0 + (1-(k/K)^3) P_pc^0' — the algorithm omits the forward term and the 1/2 averaging factor for semantic segments"
+        ]
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::EQUATION::2",
+      "snippet_type": "EQUATION",
+      "location": "A.3 Details of SPDM and TPDM",
+      "content": "$$\\mathcal{L}_S = \\left\\|\\mathcal{F}_S(k, C_p, \\mathbf{P}_p^k) - \\epsilon_p\\right\\|_1 + \\left\\|\\mathcal{F}_S(k, C_s, \\mathbf{P}_s^k) - \\epsilon_s\\right\\|_1.$$",
+      "route": "verify-math",
+      "route_rationale": "L1 loss definition; the expression's well-formedness is checkable by inspection and asserts no non-trivial formal claim.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::EQUATION::2",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.95,
+        "reasoning": "This is a well-formed L1 regression loss. Each term is an L1 norm of a difference between the network output and the target noise. The index pairing is internally consistent: in the first term the network is conditioned on text embedding C_p and receives the noisy latent P_p^k, so its prediction is correctly compared against epsilon_p (the noise scheduled onto P_p^k); the second term mirrors this exactly for the s-variable (C_s with P_s^k vs. epsilon_s). The output of F_S is a latent-space vector of the same dimension as the phase latent and hence as the noise, so the difference and its L1 norm are well-defined scalars, and the sum of the two non-negative terms is a valid scalar loss. No invalid algebra, sign, or domain issues; the sign inside each norm is irrelevant since |a-b| = |b-a|.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::EQUATION::3",
+      "snippet_type": "EQUATION",
+      "location": "A.3 Details of SPDM and TPDM",
+      "content": "$$\\mathcal{L}_{T_f} = \\left\\|\\mathcal{F}_{T_f}(k, \\mathbf{P}_t^k, \\mathbf{P}_p^0) - \\epsilon_t\\right\\|_1 + \\left\\|\\mathcal{F}_{T_f}(k, \\mathbf{P}_s^k, \\mathbf{P}_t^0) - \\epsilon_s\\right\\|_1,$$",
+      "route": "verify-math",
+      "route_rationale": "L1 loss definition; the expression's well-formedness is checkable by inspection and asserts no non-trivial formal claim.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::EQUATION::3",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "Both terms of the forward-transition loss follow a single consistent pattern: F_Tf receives (noisy latent of variable X, clean latent of conditioning variable Y) and is trained to predict the noise of the first argument. Term 1: F_Tf(k, P_t^k, P_p^0) is compared to epsilon_t, the noise scheduled onto P_t^k — consistent. Term 2: F_Tf(k, P_s^k, P_t^0) is compared to epsilon_s, the noise scheduled onto P_s^k — consistent under the same pattern. Read as a forward chain p -> t -> s (clean p guides denoising of t; clean t guides denoising of s), the two terms are coherent, and the backward counterpart loss L_Tb (snippet C) covers the reverse chain, so the pairing is not missing its symmetric terms within this snippet. The predicted noise index matches the noisy latent index in every term; all quantities are same-dimensional latent-space vectors, so each L1 norm is well-defined and the sum is a valid scalar loss. No algebraic, sign, or dimensional error is provable from the snippet.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::EQUATION::4",
+      "snippet_type": "EQUATION",
+      "location": "A.3 Details of SPDM and TPDM",
+      "content": "$$\\mathcal{L}_{T_b} = \\left\\|\\mathcal{F}_{T_b}(k, \\mathbf{P}_p^k, \\mathbf{P}_t^0) - \\epsilon_p\\right\\|_1 + \\left\\|\\mathcal{F}_{T_b}(k, \\mathbf{P}_t^k, \\mathbf{P}_s^0) - \\epsilon_t\\right\\|_1.$$",
+      "route": "verify-math",
+      "route_rationale": "L1 loss definition; the expression's well-formedness is checkable by inspection and asserts no non-trivial formal claim.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::EQUATION::4",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "The backward-transition loss is internally consistent and mirrors snippet B. Term 1: F_Tb(k, P_p^k, P_t^0) is compared to epsilon_p, the noise scheduled onto P_p^k (first argument) — consistent; clean t serves as conditioning for the backward step t -> p. Term 2: F_Tb(k, P_t^k, P_s^0) is compared to epsilon_t, the noise scheduled onto P_t^k — consistent; clean s conditions the backward step s -> t. Together the terms form the reverse chain s -> t -> p, which is exactly the inverse of the forward chain p -> t -> s in L_Tf. Every term has the predicted-noise subscript matching the noisy-latent subscript, all operands are same-dimensional latent-space vectors, and the sum of two L1 norms of differences is a valid scalar loss. No invalid algebra, sign propagation, or domain violation is present.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::0",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "A.1 Compositional Motion Generation Algorithm",
+      "content": "Algorithm 1 Compositional Phase Diffusion on generating a sequence composed of 2 semantically conditioned segments\nRequire: forward TPDM F_{T_f}(·), backward TPDM F_{T_b}(·), SPDM F_S(·), DiffusionScheduler F_D(·)\nP_p^K, P_s^K, P_t^K ∼ N(0, I)   ▷ sample latent for X_p, X_s, X_t\nP_p^0, P_s^0, P_t^0 ← P_p^K, P_s^K, P_t^K   ▷ clean latent placeholder\nfor k from K to 1 do\n  # predict phase latent noise using SPDM and TPDMs\n  P_{pc}^0 ← F_S(k, C_p, P_p^k), P_{pb}^0 ← F_{T_b}(k, P_p^k, P_t^0)\n  P_{tf}^0 ← F_{T_f}(k, P_t^k, P_p^0), P_{tb}^0 ← F_{T_b}(k, P_t^k, P_s^0)\n  P_{sf}^0 ← F_{T_f}(k, P_s^k, P_t^0), P_{sc}^0 ← F_S(k, C_s, P_s^k)\n  # perform phase mixing as in Eq. 2\n  P_p^0 ← (k/K)^3 P_{pb}^0 + (1 - (k/K)^3) P_{pc}^0   ▷ r_p = (k/K)^3\n  P_t^0 ← (P_{tf}^0 + P_{tb}^0)/2   ▷ r_t = 1\n  P_s^0 ← (k/K)^3 P_{sf}^0 + (1 - (k/K)^3) P_{sc}^0   ▷ r_s = (k/K)^3\n  # estimate phase latent at both step k - 1 and step 0\n  P_p^{k-1}, P_p^0 ← F_D(P_p^0, P_p^k, k-1)\n  P_t^{k-1}, P_t^0 ← F_D(P_t^0, P_t^k, k-1)\n  P_s^{k-1}, P_s^0 ← F_D(P_s^0, P_s^k, k-1)\nend for\nreturn P_p^0, P_t^0, P_s^0",
+      "route": "verify-math",
+      "route_rationale": "Procedural algorithm; correctness turns on internal consistency (mixing weights, TPDM directions, DDIM index flow), reviewed informally rather than formalized.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "The algorithm is internally consistent and consistent with Eq. 2 given the semantics of the TPDMs. The apparent discrepancy flagged in the prompt (P_p uses only P_pb^0 with weight r_p=(k/K)^3, while Eq. 2 averages forward and backward TPDM outputs) is not an error: X_p is the first of the two semantically conditioned segments, so it has NO preceding motion phase and hence no forward TPDM output P_pf^0 exists. The /2 in Eq. 2 is a normalization over the two available TPDM outputs (P_f + P_b)/2; when a segment has only one neighbor (X_p has only a succeeding phase, X_s has only a preceding phase), the only mathematically meaningful instantiation is to use the single available TPDM output with weight r, exactly as the algorithm does. The algorithm correctly computes only the applicable TPDMs: for X_p only the backward TPDM conditioned on the succeeding phase X_t (P_pb^0), for X_s only the forward TPDM conditioned on the preceding phase X_t (P_sf^0), and for the transition segment X_t both forward and backward TPDMs averaged with r_t=1 (P_t^0 = (P_tf^0 + P_tb^0)/2), matching Eq. 2 with r=1 (semantic term vanishes). The mixing weights r_p = r_s = (k/K)^3 and r_t = 1 match the stated convention for semantically conditioned vs. transition segments exactly. The diffusion loop indices are correct: k descends from K to 1, the DiffusionScheduler F_D receives (mixed clean estimate P^0, current noisy latent P^k, target step k-1) and returns (P^{k-1}, refined P^0), producing the final clean latents at k=1; the loop exits with all P^{k-1} = P^0 well defined. Initializing the clean-latent placeholders P_p^0, P_t^0, P_s^0 to the sampled noise and progressively refining them as conditioning anchors is a deliberate, self-consistent sampling scheme (the anchors used in TPDM calls at step k are the estimates produced at the previous step), not a mathematical error. No sign errors, index violations, or domain violations are present. Under the skill's high-confidence threshold, nothing here warrants an erratum.",
+        "predicted_error_category": null,
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::1",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "A.2 Adjustment to T and PE (footnote 3)",
+      "content": "X_t represents the segment covering the second half of X_p and the first half of X_s. For example, if X_p is 2 seconds and X_s is 8 seconds, X_t will span 5 seconds, covering the last 1 second of X_p and the first 4 seconds of X_s. Note that the middle frame of X_t is defined at the transition boundary; when X_p and X_s have unequal lengths, this middle frame is offset from the center of X_t.",
+      "route": "verify-math",
+      "route_rationale": "Self-contained arithmetic example (2s + 8s -> X_t spans 5s = 1s + 4s); checkable by inspection.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::1",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.98,
+        "reasoning": "All arithmetic in the example is correct. (1) X_p = 2s, so its second half is the last 1s (2/2 = 1). (2) X_s = 8s, so its first half is the first 4s (8/2 = 4). (3) X_t spans the concatenation of these two pieces: 1s + 4s = 5s, matching the stated 5-second span. (4) The transition boundary lies at the end of the X_p portion, i.e., 1s into X_t; the center of X_t is 5/2 = 2.5s. Since 1s != 2.5s, the transition boundary is indeed offset from the center, consistent with the note that the middle frame (defined at the transition boundary) is offset from the center when X_p and X_s have unequal lengths. No invalid algebra, fractional errors, sign errors, or domain violations. The statements are internally consistent; the only non-arithmetic claim (middle frame defined at the transition boundary) is a definitional modeling choice, not a verifiable arithmetic claim, and it is consistent with the offset statement.",
+        "predicted_error_category": null,
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.98
+    }
+  ],
+  "findings": [
+    {
+      "snippet_id": "paper::EQUATION::1",
+      "category": "logical-inconsistency",
+      "severity": "minor",
+      "confidence": 0.85,
+      "evidence": "The Phase Mixing Equation (Eq. 2) defines the mixing weight as $r$ ($r = (k/K)^3$ for semantically conditioned segments, $r = 1$ for transition segments), but the same paragraph states 'The weighting parameter $\\alpha$ controls the balance between transition and semantic information, where $\\alpha = 0.5$ for all segments'. $\\alpha$ never appears in Eq. (2), and a uniform weight of 0.5 is incompatible with both $r = (k/K)^3$ (which varies with the denoising step) and $r = 1$. The two specifications cannot both be true, so a reader cannot determine the true mixing weight from the text. Algorithm 1 and the ablation study in §4.4 consistently use $r$, indicating the $\\alpha = 0.5$ sentence is an erroneous leftover. A secondary sub-point of the finding — that Eq. (2)'s $r(P_f + P_b)/2$ form is not literally what Algorithm 1 computes for the semantic segments (which use only the single available TPDM output, e.g. $P_{pb}^0$, without the $1/2$ factor) — was reviewed separately and judged by the Algorithm-1 verifier to be a correct instantiation: $X_p$ and $X_s$ each have only one adjacent motion, so only one TPDM output exists and the $/2$ in Eq. (2) normalizes over the two TPDM directions that are present for the transition segment.",
+      "verifier": "verify-math",
+      "exact_quote": "The variable r is defined as r = (k/K)³ for semantically conditioned motion segments (i.e., Xₚ and Xₛ), and r = 1 otherwise (i.e., Xₜ). The weighting parameter α controls the balance between transition and semantic information, where α = 0.5 for all segments."
+    }
+  ],
+  "verdict": "MINOR_ERRORS",
+  "verdict_confidence": 0.8,
+  "summary": "Verified all extracted mathematics informally. The paper contains no theorem-like content: its mathematical objects are definitional — the ACT-PAE periodic-signal parameterization (Eq. 1), the Phase Mixing Equation (Eq. 2), three L1 diffusion-noise losses (Appendix A.3), the compositional-generation Algorithm 1 (Appendix A.1), and one self-contained arithmetic example (footnote 3). No snippet met the bar for a formal Lean 4 attempt (LEAN_QUEUE empty, N = 0), so no Lean project was created, no verifier fell back, and no Lean-FAILED claims are pending. Six of seven snippets verified clean, including all three loss definitions, Algorithm 1's internal consistency with Eq. 2, and the footnote arithmetic (2 s + 8 s -> X_t = 5 s = 1 s + 4 s, transition boundary at 1 s offset from center 2.5 s). One confident minor finding (confidence 0.85): Eq. 2's mixing weight is specified two contradictory ways in the same paragraph — as $r$ (with $r = (k/K)^3$ or $r = 1$) and as 'the weighting parameter $\\alpha = 0.5$ for all segments', which never appears in the equation. Because Algorithm 1 and the §4.4 ablation consistently use $r$, this is a documentation-level inconsistency, not an error that invalidates the framework's main claims, so it is rated minor. Two further inconsistencies were observed but fell below the flagging threshold (the Eq. 1 verifier judged them prose-level): Eq. 1 writes the phase argument as $\\mathbf{F} \\cdot T + \\mathbf{S}$ while the accompanying prose says the sine 'parameterizes $\\mathbf{F} \\cdot (T - \\mathbf{S})$'; and the main text states $T \\in [-\\pi, \\pi]$ while Appendix A.2 parameterizes normT over $[-1, 1]$ and frameT over $[-N/2, N/2]$. Neither changes the soundness of the equations themselves. The verifiers disagreed on one sub-point of the Eq. 2 finding (whether the semantic-segment mixing in Algorithm 1 contradicts Eq. 2); the Algorithm-1 review concluded it is a correct single-neighbour instantiation, which is adopted here. Verdict: MINOR_ERRORS."
+}

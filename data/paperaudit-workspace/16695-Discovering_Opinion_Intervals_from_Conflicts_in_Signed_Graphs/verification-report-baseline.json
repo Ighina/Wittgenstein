@@ -1,0 +1,119 @@
+{
+  "paper_id": "16695-Discovering_Opinion_Intervals_from_Conflicts_in_Signed_Graphs",
+  "title": "Discovering Opinion Intervals from Conflicts in Signed Graphs",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Theorem 2.2",
+      "confidence": 0.95,
+      "supporting_evidence": "Theorem 2.2 claims NP-hardness of BEST INTERVAL APPROXIMATION, but the theorem statement itself (Revised version) explicitly states: 'the proposed reduction does not guarantee an equivalence between acyclic partitions and conflict-free interval representations in G. Therefore, the NP-hardness claim for BEST INTERVAL APPROXIMATION remains open under the current construction, pending a corrected reduction.' This directly contradicts the abstract and introduction which claim NP-hardness as an established result. The paper presents a flawed proof but continues to cite it as if proven.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16695-Discovering_Opinion_Intervals_from_Conflicts_in_Signed_Graphs::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Abstract vs. Section 2.2 and Appendix B",
+      "confidence": 0.9,
+      "supporting_evidence": "The abstract claims 'we present an algorithm that computes a (1 + ε)-approximation in time 2^{O(k^2 log(k/(ε δ))/ε^3)} · n' as a definitive result. However, Section 2.2 acknowledges: 'The complexity of enumerating assignments grows exponentially with the number of overlapping cluster combinations, which may be prohibitively large. Due to these challenges, while a PTAS is feasible for limited and well-structured interval overlaps, the general case requires further algorithmic innovations beyond current methods.' This indicates the PTAS does not work in general, contradicting the abstract's presentation of it as a complete result.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16695-Discovering_Opinion_Intervals_from_Conflicts_in_Signed_Graphs::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Table 1 vs. text description",
+      "confidence": 0.85,
+      "supporting_evidence": "Table 1 caption states 'Our algorithms use the 8-Chain interval structure while the CORRELATION CLUSTERING algorithms use an unrestricted number of clusters.' However, the 'Improvement' column shows percentages like '40.39%' for BitcoinOTC. The text claims '38% fewer disagreements on average' but Table 1 shows improvements ranging from 20.45% to 91.53%, with an actual average of approximately 38.8%. More critically, the comparison is unfair as stated: the baselines can use unlimited clusters while the proposed method uses only 8 intervals, making the 'improvement' metric misleading without proper normalization.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16695-Discovering_Opinion_Intervals_from_Conflicts_in_Signed_Graphs::baseline"
+    },
+    {
+      "error_category": "Statistical reporting",
+      "error_location": "Figure 4 and synthetic experiments",
+      "confidence": 0.88,
+      "supporting_evidence": "Figure 4 caption states 'Negative numbers indicate an improvement over the ground truth.' The text in Section 4 (RQ5) also mentions 'observed negative normalized disagreement differences likely arise from optimization noise or overfitting to sampled edges, rather than genuine improvements beyond ground truth.' This is statistically impossible: if the ground truth is optimal by construction, no algorithm can systematically achieve better objective values. The negative values indicate either a measurement error, incorrect ground truth construction, or a flawed objective calculation.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16695-Discovering_Opinion_Intervals_from_Conflicts_in_Signed_Graphs::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Algorithm 2, Lines 4-12",
+      "confidence": 0.82,
+      "supporting_evidence": "Algorithm 2 claims to enumerate 'all possible clusterings of all S_i into (S_{i,1}, …, S_{i,k})' in Line 4. With m sets S_i each of size s, and k clusters, this requires k^{ms} iterations. However, the algorithm then processes batches V_i sequentially (Lines 5-9) and updates a global solution (Lines 10-12). The issue is that when processing different S_i clusterings in the outer loop, the algorithm reuses vertices already assigned in previous iterations, creating dependencies that invalidate the independence assumption needed for the PTAS analysis in Appendix B.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16695-Discovering_Opinion_Intervals_from_Conflicts_in_Signed_Graphs::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 4 (RQ1) vs. Table 1",
+      "confidence": 0.8,
+      "supporting_evidence": "The text states 'our results have 38% less disagreement on average' but Table 1 shows the 'Improvement' column with values: 40.39%, 28.17%, 20.45%, 91.53%, 33.88%, 33.73%, 21.39%, 41.06%. The arithmetic mean of these is (40.39+28.17+20.45+91.53+33.88+33.73+21.39+41.06)/8 = 38.825%, which rounds to 39%, not 38%. While minor, this is a reportable numerical inconsistency.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16695-Discovering_Opinion_Intervals_from_Conflicts_in_Signed_Graphs::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Section 2.1 and Theorem 2.2 implications",
+      "confidence": 0.92,
+      "supporting_evidence": "The paper claims three implications from Theorem 2.2: '(1) The disagreement version is hard to approximate within any factor. (2) It is not FPT when parameterized by the number of required edge deletions (unless P = NP). (3) The result holds even when restricted to graphs G = (V', E^+ ∪ E^-) where G^+ = (V', E^+) is a chordless cycle.' However, Theorem 2.2 itself states the reduction is flawed and the NP-hardness 'remains open.' Therefore, none of these implications are actually established.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16695-Discovering_Opinion_Intervals_from_Conflicts_in_Signed_Graphs::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (figure-text)",
+      "error_location": "Figure 1 vs. description in Appendix C.7",
+      "confidence": 0.75,
+      "supporting_evidence": "Figure 1 shows 8 intervals at the bottom, but the Appendix C.7 describes generating the figure using affinity calculations (Equations 4-5) that shift vertices left/right based on neighbor assignments. The figure caption states 'points are shifted left or right based on the number of positive and negative edges the corresponding politician shares with adjacent intervals,' but Equation 5 uses a tanh function weighted by distance (ℓ' - ℓ), which is not simply 'the number of positive and negative edges' but a complex weighted sum. This is a misleading simplification of the actual visualization method.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16695-Discovering_Opinion_Intervals_from_Conflicts_in_Signed_Graphs::baseline"
+    },
+    {
+      "error_category": "Experiment setup",
+      "error_location": "Table 1 and baseline comparisons",
+      "confidence": 0.78,
+      "supporting_evidence": "Table 1 compares GAIA/VENUS (using 8 intervals) against CORRELATION CLUSTERING baselines (using unrestricted clusters). The paper claims this demonstrates 'improved expressivity' but the comparison is methodologically flawed: the baselines solve a different problem (disjoint clusters) than the proposed method (overlapping intervals). A fair comparison would either constrain baselines to 8 clusters or allow the proposed method unlimited intervals. Tables 5-6 show that when both use 8 disjoint clusters, the methods perform nearly identically, undermining the main claim.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16695-Discovering_Opinion_Intervals_from_Conflicts_in_Signed_Graphs::baseline"
+    },
+    {
+      "error_category": "Citation / attribution",
+      "error_location": "Related work section, PTAS claim",
+      "confidence": 0.7,
+      "supporting_evidence": "The paper states 'This generalizes an algorithm by Giotis and Guruswami [27] that was developed for CORRELATION CLUSTERING with a fixed number of clusters.' However, the paper later admits (Section 2.2) that the generalization doesn't actually work for overlapping intervals in the general case: 'the general case requires further algorithmic innovations beyond current methods.' This misrepresents the relationship to [27] - it's not a true generalization if it only works in restricted cases.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16695-Discovering_Opinion_Intervals_from_Conflicts_in_Signed_Graphs::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Abstract vs. Conclusion",
+      "confidence": 0.85,
+      "supporting_evidence": "The abstract presents the contributions as established results: 'We formulate an optimization problem motivated by signed graphs and discuss preliminary hardness results alongside heuristic methods.' However, the conclusion states: 'given the flaws identified in the current hardness proofs and the limitations of PTAS applicability, foundational understanding of BEST INTERVAL APPROXIMATION remains incomplete.' This is a significant contradiction - the abstract presents results as contributions while the conclusion admits they are flawed.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16695-Discovering_Opinion_Intervals_from_Conflicts_in_Signed_Graphs::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Lemma B.3 and proof",
+      "confidence": 0.73,
+      "supporting_evidence": "Lemma B.3 uses a Chernoff bound to show concentration of agree^+(u,ℓ,(S_{i,1},...,S_{i,k})) around its expectation. However, the samples in S_i are drawn 'uniformly at random with replacement' from V\\V_i (Algorithm 2, Line 2). The proof treats X_{j,ℓ} as i.i.d., but when the same vertex is sampled multiple times (due to replacement), the indicators are not independent. This invalidates the Chernoff bound application unless the sample size s is much smaller than |V\\V_i|, which is not explicitly required.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16695-Discovering_Opinion_Intervals_from_Conflicts_in_Signed_Graphs::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 12,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (claude-sonnet-4-5-20250929, taxonomy=default): 12 error(s) reported.",
+  "baseline": {
+    "model": "claude-sonnet-4-5-20250929",
+    "taxonomy": "default",
+    "paper_chars": 104333,
+    "truncated": false
+  }
+}

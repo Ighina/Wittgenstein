@@ -1,0 +1,102 @@
+{
+  "paper_id": "15994-MokA__Multimodal_Low-Rank_Adaptation_for_MLLMs",
+  "title": "MokA: Multimodal Low-Rank Adaptation for MLLMs",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "evidence_data_integrity",
+      "error_location": "Table 2, LLaMA2 / LoRA / MME entry",
+      "confidence": 0.99,
+      "supporting_evidence": "Table 2 reports the LLaMA2-LoRA MME score as 90.85, whereas Table 4 reports the same stated setting (LLaMA2 LoRA on MME) as 908.52. MME perception scores elsewhere in Table 2 are also on the roughly 774-1292 scale, making 90.85 plainly inconsistent and likely a corrupted or mistyped result.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "15994-MokA__Multimodal_Low-Rank_Adaptation_for_MLLMs::baseline"
+    },
+    {
+      "error_category": "evidence_data_integrity",
+      "error_location": "Table 5, AIR-Bench column versus Table 3",
+      "confidence": 0.97,
+      "supporting_evidence": "Both tables state that results are based on LLaMA2 and identify the speech evaluation as AIR-Bench/AIR-Bench_speech-en, but they report incompatible scores for shared methods. Table 3 gives Multiple LoRA = 32.80 and MokA = 36.70, while Table 5 gives Multiple LoRA = 31.97 and MokA = 39.64. No changed protocol, split, seed aggregation, or benchmark variant is specified. This makes the ablation comparison and its claimed cross-attention gain unverifiable.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "15994-MokA__Multimodal_Low-Rank_Adaptation_for_MLLMs::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Eqs. (11)-(13), especially the use of a single linear update ΔW",
+      "confidence": 0.98,
+      "supporting_evidence": "The paper continues to write MokA as W0x + ΔWx, where ΔW is presented as a low-rank weight update matrix. But the proposed output includes B Att(A^a x^a, A^t x^t, A^t x^t), which depends nonlinearly on other sequence tokens through softmax attention. It therefore cannot, in general, be represented as multiplication by a fixed matrix ΔW ∈ R^(d×k). MokA may be a dynamic token-conditioned adapter, but its claimed fixed low-rank matrix formulation and decomposition are mathematically invalid as written.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "15994-MokA__Multimodal_Low-Rank_Adaptation_for_MLLMs::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 2.2.2, Eqs. (5)-(6), and Appendix B, Eqs. (14)-(17)",
+      "confidence": 0.95,
+      "supporting_evidence": "The attention scaling is inconsistent and dimensionally misidentified. In the main method the denominator is sqrt(d), although the dot products are between A^i x vectors in the rank-r space, so the relevant feature dimension is r, not the original output dimension d used earlier for W0 ∈ R^(d×k). Appendix B changes the denominator to sqrt(N_t), the number of text tokens, which is not the standard dot-product feature dimension and directly contradicts the main formulation. The method needs one correct, explicitly dimensioned attention definition.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "15994-MokA__Multimodal_Low-Rank_Adaptation_for_MLLMs::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Section 2.2.2 / Eqs. (5)-(9), training-time cross-attention masking",
+      "confidence": 0.9,
+      "supporting_evidence": "The cross-attention lets earlier non-text tokens query all text tokens, with no causal or prompt-only mask specified: Att(A^a x^a, A^t x^t, A^t x^t). In decoder-only supervised instruction tuning, the text sequence normally includes target-answer tokens under teacher forcing. Thus non-text prefix states can attend to future answer tokens and subsequently be attended to by earlier/later causal-model positions, creating a label-leakage path and a training/inference mismatch. Even if answers are excluded, unrestricted attention from prefix modality tokens to later prompt tokens bypasses the backbone's causal ordering. A causal/prompt-only masking rule or a precise protocol is essential and absent.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "15994-MokA__Multimodal_Low-Rank_Adaptation_for_MLLMs::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Introduction, interpretation of the partial-modality inference experiment",
+      "confidence": 0.91,
+      "supporting_evidence": "The paper concludes that shared LoRA optimization is 'overwhelmingly influenced by text tokens' from an inference intervention in which only one modality is passed through the LoRA pathway. This is not a measurement of optimization influence, gradients, or modality contribution during training. The backbone still processes all modalities, and selectively disabling adapter updates for one token type changes the computation in a modality-dependent way. The paper itself acknowledges that this setup disables required cross-attention and may bias results, but nevertheless uses it as central evidence for a causal claim about training domination by text.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "15994-MokA__Multimodal_Low-Rank_Adaptation_for_MLLMs::baseline"
+    },
+    {
+      "error_category": "reference_background_fabrication",
+      "error_location": "Reference [31] and all uses of it for LLaMA2",
+      "confidence": 0.98,
+      "supporting_evidence": "Reference [31] is Touvron et al., 'LLaMA: Open and Efficient Foundation Language Models,' arXiv:2302.13971, which is the original LLaMA paper, not the Llama 2 technical report. The experiments repeatedly identify the backbone as LLaMA-2-7B-Chat, so this citation does not support the stated model and should be replaced with the Llama 2 reference.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "15994-MokA__Multimodal_Low-Rank_Adaptation_for_MLLMs::baseline"
+    },
+    {
+      "error_category": "reference_background_fabrication",
+      "error_location": "Section 5 Related Works, description of DoRA [21]",
+      "confidence": 0.94,
+      "supporting_evidence": "The paper says 'DoRA [21] focuses solely on optimizing the gradient direction.' DoRA is weight-decomposed low-rank adaptation: it decomposes pretrained weights into magnitude and direction and learns a magnitude component together with low-rank directional adaptation. It is not a method that solely optimizes 'gradient direction.' This misstates the cited method's mechanism.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "15994-MokA__Multimodal_Low-Rank_Adaptation_for_MLLMs::baseline"
+    },
+    {
+      "error_category": "rhetorical_presentation_manipulation",
+      "error_location": "Section 6 Discussion",
+      "confidence": 0.99,
+      "supporting_evidence": "The conclusion claims that MokA 'completely solves the problem,' 'perfectly balances' the relevant objectives, 'absolutely ensures superior model performance,' and constitutes a 'definitive' and 'final, conclusive' advance. These claims are unsupported by the reported limited benchmark set and are contradicted by the abstract's own statement that gains vary by backbone and modality and that generality and robustness require further exploration. They also overstate the results in Table 3, where MokA is not the best LLaMA2 method on either reported speech metric.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "15994-MokA__Multimodal_Low-Rank_Adaptation_for_MLLMs::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 9,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (gpt-5.6-terra, taxonomy=paperaudit): 9 error(s) reported.",
+  "baseline": {
+    "model": "gpt-5.6-terra",
+    "provider": "openai",
+    "taxonomy": "paperaudit",
+    "paper_chars": 62976,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 17597,
+      "output_tokens": 4681,
+      "cache_read_input_tokens": null,
+      "cache_creation_input_tokens": null
+    }
+  }
+}

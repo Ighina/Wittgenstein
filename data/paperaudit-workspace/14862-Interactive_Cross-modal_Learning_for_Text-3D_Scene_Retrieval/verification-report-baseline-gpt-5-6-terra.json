@@ -1,0 +1,134 @@
+{
+  "paper_id": "14862-Interactive_Cross-modal_Learning_for_Text-3D_Scene_Retrieval",
+  "title": "Interactive Cross-modal Learning for Text-3D Scene Retrieval",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Abstract",
+      "confidence": 0.99,
+      "supporting_evidence": "The abstract claims that IDeal \"completely solves the alignment challenge\" and achieves \"near-perfect retrieval accuracy.\" The reported results are nowhere close to near-perfect: the best R@1 in Table 1 is 37.8 on ScanRefer, 26.4 on Nr3D, and 20.2 on Sr3D. The limitations section itself also states that \"the performance of the methods is relatively low.\"",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "14862-Interactive_Cross-modal_Learning_for_Text-3D_Scene_Retrieval::baseline"
+    },
+    {
+      "error_category": "Citation / attribution",
+      "error_location": "Section 3.2.1, density-correction discussion and citation [60]",
+      "confidence": 0.99,
+      "supporting_evidence": "The manuscript invokes citation [60], even inserting a full reference-like entry in the body text: \"Zhang, L., Wang, M., & Liu, Q. (2022). Bayesian Density Correction for Cross-Modal Retrieval. In Proceedings of ICLR 2022.\" However, the numbered References section ends at [59]; no reference [60] exists there. Thus the claimed theoretical foundation is not properly citable or verifiable from the paper.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "14862-Interactive_Cross-modal_Learning_for_Text-3D_Scene_Retrieval::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Section 3.2.1, Density Compensated Factor and corrected similarity following Eq. (2)",
+      "confidence": 0.98,
+      "supporting_evidence": "The claimed density correction has the opposite stated effect. The factor is rho(v_i)=1/(mean neighbor distance+epsilon), so dense regions with smaller neighbor distances receive larger rho. The proposed correction multiplies similarity by sqrt(rho(v_j)). For the positive similarities that determine nearest-neighbor retrieval, this increases, rather than reduces, scores in high-density regions. This contradicts the explicit claim that \"high-density regions receive appropriately reduced similarity scores.\"",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "14862-Interactive_Cross-modal_Learning_for_Text-3D_Scene_Retrieval::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Section 3.2.2, feature fusion for Q1 responses",
+      "confidence": 0.98,
+      "supporting_evidence": "The stated fusion equation is self-referential: \"u_i^j = alpha u_i^j + (1-alpha)u_i^{j-1}.\" For alpha != 1, algebraically this implies u_i^j=u_i^{j-1}, so the new response contributes nothing. Presumably the right-hand u_i^j was intended to denote an unfused/raw feature with different notation, but as written the proposed refinement cannot perform the claimed weighted incorporation of new information.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "14862-Interactive_Cross-modal_Learning_for_Text-3D_Scene_Retrieval::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Eq. (4), minimum enclosing hypersphere",
+      "confidence": 0.99,
+      "supporting_evidence": "Eq. (4) is not a minimum-enclosing-hypersphere formulation. A sphere constraint must involve a distance such as ||u_i^j-o_i|| <= R_i (or its square). Instead, the paper uses the scalar dot-product constraint \"u_i^j o_i^T <= R_i.\" This neither defines containment in a sphere nor constrains a radius. In particular, choosing o_i=0 and R_i=0 satisfies all stated constraints, making the optimization degenerate rather than yielding a meaningful center and radius.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "14862-Interactive_Cross-modal_Learning_for_Text-3D_Scene_Retrieval::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Section 3.3, Eq. (7)",
+      "confidence": 0.96,
+      "supporting_evidence": "Eq. (7) defines a negative-log loss as -log S(tilde{u}_i,v_j), but elsewhere S is defined only as a similarity computation (Eq. (2)) and the actual normalized probability is separately denoted p or p-hat (Eq. (3)). Common similarities such as cosine similarity can be zero or negative, for which log S is undefined. No positivity transformation or normalization is specified, so this is not a valid negative-log likelihood as written.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "14862-Interactive_Cross-modal_Learning_for_Text-3D_Scene_Retrieval::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Section 3.3, Eq. (9), weighted complementary contrastive loss",
+      "confidence": 0.99,
+      "supporting_evidence": "The sign of the claimed negative-pair repulsion objective is reversed. For a valid similarity S<1, log(1-S) decreases as S increases. Therefore minimizing the stated term log(1-S) drives negative-pair similarity upward toward 1, attracting negatives rather than reducing their similarity/divergence risk. A repulsive loss would require the opposite sign (e.g., -log(1-S)) or an otherwise different optimization direction.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "14862-Interactive_Cross-modal_Learning_for_Text-3D_Scene_Retrieval::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Section 3.3, Eq. (8) and its asserted upper-bound argument",
+      "confidence": 0.93,
+      "supporting_evidence": "Eq. (8) does not define a mathematical upper bound: it writes sup(R_div(theta)) approximately equal to a brace-delimited pair consisting of an expectation and a variance. A scalar supremum cannot be equated to an unordered pair/set of statistics, and no inequality, scalar function of the mean/variance, assumptions, or derivation is given. Consequently it cannot justify Eq. (9) as an upper-bound surrogate for Eq. (6).",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "14862-Interactive_Cross-modal_Learning_for_Text-3D_Scene_Retrieval::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Tables 1 and 2, reported RoMa results",
+      "confidence": 0.98,
+      "supporting_evidence": "The same RoMa baseline is given materially different results for the same datasets and metrics without any stated change in protocol. For ScanRefer, Table 1 reports RoMa R@1/R@5/R@10 = 11.4/34.8/54.4, whereas Table 2 reports 9.7/33.1/50.2. For Nr3D, Table 1 gives 6.5/24.8/37.6 whereas Table 2 gives 8.3/27.9/37.2. Section 4.1 presents both tables as using the same experimental setting and does not explain these discrepancies.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "14862-Interactive_Cross-modal_Learning_for_Text-3D_Scene_Retrieval::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Tables 1 and 2, IDeal / RoMa+IDeal results",
+      "confidence": 0.9,
+      "supporting_evidence": "The reported IDeal results are also inconsistent across the tables without an explained setup difference. Table 1 gives coarse-memory IDeal R@1 of 12.8 (ScanRefer) and 9.4 (Nr3D), while Table 2 gives RoMa+IDeal values of 16.0 and 11.7. Under fine memory, ScanRefer happens to match exactly at 37.8/71.8/86.4, strongly suggesting the rows are intended to be comparable, but Nr3D differs: Table 1 gives 26.4/62.7/78.7 versus 25.4/60.7/75.7 in Table 2. No distinction is provided that could reconcile the results.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "14862-Interactive_Cross-modal_Learning_for_Text-3D_Scene_Retrieval::baseline"
+    },
+    {
+      "error_category": "Experiment setup",
+      "error_location": "Section 4.1 and all results marked with †",
+      "confidence": 0.92,
+      "supporting_evidence": "The fine-grained-memory evaluation supplies the answerer with \"fine-grained scene descriptions\" and acknowledges \"access to partial additional information.\" Since the answerer is supposed to answer about the unknown target scene, this constitutes target-scene privileged information/oracle memory unless a user independently possesses that exact information. These results cannot substantiate claims of practical retrieval from incomplete user queries, yet they are prominently used for the main best-performance claims. The paper does not separate oracle-assisted performance from a deployable protocol or quantify the amount and source of target information exposed.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "14862-Interactive_Cross-modal_Learning_for_Text-3D_Scene_Retrieval::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (figure-text)",
+      "error_location": "Figure 4 versus Table 1",
+      "confidence": 0.86,
+      "supporting_evidence": "Figure 4 is presented as IDeal R@1 versus interaction round, with the coarse-memory curve at about 15 on ScanRefer and about 11 on Nr3D at round 5. Table 1 reports the corresponding coarse-memory IDeal final R@1 as 12.8 and 9.4. No alternate model, split, or evaluation condition is stated for Figure 4, so the displayed round-5 values do not match the table's five-round setup.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "14862-Interactive_Cross-modal_Learning_for_Text-3D_Scene_Retrieval::baseline"
+    },
+    {
+      "error_category": "Figure / table error",
+      "error_location": "Figure 5, Case 4",
+      "confidence": 0.96,
+      "supporting_evidence": "The case illustration is internally malformed. It labels \"Case 4\" and then gives two separate \"Round 5 Answer\" entries with incompatible ranks, one ending \"[Rank 4]\" and another ending \"[Rank 1].\" The caption says Cases 1-2 and 3-4 are shown, but Case 3 is absent. As presented, the figure does not unambiguously identify which answer/rank belongs to which case or method.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "14862-Interactive_Cross-modal_Learning_for_Text-3D_Scene_Retrieval::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 13,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (gpt-5.6-terra, taxonomy=default): 13 error(s) reported.",
+  "baseline": {
+    "model": "gpt-5.6-terra",
+    "provider": "openai",
+    "taxonomy": "default",
+    "paper_chars": 60887,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 16270,
+      "output_tokens": 5810,
+      "cache_read_input_tokens": null,
+      "cache_creation_input_tokens": null
+    }
+  }
+}

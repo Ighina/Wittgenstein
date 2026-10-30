@@ -1,0 +1,102 @@
+{
+  "paper_id": "21919-High-Dimensional_Calibration_from_Swap_Regret",
+  "title": "High-Dimensional Calibration from Swap Regret",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Section 2.3, definition of Bregman divergence; Lemma 2.1 and Appendix B proofs",
+      "confidence": 0.99,
+      "supporting_evidence": "The displayed definition is D_R(y||p)=R(p)-R(y)-<∇R(y),p-y>, i.e. the tangent is taken at y. But Lemma 2.1, Lemma 2.2, and their proofs instead use D_R(y||p)=R(y)-R(p)-<∇R(p),y-p>, with the tangent at p. For example, the first line of the proof of Lemma 2.1 expands the divergence as R(y)-R(p)-<∇R(p),y-p>, contradicting the stated definition. The claimed proper-scoring property and minimization at p=E[y] hold for the latter orientation, not generally for the former. Thus the central calibration-to-swap-regret reduction is based on a different loss than the one formally defined.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "21919-High-Dimensional_Calibration_from_Swap_Regret::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 2.1 definition of Cal_T^D versus Lemma 2.2, Sections 3–4, and Appendices C–E",
+      "confidence": 0.99,
+      "supporting_evidence": "Section 2.1 defines calibration with a 1/T factor: Cal_T^D := sum_p ((1/T) sum_t x_t(p))D(ν_p,p). However, Lemma 2.2 equates this quantity to unnormalized FullSwapReg_T, which is a sum over T rounds. Its proof obtains the unnormalized expression sum_p sum_t x_t(p)D_R(ν_p||p), with no 1/T. The later proof of Theorem 3.1, Eq. (6), labeled calibration in Appendix C, and the lower bounds all likewise use the unnormalized definition while stating bounds such as Cal_T <= εT. Under the formal Section 2.1 definition, those bounds and Lemma 2.2 are off by a factor T, and many εT claims become dimensionally/trivially inconsistent.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "21919-High-Dimensional_Calibration_from_Swap_Regret::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Claim C.3 and its use in the proof of Theorem 3.1",
+      "confidence": 1.0,
+      "supporting_evidence": "Claim C.3 states Cal(x)-2Cal(x̃) >= (2 diam(P)^2/H^2)T. The proof of the claim derives the opposite direction, namely Cal(x)-2Cal(x̃) <= 2T diam(P)^2/H. It therefore neither proves the stated inequality nor the inequality subsequently used in the theorem proof, which is Cal(x) <= 2Cal(x̃)+(2 diam(P)^2/H^2)T. The claimed H^{-2} error term is absent from the derivation; the displayed derivation only yields an H^{-1} term. Consequently the choices H=diam(P)/sqrt(ε) and the stated horizon bound do not follow.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "21919-High-Dimensional_Calibration_from_Swap_Regret::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Section 2.4 definition of Rate(P,||·||), Theorem 1.1, and simplex application in Section 1.1",
+      "confidence": 0.98,
+      "supporting_evidence": "Rate(P,||·||) is defined using a regularizer whose maximum Bregman divergence max_{y,p}D_R(y||p) is finite. Yet Theorem 1.1 only assumes that the range max R-min R is at most ρ, and the simplex application asserts that negative entropy has the required rate ρ=log d. On the closed simplex, the relevant entropy Bregman divergence is KL(y||p) (under the orientation required by the later proofs), which is unbounded when p has a zero coordinate where y is positive. Bounded range of negative entropy does not imply bounded Bregman divergence; the paper itself notes this distinction immediately before Lemma 2.4. Thus negative entropy cannot establish the claimed finite Rate/simplex bound as defined, and Theorem 1.1's stated hypothesis is insufficient for the TreeSwap loss-range argument.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "21919-High-Dimensional_Calibration_from_Swap_Regret::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Abstract versus Introduction Section 1.1 / Theorem 1.1 / Corollary C.5",
+      "confidence": 0.99,
+      "supporting_evidence": "The abstract claims simplex ℓ1 calibration after T=exp(O(log d/ε))=d^{O(1/ε)} rounds. But the abstract's preceding general statement, Theorem 1.1, the Section 1.1 simplex bullet, and Corollary C.5 all give d^{O(1/ε^2)} for nonsquared ℓ1 calibration. No derivation in the paper supports the stronger d^{O(1/ε)} claim.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "21919-High-Dimensional_Calibration_from_Swap_Regret::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Abstract final paragraph and lower-bound discussion in Section 1.1",
+      "confidence": 0.99,
+      "supporting_evidence": "The abstract says the lower bound proves T>=exp(Ω(1/ε)) and is tight up to constants in the exponent. The actual stated ℓ1 lower bound (Theorem 1.4 and Theorem 4.3) has only exp(Ω(min{d^{1/14},ε^{-1/6}})) or, elsewhere, a different dimension exponent. This is not an exponential-in-1/ε lower bound and cannot match either the claimed d^{O(1/ε)} abstract upper bound or the d^{O(1/ε^2)} bound stated elsewhere. The tightness conclusion is therefore unsupported and contradicts the paper's own theorem statements.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "21919-High-Dimensional_Calibration_from_Swap_Regret::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Theorem 1.4 in Section 1.1 versus Theorem 4.3",
+      "confidence": 0.98,
+      "supporting_evidence": "Theorem 1.4 states the horizon threshold exp(c min{d^{1/14},ε^{-1/6}}), whereas the formally stated Theorem 4.3 gives exp(c min{d^{1/7},ε^{-1/6}}). The Appendix D.1 proof applies Theorem 4.1 after a constant-factor dimension embedding and supports d^{1/14}, not d^{1/7}. Thus the stronger d^{1/7} statement in Theorem 4.3 is inconsistent with both the earlier theorem and its proof.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "21919-High-Dimensional_Calibration_from_Swap_Regret::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Lemma 4.2 and proof of Theorem 4.3 in Appendix D.1",
+      "confidence": 0.97,
+      "supporting_evidence": "Lemma 4.2's statement bounds swap regret using diam_{||·||}(P'), but its proof uses Hölder with ||ν_p-p|| and concludes with diam_{||·||_*}(P'). These are different quantities. In applying the lemma, the proof chooses P'=[-1,1]^{d'}, says its ℓ∞ diameter is 1 (it is 2 under the standard definition), and then claims a contradiction with Theorem 4.1. But Theorem 4.1 lower-bounds learners whose actions lie in the particular subset X⊂[-1,1]^{d'}, while the constructed learner acts over the entire cube P'; a lower bound for Δ(X) does not automatically apply to Δ(P'). Choosing P'=X could potentially repair this, but that is not the proof given.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "21919-High-Dimensional_Calibration_from_Swap_Regret::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Proof of Theorem 4.3, Appendix D.1",
+      "confidence": 0.94,
+      "supporting_evidence": "The purported contradiction is between the constructed upper bound FullSwapReg_T <= εT and Theorem 4.1's lower bound FullSwapReg_T >= εT. These inequalities are compatible at equality, so they do not contradict each other. A constant-factor rescaling of ε might repair the argument, but it is not performed in the proof as written.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "21919-High-Dimensional_Calibration_from_Swap_Regret::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 9,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (gpt-5.6-terra, taxonomy=default): 9 error(s) reported.",
+  "baseline": {
+    "model": "gpt-5.6-terra",
+    "provider": "openai",
+    "taxonomy": "default",
+    "paper_chars": 91931,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 3,
+      "output_tokens": 4618,
+      "cache_read_input_tokens": 31973,
+      "cache_creation_input_tokens": null
+    }
+  }
+}

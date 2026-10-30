@@ -1,0 +1,201 @@
+{
+  "paper_id": "10615",
+  "title": "Gated Attention for Large Language Models: Non-linearity, Sparsity, and Attention-Sink-Free",
+  "paper_category": "cs.LG",
+  "predicted_errors": [
+    {
+      "error_category": "Abstract vs Results mismatch",
+      "error_location": "Abstract",
+      "confidence": 0.9,
+      "supporting_evidence": "The Abstract claims \"a comprehensive comparison over 40 variants of 30B MoE models and 3.4B dense models trained on a 1 trillion token dataset.\" The body reports a different experimental scale: Sec. 3.1 states \"We conduct experiments on both MoE models (15B total parameters with 2.54B activated, 15A2B) and dense models (1.7B total parameters).\" Table 1 covers 15 gating variants trained on 400B tokens; Table 2 reports dense runs on 400B/1T/3.5T tokens. The abstract's model sizes (30B MoE / 3.4B dense) are exactly 2x the body's (15B / 1.7B), and no setting in the body trains 40 MoE variants on a 1T-token corpus. This is a stale abstract inconsistent with the paper's reported experimental scale.",
+      "verifier_name": "cross-section-consistency",
+      "snippet_id": "10615::SECTION::0"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Method section (introductory overview, p.2)",
+      "confidence": 0.9,
+      "supporting_evidence": "The Method section states: \"We find that: (i) applying key layer gating (G3) yields superior performance improvements compared to SDPA or value gating, reducing PPL by up to 0.3 and improving MMLU significantly; (ii) gating at G3 also leads to better training stability and scaling behavior.\" This directly contradicts (a) its own Figure 1 caption on the same page (\"Gating after SDPA (G1) yields the best overall results\"), (b) Table 1 row 7 (k Elementwise G_3: PPL 6.016 vs baseline 6.026, an improvement of only 0.010; GSM8k 50.49 worse than baseline 52.92), and (c) Sec. 3.2.1 (\"Inserting gates at the output of SDPA (G1) or the value map (G2) is the most effective\"). The ~0.3 PPL reduction the overview attributes to G3 actually corresponds to SDPA gating (G1: 6.026 -> 5.761 = 0.265). The overview misstates the paper's central finding.",
+      "verifier_name": "text",
+      "snippet_id": "10615::SECTION::2"
+    },
+    {
+      "error_category": "Data Inconsistency (text-table)",
+      "error_location": "Section 3.2.2 (Gated Attention for Dense Models)",
+      "confidence": 0.85,
+      "supporting_evidence": "The text claims: \"When increasing the maximum LR, both baselines and gating variants frequently encounter convergence issues (row 6, 12), with some gating models diverging silently.\" In Table 2 the two cited rows (6 and 12) are both 'Baseline' rows at max LR 8.0e-3 (row 6: PPL 9.195; row 12: all cells '-'). The gated rows at the same LR converged: row 10 'SDPA Elementwise' (PPL 7.325) and row 14 'SDPA Elementwise' (PPL 7.078). No gating-model row in Table 2 diverges. The claim that gating models diverge at high LR is contradicted by the paper's own table.",
+      "verifier_name": "statistical",
+      "snippet_id": "10615::SECTION::8"
+    },
+    {
+      "error_category": "Data Inconsistency (figure-figure)",
+      "error_location": "Table 4 row 5 vs Table 1 row 6",
+      "confidence": 0.8,
+      "supporting_evidence": "Table 4 row 5 ('Value Elementwise Gate') reports GSM8k = 51.33, while Table 1 row 6 ('v Elementwise G_2') reports GSM8k = 53.97 for the same configuration (elementwise sigmoid gating at the value position on the 15A2B MoE). The other shared metrics match exactly between the two rows (PPL 5.820, HellaSwag 74.38, MMLU 59.17), confirming they describe the same model. A 2.64-point GSM8k discrepancy for an identical configuration is an internal data contradiction.",
+      "verifier_name": "vision",
+      "snippet_id": "10615::TABLE::5"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 4.2",
+      "confidence": 0.8,
+      "supporting_evidence": "Section 4.2 states: \"We analyze the gating scores (Tab. 1, 'Gate Score' column) of models with gating applied at the value (G2) and SDPA output (G1) positions.\" Table 1 has no 'Gate Score' column; its columns are Method, Act Func, Score Shape, Added Param, Avg PPL, HellaSwag, MMLU, GSM8k, C-Eval. The 'Gate Score' column (with M-Act and F-Attn) appears only in Table 4, which the very next sentence correctly cites (\"The mean gating scores ... are presented in Table 4\"). The parenthetical table reference is wrong.",
+      "verifier_name": "text",
+      "snippet_id": "10615::SECTION::11"
+    },
+    {
+      "error_category": "Fabricated citation",
+      "error_location": "Section 5.1 (Related Works) / Reference list",
+      "confidence": 0.8,
+      "supporting_evidence": "Section 5.1 cites references [80], [81], and [82]: \"Several works on state-space models [3, 10, 57, 80] ... including the recently proposed DeltaGate model [81] ... and the unseen GatorNet [82] architecture.\" The bibliography ends at [71] (OpenAI GPT-OSS model card). There are no bibliographic entries for [80], [81], or [82], making them dangling references with no corresponding record in the paper.",
+      "verifier_name": "citation",
+      "snippet_id": "10615::SECTION::14"
+    },
+    {
+      "error_category": "Data Inconsistency (figure-text)",
+      "error_location": "Figure 1 (middle panel table, Method)",
+      "confidence": 0.78,
+      "supporting_evidence": "The Figure 1 middle table reports key gating as best (key = 5.75 vs baseline 6.05, a 0.30 PPL reduction), with SDPA = 5.95 and value = 5.85. Its own caption states \"Gating after SDPA (G1) yields the best overall results,\" and Table 1 reports SDPA G1 as best (PPL 5.761) with key G3 near baseline (6.016). The figure table contradicts both its caption and the authoritative results in Table 1.",
+      "verifier_name": "vision",
+      "snippet_id": "10615::TABLE::0"
+    },
+    {
+      "error_category": "Data Inconsistency (figure-text)",
+      "error_location": "Figure 3 caption (Section 4.2)",
+      "confidence": 0.75,
+      "supporting_evidence": "The Figure 3 caption states \"The majority of gating scores fall mostly between 0.4 and 0.7, indicating less sparsity. Differences in sparsity across gating positions are diminished.\" This contradicts Section 4.2's central finding (\"the SDPA output gating score distribution shows a high concentration near 0, indicating substantial sparsity\") and Table 4's mean gating scores for the three panels the caption describes (SDPA elementwise 0.116, value elementwise 0.221, SDPA head-shared 0.271) - none of which have a majority of scores in 0.4-0.7.",
+      "verifier_name": "vision",
+      "snippet_id": "10615::FIGURE::1"
+    },
+    {
+      "error_category": "Data inconsistency",
+      "error_location": "Table 1 rows 12-13 (head-shared gating parameter counts)",
+      "confidence": 0.7,
+      "supporting_evidence": "Rows 12-13 are 'Head-Shared' with Score Shape n x d_k, but list Added Param 201 (row 12) and 25 (row 13) - identical to the elementwise rows (5: n x q x d_k = 201; 6: n x k x d_k = 25). With d_model = 2048 and 24 layers (Table 7), a shared score vector of dimension d_k needs W_theta of size d_model x d_k = 2048 x 128 per layer, i.e., ~6.3M total, not 201M/25M. Sec. 3.2.1 emphasizes head-shared gating \"uses n x d_k (rather than the original n x q x d_k)\", implying far fewer parameters. The Added Param column is inconsistent with the stated Score Shape.",
+      "verifier_name": "vision",
+      "snippet_id": "10615::TABLE::2"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 51,
+    "snippets_verified": 51,
+    "errors_detected": 9,
+    "verifier_usage": {
+      "math_equation": 0,
+      "vision": 8,
+      "text": 4,
+      "statistical": 1,
+      "citation": 1,
+      "cross_section_consistency": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Uncertainty-mode verification (lenient strictness, threshold 0.30) of 'Gated Attention for Large Language Models' escalated 15 of 51 snippets to specialist review and found 9 internal inconsistencies. The mathematics is sound: all 9 equations (Eqs. 1-9) are algebraically correct, including the low-rank W_V/W_O merging argument in Eq. 6 and the NS-sigmoid range claim in Eq. 9; the RULER deltas in Table 5 are internally consistent within rounding. Three findings exceed the 0.85 high-confidence bar: (1) the Abstract describes 30B MoE / 3.4B dense models trained on 1T tokens, while the body reports 15A2B MoE (15B) / 1.7B dense models on 400B-3.5T tokens - the abstract's model sizes are exactly 2x the body's; (2) the Method overview claims key-layer gating (G3) is the best variant, reducing PPL by up to 0.3, directly contradicting its own Figure 1 caption, Table 1 (G3 PPL 6.016 vs baseline 6.026), and Sec. 3.2.1, where SDPA (G1) and value (G2) gating are best - and the Figure 1 middle table likewise shows key gating (5.75) as best, contradicting both its caption and Table 1; (3) Sec. 3.2.2 claims gating models diverge at high LR, but the diverging Table 2 rows (6, 12) are baselines while the gated rows (10, 14) converged. Moderate-confidence issues: Table 4 row 5 and Table 1 row 6 report different GSM8k (51.33 vs 53.97) for the identical value-gated configuration; Sec. 4.2 points to a 'Gate Score' column in Table 1 that exists only in Table 4; Section 5.1 cites references [80]-[82] that are absent from a bibliography ending at [71]; the Figure 3 caption claims gating scores fall mostly in 0.4-0.7, contradicting Table 4's means (0.116-0.271) and the section's sparsity thesis; and Table 1's head-shared rows list parameter counts identical to their elementwise counterparts despite halved score shapes. Because findings 1-3 are high-confidence and concern the paper's stated experimental scale and its own central result, the paper requires correction as written.",
+  "uncertainty_map": [
+    {
+      "snippet_id": "10615::SECTION::0",
+      "snippet_type": "SECTION",
+      "location": "Abstract",
+      "uncertainty": 0.72,
+      "route": "cross-section"
+    },
+    {
+      "snippet_id": "10615::SECTION::2",
+      "snippet_type": "SECTION",
+      "location": "Method",
+      "uncertainty": 0.78,
+      "route": "text"
+    },
+    {
+      "snippet_id": "10615::SECTION::6",
+      "snippet_type": "SECTION",
+      "location": "3.1 Experimental Setups",
+      "uncertainty": 0.3,
+      "route": "text"
+    },
+    {
+      "snippet_id": "10615::SECTION::8",
+      "snippet_type": "SECTION",
+      "location": "3.2.2 Gated Attention for Dense Models",
+      "uncertainty": 0.68,
+      "route": "statistics"
+    },
+    {
+      "snippet_id": "10615::SECTION::11",
+      "snippet_type": "SECTION",
+      "location": "4.2 Gating Introduces Input-Dependent Sparsity",
+      "uncertainty": 0.55,
+      "route": "text"
+    },
+    {
+      "snippet_id": "10615::SECTION::14",
+      "snippet_type": "SECTION",
+      "location": "5.1 Gating in Neural Networks",
+      "uncertainty": 0.6,
+      "route": "citation"
+    },
+    {
+      "snippet_id": "10615::SECTION::20",
+      "snippet_type": "SECTION",
+      "location": "A.3 More Discussion on Sparse Gating Score",
+      "uncertainty": 0.3,
+      "route": "text"
+    },
+    {
+      "snippet_id": "10615::TABLE::0",
+      "snippet_type": "TABLE",
+      "location": "Figure 1 middle table",
+      "uncertainty": 0.5,
+      "route": "vision"
+    },
+    {
+      "snippet_id": "10615::TABLE::1",
+      "snippet_type": "TABLE",
+      "location": "Figure 1 position/value table",
+      "uncertainty": 0.3,
+      "route": "vision"
+    },
+    {
+      "snippet_id": "10615::TABLE::2",
+      "snippet_type": "TABLE",
+      "location": "Table 1",
+      "uncertainty": 0.45,
+      "route": "vision"
+    },
+    {
+      "snippet_id": "10615::TABLE::3",
+      "snippet_type": "TABLE",
+      "location": "Table 2",
+      "uncertainty": 0.45,
+      "route": "vision"
+    },
+    {
+      "snippet_id": "10615::TABLE::4",
+      "snippet_type": "TABLE",
+      "location": "Table 3",
+      "uncertainty": 0.3,
+      "route": "vision"
+    },
+    {
+      "snippet_id": "10615::TABLE::5",
+      "snippet_type": "TABLE",
+      "location": "Table 4",
+      "uncertainty": 0.62,
+      "route": "vision"
+    },
+    {
+      "snippet_id": "10615::TABLE::6",
+      "snippet_type": "TABLE",
+      "location": "Table 5",
+      "uncertainty": 0.3,
+      "route": "vision"
+    },
+    {
+      "snippet_id": "10615::FIGURE::1",
+      "snippet_type": "FIGURE",
+      "location": "Figure 3 (Section 4.2)",
+      "uncertainty": 0.5,
+      "route": "vision"
+    }
+  ]
+}

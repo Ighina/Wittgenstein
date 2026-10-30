@@ -1,0 +1,118 @@
+{
+  "paper_id": "1028-PlayerOne__Egocentric_World_Simulator",
+  "title": "PlayerOne: Egocentric World Simulator",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Abstract; Introduction; Section 4.1; Appendix “Latency between motion input and video output”",
+      "confidence": 0.99,
+      "supporting_evidence": "The abstract claims “true real-time generation at 30 FPS,” but Section 4.1 states “The generated video runs at eight frames per second” and “After distillation, our method can achieve 8 FPS.” The appendix gives an end-to-end latency of approximately 119 ms/frame, i.e. about 8.4 FPS. These are mutually incompatible with 30 FPS and the abstract claim must be corrected.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "1028-PlayerOne__Egocentric_World_Simulator::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 3.2, Eqs. (2)–(4), camera rotation construction",
+      "confidence": 0.99,
+      "supporting_evidence": "Equation (3) is an incorrect Rodrigues rotation formula. For a unit axis u and angle θ, the standard formula is R = I + sin(θ)[u]_× + (1 − cos(θ))[u]_×². The paper uses “(1 + cosθ)” instead. For example, at θ=0 this produces I + 2[u]_×² rather than I, so it does not represent the stated rotation. Equation (2) also divides by ||v|| without specifying handling for v=0.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "1028-PlayerOne__Egocentric_World_Simulator::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 3.1, Eq. (1)",
+      "confidence": 0.97,
+      "supporting_evidence": "The diffusion equation is internally ill-defined: z_t is written as “α_t z_0 + β_t δ_t ε,” but β_t is never defined, while the subsequent normalization condition is α_t² + δ_t² = 1. The usual expression would use one noise coefficient, not an undefined product β_tδ_t. The same paragraph samples t from U(0,1) but then says “where t = 1, …, T,” without defining a continuous/discrete conversion. This prevents reproduction of the stated objective.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "1028-PlayerOne__Egocentric_World_Simulator::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Section 4.1, Benchmark and Metrics; Tables 2–3",
+      "confidence": 0.96,
+      "supporting_evidence": "The stated metric protocol does not match the reported tables. The paper says it reports CLIP-Score, DINO-Score, PSNR, SSIM, LPIPS, and “frame consistency,” but Tables 2 and 3 report FVD instead of SSIM and report neither SSIM nor the claimed frame-consistency metric. FVD is never defined in the Metrics subsection. The actual evaluated metrics and their computation protocol therefore need correction and disclosure.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "1028-PlayerOne__Egocentric_World_Simulator::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Section 4.1, Benchmark; Section 4.3, comparison with state of the art; Tables 3–4",
+      "confidence": 0.95,
+      "supporting_evidence": "The comparison is not a like-for-like control comparison: the authors explicitly state that PlayerOne receives the ground-truth human-motion sequence while competitors receive text captions, and acknowledge that this “provid[es] it with more precise control signals.” Nevertheless, Tables 3–4 and the surrounding text attribute superior motion alignment to PlayerOne versus Cosmos/Aether. A system given dense synchronized SMPL motion cannot validly be compared as a control-alignment baseline against systems given only text without either providing equal control inputs or clearly limiting the conclusion.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "1028-PlayerOne__Egocentric_World_Simulator::baseline"
+    },
+    {
+      "error_category": "context_misalignment_incoherence",
+      "error_location": "Section 4.3, User study; Appendix “Definition of evaluation criteria”",
+      "confidence": 0.94,
+      "supporting_evidence": "The user-study protocol is inconsistent across the paper. Section 4.3 says 20 annotators rated “25 groups of videos,” each containing method outputs and “the text description,” and calls Alignment alignment with text. The appendix instead says annotators viewed the generated video and a stick-figure/pose sequence side-by-side “for all 100 videos,” and defines Alignment against timing, action type, and spatial positioning in the motion signal. These are materially different stimuli, sample counts, and alignment criteria, so Table 4 is not reproducibly interpretable.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "1028-PlayerOne__Egocentric_World_Simulator::baseline"
+    },
+    {
+      "error_category": "reference_background_fabrication",
+      "error_location": "Appendix, Table 8",
+      "confidence": 0.99,
+      "supporting_evidence": "The citations for GEM and VISTA are swapped. Reference [8] is Gao et al., “VISTA: A Generalizable Driving World Model...,” while reference [15] is Hassan et al., “GEM: A Generalizable Ego-Vision Multimodal World Model....” Table 8 labels “GEM [8]” and “VISTA [15],” which is factually incorrect attribution.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "1028-PlayerOne__Egocentric_World_Simulator::baseline"
+    },
+    {
+      "error_category": "evidence_data_integrity",
+      "error_location": "Tables 2–3, 7, 13–16 versus Appendix Table 18 and Table 19",
+      "confidence": 0.95,
+      "supporting_evidence": "The numerical results for what is described as the same PlayerOne/CUT3R configuration conflict across tables without an indicated change of benchmark or protocol. The main results repeatedly give PlayerOne MRRPE 151.62, PSNR 52.60, FVD 226.12, and LPIPS 0.0663. Appendix Table 18’s CUT3R row instead gives MRRPE 163.62, PSNR 50.3, FVD 236.12, LPIPS 0.0663; Appendix Table 19’s 10% filtering row repeats those inconsistent values. Since the paper says 10% filtering is the selected setting and CUT3R is the final renderer, these cannot all be the same reported model/evaluation and require reconciliation.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "1028-PlayerOne__Egocentric_World_Simulator::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Appendix, “Investigation on the impact of filtering,” discussion of Table 19",
+      "confidence": 0.98,
+      "supporting_evidence": "The paper states that “a filtering ratio of 10% optimizes performance,” but Table 19 contradicts this for four of seven reported metrics. At 0% filtering, MPJPE is 123.50 versus 127.16 at 10% (lower is better), MRRPE is 158.10 versus 163.62, FVD is 228.50 versus 236.12, and LPIPS is 0.0587 versus 0.0663. Ten percent is better only on DINO, CLIP, and PSNR. It may be a chosen trade-off, but it demonstrably does not optimize the reported metrics generally.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "1028-PlayerOne__Egocentric_World_Simulator::baseline"
+    },
+    {
+      "error_category": "rhetorical_presentation_manipulation",
+      "error_location": "Introduction, final paragraph; Conclusion",
+      "confidence": 0.93,
+      "supporting_evidence": "The paper claims that PlayerOne “completely solves the long-standing challenge” and “eliminates all limitations of prior methods,” and the conclusion says it ensures coherent generation “across all scenarios without exception.” These absolute claims are contradicted by the paper’s own limitations: worse game-domain performance (Table 14), failures in highly dynamic scenes (Appendix C), lack of physical interaction/contact reasoning, and potential body/object penetration. The claims should be narrowed to the evaluated conditions.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "1028-PlayerOne__Egocentric_World_Simulator::baseline"
+    },
+    {
+      "error_category": "ethical_integrity_omission",
+      "error_location": "Section 4.3, User study; Appendix “Definition of evaluation criteria”",
+      "confidence": 0.79,
+      "supporting_evidence": "The paper reports a human-subject user study involving 20 annotators but provides no recruitment source, consent procedure, compensation, demographics/expertise, institutional review or exemption status, conflict disclosures, or whether raters could opt out. It also changes the described study materials between the main text and appendix. At minimum, the human-study ethics and protocol information needed to assess consent and validity are missing.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "1028-PlayerOne__Egocentric_World_Simulator::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 11,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (gpt-5.6-terra, taxonomy=paperaudit): 11 error(s) reported.",
+  "baseline": {
+    "model": "gpt-5.6-terra",
+    "provider": "openai",
+    "taxonomy": "paperaudit",
+    "paper_chars": 90098,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 23249,
+      "output_tokens": 3730,
+      "cache_read_input_tokens": null,
+      "cache_creation_input_tokens": null
+    }
+  }
+}

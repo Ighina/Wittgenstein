@@ -1,0 +1,142 @@
+{
+  "paper_id": "15994-MokA__Multimodal_Low-Rank_Adaptation_for_MLLMs",
+  "title": "MokA: Multimodal Low-Rank Adaptation for MLLMs",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "evidence_data_integrity",
+      "error_location": "Table 2, LLaMA2/LoRA MME cell",
+      "confidence": 0.95,
+      "supporting_evidence": "Table 2 lists LLaMA2 LoRA MME as 90.85, while Table 4 lists the same LLaMA2 LoRA MME result as 908.52. MME perception scores are typically in the hundreds, and the Table 4 value is consistent with the rest of the table. One of these numbers is wrong.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "15994-MokA__Multimodal_Low-Rank_Adaptation_for_MLLMs::baseline"
+    },
+    {
+      "error_category": "evidence_data_integrity",
+      "error_location": "Table 5 vs Table 3, AIR-Bench results",
+      "confidence": 0.9,
+      "supporting_evidence": "For LLaMA2 on AIR-Bench, Table 3 reports LoRA=31.75, Multiple LoRA=32.80, MokA=36.70, but Table 5 reports Multiple LoRA=31.97 and MokA=39.64 for the same backbone and benchmark. The MokA value differs by 2.94 points and Multiple LoRA by 0.83 points, so the two tables cannot both be correct.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "15994-MokA__Multimodal_Low-Rank_Adaptation_for_MLLMs::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Equations (5)–(6) and Equations (9)–(13)",
+      "confidence": 0.9,
+      "supporting_evidence": "With x^i of shape k×N_i and A^i ∈ R^{r×k}, A^i x^i is r×N_i. The attention expression (A^a x^a)(A^t x^t)^T is therefore r×r, not N_a×N_t, and softmax times A^t x^t gives r×N_t, which cannot be added to A^a x^a of shape r×N_a. Thus the additions in Eqs. (9) and (13) are dimensionally invalid unless equations are rewritten with transposed query/key conventions.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "15994-MokA__Multimodal_Low-Rank_Adaptation_for_MLLMs::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Equation (5) vs Appendix B Equations (14)–(15)",
+      "confidence": 0.85,
+      "supporting_evidence": "The main text normalizes cross-attention by sqrt(d), where d is said to be the projected token embedding dimension, but the low-rank projection has dimension r. Appendix B writes the same attention with denominator sqrt(N_t). The normalization is inconsistent between main text and appendix, and neither scaling matches the actual low-rank projected dimension.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "15994-MokA__Multimodal_Low-Rank_Adaptation_for_MLLMs::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Section 4.1, paragraph discussing Table 1",
+      "confidence": 0.9,
+      "supporting_evidence": "The paper states that 'multiple LoRA ... underperforms both standard LoRA and MokA.' In Table 1, however, Multiple LoRA outperforms LoRA on AVE for LLaMA2 (71.77 vs 69.84), on both MUSIC-AVQA and AVE for LLaMA3 (78.63/77.02 vs 78.31/76.91), and on MUSIC-AVQA for Qwen2.5-VL (73.13 vs 73.00). The blanket claim is therefore not supported by the cited table.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "15994-MokA__Multimodal_Low-Rank_Adaptation_for_MLLMs::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Section 4.1, Qwen2.5-VL comparison",
+      "confidence": 0.9,
+      "supporting_evidence": "The paper says 'Qwen2.5-VL with LoRA outperforms both LLaMA-2 and Qwen2 under the LoRA fine-tuning setting.' In Table 1, Qwen2.5-VL LoRA has MUSIC-AVQA 73.00, lower than LLaMA2 LoRA 73.41, and AVE 71.38, lower than Qwen2 LoRA 72.13. Thus it does not outperform both backbones on each metric.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "15994-MokA__Multimodal_Low-Rank_Adaptation_for_MLLMs::baseline"
+    },
+    {
+      "error_category": "reference_background_fabrication",
+      "error_location": "Section 3.2, LLaMA-2 citation [31]",
+      "confidence": 0.95,
+      "supporting_evidence": "Reference [31] is 'LLaMA: Open and Efficient Foundation Language Models' (arXiv:2302.13971), which describes the original LLaMA-1 model. The paper uses LLaMA-2-7B-Chat and should cite the LLaMA-2 paper (e.g., 'Llama 2: Open Foundation and Fine-Tuned Chat Models'), not the LLaMA-1 paper.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "15994-MokA__Multimodal_Low-Rank_Adaptation_for_MLLMs::baseline"
+    },
+    {
+      "error_category": "reference_background_fabrication",
+      "error_location": "Section 5, DoRA characterization",
+      "confidence": 0.75,
+      "supporting_evidence": "The related-work sentence says 'DoRA [21] focuses solely on optimizing the gradient direction.' DoRA (Weight-Decomposed Low-Rank Adaptation) decomposes pretrained weights into magnitude and direction and learns both components, applying LoRA to the directional component. It does not focus solely on the gradient direction.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "15994-MokA__Multimodal_Low-Rank_Adaptation_for_MLLMs::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Appendix G, cross-attention q_proj visualization",
+      "confidence": 0.85,
+      "supporting_evidence": "The main method (Section 2.2.2) explicitly states that 'linear projections (W_q, W_k, and W_v) are not included in the cross-attention module.' Appendix G nevertheless says 'The visualization shows the cross-attention weights of q_proj at the 10th layer.' This directly contradicts the stated design.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "15994-MokA__Multimodal_Low-Rank_Adaptation_for_MLLMs::baseline"
+    },
+    {
+      "error_category": "evidence_data_integrity",
+      "error_location": "Appendix I, GigaSpeech-M description",
+      "confidence": 0.8,
+      "supporting_evidence": "The paper states 'GigaSpeech-M [4] is a 1000 h dataset.' In the GigaSpeech corpus, the 'M' subset is 250 hours; the 1000-hour subset is 'L'. The dataset size appears inflated or mislabeled.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "15994-MokA__Multimodal_Low-Rank_Adaptation_for_MLLMs::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Section 3.1 vs Section 4.1, Qwen2.5-VL setup",
+      "confidence": 0.75,
+      "supporting_evidence": "Section 3.1 says a Q-Former followed by a two-layer MLP is used as the projector and that all branches use this setup, while Section 4.1 says the official visual connector in Qwen2.5-VL remains frozen and mentions its official pixel encoder (ViT). The paper never clearly specifies how the Qwen2.5-VL visual branch is constructed, creating a protocol inconsistency for that backbone.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "15994-MokA__Multimodal_Low-Rank_Adaptation_for_MLLMs::baseline"
+    },
+    {
+      "error_category": "context_misalignment_incoherence",
+      "error_location": "Section 4.1, Qwen2.5-VL paragraph",
+      "confidence": 0.7,
+      "supporting_evidence": "After the sentence about 'reducing the fairness of backbone comparisons,' the text continues with a dangling fragment: 'which serves a similar role to the projector used in our other LLM variants, remains frozen during fine-tuning.' The paragraph also claims 'only the newly introduced audio branch is trainable,' ignoring the trainable MokA parameters, so the passage is internally incoherent.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "15994-MokA__Multimodal_Low-Rank_Adaptation_for_MLLMs::baseline"
+    },
+    {
+      "error_category": "rhetorical_presentation_manipulation",
+      "error_location": "Section 6, Discussion",
+      "confidence": 0.8,
+      "supporting_evidence": "The Discussion states that MokA 'completely solves the problem,' 'perfectly balances unimodal preservation and cross-modal enhancement,' 'absolutely ensures superior model performance,' and 'sets a new standard.' These superlatives are contradicted by the Abstract's own caveat that 'gains vary among backbones and modalities' and by Table 3, where MokA is not consistently better than all compared baselines. The wording overstates the evidence.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "15994-MokA__Multimodal_Low-Rank_Adaptation_for_MLLMs::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Table 4 and Section 4.4, 'Naive interaction' variant",
+      "confidence": 0.7,
+      "supporting_evidence": "The 'Naive interaction' ablation appears in Table 4 and is mentioned in Section 4.4, but its construction is never described. A reader cannot reproduce or interpret the variant without knowing what operation it uses.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "15994-MokA__Multimodal_Low-Rank_Adaptation_for_MLLMs::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 14,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (claude-sonnet-5, taxonomy=paperaudit): 14 error(s) reported.",
+  "baseline": {
+    "model": "claude-sonnet-5",
+    "provider": "anthropic",
+    "taxonomy": "paperaudit",
+    "paper_chars": 62976,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 65,
+      "output_tokens": 28622,
+      "cache_read_input_tokens": 17280,
+      "cache_creation_input_tokens": 0
+    }
+  }
+}

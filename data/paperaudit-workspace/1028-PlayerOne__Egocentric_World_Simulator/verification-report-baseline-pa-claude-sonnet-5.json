@@ -1,0 +1,118 @@
+{
+  "paper_id": "1028-PlayerOne__Egocentric_World_Simulator",
+  "title": "PlayerOne: Egocentric World Simulator",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "evidence_data_integrity",
+      "error_location": "Abstract; Section 4.1; Appendix 'Latency between motion input and video output'",
+      "confidence": 0.95,
+      "supporting_evidence": "The Abstract claims 'true real-time generation at 30 FPS', but Section 4.1 states that after distillation the method 'can achieve 8 FPS to generate the desired results', and the Appendix reports 'approximately 119 milliseconds per generated-frame, corresponding to about 8.4 FPS'. No 30 FPS result is reported anywhere; the numbers are mutually contradictory.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "1028-PlayerOne__Egocentric_World_Simulator::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 3.2, Eq. (3)",
+      "confidence": 0.98,
+      "supporting_evidence": "The paper writes R = I + sinθ · [u]_× + (1 + cosθ) · [u]_×^2. The Rodrigues rotation formula requires the coefficient of [u]_×^2 to be (1 − cosθ), not (1 + cosθ). The sign error is verifiable from the small-angle expansion, where (1 − cosθ) ≈ θ^2/2 whereas (1 + cosθ) ≈ 2.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "1028-PlayerOne__Egocentric_World_Simulator::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 3.1, Eq. (1)",
+      "confidence": 0.85,
+      "supporting_evidence": "The equation defines zt = αt z0 + βt δt ε and states α_t^2 + δ_t^2 = 1, but β_t is never defined. In the standard formulation the noise term should be δt ε (or a single defined scale); introducing an undefined βt makes the training objective mathematically ambiguous.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "1028-PlayerOne__Egocentric_World_Simulator::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Section 4.1 Benchmark; Table 1",
+      "confidence": 0.9,
+      "supporting_evidence": "The paper says the benchmark contains '100 videos collected from the Nymeria [25] dataset, which is not included for training', but Table 1 explicitly lists Nymeria among the training datasets. If only the 100 benchmark videos are excluded, the text must say so; as written, it claims the whole Nymeria dataset is not used in training while Table 1 says it is.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "1028-PlayerOne__Egocentric_World_Simulator::baseline"
+    },
+    {
+      "error_category": "context_misalignment_incoherence",
+      "error_location": "Appendix 'Evaluation on Nymeria'",
+      "confidence": 0.85,
+      "supporting_evidence": "The Appendix states that the benchmark was 'reconstructed' by selecting '100 videos featuring full-body actions from the test sets of four different datasets: EgoExo-4D, Nymeria, FT-HID, EgoExo-Fitness'. This directly contradicts Section 4.1, which says the benchmark consists of 100 videos collected from the Nymeria dataset only.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "1028-PlayerOne__Egocentric_World_Simulator::baseline"
+    },
+    {
+      "error_category": "evidence_data_integrity",
+      "error_location": "Tables 2, 3, 5, 6, 18, and 19",
+      "confidence": 0.85,
+      "supporting_evidence": "The final PlayerOne numbers are not consistent across tables described as the same Nymeria-based benchmark. Table 3 reports 67.8 / 88.2 / 127.16 / 151.62 / 52.6 / 226.12 / 0.0663, whereas Table 6 reports 64.80 / 85.70 / 137.91 / 162.74 / 50.72 / 247.97 / 0.0761, and Table 5's last row is slightly different again. Additionally, Table 18's CUT3R row gives MRRPE 163.62, PSNR 50.3, and FVD 236.12 instead of 151.62, 52.6, 226.12 from Tables 2/3, even though CUT3R is the standard point-map renderer used in the final model.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "1028-PlayerOne__Egocentric_World_Simulator::baseline"
+    },
+    {
+      "error_category": "evidence_data_integrity",
+      "error_location": "Appendix Table 19 and surrounding text",
+      "confidence": 0.7,
+      "supporting_evidence": "The text says that a filtering ratio of 10% optimizes performance and that absence of filtering causes deterioration. However, Table 19 shows ratio 0 with better (lower) MPJPE/MRRPE/FVD/LPIPS than ratio 10: 123.50 vs 127.16, 158.10 vs 163.62, 228.50 vs 236.12, and 0.0587 vs 0.0663. Only DINO/CLIP/PSNR improve at ratio 10. Thus the table does not support the claim that ratio 10 is optimal across the reported metrics.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "1028-PlayerOne__Egocentric_World_Simulator::baseline"
+    },
+    {
+      "error_category": "context_misalignment_incoherence",
+      "error_location": "Section 4.3 User study; Appendix 'Definition of evaluation criteria'",
+      "confidence": 0.75,
+      "supporting_evidence": "The user-study section says 20 annotators rated 25 groups of videos and defines 'Alignment' as alignment with the given text descriptions. The Appendix, however, says that for Alignment 'annotators viewed both the generated video and the motion condition signal (stick-figure or pose sequence) side-by-side for all 100 videos'. The criterion and the number of videos are inconsistent.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "1028-PlayerOne__Egocentric_World_Simulator::baseline"
+    },
+    {
+      "error_category": "reference_background_fabrication",
+      "error_location": "Appendix Table 8; references [8] and [15]",
+      "confidence": 0.98,
+      "supporting_evidence": "Table 8 labels rows as 'GEM [8]' and 'VISTA [15]', but the bibliography entry [8] is the VISTA paper ('VISTA: A Generalizable Driving World Model...') and entry [15] is the GEM paper ('GEM: A Generalizable Ego-Vision Multimodal World Model...'). The citations are swapped.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "1028-PlayerOne__Egocentric_World_Simulator::baseline"
+    },
+    {
+      "error_category": "reference_background_fabrication",
+      "error_location": "Section 4.1 Benchmark; reference [2]",
+      "confidence": 0.6,
+      "supporting_evidence": "The text says 'we use Qwen2.5-VL [2] to enrich the captions', but reference [2] is 'Qwen Technical Report' (arXiv:2309.16609), not the Qwen2.5-VL Technical Report. The cited source does not specifically document Qwen2.5-VL.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "1028-PlayerOne__Egocentric_World_Simulator::baseline"
+    },
+    {
+      "error_category": "reference_background_fabrication",
+      "error_location": "Related Work 'World models'; reference [39]",
+      "confidence": 0.65,
+      "supporting_evidence": "The text attributes 'MuZero [39] runs the self-play of Monte Carlo tree search to build world models for Atari' to reference [39], which is the 'MuZero General: Open reimplementation of MuZero' repository, not the original MuZero paper. The original work should be cited instead of, or in addition to, the reimplementation.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "1028-PlayerOne__Egocentric_World_Simulator::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 11,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (claude-sonnet-5, taxonomy=paperaudit): 11 error(s) reported.",
+  "baseline": {
+    "model": "claude-sonnet-5",
+    "provider": "anthropic",
+    "taxonomy": "paperaudit",
+    "paper_chars": 90098,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 75,
+      "output_tokens": 30042,
+      "cache_read_input_tokens": 23296,
+      "cache_creation_input_tokens": 0
+    }
+  }
+}

@@ -1,0 +1,94 @@
+{
+  "paper_id": "21919-High-Dimensional_Calibration_from_Swap_Regret",
+  "title": "High-Dimensional Calibration from Swap Regret",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Section 2.1 definition of Cal_T^D; Lemma 2.2; Appendix B proof; Appendix C Eq. (6) and subsequent theorem proofs",
+      "confidence": 0.99,
+      "supporting_evidence": "Section 2.1 defines calibration with a 1/T factor: Cal_T^D = sum_p ((1/T) sum_t x_t(p)) D(nu_p,p). But Lemma 2.2 asserts this quantity equals FullSwapReg_T, whose definition is an unnormalized sum over T rounds. The Appendix B derivation obtains the unnormalized quantity sum_p sum_t x_t(p) D_R(nu_p|p), not the Section 2.1 definition. Likewise Eq. (6), Claim C.3, and the proof of Theorem 3.1 treat Cal_T as unnormalized. Thus Lemma 2.2 is off by a factor T under the paper's stated definition, and the main theorem bounds are not consistently expressed.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "21919-High-Dimensional_Calibration_from_Swap_Regret::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Section 2.3 definition of Bregman divergence and Lemma 2.1 / Appendix B",
+      "confidence": 0.99,
+      "supporting_evidence": "The displayed definition is D_R(y||p) = R(p)-R(y)-<nabla R(y),p-y>, i.e. the Bregman divergence with gradient at y. However, Lemma 2.1 claims that its expectation is minimized at p=E[y], which is generally false for that orientation. The proof instead silently uses D_R(y||p)=R(y)-R(p)-<nabla R(p),y-p>, the reverse orientation, as shown by its first line: E[D_R(y||p)] = E[R(y)-R(p)-<nabla R(p),y-p>]. The strong-convexity assertion D_R(y||p) >= alpha||y-p||^2 and the proper-scoring-rule reduction also require the latter orientation. The stated divergence, proofs, and subsequent loss construction are therefore mutually inconsistent.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "21919-High-Dimensional_Calibration_from_Swap_Regret::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Appendix C, Claim C.3 (Eq. (9)) and its proof",
+      "confidence": 1.0,
+      "supporting_evidence": "Claim C.3 states Cal_T(x)-2 Cal_T(tilde{x}) >= (2 diam(P)^2/H^2)T. The displayed proof derives the opposite type of statement: Cal_T(x)-2 Cal_T(tilde{x}) <= ... <= 2T diam(P)^2/H. The inequality direction is reversed, and the claimed H^{-2} dependence does not match the derived H^{-1} dependence. The proof of Theorem 3.1 then uses Eq. (9) as though it implied Cal_T(x) <= 2 Cal_T(tilde{x}) + error. Consequently the central transfer from clairvoyant BTL to implementable FTL/TreeCal is not established.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "21919-High-Dimensional_Calibration_from_Swap_Regret::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Appendix C, proof of Claim C.3, sentence invoking Lemmas C.4 and C.2",
+      "confidence": 0.96,
+      "supporting_evidence": "The proof uses \"sum_{h_l=0}^{H-1} ||p_{h_1...h_l}^{(l)}-tilde p_{h_1...h_l}^{(l)}||^2 <= diam(P)^2\". But Lemma C.4 as stated only concludes an upper bound of 2 diam(P)^2, not diam(P)^2. Its own proof also only establishes a total bound below 2 diam(P)^2. Thus even the constants in the claimed transfer bound are unsupported.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "21919-High-Dimensional_Calibration_from_Swap_Regret::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Abstract versus Theorem 1.1 / Corollary C.5 and the simplex discussion in Section 1.1",
+      "confidence": 0.98,
+      "supporting_evidence": "The abstract claims that simplex l1 calibration is obtained after T=exp(O(log d/epsilon))=d^{O(1/epsilon)} rounds. The paper's stated general norm-calibration result, Theorem 1.1 / Corollary C.5, instead has exponent O(Rate(P,||.||)/epsilon^2); with negative entropy this gives at best the paper's own Section 1.1 claim d^{O(1/epsilon^2)} (and the displayed base also carries epsilon dependence). No argument is provided that improves this to d^{O(1/epsilon)}. The headline abstract rate contradicts the stated theorem.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "21919-High-Dimensional_Calibration_from_Swap_Regret::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Abstract and Section 1.1 discussion surrounding Theorem 1.4",
+      "confidence": 0.99,
+      "supporting_evidence": "The abstract says the lower bound proves T >= exp(Omega(1/epsilon)), that it is tight up to constant factors in the exponent, and that it matches the upper bound. The actual final lower-bound statement, Theorem 4.3, only rules out T <= exp(c min{d^{1/7},epsilon^{-1/6}}). For sufficiently large d this yields only an exp(Omega(epsilon^{-1/6})) lower bound, not exp(Omega(1/epsilon)). It therefore cannot be tight against either the abstract's claimed exp(O(log d/epsilon)) upper bound or the theorem's epsilon-squared upper-bound dependence.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "21919-High-Dimensional_Calibration_from_Swap_Regret::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 1.1 Theorem 1.4 versus Section 4 Theorem 4.3",
+      "confidence": 0.99,
+      "supporting_evidence": "The informal Theorem 1.4 states the lower-bound horizon as exp(c min{d^{1/14},epsilon^{-1/6}}), whereas the formal Theorem 4.3 states exp(c min{d^{1/7},epsilon^{-1/6}}). These are materially different dimension dependences, and the proof of Theorem 4.3 uses d' approximately d/2 together with Theorem 4.1's d'^{1/14}, which supports the 1/14 exponent rather than the formal theorem's 1/7 exponent.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "21919-High-Dimensional_Calibration_from_Swap_Regret::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Lemma 4.2 statement and proof; proof of Theorem 4.3",
+      "confidence": 0.98,
+      "supporting_evidence": "Lemma 4.2 states a regret bound with factor diam_{||.||}(P'), but its proof applies Holder's inequality as ||nu_p-p|| · ||BR(p)-pi(BR(p))||_* and therefore proves a factor diam_{||.||_*}(P'), not the stated primal-norm diameter. The proof of Theorem 4.3 relies on this dual interpretation by taking P'=[-1,1]^{d'} and asserting an l_infinity diameter. Moreover, under the ordinary definition of diameter, [-1,1]^{d'} has l_infinity diameter 2, not 1. The stated lemma and its application do not match.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "21919-High-Dimensional_Calibration_from_Swap_Regret::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 8,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (gpt-5.6-terra, taxonomy=default): 8 error(s) reported.",
+  "baseline": {
+    "model": "gpt-5.6-terra",
+    "provider": "openai",
+    "taxonomy": "default",
+    "paper_chars": 91931,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 31976,
+      "output_tokens": 4865,
+      "cache_read_input_tokens": null,
+      "cache_creation_input_tokens": null
+    }
+  }
+}

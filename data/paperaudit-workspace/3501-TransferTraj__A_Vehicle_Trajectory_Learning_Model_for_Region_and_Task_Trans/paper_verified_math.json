@@ -1,0 +1,88 @@
+{
+  "paper_name": "paper",
+  "paper_path": "/Users/iacopoghinassi/Documents/Github/Wittgenstein/data/paperaudit-workspace/3501-TransferTraj__A_Vehicle_Trajectory_Learning_Model_for_Region_and_Task_Trans/paper.md",
+  "lean_project": "MATH_VERIFICATION/Paper",
+  "lean_project_kept": true,
+  "totals": {
+    "snippets_extracted": 2,
+    "routed_to_math": 0,
+    "routed_to_lean": 2,
+    "lean_passed": 2,
+    "lean_refuted": 0,
+    "lean_failed": 0,
+    "fallbacks_run": 0,
+    "errors_detected": 0
+  },
+  "results": [
+    {
+      "snippet_id": "paper::EQUATION::0",
+      "snippet_type": "EQUATION",
+      "location": "4.1.2 Trajectory Relative Information Extraction (TRIE)",
+      "content": "We then introduce a learnable spatio-temporal rotation matrix to encode spatial information, calculated as follows:\n\n$$\n\\mathbf{R}_{\\Phi(x,y)} = \\begin{bmatrix}\n\\cos \\phi_1(x, y)\\theta_1 & -\\sin \\phi_1(x, y)\\theta_1 & \\cdots & 0 & 0 \\\\\n\\sin \\phi_1(x, y)\\theta_1 & \\cos \\phi_1(x, y)\\theta_1 & \\cdots & 0 & 0 \\\\\n\\vdots & \\vdots & \\ddots & \\vdots & \\vdots \\\\\n0 & 0 & \\cdots & \\cos \\phi_{d/2}(x, y)\\theta_{d/2} & -\\sin \\phi_{d/2}(x, y)\\theta_{d/2} \\\\\n0 & 0 & \\cdots & \\sin \\phi_{d/2}(x, y)\\theta_{d/2} & \\cos \\phi_{d/2}(x, y)\\theta_{d/2}\n\\end{bmatrix} \\in \\mathbb{R}^{d \\times d}\n$$ (1)\n\nwhere $\\phi_k(x, y)$ is the $k$-th element of $\\Phi(x, y)$, $\\theta_1, \\theta_2, \\ldots, \\theta_{d/2}$ are frequency weights, and $\\theta_k = 10000^{-2k/d}$.",
+      "route": "verify-math-lean",
+      "route_rationale": "Block-diagonal matrix asserted to be a rotation matrix in R^{d×d}; orthogonality of the 2×2 rotation blocks is a formalizable, non-trivial trigonometric claim.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::0",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.0,
+        "reasoning": "Formalised the claim that the block-diagonal spatio-temporal rotation matrix of Eq (1) is a rotation matrix. Proved: (1) each 2×2 block R(α) = [[cos α, -sin α], [sin α, cos α]] is orthogonal, R(α)ᵀ R(α) = I, with det R(α) = 1; (2) the block-diagonal assembly of any number of such blocks is orthogonal. The block entries are read as cos(φ_k(x,y)θ_k) etc., matching the appendix Eq (7) reading (the frequency θ_k multiplies the angle inside the trig function). All three theorems compiled cleanly via lake env lean (exit 0, no errors, no sorryAx); axioms are the standard [propext, Classical.choice, Quot.sound].",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean",
+          "formal_statement": "theorem rot2_orthogonal (α : ℝ) : (rot2 α)ᵀ * rot2 α = 1 := by ...\ntheorem rot2_det (α : ℝ) : (rot2 α).det = 1 := by ...\ntheorem rot_blockdiag_orthogonal {n : ℕ} (α : Fin n → ℝ) : (Matrix.blockDiagonal (fun i => rot2 (α i)))ᵀ * Matrix.blockDiagonal (fun i => rot2 (α i)) = 1 := by ...",
+          "compiler_feedback": "'PaperEquation0.rot2_orthogonal' depends on axioms: [propext, Classical.choice, Quot.sound]\n'PaperEquation0.rot2_det' depends on axioms: [propext, Classical.choice, Quot.sound]\n'PaperEquation0.rot_blockdiag_orthogonal' depends on axioms: [propext, Classical.choice, Quot.sound]\nEXIT_CODE=0",
+          "axioms": ["propext", "Classical.choice", "Quot.sound"],
+          "cycles_used": 0,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.0
+    },
+    {
+      "snippet_id": "paper::PROOF::0",
+      "snippet_type": "PROOF",
+      "location": "C The Proof of TRIE to Capture Relative Spatial Information",
+      "content": "Based on the matrix multiplication of the attention mechanism, we apply $\\mathbf{R}_{\\Phi(x,y)}$ to the query and key, allowing the model to effectively capture the relative information $\\mathbf{R}_{\\Phi(x_i - x_j, y_i - y_j)}$ between trajectory points.\n\n$$\n\\begin{align}\n\\mathbf{q}_i \\cdot \\mathbf{k}_j^{\\top} &= (\\mathbf{R}_{\\Phi(x_i, y_i)} \\mathbf{W}_q \\mathbf{e}_i)^{\\top} \\cdot (\\mathbf{R}_{\\Phi(x_j, y_j)} \\mathbf{W}_k \\mathbf{e}_j) \\\\\n&= \\mathbf{e}_i^{\\top} \\mathbf{W}_q^{\\top} \\mathbf{R}_{\\Phi(x_i, y_i)}^{\\top} (\\mathbf{R}_{\\Phi(x_j, y_j)} \\mathbf{W}_k \\mathbf{e}_j) \\\\\n&= \\mathbf{e}_i^{\\top} \\mathbf{W}_q^{\\top} \\begin{bmatrix}\n\\circled{1} & \\circled{2} & \\cdots & 0 & 0 \\\\\n\\circled{3} & \\circled{4} & \\cdots & 0 & 0 \\\\\n\\vdots & \\vdots & \\ddots & \\vdots & \\vdots \\\\\n0 & 0 & \\cdots & \\circled{5} & \\circled{6} \\\\\n0 & 0 & \\cdots & \\circled{7} & \\circled{8}\n\\end{bmatrix} \\mathbf{W}_k \\mathbf{e}_j \\\\\n&= \\mathbf{e}_i^{\\top} \\mathbf{W}_q^{\\top} \\begin{bmatrix}\n\\cos(\\phi_1[(x_i, y_i) - (x_j, y_j)]\\theta_1) & \\sin(\\phi_1[(x_i, y_i) - (x_j, y_j)]\\theta_1) & \\cdots & 0 & 0 \\\\\n-\\sin(\\phi_1[(x_i, y_i) - (x_j, y_j)]\\theta_1) & \\cos(\\phi_1[(x_i, y_i) - (x_j, y_j)]\\theta_1) & \\cdots & 0 & 0 \\\\\n\\vdots & \\vdots & \\ddots & \\vdots & \\vdots \\\\\n0 & 0 & \\cdots & \\cos(\\phi_{d/2}[(x_i, y_i) - (x_j, y_j)]\\theta_{d/2}) & \\sin(\\phi_{d/2}[(x_i, y_i) - (x_j, y_j)]\\theta_{d/2}) \\\\\n0 & 0 & \\cdots & -\\sin(\\phi_{d/2}[(x_i, y_i) - (x_j, y_j)]\\theta_{d/2}) & \\cos(\\phi_{d/2}[(x_i, y_i) - (x_j, y_j)]\\theta_{d/2})\n\\end{bmatrix} \\mathbf{W}_k \\mathbf{e}_j \\\\\n&= \\mathbf{e}_i^{\\top} \\mathbf{W}_q^{\\top} \\mathbf{R}_{\\Phi(x_i, y_i) - \\Phi(x_j, y_j)}^{\\top} \\mathbf{W}_k \\mathbf{e}_j \\\\\n&= \\mathbf{e}_i^{\\top} \\mathbf{W}_q^{\\top} \\mathbf{R}_{\\Phi(x_i - x_j, y_i - y_j)}^{\\top} \\mathbf{W}_k \\mathbf{e}_j,\n\\end{align}\n$$\n\nwhere $\\circled{1} = \\cos(\\phi_1(x_i, y_i)\\theta_1)\\cos(\\phi_1(x_j, y_j)\\theta_1) + \\sin(\\phi_1(x_i, y_i)\\theta_1)\\sin(\\phi_1(x_j, y_j)\\theta_1)$, and similarly for $\\circled{2}, \\ldots, \\circled{8}$.",
+      "route": "verify-math-lean",
+      "route_rationale": "The derivation's correctness turns on the rotation-matrix identity R(α)ᵀ R(β) = R(α-β)ᵀ (trig identities) and on the linearity of Φ — both formalizable.",
+      "lean_result": {
+        "snippet_id": "paper::PROOF::0",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.0,
+        "reasoning": "Formalised the two load-bearing steps of the Appendix C derivation (Eq (8)). (1) Rotation identity: for 2×2 rotation matrices R(θ) = [[cos θ, -sin θ], [sin θ, cos θ]], R(α)ᵀ R(β) = R(α-β)ᵀ; and the block-diagonal analogue R_{Φ_i}ᵀ R_{Φ_j} = R_{Φ_i - Φ_j}ᵀ. This is the step from line 2 to line 5 of Eq (8) — the circled entries of Eq (9) are exactly the trig identities cos(a-b) = cos a cos b + sin a sin b and sin(a-b) = sin a cos b − cos a sin b. (2) Linearity of Φ: since Φ(x,y) = W_Φ (x‖y) is a linear projection, Φ(x_i,y_i) − Φ(x_j,y_j) = Φ(x_i−x_j, y_i−y_j); this is the step from line 5 to line 6. Both formalised claims compiled cleanly via lake env lean (exit 0, no errors, no sorryAx); axioms are the standard [propext, Classical.choice, Quot.sound]. The derivation is mathematically sound.",
+        "predicted_error_category": null,
+        "snippet_type": "PROOF",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean",
+          "formal_statement": "theorem rot2_transpose_mul (α β : ℝ) : (rot2 α)ᵀ * rot2 β = (rot2 (α - β))ᵀ := by ...\ntheorem rot_blockdiag_transpose_mul {n : ℕ} (α β : Fin n → ℝ) : (Matrix.blockDiagonal (fun i => rot2 (α i)))ᵀ * Matrix.blockDiagonal (fun i => rot2 (β i)) = (Matrix.blockDiagonal (fun i => rot2 (α i - β i)))ᵀ := by ...\ntheorem phi_linear_sub {m : ℕ} (φ : (Fin 2 → ℝ) →ₗ[ℝ] (Fin m → ℝ)) (v w : Fin 2 → ℝ) : φ (v - w) = φ v - φ w := by exact map_sub φ v w",
+          "compiler_feedback": "'PaperProof0.rot2_transpose_mul' depends on axioms: [propext, Classical.choice, Quot.sound]\n'PaperProof0.rot_blockdiag_transpose_mul' depends on axioms: [propext, Classical.choice, Quot.sound]\n'PaperProof0.phi_linear_sub' depends on axioms: [propext, Classical.choice, Quot.sound]\nEXIT_CODE=0",
+          "axioms": ["propext", "Classical.choice", "Quot.sound"],
+          "cycles_used": 0,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.0
+    }
+  ],
+  "findings": [],
+  "verdict": "NO_ERRORS",
+  "verdict_confidence": 0.8,
+  "summary": "Transversal math verification of TransferTraj (NeurIPS 2025), a vehicle trajectory learning model. The paper is an ML systems paper: most of its display mathematics is architecture notation (POI/road modality sets, relative coordinates, query/key/value definitions, SC-MoE output, noisy top-K gating, loss functions) and experimental numeric tables — content the skill directs to skip. Two self-contained, formally checkable mathematical objects were extracted and routed to verify-math-lean against the shared MATH_VERIFICATION/Paper project: (1) paper::EQUATION::0, the block-diagonal 'spatio-temporal rotation matrix' R_{Φ(x,y)} of Eq (1), asserted to be a rotation matrix in R^{d×d} with θ_k = 10000^{-2k/d}; and (2) paper::PROOF::0, the Appendix C derivation (Eq (8)) showing the rotated query-key dot product reduces to the relative rotation R_{Φ(x_i-x_j, y_i-y_j)}^{\\top}. Both were formalised in Lean 4 and PASSED: the 2×2 rotation blocks are orthogonal with det 1, their block-diagonal assembly is orthogonal, the rotation identity R(α)ᵀ R(β) = R(α-β)ᵀ (and its block analogue) holds, and Φ linearity justifies the final step. No verify-math fallbacks were needed (no FAILED Lean results), so there was no verifier disagreement. No findings. The only observation worth noting is a notation ambiguity in Eq (1): 'cos φ_k(x, y)θ_k' is shorthand that the appendix Eq (7) resolves to cos(φ_k(x,y)θ_k); under the literal reading θ_k·cos(φ_k) the block would not be a rotation matrix (det = θ_k²), but the appendix clarifies the intended reading, and the Lean formalisation used that clarified reading. Verdict: NO_ERRORS with confidence 0.8 — the two formalizable mathematical claims are machine-checked clean, but the coverage is limited because most of the paper's content is non-formalisable architecture/experimental material. The shared Lean project was reused (it already held proofs for other papers) and was therefore kept on disk (lean_project_kept = true); proofs saved under MATH_VERIFICATION/Paper/Paper/Verified/TransferTraj__EQUATION__0.lean and TransferTraj__PROOF__0.lean."
+}

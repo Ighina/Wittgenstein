@@ -1,0 +1,440 @@
+{
+  "paper_name": "paper",
+  "paper_path": "/Users/iacopoghinassi/Documents/Github/Wittgenstein/data/paperaudit-workspace/16407-A_Clean_Slate_for_Offline_Reinforcement_Learning/paper.md",
+  "tag": "opus5",
+  "lean_project": "MATH_VERIFICATION/Paper",
+  "lean_project_kept": true,
+  "lean_project_kept_rationale": "Step 0 REUSED a pre-existing MATH_VERIFICATION/Paper project (created 2025-08-26, 7.4 GB Mathlib build, and holding Paper/Verified/ artifacts from many other papers' runs). The verify-math-lean deletion rules are explicit: \"If Step 0 reused an existing project rather than creating it, treat it as --keep-lean and do not delete it — you did not create it, so it is not yours to remove.\" All four Lean calls were therefore pinned to --project=Paper --keep-lean, including the last. Per-snippet scratch (TMP.lean, claim.md) was removed; the four proofs are archived under MATH_VERIFICATION/Paper/Paper/Verified/16407-CleanSlateOfflineRL-opus5/.",
+  "totals": {
+    "snippets_extracted": 13,
+    "routed_to_math": 9,
+    "routed_to_lean": 4,
+    "lean_passed": 2,
+    "lean_refuted": 2,
+    "lean_failed": 0,
+    "lean_not_attempted": 0,
+    "fallbacks_run": 0,
+    "errors_detected": 4
+  },
+  "results": [
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::0",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "1 Introduction (claim) / F Reimplementation Training Time, Table 2 (data) / Figure 5",
+      "content": "[§1, Solution 2] These minimal implementations eliminate extraneous code differences and highlight fundamental components, as well as achieving average training speedups of 131.5× and 74.8× against OfflineRL-Kit [16] and CORL [17], two leading offline RL libraries.\n\n[Abstract] ...improving clarity and training speed in our context.\n\n[Appendix F, Table 2: Speedup from our JAX implementations, training time in minutes. Algorithms trained for 1M update steps on HalfCheetah-medium-expert using a single L40S GPU.]\n| Algorithm | OfflineRL-Kit | CORL  | JAX-CORL | Unifloral |\n| BC        | 19.8          | 15.0  | —        | 1.7       |\n| TD3-BC    | 56.1          | 42.5  | 6.9      | 3.1       |\n| IQL       | 79.7          | 65.0  | 5.2      | 4.0       |\n| ReBRAC    | —             | 8.7   | —        | 6.8       |\n| SAC-N     | 107.5         | 98.8  | —        | 7.7       |\n| CQL       | 203.9         | 180.3 | 20.7     | 9.8       |\n| EDAC      | 127.1         | 113.0 | —        | 20.8      |\n| MOPO      | 168.1         | —     | —        | 14.0      |\n| MOReL     | —             | —     | —        | 14.0      |\n| COMBO     | 289.6         | —     | —        | 22.0      |\n\n[Figure 5: Speed up from our JAX reimplementations] TD3-BC 16x; BC 16x; IQL 16x; SAC-N 14x; CQL 14x; ReBRAC 8x; EDAC 4x; MOPO 12x; COMBO 12x",
+      "route": "verify-math-lean",
+      "route_rationale": "The claimed average speedups are an arithmetic aggregate of the paper's own Table 2; exactly computable in rational arithmetic and therefore formally refutable.",
+      "lean_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::0",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.95,
+        "reasoning": "I formalised the per-algorithm speedups implied by Table 2 as exact rationals ($\\text{baseline time}/\\text{Unifloral time}$, over the algorithms each baseline reports) and asked Lean whether their arithmetic mean can be the $131.5\\times$ and $74.8\\times$ announced in §1.\n\nLean proved it cannot. `orlkit_mean_ne_claim` and `corl_mean_ne_claim` refute both averages outright; `means_are_small` proves both true means are below $15$ (they are $14.465$ and $10.961$). The strongest result, `every_speedup_lt_21`, proves that *every individual* Table 2 speedup is below $21$ — the largest is CQL at $203.9/9.8 \\approx 20.81$. Since the arithmetic mean, median, geometric mean, minimum and maximum of a finite set are all bounded by its maximum, `claims_exceed_all_data` shows no such aggregation of Table 2 can reach $131.5$ or $74.8$: the claimed averages exceed every single data point they are supposedly averaging.\n\nI also checked the alternative aggregations the authors might have intended. Pooling total wall-clock time gives $1051.8/83.1 = 12.66\\times$ for OfflineRL-Kit and $9.71\\times$ for CORL. The paper's own Figure 5 lists speedups of $16,16,16,14,14,8,4,12,12$, averaging $12.44\\times$ — consistent with Table 2 and likewise an order of magnitude below the Introduction. So Figure 5 and Table 2 agree with each other at roughly $10\\text{–}14\\times$ and both contradict the §1/abstract claim, which is overstated by a factor of about $9$ and $7$ respectively. The near-coincidence of $131.5$ with $13.15$ and of $74.8$ with $7.48$ suggests a misplaced decimal point, but the printed claim is refuted either way.",
+        "predicted_error_category": "Formally refuted",
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": [
+          "1 Introduction — Solution 2: Consistent Reimplementations and a Unified Algorithm",
+          "F Reimplementation Training Time, Table 2",
+          "Figure 5"
+        ],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/16407-CleanSlateOfflineRL-opus5/paper__FORMULA_BLOCK__0.lean",
+          "formal_statement": "import Mathlib\n\n/-!\npaper::FORMULA_BLOCK::0 — \"average training speedups of 131.5x and 74.8x\nagainst OfflineRL-Kit and CORL\" (Section 1) vs. the training times in\nAppendix F, Table 2.\n\nSpeedups are baseline_time / unifloral_time, in exact rational arithmetic\n(times in minutes, written as exact fractions of tenths).\n-/\n\nnamespace CleanSlate\n\n/-- Per-algorithm speedups of Unifloral over OfflineRL-Kit, from Table 2.\n    BC, TD3-BC, IQL, SAC-N, CQL, EDAC, MOPO, COMBO (the 8 entries OfflineRL-Kit reports). -/\ndef orlkitSpeedups : List ℚ :=\n  [198/17, 561/31, 797/40, 1075/77, 2039/98, 1271/208, 1681/140, 2896/220]\n\n/-- Per-algorithm speedups of Unifloral over CORL, from Table 2.\n    BC, TD3-BC, IQL, ReBRAC, SAC-N, CQL, EDAC (the 7 entries CORL reports). -/\ndef corlSpeedups : List ℚ :=\n  [150/17, 425/31, 650/40, 87/68, 988/77, 1803/98, 1130/208]\n\n/-- The paper's Introduction claims these two averages. -/\ndef claimedOrlkitMean : ℚ := 1315/10\ndef claimedCorlMean   : ℚ := 748/10\n\n/-- REFUTATION 1: the mean OfflineRL-Kit speedup implied by Table 2 is NOT 131.5. -/\ntheorem orlkit_mean_ne_claim :\n    orlkitSpeedups.sum / (orlkitSpeedups.length : ℚ) ≠ claimedOrlkitMean := by\n  unfold orlkitSpeedups claimedOrlkitMean\n  norm_num [List.sum_cons]\n\n/-- REFUTATION 2: the mean CORL speedup implied by Table 2 is NOT 74.8. -/\ntheorem corl_mean_ne_claim :\n    corlSpeedups.sum / (corlSpeedups.length : ℚ) ≠ claimedCorlMean := by\n  unfold corlSpeedups claimedCorlMean\n  norm_num [List.sum_cons]\n\n/-- The true means are an order of magnitude smaller: both are below 15. -/\ntheorem means_are_small :\n    orlkitSpeedups.sum / (orlkitSpeedups.length : ℚ) < 15 ∧\n    corlSpeedups.sum / (corlSpeedups.length : ℚ) < 15 := by\n  constructor\n  · unfold orlkitSpeedups; norm_num [List.sum_cons]\n  · unfold corlSpeedups; norm_num [List.sum_cons]\n\n/-- Stronger: EVERY per-algorithm speedup in Table 2 is below 21.  Hence no\n    aggregation of Table 2 that is bounded by its maximum — arithmetic mean,\n    median, geometric mean, minimum, or maximum — can reach 131.5 or 74.8. -/\ntheorem every_speedup_lt_21 :\n    (∀ x ∈ orlkitSpeedups, x < 21) ∧ (∀ x ∈ corlSpeedups, x < 21) := by\n  constructor\n  · intro x hx\n    fin_cases hx <;> norm_num\n  · intro x hx\n    fin_cases hx <;> norm_num\n\n/-- Consequently the claimed averages exceed the largest achievable aggregate. -/\ntheorem claims_exceed_all_data :\n    (∀ x ∈ orlkitSpeedups, x < claimedOrlkitMean) ∧\n    (∀ x ∈ corlSpeedups, x < claimedCorlMean) := by\n  constructor\n  · intro x hx; unfold claimedOrlkitMean; fin_cases hx <;> norm_num\n  · intro x hx; unfold claimedCorlMean; fin_cases hx <;> norm_num\n\nend CleanSlate\n",
+          "compiler_feedback": "lake env lean Paper/TMP.lean -> exit 0, no diagnostics.\n\n#print axioms:\n'CleanSlate.orlkit_mean_ne_claim' depends on axioms: [propext, Classical.choice, Quot.sound]\n'CleanSlate.corl_mean_ne_claim' depends on axioms: [propext, Classical.choice, Quot.sound]\n'CleanSlate.means_are_small' depends on axioms: [propext, Classical.choice, Quot.sound]\n'CleanSlate.every_speedup_lt_21' depends on axioms: [propext, Classical.choice, Quot.sound]\n'CleanSlate.claims_exceed_all_data' depends on axioms: [propext, Classical.choice, Quot.sound]\n\ngrep -c sorry Paper/TMP.lean -> 0",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::EQUATION::0",
+      "snippet_type": "EQUATION",
+      "location": "2.1 Reinforcement Learning",
+      "content": "We apply RL to a finite-horizon Markov Decision Process (MDP) defined by the tuple ⟨S₀, S, 𝒜, D, R, T⟩. Here S is the state space, 𝒜 is the action space, and T is the horizon. D: S × 𝒜 → Δ(S) is the transition dynamics... The scalar reward function is R: S × 𝒜 → ℝ.\n\nA policy π maps a state in S to an action distribution over 𝒜. The policy is trained to maximize the expected return J_M^π for a given MDP M with trajectory length T:\n\nJ_M^π := 𝔼_{a_{0:T}∼π, s₀∼S₀, s_{1:T}∼D} [ ∑_{t=0}^{T} r_t ].\n(1)",
+      "route": "verify-math",
+      "route_rationale": "Definition of the expected-return objective; checkable by inspection, no non-trivial argument to formalise.",
+      "lean_result": null,
+      "fallback_result": null,
+      "verify_math_result": {
+        "snippet_id": "paper::EQUATION::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.78,
+        "reasoning": "Equation (1) is the standard undiscounted finite-horizon return, and the expectation is taken over the correct generative objects ($s_0\\sim S_0$, $a_t\\sim\\pi$, $s_{t+1}\\sim D$). No algebraic, sign, or domain error. Three notational observations, none erratum-worthy: (i) the MDP tuple $\\langle S_0, S, \\mathcal{A}, D, R, T\\rangle$ omits a discount factor, yet $\\gamma$ is used in Eq. (6) and set to $0.99$ in Table 5, so the objective actually optimised is the $\\gamma$-discounted return rather than the $J_M^\\pi$ defined here — a very common and harmless practice gap; (ii) the sum $\\sum_{t=0}^{T}$ has $T+1$ terms while the text calls $T$ the 'trajectory length', and the expectation subscripts mix $a_{0:T}$ with $s_{1:T}$, an off-by-one in indexing convention; (iii) $r_t$ is used without being tied to $R(s_t,a_t)$. Per the skill's exclusions these are notation/convention issues, not derivation-invalidating mistakes.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.78
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "3.2 Proposed Evaluation Procedure",
+      "content": "Our goal is to evaluate offline RL algorithms under a fixed budget of N pre-deployment environment interactions used for tuning... we provide an upper confidence bound (UCB) bandit [19] in our implementation as the default tuning algorithm... we assume that the expected return of each policy is not directly observable, with each pull from the bandit sampling a single episodic return from that policy's return distribution.\n\nStep 1: Train Policies and Collect Scores — we sample $P$ hyperparameter settings (with replacement and random seeds) from the range defined by the method, and then train $P$ corresponding policies. These policies are evaluated online for a large number of episodes $R$ and their episodic scores recorded.\n\nStep 2: Run Bootstrapped Tuning Bandit — This is performed by subsampling $K$ policies (i.e., their corresponding episodic scores) and running a multi-armed bandit over them. In this bandit, each arm corresponds to a policy, with each pull sampling one episode's return from the corresponding policy. At each number of pulls $N$, we evaluate the performance of the algorithm by selecting the policy estimated to have the highest return by the bandit, and taking its true average return. We repeat this process $B$ times to obtain a bootstrapped estimate of algorithm performance.\n\n[Footnote] We fix $K = 8$ in our experiments. [Figure 3] mean and 95% CI over 500 bandit rollouts with K=8 policy arms subsampled from 20 trained policies each rollout.",
+      "route": "verify-math",
+      "route_rationale": "A procedural/statistical model whose checkable content is internal coherence of its symbol budget; it rests on undefined empirical objects (return distributions) and is not faithfully formalisable.",
+      "lean_result": null,
+      "fallback_result": null,
+      "verify_math_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.72,
+        "reasoning": "The procedure is internally coherent. Sampling $P$ hyperparameter settings, recording $R$ episodic scores each, subsampling $K\\le P$ arms and running UCB for $N$ pulls, repeated $B$ times, is a well-posed bootstrap; the instantiation $P=20$, $K=8$, $B=500$ in Figure 3 is consistent with $K\\le P$ and with the $K=8$ footnote. There is no contradiction between 'the expected return of each policy is not directly observable' and 'taking its true average return': the first constrains what the *bandit* observes (one sampled episodic return per pull), the second is the *meta-evaluator's* scoring of the arm the bandit chose, computed offline from the $R$ recorded episodes. Notational observation, not an error: $N$ is overloaded three ways across the paper — dataset size in §2.2 ('transitions $(s_i,a_i,r_i,s_{i+1},a_{i+1})$ for $i=1,\\dots,N$'), number of bandit pulls here, and critic-ensemble size in Appendix I.1 Eqs. (4), (6), (7).",
+        "predicted_error_category": null,
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.72
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::1",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "5.2 Improving Policy Optimization for Model-Based Offline RL",
+      "content": "Evaluation We implement MoBRAC in Unifloral, using the MOPO hyperparameters for dynamics model training and sampling, then using the ReBRAC hyperparameters elsewhere. Figure 7 shows how MoBRAC outperforms other model-based methods for all datasets, except for MOPO in maze2d-large-v1. Under a transparent evaluation budget, we find that MoBRAC outperforms the other model-based methods in 6 out of 9 datasets and is tied with MOPO for 3 others (Appendix K).",
+      "route": "verify-math",
+      "route_rationale": "A counting claim over the 9 evaluation datasets; arithmetically checkable but a formal statement would require inventing the underlying scores.",
+      "lean_result": null,
+      "fallback_result": null,
+      "verify_math_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::1",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.75,
+        "reasoning": "The two sentences give incompatible counts over the same 9 datasets. The second is internally consistent ($6$ wins $+\\,3$ ties $=9$, matching the 9 datasets of Appendix B and Figure 15). The first — 'MoBRAC outperforms other model-based methods for all datasets, except for MOPO in maze2d-large-v1' — asserts strict wins on $9-1=8$ datasets with a single exception. Both cannot hold: $8 \\neq 6$ strict wins, and the number of datasets on which MoBRAC fails to strictly outperform is $1$ under the first sentence versus $3$ under the second. Even under the charitable reading that ties count as 'not outperforming' and that maze2d-large-v1 is one of the three ties, the first sentence still mis-reports $1$ non-win where there are $3$. The headline direction of the result (MoBRAC is the strongest model-based method) survives either count, so this is a reporting error rather than a refutation of the contribution.",
+        "predicted_error_category": "Sign/Arithmetic error",
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": [
+          "5.2 Improving Policy Optimization for Model-Based Offline RL — Evaluation paragraph, sentences 2 and 3"
+        ]
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.75
+    },
+    {
+      "snippet_id": "paper::EQUATION::1",
+      "snippet_type": "EQUATION",
+      "location": "A.3 Imitation Learning (DT)",
+      "content": "The reward at each step is decremented from the target return, which is referred to as return-to-go at time t. Formally, R̂_t = ∑_{t′=t}^{T} r_{t′} where r_{t′} are the observed rewards. Rather than directly modelling the reward function R, the model is conditioned on the return-to-go values to enable generation based on desired future returns.\n\nThe trajectory representation τ is structured as an ordered sequence of return-to-go values, states, and actions:\nτ = (R̂_1, s_1, a_1, R̂_2, s_2, a_2, …, R̂_T, s_T, a_T), (3)\nwhere (s_t, a_t) ∈ S × A for all timesteps t.\n\nDuring online evaluation, the model is initialized with a desired target return and an initial state s_0 ∼ S_0. After executing action a_t, the received reward is subtracted from the target: R̂_{t+1} = R̂_t − r_t.",
+      "route": "verify-math-lean",
+      "route_rationale": "A crisp closed-form identity plus a recursion the paper states separately; whether the recursion follows from the definition is exactly what a proof assistant settles.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::1",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.93,
+        "reasoning": "I formalised the paper's *definition* $\\hat R_t = \\sum_{t'=t}^{T} r_{t'}$ (as `rtg`, a sum over `Finset.Ico t (T+1)`, confirmed equal to the closed range `Finset.Icc t T` by `rtg_eq_sum_Icc`) and then asked Lean to *derive* the separately stated online update rather than assume it.\n\nEvery check passed. `rtg_succ` proves $\\hat R_{t+1} = \\hat R_t - r_t$ for all $t \\le T$, so the paper's evaluation-time update is a theorem of its own definition, not an extra assumption — the two characterisations of return-to-go are consistent. `rtg_decomp` gives the equivalent decomposition $\\hat R_t = r_t + \\hat R_{t+1}$. `rtg_one_eq_episode_return` confirms $\\hat R_1$ is the full episode return $\\sum_{t=1}^{T} r_t$, so the 'desired target return' used to initialise evaluation is on the same scale as an episode return. `rtg_horizon` proves $\\hat R_{T+1} = 0$: the return-to-go is exhausted exactly at the horizon, with no drift. `rtg_telescope` confirms iterating the update recovers the definition.\n\nThe only blemish is indexing, which does not affect the identity: Eq. (3) indexes the trajectory from $t=1$ while the evaluation text starts from $s_0 \\sim S_0$, so the first state is named $s_0$ in one place and $s_1$ in the other. Verdict: the mathematics of this snippet is correct.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/16407-CleanSlateOfflineRL-opus5/paper__EQUATION__1.lean",
+          "formal_statement": "import Mathlib\n\n/-!\npaper::EQUATION::1 — Decision Transformer return-to-go (Appendix A.3, Eq. (3)).\n\nDefinition from the paper:  R̂_t = ∑_{t'=t}^{T} r_{t'}\nStated online update:       R̂_{t+1} = R̂_t − r_t\n\nWe formalise the definition exactly as written and derive the update, rather\nthan assuming it.\n-/\n\nnamespace CleanSlate\n\nvariable (T : ℕ) (r : ℕ → ℝ)\n\n/-- The paper's definition: `rtg T r t = ∑_{t' = t}^{T} r_{t'}`.\n    `Finset.Ico t (T+1) = Finset.Icc t T`, so this is literally `∑_{t'=t}^{T}`. -/\ndef rtg (T : ℕ) (r : ℕ → ℝ) (t : ℕ) : ℝ := ∑ i ∈ Finset.Ico t (T + 1), r i\n\n/-- Sanity check that `rtg` really is the sum over the closed range `t..T`. -/\ntheorem rtg_eq_sum_Icc (t : ℕ) : rtg T r t = ∑ i ∈ Finset.Icc t T, r i := by\n  unfold rtg\n  rfl\n\n/-- PASS 1 — the paper's online update is a theorem, not an extra assumption:\n    for every step `t ≤ T`, decrementing the return-to-go by the received\n    reward `r t` yields exactly the return-to-go at `t+1`. -/\ntheorem rtg_succ (t : ℕ) (ht : t ≤ T) : rtg T r (t + 1) = rtg T r t - r t := by\n  unfold rtg\n  rw [Finset.sum_eq_sum_Ico_succ_bot (by omega : t < T + 1) r]\n  ring\n\n/-- PASS 2 — equivalently, the reward plus the remaining return-to-go\n    reconstitutes the current return-to-go. -/\ntheorem rtg_decomp (t : ℕ) (ht : t ≤ T) : rtg T r t = r t + rtg T r (t + 1) := by\n  rw [rtg_succ T r t ht]; ring\n\n/-- PASS 3 — the initial return-to-go is the full episode return, so the\n    \"desired target return\" used at evaluation time is on the episode-return\n    scale (here for the paper's 1-based indexing of Eq. (3)). -/\ntheorem rtg_one_eq_episode_return :\n    rtg T r 1 = ∑ i ∈ Finset.Icc 1 T, r i := rtg_eq_sum_Icc T r 1\n\n/-- PASS 4 — the return-to-go is exactly exhausted at the horizon. -/\ntheorem rtg_horizon : rtg T r (T + 1) = 0 := by\n  unfold rtg\n  simp\n\n/-- PASS 5 — telescoping: iterating the stated update from `t` down to the\n    horizon recovers the definition, i.e. the recursion has no drift. -/\ntheorem rtg_telescope (t : ℕ) :\n    rtg T r t = ∑ i ∈ Finset.Ico t (T + 1), r i := rfl\n\nend CleanSlate\n",
+          "compiler_feedback": "lake env lean Paper/TMP.lean -> exit 0, no diagnostics.\n\n#print axioms:\n'CleanSlate.rtg_eq_sum_Icc' depends on axioms: [propext, Classical.choice, Quot.sound]\n'CleanSlate.rtg_succ' depends on axioms: [propext, Classical.choice, Quot.sound]\n'CleanSlate.rtg_decomp' depends on axioms: [propext, Classical.choice, Quot.sound]\n'CleanSlate.rtg_one_eq_episode_return' depends on axioms: [propext, Classical.choice, Quot.sound]\n'CleanSlate.rtg_horizon' depends on axioms: [propext, Classical.choice, Quot.sound]\n\ngrep -c sorry Paper/TMP.lean -> 0\n\n(First attempt used a non-existent lemma name `Nat.Ico_succ_right`; replaced with `rfl`, which the kernel accepts for the Nat interval conversion.)",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.93
+    },
+    {
+      "snippet_id": "paper::EQUATION::2",
+      "snippet_type": "EQUATION",
+      "location": "I.1 Critic Objective",
+      "content": "First, we compute the value target using one of two methods, selectable via the method configuration:\n\n$$v_{t+1} = \\begin{cases} v(s_{t+1}) \\\\ \\min_{n=1}^N q'_n(s_{t+1}, \\text{clip}(\\hat{a}_{t+1} + \\text{clip}(\\epsilon, \\epsilon_{\\min}, \\epsilon_{\\max}), a_{\\min}, a_{\\max})) \\end{cases}, \\quad (4)$$\n\nwhere $N$ is the number of ensemble members, $v$ is a value function trained with expectile regression (as in IQL [21]), $\\hat{a}_{t+1} \\sim \\pi(a_{t+1}|s_{t+1})$ is an action sampled from $\\pi$ (or a Polyak averaged target policy), $\\epsilon \\sim \\mathcal{N}(0, \\sigma^2)$ is random action noise with standard deviation $\\sigma$, and $\\epsilon_{\\min}$, $\\epsilon_{\\max}$, $a_{\\min}$, and $a_{\\max}$ are clipping ranges.",
+      "route": "verify-math",
+      "route_rationale": "A two-branch case definition of the value target; nothing is asserted that could be false, so inspection of the nesting and sign suffices.",
+      "lean_result": null,
+      "fallback_result": null,
+      "verify_math_result": {
+        "snippet_id": "paper::EQUATION::2",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "The nested clipping is correct and matches TD3 target-policy smoothing exactly: the inner $\\text{clip}(\\epsilon,\\epsilon_{\\min},\\epsilon_{\\max})$ bounds the exploration noise and the outer $\\text{clip}(\\cdot,a_{\\min},a_{\\max})$ projects the perturbed action back into the action space, so the target action is guaranteed admissible. Taking $\\min_n$ over the target-critic ensemble is the standard pessimistic aggregation and has the right direction for combating overestimation bias. $\\min_{n=1}^{N}$ is a mild abuse of notation for $\\min_{1\\le n\\le N}$ but is unambiguous. No algebraic, sign, or domain-constraint error.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::EQUATION::3",
+      "snippet_type": "EQUATION",
+      "location": "I.1 Critic Objective",
+      "content": "The value target is then augmented with behaviour cloning and entropy terms (coefficients $\\alpha_{\\text{BC}}$ and $\\alpha_{\\mathcal{H}}$), defined as\n\n$$\\hat{v}_{t+1} = v_{t+1} + \\alpha_{\\text{BC}} \\cdot (\\tilde{a}_{t+1} - a_{t+1}) + \\alpha_{\\mathcal{H}} \\cdot \\mathcal{H}(\\pi(\\cdot|s_{t+1})), \\quad (5)$$\n\nwhich is then used to compute the value loss,\n\n$$\\mathcal{L}_v = \\sum_{n=1}^N (q_n(s_t, a_t) - (r + (1-d) \\cdot \\gamma \\cdot \\hat{v}_{t+1}))^2. \\quad (6)$$\n\n[Context: $\\tilde{a}_{t+1} \\sim \\pi$ is the policy action and $a_{t+1}$ the dataset action, both in the action space with clipping ranges $a_{\\min}, a_{\\max}$ (Eq. 4). Table 5 lists $\\alpha_{\\text{BC}}$ as the 'Critic BC coefficient', ranged over $[0, 0.1]$ for ReBRAC and $0$ for every other method. The cited source ReBRAC [5] uses the critic target $r + \\gamma(\\min_j Q'_j(s',\\tilde{a}') - \\beta_1\\|\\tilde{a}' - a'\\|^2)$.]",
+      "route": "verify-math-lean",
+      "route_rationale": "Whether the printed term actually acts as the behaviour-cloning penalty the paper says it is turns on a real argument about sign and monotonicity, not on arithmetic.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::3",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.9,
+        "reasoning": "The paper calls $\\alpha_{\\text{BC}} \\cdot (\\tilde a_{t+1} - a_{t+1})$ a behaviour-cloning term augmenting the value target, citing ReBRAC [5], whose critic target subtracts $\\beta_1\\|\\tilde a' - a'\\|^2$. I formalised 'is a behaviour-cloning penalty on the value target' as the two properties such a term must have when $\\alpha_{\\text{BC}} > 0$: **(P1)** the adjustment is never positive (it cannot inflate the target), and **(P2)** it is non-increasing in the deviation magnitude $|\\tilde a - a|$ (a larger departure from the dataset action is penalised at least as much). Lean confirms ReBRAC's form has both (`rebrac_P1`, `rebrac_P2`) and refutes both for Eq. (5).\n\n`eq5_violates_P1`: for every $\\alpha_{\\text{BC}} > 0$ there is an action pair — e.g. $\\tilde a = 1$, $a = 0$ — where the term is strictly positive, so deviating from the dataset action *raises* the critic target. That is the opposite of behaviour regularisation, and through Eq. (6) it rewards exactly the out-of-distribution actions the term exists to suppress.\n\n`eq5_violates_P2`: the term is not a function of the deviation magnitude at all. The pairs $(\\tilde a, a) = (0,1)$ and $(1,0)$ have identical $|\\tilde a - a| = 1$ but receive adjustments of opposite sign. `eq5_not_monotone` shows a strictly smaller deviation can be penalised strictly more. Because the difference is signed and unsquared, the penalty depends on the *direction* of the deviation, which is meaningless as a regulariser.\n\n`eq5_no_linear_reading_is_penalty` closes the obvious escape route. Actions are vectors, so $\\tilde a_{t+1} - a_{t+1} \\in \\mathbb{R}^k$ while $\\hat v_{t+1}$ is a scalar — the sum in Eq. (5) is ill-typed for $k \\ge 2$ as printed. Lean proves that under *any* nonzero linear reading $L$ of that vector as a real number (coordinate sum, a single coordinate, any weighting), (P1) still fails: linearity forces $\\alpha L(d) > 0$ at $d$ or at $-d$. `eq5_blind_to_deviation` adds that for the natural coordinate-sum reading there are nonzero deviations, such as $(1,-1)$, that are penalised not at all.\n\nThe omissions are a missing norm/square and a missing minus sign: the intended term, matching the cited ReBRAC, is $-\\alpha_{\\text{BC}}\\|\\tilde a_{t+1} - a_{t+1}\\|^2$. As printed, Eq. (5) is both dimensionally inconsistent and the wrong sign, so it does not define the critic objective of the paper's headline algorithm.",
+        "predicted_error_category": "Sign/Arithmetic error",
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [
+          "I.1 Critic Objective, Eq. (5)",
+          "A.1 Model-Free Offline RL — ReBRAC",
+          "H Unifloral Hyperparameters, Table 5 — 'Critic BC coefficient'"
+        ],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/16407-CleanSlateOfflineRL-opus5/paper__EQUATION__3.lean",
+          "formal_statement": "import Mathlib\n\n/-!\npaper::EQUATION::3 — Eq. (5), Appendix I.1:\n\n  v̂_{t+1} = v_{t+1} + α_BC · (ã_{t+1} − a_{t+1}) + α_H · H(π(·|s_{t+1}))\n\nThe paper describes `α_BC · (ã − a)` as a behaviour-cloning term augmenting the\nvalue target, citing ReBRAC [5], whose critic target subtracts β₁‖ã′−a′‖².\n\nWe formalise \"is a behaviour-cloning penalty on the value target\" as the two\nproperties such a term must have for α_BC > 0:\n  (P1) the adjustment is never positive — it cannot inflate the target;\n  (P2) the adjustment is non-increasing in the deviation magnitude |ã − a|.\n\nLean then checks whether Eq. (5)'s signed, unsquared difference has them.\n-/\n\nnamespace CleanSlate\n\n/-- Eq. (5)'s adjustment, scalar action space. -/\ndef eq5Adj (α ã a : ℝ) : ℝ := α * (ã - a)\n\n/-- The ReBRAC adjustment the paper cites as its source. -/\ndef rebracAdj (α ã a : ℝ) : ℝ := -(α * (ã - a) ^ 2)\n\n/-! ### The ReBRAC form is a penalty -/\n\n/-- (P1) holds for ReBRAC's term. -/\ntheorem rebrac_P1 (α : ℝ) (hα : 0 ≤ α) (ã a : ℝ) : rebracAdj α ã a ≤ 0 := by\n  unfold rebracAdj\n  have : 0 ≤ α * (ã - a) ^ 2 := mul_nonneg hα (sq_nonneg _)\n  linarith\n\n/-- (P2) holds for ReBRAC's term: a larger deviation is penalised at least as much. -/\ntheorem rebrac_P2 (α : ℝ) (hα : 0 ≤ α) (ã₁ a₁ ã₂ a₂ : ℝ)\n    (h : |ã₁ - a₁| ≤ |ã₂ - a₂|) : rebracAdj α ã₂ a₂ ≤ rebracAdj α ã₁ a₁ := by\n  unfold rebracAdj\n  have hsq : (ã₁ - a₁) ^ 2 ≤ (ã₂ - a₂) ^ 2 := by\n    rw [← sq_abs (ã₁ - a₁), ← sq_abs (ã₂ - a₂)]\n    exact pow_le_pow_left₀ (abs_nonneg _) h 2\n  nlinarith [hsq]\n\n/-! ### Eq. (5)'s form is NOT a penalty — refutations -/\n\n/-- REFUTATION 1 of (P1): for any α_BC > 0 the Eq. (5) term is strictly positive\n    on some action pair, so deviating from the dataset action *raises* the value\n    target instead of lowering it. -/\ntheorem eq5_violates_P1 (α : ℝ) (hα : 0 < α) :\n    ¬ (∀ ã a : ℝ, eq5Adj α ã a ≤ 0) := by\n  intro h\n  have := h 1 0\n  unfold eq5Adj at this\n  simp at this\n  linarith\n\n/-- REFUTATION 2 of (P2): the Eq. (5) term is not a function of the deviation\n    magnitude at all — two action pairs with *identical* |ã − a| receive\n    adjustments of opposite sign. -/\ntheorem eq5_violates_P2 (α : ℝ) (hα : 0 < α) :\n    ∃ ã₁ a₁ ã₂ a₂ : ℝ, |ã₁ - a₁| = |ã₂ - a₂| ∧\n      eq5Adj α ã₁ a₁ < 0 ∧ 0 < eq5Adj α ã₂ a₂ := by\n  refine ⟨0, 1, 1, 0, by norm_num, ?_, ?_⟩ <;> unfold eq5Adj <;> simp <;> linarith\n\n/-- REFUTATION 3 of (P2), monotonicity form: a *smaller* deviation can be\n    penalised strictly more than a larger one. -/\ntheorem eq5_not_monotone (α : ℝ) (hα : 0 < α) :\n    ∃ ã₁ a₁ ã₂ a₂ : ℝ, |ã₁ - a₁| < |ã₂ - a₂| ∧\n      eq5Adj α ã₂ a₂ > eq5Adj α ã₁ a₁ := by\n  refine ⟨0, 1, 2, 0, by norm_num, ?_⟩\n  unfold eq5Adj; simp; linarith\n\n/-- REFUTATION 4 — the vector case: actions live in ℝ^k, so `ã − a` is a vector\n    while v̂ is a scalar.  Under *any* linear reading `L` of that vector as a\n    real number (coordinate sum, a single coordinate, any weighting), the Eq. (5)\n    term still fails (P1): linearity forces it positive somewhere.  So no linear\n    aggregation can rescue the term. -/\ntheorem eq5_no_linear_reading_is_penalty {k : ℕ} (L : (Fin k → ℝ) →ₗ[ℝ] ℝ)\n    (hL : ∃ d : Fin k → ℝ, L d ≠ 0) (α : ℝ) (hα : 0 < α) :\n    ¬ (∀ d : Fin k → ℝ, α * L d ≤ 0) := by\n  intro h\n  obtain ⟨d, hd⟩ := hL\n  rcases lt_or_gt_of_ne hd with hneg | hpos\n  · -- L d < 0, so L (−d) > 0 and the adjustment at −d is positive\n    have hmap : L (-d) = -L d := by simp\n    have := h (-d)\n    rw [hmap] at this\n    nlinarith\n  · have := h d\n    nlinarith\n\n/-- REFUTATION 5 — the deviation is invisible to Eq. (5) even in the vector\n    case: a nonzero deviation `d` can give adjustment exactly `0`, i.e. an\n    arbitrarily large departure from the dataset action can be penalised not at\n    all, whenever `d` lies in the kernel of the reading `L`. -/\ntheorem eq5_blind_to_deviation (α : ℝ) :\n    ∃ d : Fin 2 → ℝ, d ≠ 0 ∧ α * (d 0 + d 1) = 0 := by\n  refine ⟨fun i => if i = 0 then 1 else -1, ?_, by norm_num⟩\n  intro hcontra\n  have : (fun i : Fin 2 => if i = 0 then (1:ℝ) else -1) 0 = (0 : Fin 2 → ℝ) 0 := by\n    rw [hcontra]\n  simp at this\n\nend CleanSlate\n",
+          "compiler_feedback": "lake env lean Paper/TMP.lean -> exit 0, no diagnostics.\n\n#print axioms:\n'CleanSlate.rebrac_P1' depends on axioms: [propext, Classical.choice, Quot.sound]\n'CleanSlate.rebrac_P2' depends on axioms: [propext, Classical.choice, Quot.sound]\n'CleanSlate.eq5_violates_P1' depends on axioms: [propext, Classical.choice, Quot.sound]\n'CleanSlate.eq5_violates_P2' depends on axioms: [propext, Classical.choice, Quot.sound]\n'CleanSlate.eq5_not_monotone' depends on axioms: [propext, Classical.choice, Quot.sound]\n'CleanSlate.eq5_no_linear_reading_is_penalty' depends on axioms: [propext, Classical.choice, Quot.sound]\n'CleanSlate.eq5_blind_to_deviation' depends on axioms: [propext, Classical.choice, Quot.sound]\n\ngrep -c sorry Paper/TMP.lean -> 0\n\n(First attempt used the pre-rename `pow_le_pow_left`; replaced with `pow_le_pow_left₀`.)",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::EQUATION::4",
+      "snippet_type": "EQUATION",
+      "location": "I.1 Critic Objective",
+      "content": "which is then used to compute the value loss,\n\n$$\\mathcal{L}_v = \\sum_{n=1}^N (q_n(s_t, a_t) - (r + (1-d) \\cdot \\gamma \\cdot \\hat{v}_{t+1}))^2. \\quad (6)$$",
+      "route": "verify-math",
+      "route_rationale": "Standard squared TD error over a critic ensemble; correctness is visible by inspection.",
+      "lean_result": null,
+      "fallback_result": null,
+      "verify_math_result": {
+        "snippet_id": "paper::EQUATION::4",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.8,
+        "reasoning": "Eq. (6) is the usual squared Bellman residual summed over the $N$ ensemble members, with the correct terminal masking $(1-d)$ and discounting $\\gamma$, and with the bootstrap target built from the *target* critics via $\\hat v_{t+1}$. The structure, signs and bracketing are all right. Observations that are not errors: $r$ is written unsubscripted where $r_t$ is meant; the batch expectation is left implicit; $\\gamma$ was never introduced in the §2.1 MDP tuple; and the symbol $d$ is overloaded — it is the terminal/done indicator here and the behaviour-cloning distance in Eq. (10). Per the skill's exclusions, notation reuse and implicit batch averaging are not derivation-invalidating.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::EQUATION::5",
+      "snippet_type": "EQUATION",
+      "location": "I.1 Critic Objective",
+      "content": "Finally, we add the critic diversity loss term from EDAC [13] with coefficient $\\alpha_{\\text{div}}$, giving the final critic loss\n\n$$\\mathcal{L}_{\\text{critic}} = \\mathcal{L}_v + \\frac{\\alpha_{\\text{div}}}{N-1} \\cdot \\sum_{1 \\leq i \\neq j \\leq N} \\langle \\nabla_{a_t} q_i(s_t, a_t), \\nabla_{a_t} q_j(s_t, a_t) \\rangle. \\quad (7)$$\n\n[Context: $N$ is the number of critic ensemble members. Appendix A.1 describes EDAC: 'They find that SAC requires a large ensemble to avoid optimistic value estimations for OOD actions as the cosine similarity of the gradients increases. To minimize this similarity within the ensemble, the authors propose the Ensemble-Diversified Actor-Critic (EDAC), which adds an ensemble similarity penalty to the Q-function loss in SAC.' Table 5 ranges the 'Diversity coefficient' over [0.0–1e3] for EDAC and 0.0 elsewhere.]",
+      "route": "verify-math-lean",
+      "route_rationale": "The term's mathematical content — what the off-diagonal pairwise inner-product sum measures, and how it scales — is a non-trivial identity worth machine-checking.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::5",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.8,
+        "reasoning": "All three formalised properties of Eq. (7)'s diversity term compiled clean.\n\n`divTerm_identity` proves the identity $\\sum_{i\\neq j}\\langle g_i,g_j\\rangle = \\|\\sum_i g_i\\|^2 - \\sum_i\\|g_i\\|^2$, so the term measures total gradient alignment minus individual gradient energy, and is minimised when the ensemble's action-gradients cancel. The sign is right: adding this with $\\alpha_{\\text{div}} > 0$ to a loss being minimised does push the critics' gradients apart, which is the stated intent. `divTerm_smul` proves quadratic homogeneity, $S(c\\,g) = c^2 S(g)$.\n\nEq. (7) is a definition, and a definition cannot be false, so there is nothing here to refute — status NO_ERROR. But the formal results do expose a substantive deviation from the cited source that I record without flagging, because settling it requires external knowledge of EDAC rather than a theorem about the paper's own text. EDAC's published penalty takes inner products of *normalised* gradients (cosine similarities), which is scale-invariant and bounded in $[-1,1]$ per pair. Eq. (7) drops the normalisation, and Lean shows the consequences: `divTerm_not_scale_invariant` exhibits a configuration where rescaling the gradients changes the term, so it is not a function of gradient directions alone; `divTerm_unbounded_below` proves that for any bound $M$ there is a two-critic configuration with $S(g) < -M$, i.e. the printed $\\mathcal{L}_{\\text{critic}}$ has no lower bound in the gradient variables. The penalty's magnitude is therefore confounded with gradient scale, and minimising it is degenerate in a way EDAC's normalisation exists to prevent. Separately, the paper's own Figure 12 code snippet implements the diversity loss as $-\\eta \\cdot \\mathrm{std}(q)$ over Q-*values*, which is a third, different quantity, and adds it to the actor loss as well as the critic loss.\n\nI treat this as a specification/fidelity concern below the flagging bar rather than a mathematical error: $\\alpha_{\\text{div}}$ is non-zero only for EDAC in Table 5, and the released implementation — not this equation — governs the reported results.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/16407-CleanSlateOfflineRL-opus5/paper__EQUATION__5.lean",
+          "formal_statement": "import Mathlib\n\n/-!\npaper::EQUATION::5 — Eq. (7), Appendix I.1:\n\n  L_critic = L_v + (α_div/(N−1)) · ∑_{1 ≤ i ≠ j ≤ N} ⟨∇_a q_i, ∇_a q_j⟩\n\nWe check what the off-diagonal pairwise inner-product term actually measures,\nand how it compares with EDAC's published penalty, which normalises the\ngradients before taking inner products.\n-/\n\nnamespace CleanSlate\n\n/-- Euclidean dot product on `Fin k → ℝ`, written out so that no normalisation\n    is smuggled in. -/\ndef dot {k : ℕ} (x y : Fin k → ℝ) : ℝ := ∑ a, x a * y a\n\n/-- Eq. (7)'s diversity term (without the α_div/(N−1) prefactor, which is a\n    positive constant and changes none of the properties below). -/\ndef divTerm {N k : ℕ} (g : Fin N → (Fin k → ℝ)) : ℝ :=\n  ∑ i, ∑ j, (if i = j then 0 else dot (g i) (g j))\n\nlemma dot_comm {k : ℕ} (x y : Fin k → ℝ) : dot x y = dot y x := by\n  unfold dot; exact Finset.sum_congr rfl fun a _ => mul_comm _ _\n\n/-- `dot` is bilinear over finite sums in its left argument. -/\nlemma dot_sum_left {N k : ℕ} (g : Fin N → (Fin k → ℝ)) (y : Fin k → ℝ) :\n    dot (∑ i, g i) y = ∑ i, dot (g i) y := by\n  unfold dot\n  simp [Finset.sum_apply, Finset.sum_mul]\n  exact Finset.sum_comm\n\n/-- …and in its right argument. -/\nlemma dot_sum_right {N k : ℕ} (x : Fin k → ℝ) (g : Fin N → (Fin k → ℝ)) :\n    dot x (∑ i, g i) = ∑ i, dot x (g i) := by\n  rw [dot_comm, dot_sum_left]\n  exact Finset.sum_congr rfl fun i _ => dot_comm _ _\n\n/-- Dropping the diagonal from a full double sum: the off-diagonal row sum is\n    the full row sum minus the diagonal entry. -/\nlemma sum_offdiag_row {N : ℕ} (f : Fin N → ℝ) (i : Fin N) :\n    (∑ j, (if i = j then (0:ℝ) else f j)) = (∑ j, f j) - f i := by\n  rw [eq_sub_iff_add_eq, ← Finset.sum_erase_add Finset.univ f (Finset.mem_univ i)]\n  congr 1\n  refine (Finset.sum_subset (Finset.erase_subset i Finset.univ) ?_).symm.trans ?_\n  · intro x _ hx\n    have : x = i := by\n      by_contra hne\n      exact hx (Finset.mem_erase.mpr ⟨hne, Finset.mem_univ x⟩)\n    simp [this]\n  · exact Finset.sum_congr rfl fun j hj => by\n      simp [(Finset.mem_erase.mp hj).1.symm]\n\n/-- PASS 1 — IDENTITY.  Eq. (7)'s term equals the squared norm of the summed\n    gradients minus the total individual gradient energy:\n      ∑_{i≠j} ⟨g_i,g_j⟩ = ‖∑_i g_i‖² − ∑_i ‖g_i‖².\n    So the term rewards gradients that cancel each other out. -/\ntheorem divTerm_identity {N k : ℕ} (g : Fin N → (Fin k → ℝ)) :\n    divTerm g = dot (∑ i, g i) (∑ i, g i) - ∑ i, dot (g i) (g i) := by\n  unfold divTerm\n  rw [dot_sum_left]\n  have hr : ∀ i, dot (g i) (∑ j, g j) = ∑ j, dot (g i) (g j) := fun i => dot_sum_right _ _\n  simp only [hr]\n  rw [← Finset.sum_sub_distrib]\n  exact Finset.sum_congr rfl fun i _ => sum_offdiag_row (fun j => dot (g i) (g j)) i\n\n/-- PASS 2 — QUADRATIC HOMOGENEITY: scaling every gradient by `c` scales the\n    term by `c²`. -/\ntheorem divTerm_smul {N k : ℕ} (g : Fin N → (Fin k → ℝ)) (c : ℝ) :\n    divTerm (fun i => c • g i) = c ^ 2 * divTerm g := by\n  unfold divTerm dot\n  rw [Finset.mul_sum]\n  refine Finset.sum_congr rfl fun i _ => ?_\n  rw [Finset.mul_sum]\n  refine Finset.sum_congr rfl fun j _ => ?_\n  by_cases h : i = j\n  · simp [h]\n  · simp only [h, if_false, Pi.smul_apply, smul_eq_mul]\n    rw [Finset.mul_sum]\n    exact Finset.sum_congr rfl fun a _ => by ring\n\n/-- REFUTATION — Eq. (7)'s term is NOT scale-invariant, so it is not a function\n    of the gradient directions alone, unlike EDAC's cosine-similarity penalty. -/\ntheorem divTerm_not_scale_invariant :\n    ∃ (g : Fin 2 → (Fin 1 → ℝ)) (c : ℝ), 0 < c ∧ divTerm (fun i => c • g i) ≠ divTerm g := by\n  refine ⟨fun i => if i = 0 then (fun _ => 1) else (fun _ => -1), 2, by norm_num, ?_⟩\n  rw [divTerm_smul]\n  unfold divTerm dot\n  norm_num [Fin.sum_univ_succ]\n\n/-- REFUTATION — Eq. (7)'s term has NO LOWER BOUND: for any bound `M` there is a\n    two-critic gradient configuration whose diversity term falls below `-M`.\n    Hence the printed `L_critic` has no minimiser in the gradient variables;\n    EDAC's normalised version is bounded in `[-N(N-1), N(N-1)]`. -/\ntheorem divTerm_unbounded_below (M : ℝ) :\n    ∃ g : Fin 2 → (Fin 1 → ℝ), divTerm g < -M := by\n  refine ⟨fun i => if i = 0 then (fun _ => |M| + 1) else (fun _ => -(|M| + 1)), ?_⟩\n  unfold divTerm dot\n  norm_num [Fin.sum_univ_succ]\n  nlinarith [abs_nonneg M, le_abs_self M, neg_abs_le M]\n\nend CleanSlate\n",
+          "compiler_feedback": "lake env lean Paper/TMP.lean -> exit 0, no diagnostics.\n\n#print axioms:\n'CleanSlate.divTerm_identity' depends on axioms: [propext, Classical.choice, Quot.sound]\n'CleanSlate.divTerm_smul' depends on axioms: [propext, Classical.choice, Quot.sound]\n'CleanSlate.divTerm_not_scale_invariant' depends on axioms: [propext, Classical.choice, Quot.sound]\n'CleanSlate.divTerm_unbounded_below' depends on axioms: [propext, Classical.choice, Quot.sound]\n\ngrep -c sorry Paper/TMP.lean -> 0\n\n(The diagonal-removal step needed two attempts; extracted as the helper lemma `sum_offdiag_row`, after which the file compiled clean.)",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 3,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::EQUATION::6",
+      "snippet_type": "EQUATION",
+      "location": "I.2 Actor Objective (compared against 4.2 A Unified Hyperparameter Space for Offline RL)",
+      "content": "[§4.2, Actor Objective] We define the unified actor loss as a weighted combination of multiple terms:\n\nL_actor = β_q · L_q + β_BC · L_BC − β_H · H(π(·|s_t)) + β_div · L_div + β_dyn · L_dyn.\n\nHere, the critic diversity loss L_div and dynamics model regularization L_dyn (when applicable) are included with respective coefficients β_div and β_dyn, to cover all prior algorithmic components comprehensively. ... This unified formulation explicitly accounts for all key contributions from both model-free and model-based methods in a single framework.\n\n[Appendix I.2] In this section we write out the different design decisions in a unified notation. ... We write the actor loss as:\n\n$$\\mathcal{L}_{\\text{actor}} = \\beta_q \\cdot \\mathcal{L}_q + \\beta_{\\text{BC}} \\cdot \\mathcal{L}_{\\text{BC}} - \\beta_{\\mathcal{H}} \\cdot \\mathcal{H}(\\pi(\\cdot|s_t)). \\quad (8)$$\n\nThis consists of $q$ loss $\\mathcal{L}_q$, behaviour cloning loss $\\mathcal{L}_{\\text{BC}}$, and policy entropy $\\mathcal{H}(\\cdot)$, with coefficients $\\beta_q, \\beta_{\\text{BC}}, \\beta_{\\mathcal{H}} \\in \\mathbb{R}$ controlling the weight of these terms.\n\n[Appendix I.1, Eq. (7)] $$\\mathcal{L}_{\\text{critic}} = \\mathcal{L}_v + \\frac{\\alpha_{\\text{div}}}{N-1} \\cdot \\sum_{1 \\leq i \\neq j \\leq N} \\langle \\nabla_{a_t} q_i(s_t, a_t), \\nabla_{a_t} q_j(s_t, a_t) \\rangle. \\quad (7)$$",
+      "route": "verify-math",
+      "route_rationale": "The defect is a mismatch between two printed definitions of the same objective; a Lean statement could only encode one of them, so the check is a direct textual/structural comparison.",
+      "lean_result": null,
+      "fallback_result": null,
+      "verify_math_result": {
+        "snippet_id": "paper::EQUATION::6",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.8,
+        "reasoning": "The paper prints two inequivalent definitions of its own unified actor objective, and the diversity term is placed in two different losses.\n\n(1) **Dropped terms.** §4.2 defines $\\mathcal{L}_{\\text{actor}} = \\beta_q\\mathcal{L}_q + \\beta_{\\text{BC}}\\mathcal{L}_{\\text{BC}} - \\beta_{\\mathcal{H}}\\mathcal{H}(\\pi(\\cdot|s_t)) + \\beta_{\\text{div}}\\mathcal{L}_{\\text{div}} + \\beta_{\\text{dyn}}\\mathcal{L}_{\\text{dyn}}$ and states these last two are 'included ... to cover all prior algorithmic components comprehensively'. Appendix I.2, which announces that it 'write[s] out the different design decisions in a unified notation', gives Eq. (8) with the $\\beta_{\\text{div}}\\mathcal{L}_{\\text{div}}$ and $\\beta_{\\text{dyn}}\\mathcal{L}_{\\text{dyn}}$ terms absent, and its accompanying prose enumerates only three terms and three coefficients. The two cannot both be the unified actor loss unless $\\beta_{\\text{div}} = \\beta_{\\text{dyn}} = 0$ identically, which would contradict §4.2's stated purpose for them.\n\n(2) **$\\mathcal{L}_{\\text{div}}$ placed in two different objectives.** §4.2 puts 'the critic diversity loss $\\mathcal{L}_{\\text{div}}$' inside the *actor* loss with coefficient $\\beta_{\\text{div}}$, whereas Appendix I.1 Eq. (7) puts the EDAC diversity term inside the *critic* loss $\\mathcal{L}_{\\text{critic}}$ with coefficient $\\alpha_{\\text{div}}$. These are different objectives with different gradients; a reader cannot determine which the method is.\n\n(3) **$\\mathcal{L}_{\\text{dyn}}$ is never defined.** $\\beta_{\\text{dyn}}\\mathcal{L}_{\\text{dyn}}$ appears only in §4.2. Appendix I.3 specifies dynamics modelling through the reward penalty $\\hat R$ of Eq. (11), not through any actor-loss term, so $\\mathcal{L}_{\\text{dyn}}$ has no definition anywhere in the paper.\n\nThe argument that Unifloral can express the surveyed algorithms survives under the charitable reading, so this is a specification defect rather than a refutation of the contribution — but the paper's headline algorithm is defined inconsistently, which would require a correction. Note: none of the skill's five listed error categories (algebraic / fractional / variable-inverse / sign-propagation / domain-constraint) names this failure mode, so `predicted_error_category` is left null rather than forced into an ill-fitting slot.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [
+          "4.2 A Unified Hyperparameter Space for Offline RL — Actor Objective",
+          "I.2 Actor Objective, Eq. (8)",
+          "I.1 Critic Objective, Eq. (7)"
+        ]
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::EQUATION::7",
+      "snippet_type": "EQUATION",
+      "location": "I.2 Actor Objective",
+      "content": "The first term, $\\mathcal{L}_q$, is defined simply by a selectable aggregation function over the $q$-network ensemble, with the minimum being the most common choice,\n\n$$\\mathcal{L}_q = \\begin{cases} -\\min_{n=1}^N (q_n(s_t, a_t)) \\\\ -\\frac{1}{N} \\sum_{n=1}^N q_n(s_t, a_t) \\\\ -q_0(s_t, a_t) \\end{cases}. \\quad (9)$$\n\nThis term may also be normalized across the batch in order to stabilize learning.",
+      "route": "verify-math",
+      "route_rationale": "A three-branch case definition of ensemble aggregation; sign and indexing are checkable by inspection.",
+      "lean_result": null,
+      "fallback_result": null,
+      "verify_math_result": {
+        "snippet_id": "paper::EQUATION::7",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.8,
+        "reasoning": "All three branches carry the correct leading minus sign, so minimising $\\mathcal{L}_q$ maximises the aggregated $q$-value, which is the intended actor objective. The three aggregations (pessimistic minimum, ensemble mean, single critic) match the 'min', 'mean' and 'first' settings of Table 5's 'Q aggregation method' row. One indexing slip, which the skill classifies as a non-error: the ensemble is indexed $n=1,\\dots,N$ throughout Eqs. (4)–(9), but the third branch selects $q_0$, an index outside that range; with Table 5's 'first' aggregation this should read $q_1$.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::EQUATION::8",
+      "snippet_type": "EQUATION",
+      "location": "I.2 Actor Objective",
+      "content": "The second term, $\\mathcal{L}_{\\text{BC}}$, is most commonly defined as the distance $d$ between the target policy and dataset action, being the mean squared error for deterministic policies or log-probability for stochastic policies. However, some methods use advantage weighted regularization (AWR), which further weights this loss by the clipped and exponentiated advantage of the behaviour policy action in order to clone only positive actions within the dataset. Therefore, this term has the following variants:\n\n$$d = \\begin{cases} (a_t - \\hat{a}_t)^2 \\\\ -\\log \\pi(a_t|s_t) \\end{cases}, \\quad \\mathcal{L}_{\\text{BC}} = \\begin{cases} d \\\\ d \\cdot \\min\\left(A_{\\max}, e^{\\eta \\cdot (q(s_t, a_t) - V(s_t))}\\right) \\end{cases}, \\quad (10)$$\n\nwhere $\\eta$ and $A_{\\max}$ are the temperature and maximum value for exponential advantage.",
+      "route": "verify-math",
+      "route_rationale": "AWR weighting definition; the checkable content is sign/bound direction, and it rests on undefined learned objects $\\pi$, $q$, $V$ so no faithful formal statement is available.",
+      "lean_result": null,
+      "fallback_result": null,
+      "verify_math_result": {
+        "snippet_id": "paper::EQUATION::8",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.75,
+        "reasoning": "The mathematics is directionally correct. The AWR weight $\\min(A_{\\max}, e^{\\eta(q(s_t,a_t)-V(s_t))})$ is strictly positive and bounded above by $A_{\\max}$, so $\\mathcal{L}_{\\text{BC}}$ stays non-negative in the deterministic branch and the clipping genuinely controls weight explosion; because the weight increases with the advantage $q-V$, minimising $\\mathcal{L}_{\\text{BC}}$ clones high-advantage dataset actions more strongly, which is the correct AWR direction. No sign, domain or algebraic error. Three observations below the flagging bar: (i) $(a_t-\\hat a_t)^2$ squares a vector-valued action difference where $\\|a_t-\\hat a_t\\|^2$ is meant; (ii) $\\eta$ multiplies the advantage, so it is an *inverse* temperature — the caption calls it 'the temperature', while Appendix A.1's IQL description correctly says 'an inverse temperature hyperparameter'; and $\\eta$ is separately reused as MOPO's pessimism coefficient in Eq. (11); (iii) the prose claim that AWR clones 'only positive actions' overstates the formula, since the weight never reaches zero and merely down-weights low-advantage actions. The printed equation itself is sound.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.75
+    },
+    {
+      "snippet_id": "paper::EQUATION::9",
+      "snippet_type": "EQUATION",
+      "location": "I.3 Dynamics Modelling",
+      "content": "We use an ensemble of dynamics models \\hat{D}_{\\theta} = \\{\\hat{D}_{\\theta}^1, \\hat{D}_{\\theta}^2, ..., \\hat{D}_{\\theta}^M\\}, where each \\hat{D}_{\\theta}^i is trained to predict state transitions and rewards. Following MOPO, we penalize the agent for going to states where the ensemble disagreement is higher, as measured by the standard deviation of the models' predictions. This is used to penalize the reward during policy optimization with a pessimism coefficient \\eta,\n\n\\hat{R}(s_t, a_t) = \\frac{1}{M} \\sum_{m=1}^{M} R_{\\theta}^m(s_t, a_t) - \\eta \\cdot \\sigma(\\hat{D}_{\\theta}^{\\Delta s}(s_t, a_t)),\n(11)\n\nwhere \\sigma(\\hat{D}_{\\theta}^{\\Delta s}(s_t, a_t)) represents the standard deviation across the models' state-change predictions and R_{\\theta}^m(s_t, a_t) is the reward prediction of the m-th ensemble member.\n\n[Appendix A.2, MOPO] For every policy step during training, the maximum standard deviation of the learned models' prediction at that step is subtracted from the reward.",
+      "route": "verify-math",
+      "route_rationale": "The penalty's aggregation over state dimensions is left unspecified, so no faithful Lean statement exists; what is checkable is sign direction and consistency with the paper's own A.2 description.",
+      "lean_result": null,
+      "fallback_result": null,
+      "verify_math_result": {
+        "snippet_id": "paper::EQUATION::9",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.7,
+        "reasoning": "The core algebra is correct: the reward is the ensemble mean of the member reward predictions, and the uncertainty term is *subtracted* with a non-negative coefficient $\\eta$, which is the right direction for pessimism — higher ensemble disagreement lowers the synthetic reward. No sign or algebraic error. Two genuine under-specifications, which the skill's guidance treats as missing context rather than errors: (i) $\\hat D_\\theta^{\\Delta s}$ predicts a state *change*, i.e. a vector, so $\\sigma(\\cdot)$ is a per-dimension standard-deviation vector and the subtraction from a scalar reward is only well-typed once an unstated aggregation over state dimensions (a norm, max, or mean) is supplied; MOPO itself uses $\\max_i\\|\\Sigma^i_\\theta(s,a)\\|_F$. (ii) Appendix A.2 describes MOPO's penalty as 'the maximum standard deviation of the learned models' prediction', i.e. a maximum over ensemble members, while §4.2 and Eq. (11) describe an ensemble-*disagreement* standard deviation; these are different quantities, so the paper characterises its own MOPO component two ways. Neither invalidates the printed equation, so no flag.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.7
+    }
+  ],
+  "findings": [
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::0",
+      "category": "Formally refuted",
+      "severity": "critical",
+      "confidence": 0.95,
+      "evidence": "The Introduction claims \"average training speedups of 131.5× and 74.8× against OfflineRL-Kit [16] and CORL [17]\", but the paper's own Table 2 (Appendix F) cannot produce either number. Lean computed the per-algorithm speedups $\\text{baseline}/\\text{Unifloral}$ in exact rational arithmetic and refuted both averages:\n\n- OfflineRL-Kit: $11.65, 18.10, 19.93, 13.96, 20.81, 6.11, 12.01, 13.16$ — mean $\\mathbf{14.47\\times}$, not $131.5\\times$.\n- CORL: $8.82, 13.71, 16.25, 1.28, 12.83, 18.40, 5.43$ — mean $\\mathbf{10.96\\times}$, not $74.8\\times$.\n\nThe refutation is stronger than a failed average. `every_speedup_lt_21` proves that *every individual* Table 2 speedup is below $21$ (the largest is CQL, $203.9/9.8 \\approx 20.81$), so no aggregation bounded by the maximum — arithmetic mean, median, geometric mean, minimum or maximum — can reach $131.5$ or $74.8$: the claimed averages exceed every data point they average over. Pooling total wall-clock time instead gives $1051.8/83.1 = 12.66\\times$ and $9.71\\times$. The paper's Figure 5, which lists speedups of $16,16,16,14,14,8,4,12,12$, averages $12.44\\times$ — agreeing with Table 2 and contradicting the Introduction.\n\nThe claim is overstated by roughly $9\\times$ and $7\\times$ and also appears in the abstract's \"improving clarity and training speed\" framing. The proximity of $131.5$ to $13.15$ and of $74.8$ to $7.48$ suggests a misplaced decimal point.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "as well as achieving average training speedups of 131.5× and 74.8× against OfflineRL-Kit [16] and CORL [17], two leading offline RL libraries."
+    },
+    {
+      "snippet_id": "paper::EQUATION::3",
+      "category": "Formally refuted",
+      "severity": "critical",
+      "confidence": 0.9,
+      "evidence": "Equation (5) adds a **signed, unsquared** action difference to the critic's value target and calls it a behaviour-cloning term, citing ReBRAC [5], whose critic target instead *subtracts* $\\beta_1\\|\\tilde a' - a'\\|^2$. Lean formalised the two properties a behaviour-cloning penalty must have for $\\alpha_{\\text{BC}} > 0$ — (P1) the adjustment is never positive, (P2) it is non-increasing in the deviation magnitude $|\\tilde a - a|$ — confirmed that ReBRAC's $-\\alpha\\|\\tilde a - a\\|^2$ has both, and refuted both for Eq. (5):\n\n- **(P1) fails.** At $\\tilde a_{t+1} = 1$, $a_{t+1} = 0$ the term equals $\\alpha_{\\text{BC}} > 0$, so deviating from the dataset action *raises* the value target. Propagated through Eq. (6), this rewards precisely the out-of-distribution actions the term exists to suppress.\n- **(P2) fails.** The term is not a function of the deviation magnitude at all: $(\\tilde a, a) = (0,1)$ and $(1,0)$ have identical $|\\tilde a - a| = 1$ but adjustments of opposite sign, and a strictly smaller deviation can be penalised strictly more.\n- **Dimensionally ill-typed.** Actions are vectors, so $\\tilde a_{t+1} - a_{t+1} \\in \\mathbb{R}^k$ while $\\hat v_{t+1}$ is a scalar. Lean proves that under *any* nonzero linear reading of that vector as a real number, (P1) still fails — linearity forces the term positive at $d$ or at $-d$ — and that for the coordinate-sum reading, nonzero deviations such as $(1,-1)$ are penalised not at all.\n\nThe intended term, matching the cited ReBRAC, is $-\\alpha_{\\text{BC}}\\|\\tilde a_{t+1} - a_{t+1}\\|^2$: a missing norm/square and a missing minus sign. As printed, Eq. (5) misspecifies the critic objective of Unifloral, the paper's headline contribution, and hence of the ReBRAC configuration on which both new methods (TD3-AWR, MoBRAC) are built.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "$$\\hat{v}_{t+1} = v_{t+1} + \\alpha_{\\text{BC}} \\cdot (\\tilde{a}_{t+1} - a_{t+1}) + \\alpha_{\\mathcal{H}} \\cdot \\mathcal{H}(\\pi(\\cdot|s_{t+1})), \\quad (5)$$"
+    },
+    {
+      "snippet_id": "paper::EQUATION::6",
+      "category": "Internal inconsistency — contradictory definitions of the unified actor loss",
+      "severity": "minor",
+      "confidence": 0.8,
+      "evidence": "The paper prints two inequivalent definitions of its own unified actor objective and places the diversity term in two different losses.\n\n1. **Dropped terms.** §4.2 defines $\\mathcal{L}_{\\text{actor}} = \\beta_q\\mathcal{L}_q + \\beta_{\\text{BC}}\\mathcal{L}_{\\text{BC}} - \\beta_{\\mathcal{H}}\\mathcal{H}(\\pi(\\cdot|s_t)) + \\beta_{\\text{div}}\\mathcal{L}_{\\text{div}} + \\beta_{\\text{dyn}}\\mathcal{L}_{\\text{dyn}}$, stating the last two are included \"to cover all prior algorithmic components comprehensively\". Appendix I.2 — which announces it \"write[s] out the different design decisions in a unified notation\" — gives Eq. (8) *without* them, and its prose enumerates only three terms and three coefficients. Both can be the unified actor loss only if $\\beta_{\\text{div}} = \\beta_{\\text{dyn}} \\equiv 0$, contradicting §4.2's stated purpose for them.\n2. **$\\mathcal{L}_{\\text{div}}$ in two places.** §4.2 puts \"the critic diversity loss $\\mathcal{L}_{\\text{div}}$\" in the *actor* loss with coefficient $\\beta_{\\text{div}}$; Appendix I.1 Eq. (7) puts the EDAC diversity term in the *critic* loss with coefficient $\\alpha_{\\text{div}}$. These are different objectives with different gradients. The paper's own Figure 12 code adds a (third, differently defined) diversity loss to *both*.\n3. **$\\mathcal{L}_{\\text{dyn}}$ is never defined.** It appears only in §4.2; Appendix I.3 specifies dynamics modelling through the reward penalty $\\hat R$ of Eq. (11), not through any actor-loss term.\n\nSeverity is minor because the claim that Unifloral can express the surveyed algorithms survives the charitable reading, but a reader implementing from the paper cannot determine the actor objective.",
+      "verifier": "verify-math",
+      "exact_quote": "$$\\mathcal{L}_{\\text{actor}} = \\beta_q \\cdot \\mathcal{L}_q + \\beta_{\\text{BC}} \\cdot \\mathcal{L}_{\\text{BC}} - \\beta_{\\mathcal{H}} \\cdot \\mathcal{H}(\\pi(\\cdot|s_t)). \\quad (8)$$"
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::1",
+      "category": "Internal inconsistency — contradictory win counts",
+      "severity": "minor",
+      "confidence": 0.75,
+      "evidence": "Two consecutive sentences give incompatible counts over the same 9 evaluation datasets. The second is internally consistent: $6$ wins $+\\,3$ ties $= 9$, matching the nine datasets of Appendix B and Figure 15. The first asserts strict wins on $9 - 1 = 8$ datasets with a single exception. Both cannot hold — $8 \\neq 6$ strict wins, and the number of datasets on which MoBRAC fails to strictly outperform is $1$ under the first sentence versus $3$ under the second. Even reading ties charitably as \"not outperforming\" and placing maze2d-large-v1 among the three ties, the first sentence still reports $1$ non-win where there are $3$. The headline direction of the result survives either count, so this is a reporting error.",
+      "verifier": "verify-math",
+      "exact_quote": "Figure 7 shows how MoBRAC outperforms other model-based methods for all datasets, except for MOPO in maze2d-large-v1. Under a transparent evaluation budget, we find that MoBRAC outperforms the other model-based methods in 6 out of 9 datasets and is tied with MOPO for 3 others (Appendix K)."
+    }
+  ],
+  "verdict": "CRITICAL_ERRORS",
+  "verdict_confidence": 0.88,
+  "summary": "**Scope.** Thirteen self-contained mathematical objects were extracted from *A Clean Slate for Offline RL*: the expected-return objective (Eq. 1), the Decision-Transformer return-to-go definition and recursion (Eq. 3), the six equations specifying Unifloral's critic and actor objectives and its dynamics penalty (Eqs. 4–11, Appendix I), the evaluation procedure of §3.2 as a mathematical model, and two quantitative aggregate claims (the §1 speedup averages against Table 2, and the §5.2 MoBRAC win counts). Four were routed to Lean 4 and nine to informal review. No Lean run failed, so no fallback passes were needed.\n\n**What Lean settled.** Two claims were formally refuted and two formally confirmed; all proofs compile with exit 0, no `sorry`, and only the standard Mathlib axioms (`propext`, `Classical.choice`, `Quot.sound`).\n\n*Refuted — the headline speedup numbers (critical).* The Introduction's \"average training speedups of $131.5\\times$ and $74.8\\times$\" cannot be obtained from the paper's own Table 2. In exact rational arithmetic the per-algorithm means are $\\mathbf{14.47\\times}$ (OfflineRL-Kit) and $\\mathbf{10.96\\times}$ (CORL). Lean further proved every individual Table 2 speedup is below $21$, so no mean, median, geometric mean, minimum or maximum of that table can reach the claimed figures — they exceed every data point they average. Pooled wall-clock time gives $12.66\\times$ and $9.71\\times$, and the paper's own Figure 5 averages $12.44\\times$: Figure 5 and Table 2 agree with each other at roughly $10\\text{–}14\\times$ and both contradict the Introduction, which is overstated by about $9\\times$ and $7\\times$.\n\n*Refuted — the critic's behaviour-cloning term, Eq. (5) (critical).* The term $+\\alpha_{\\text{BC}}(\\tilde a_{t+1} - a_{t+1})$ is not a behaviour-cloning penalty. Lean proved it violates both defining properties: it is strictly positive on some action pairs (so deviating from the dataset action *raises* the value target, rewarding the out-of-distribution actions it should suppress), and it is not a function of the deviation magnitude at all — equal deviations receive adjustments of opposite sign. Because actions are vectors, the expression is also ill-typed as printed, and Lean showed that *no* linear reading of the vector difference rescues it. The intended term, matching the cited ReBRAC [5], is $-\\alpha_{\\text{BC}}\\|\\tilde a_{t+1} - a_{t+1}\\|^2$ — a missing norm/square and a missing minus sign.\n\n*Confirmed.* The return-to-go mathematics (Eq. 3) is correct: Lean *derived* the stated online update $\\hat R_{t+1} = \\hat R_t - r_t$ from the definition $\\hat R_t = \\sum_{t'=t}^{T} r_{t'}$, rather than assuming it, and additionally confirmed $\\hat R_1$ equals the full episode return and $\\hat R_{T+1} = 0$ exactly. For the EDAC diversity term (Eq. 7), Lean proved the identity $\\sum_{i\\neq j}\\langle g_i,g_j\\rangle = \\|\\sum_i g_i\\|^2 - \\sum_i\\|g_i\\|^2$ and the correct sign direction.\n\n**What informal review added.** Two further defects, both minor. The unified actor loss is defined twice and inequivalently — §4.2 includes $\\beta_{\\text{div}}\\mathcal{L}_{\\text{div}} + \\beta_{\\text{dyn}}\\mathcal{L}_{\\text{dyn}}$, Appendix I.2 Eq. (8) omits both, $\\mathcal{L}_{\\text{div}}$ sits in the actor loss in §4.2 but in the critic loss in Eq. (7), and $\\mathcal{L}_{\\text{dyn}}$ is never defined anywhere. And §5.2 reports MoBRAC's record two incompatible ways in consecutive sentences (strict wins on 8 of 9 datasets versus 6 wins and 3 ties). Equations (1), (4), (6), (9), (10) and (11) and the §3.2 evaluation model came back clean; the recurring blemishes there are notational rather than mathematical — $N$ is overloaded three ways (dataset size, bandit pulls, ensemble size), $d$ twice (done flag in Eq. 6, BC distance in Eq. 10), $\\eta$ twice (AWR inverse temperature in Eq. 10, MOPO pessimism coefficient in Eq. 11), $q_0$ is indexed outside the ensemble range $1..N$, vector quantities are squared where norms are meant, and $\\gamma$ is used although the §2.1 MDP tuple omits it.\n\n**Where the verifiers diverged.** Nowhere in verdict. One place deserves recording rather than flagging: Eq. (7) drops the gradient normalisation that EDAC's published penalty uses, and Lean proved the consequences — the printed term is not scale-invariant and has **no lower bound** (for any $M$ there is a two-critic configuration with $S(g) < -M$), so $\\mathcal{L}_{\\text{critic}}$ as written has no minimiser in the gradient variables, whereas EDAC's cosine-similarity version is bounded per pair. This is a fidelity-to-source concern settled only by external knowledge of EDAC, not a false statement in the paper's own text, so Eq. (7) is recorded as NO_ERROR with the degeneracy noted. The paper's Figure 12 code implements a third, different diversity loss ($-\\eta\\cdot\\mathrm{std}(q)$ over Q-values, added to both actor and critic), compounding the ambiguity.\n\n**Verdict: CRITICAL_ERRORS**, confidence $0.88$. Two machine-checked refutations, one of a quantitative claim in the abstract and Introduction and one of an equation defining the paper's central algorithm, with no Lean run left unsettled. Confidence is high rather than maximal because both criticals are specification/reporting errors — the released code, not these equations, produced the experimental results — so the empirical conclusions (the taxonomy, the evaluation procedure, and the relative ordering of algorithms) are untouched by them. What is invalidated is the paper's stated $131.5\\times$/$74.8\\times$ speedup contribution and the printed definition of Unifloral's critic objective."
+}

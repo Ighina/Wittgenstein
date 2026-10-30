@@ -1,0 +1,102 @@
+{
+  "paper_id": "12633-Adaptive_Surrogate_Gradients_for_Sequential_Reinforcement_Learning_in_Spik",
+  "title": "Adaptive Surrogate Gradients for Sequential Reinforcement Learning in Spik",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "Citation / attribution",
+      "error_location": "Introduction, first paragraph",
+      "confidence": 0.99,
+      "supporting_evidence": "The paper states that RL has achieved superhuman performance on “drone racing [8].” Reference [8] is Wurman et al., “Outracing champion Gran Turismo drivers with deep reinforcement learning,” which concerns the Gran Turismo racing videogame, not drone racing.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "12633-Adaptive_Surrogate_Gradients_for_Sequential_Reinforcement_Learning_in_Spik::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Sections 3.1 and 3.4, description of privileged critic inputs",
+      "confidence": 0.98,
+      "supporting_evidence": "Section 3.1 explicitly says: “Both the guiding policy and the non-spiking critic receive privileged information in the form of action histories.” Section 3.4 instead says that the critic “receives all observed states without any action history.” These are mutually incompatible specifications of a central training network and affect whether the method is asymmetric/privileged as claimed.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "12633-Adaptive_Surrogate_Gradients_for_Sequential_Reinforcement_Learning_in_Spik::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Sections 3.2 and 4.1 / Figure 2, controller input dimensionality",
+      "confidence": 0.97,
+      "supporting_evidence": "The architecture is specified as having “input size of 18,” and Section 4.1 says the platform provides “18-dimensional state vectors.” But Figure 2 and its caption enumerate only position (3), velocity (3), orientation angles (3), and angular velocities (3), totaling 12 inputs. No additional six inputs are identified. Thus the deployed actor's input representation is not consistently defined.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "12633-Adaptive_Surrogate_Gradients_for_Sequential_Reinforcement_Learning_in_Spik::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (figure-text)",
+      "error_location": "Table 1 versus Table 6, warm-up settings for BC and TD3BC",
+      "confidence": 0.98,
+      "supporting_evidence": "Table 1 marks both BC and TD3BC as not using warm-up (“Warm-up ✗”). Table 6, however, reports “Warm-up steps 50” for both BC and TD3BC. This is material because the central claimed advantage concerns sequence warm-up bridging.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "12633-Adaptive_Surrogate_Gradients_for_Sequential_Reinforcement_Learning_in_Spik::baseline"
+    },
+    {
+      "error_category": "Figure / table error",
+      "error_location": "Table 2 and its caption",
+      "confidence": 0.99,
+      "supporting_evidence": "Table 2 calls the ANN a “256-128 architecture” but reports only 13.7×10^3 dense synaptic operations and a 55.3-kB footprint. A dense network containing a 256-to-128 hidden-layer connection alone has 256×128 = 32,768 weights/operations, before counting input-to-hidden and hidden-to-output layers. Its weights alone require about 131 kB in FP32. The listed ANN operation count and footprint therefore cannot correspond to the claimed 256-128 dense architecture.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "12633-Adaptive_Surrogate_Gradients_for_Sequential_Reinforcement_Learning_in_Spik::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Section 3.2 versus Appendix 8.3, output-layer definition and energy estimate",
+      "confidence": 0.9,
+      "supporting_evidence": "Section 3.2 describes an SNN with “4 output neurons” and says that a final layer decodes output spikes into motor commands. Appendix 8.3 instead states that “The output is a linear layer that accumulates spikes, without explicit output neurons,” and consequently excludes output-neuron update energy. These alternatives have different architectures and energy costs, so the reported energy calculation does not unambiguously apply to the stated controller.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "12633-Adaptive_Surrogate_Gradients_for_Sequential_Reinforcement_Learning_in_Spik::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Appendix 8.1, definition of the sigmoid surrogate derivative",
+      "confidence": 0.99,
+      "supporting_evidence": "The appendix defines \\(\\tilde{\\sigma}'_k(z)=\\sigma'(kz)/k = \\sigma(kz)(1-\\sigma(kz))\\). This equality is false: \\(\\sigma'(kz)/k = \\sigma(kz)(1-\\sigma(kz))/k\\). If instead the authors intended the derivative of \\(\\sigma(kz)\\) divided by \\(k\\), then \\((d/dz)\\sigma(kz)/k=\\sigma'(kz)=\\sigma(kz)(1-\\sigma(kz))\\), but that is not what is written. The derivation and all subsequent gradient-bias claims rely on this ambiguity/error.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "12633-Adaptive_Surrogate_Gradients_for_Sequential_Reinforcement_Learning_in_Spik::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Appendix 8.1, “Bias in Gradient Magnitude”",
+      "confidence": 0.98,
+      "supporting_evidence": "The appendix claims \\(\\tilde{\\sigma}'_k(z)>\\sigma'(z)\\) “for most \\(z\\)” and hence a positive gradient-magnitude bias for \\(k>1\\). Under the displayed intended unnormalized expression \\(\\tilde{\\sigma}'_k(z)=\\sigma(kz)(1-\\sigma(kz))\\), this is backwards for every \\(z\\ne0\\) when \\(k>1\\): the sigmoid derivative is maximal at zero and decreases as \\(|z|\\) increases, so \\(\\sigma'(kz)<\\sigma'(z)\\). Under the literal expression \\(\\sigma'(kz)/k\\), it is smaller still. The stated positive-bias proof is therefore invalid.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "12633-Adaptive_Surrogate_Gradients_for_Sequential_Reinforcement_Learning_in_Spik::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Section 3.3, discussion of Figure 1a and steep-surrogate/Dirac-delta interpretation",
+      "confidence": 0.94,
+      "supporting_evidence": "Equation 5 defines the normalized fast-sigmoid surrogate derivative as \\(g_k(x)=1/(1+k|x|)^2\\). The text then says steeper slopes “closely resemble the Dirac delta function.” This normalized function does not approach a Dirac delta: its peak remains 1 while its integral is \\(\\int g_k(x)dx=2/k\\), which tends to zero as \\(k\\to\\infty\\). It instead converges to zero almost everywhere (with vanishing total mass). A delta-like surrogate would require the unnormalized factor \\(k/(1+k|x|)^2\\), which the paper explicitly removes.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "12633-Adaptive_Surrogate_Gradients_for_Sequential_Reinforcement_Learning_in_Spik::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 9,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (gpt-5.6-terra, taxonomy=default): 9 error(s) reported.",
+  "baseline": {
+    "model": "gpt-5.6-terra",
+    "provider": "openai",
+    "taxonomy": "default",
+    "paper_chars": 55407,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 13648,
+      "output_tokens": 5038,
+      "cache_read_input_tokens": null,
+      "cache_creation_input_tokens": null
+    }
+  }
+}

@@ -1,0 +1,87 @@
+{
+  "paper_id": "8330",
+  "title": "OpenHOI: Open-World Hand-Object Interaction Synthesis with Multimodal Large Language Model",
+  "paper_category": "cs.CV",
+  "predicted_errors": [
+    {
+      "error_category": "Abstract vs Results mismatch",
+      "error_location": "Introduction contributions (Section 1) vs Abstract and Section 4.3 Main Results",
+      "confidence": 0.9,
+      "supporting_evidence": "The Contributions bullet states: 'Our experiments demonstrate state-of-the-art performance, outperforming existing methods by a large margin. Notably, OpenHOI generalizes robustly to unseen objects and open-vocabulary instructions, achieving strong compositional generalization across diverse scenarios.' Section 4.3 Main Results states the opposite about the same experiments: 'Results in Tables 2 and 3 show marginal improvements in some metrics, though differences are within standard deviations reported by prior works. Detailed analysis suggests our approach has competitive performance but not a definitive advantage.' The Abstract likewise claims only 'competitive performance compared to recent methods.' The paper simultaneously asserts and disclaims its central superiority claim, which directly undermines the headline contribution.",
+      "verifier_name": "verify-cross-section-consistency",
+      "snippet_id": "8330::FULL_PAPER::0"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 3.1, loss formulation (missing Equation 3 and undefined lambda weights)",
+      "confidence": 0.78,
+      "supporting_evidence": "The paper's equations jump from Eq. (2) to Eq. (4), so the combined MLLM training loss is never defined, yet the text says 'where the weights $\\lambda_{\\text{task}}, \\lambda_{\\text{aff}}$ are utilized to balance the different loss items.' No equation defining $L = \\lambda_{\\text{task}}L_{\\text{task}} + \\lambda_{\\text{aff}}L_{\\text{aff}}$ exists anywhere in the manuscript; the balancing-weights sentence is left referencing a removed/absent equation. This is a genuine methodological gap: the loss-balancing scheme that supervises the 3D MLLM is described only in prose with a dangling 'where' clause.",
+      "verifier_name": "verify-text",
+      "snippet_id": "8330::SECTION::6"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 4.4 Ablation Study, Loss-guided Physical Refinement paragraph",
+      "confidence": 0.74,
+      "supporting_evidence": "The ablation prose first concludes the components contribute little: 'Excluding physical refinement losses causes occasional penetrations and minor temporal incoherence, but many sequences remain physically valid. The improvement from these components is thus incremental.' Two paragraphs later the same section asserts the opposite: 'Through direct optimization of these constraints via our loss-guidance framework, we achieve significant improvements in generating physically valid and temporally coherent hand-object interactions.' 'Incremental' vs 'significant improvements' are mutually exclusive claims about the same ablation, so the section contradicts itself.",
+      "verifier_name": "verify-text",
+      "snippet_id": "8330::SECTION::9"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Section 3.2, 'Training-free HOI Diffusion with Physical Refinement'",
+      "confidence": 0.68,
+      "supporting_evidence": "The method is repeatedly billed as 'training-free' and 'all achieved without additional training or distribution-shifting,' yet the refinement is implemented as iterative gradient descent on the sampling trajectory, which the paper itself acknowledges 'risks introducing artifacts and distribution shifts [49].' The proposed resolution (a 'Spherical Gaussian Constraint' borrowed from DSG) is asserted to 'preserve the original distribution, thus mitigating the distribution-shifting problem' without proof. The claim 'without ... distribution-shifting' sits in direct tension with the acknowledged risk that the same procedure 'risks introducing artifacts and distribution shifts,' leaving the training-free/distribution-preservation guarantee unsupported.",
+      "verifier_name": "verify-text",
+      "snippet_id": "8330::SECTION::6"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Appendix C.6, Smooth Rate metric definition (Eq. 28)",
+      "confidence": 0.66,
+      "supporting_evidence": "The paper defines its new motion in-between metric as 'SmoothRate = dFID/dt, (28)' and states 'where dt is the derivative of time.' This is mathematically incoherent: dt is the differential of time (an infinitesimal increment), not 'the derivative of time.' dFID/dt is a rate of change of FID with respect to time, not a bounded 'smooth rate,' and the definition gives no computable operationalization for the values reported in Tables A8-A10 (e.g., 2.98 ± 0.43). As written the metric is undefined and its reported values cannot be reproduced or validated.",
+      "verifier_name": "verify-math",
+      "snippet_id": "8330::SECTION::18"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 4.3 Qualitative results vs Section 4.5 Failure cases",
+      "confidence": 0.65,
+      "supporting_evidence": "The Qualitative results paragraph claims: 'Experimental findings demonstrate physical realism and coherence of the generated sequences.' Section 4.5 immediately documents that 'Due to the accumulation of model errors, performance typically degrades after more than three consecutive actions (more than 450 frames)' and that the model cannot target a specific object in a scene (e.g., 'Open the second cabinet'). A blanket claim of 'physical realism and coherence' is contradicted by the paper's own documented failure modes (degradation on long-horizon sequences and poor spatial targeting), overgeneralizing from the small set of qualitative examples shown.",
+      "verifier_name": "verify-text",
+      "snippet_id": "8330::SECTION::8"
+    },
+    {
+      "error_category": "Data Inconsistency (text-table)",
+      "error_location": "Table 3 vs Table 5 (ARCTIC seen-object FID and Diversity standard deviations)",
+      "confidence": 0.6,
+      "supporting_evidence": "The same 'Ours' ARCTIC seen-object results are reported with identical point estimates but different standard deviations across the two tables: FID 19.74±0.16 in Table 3 vs 19.74±0.35 in Table 5, and Diversity 2.65±0.03 in Table 3 vs 2.65±0.16 in Table 5. Unseen-object FID/Diversity and all other matched cells agree. The inconsistent error bars for identical numbers indicate a reporting discrepancy in the ablation table.",
+      "verifier_name": "verify-statistical",
+      "snippet_id": "8330::TABLE::2"
+    },
+    {
+      "error_category": "Data Inconsistency (text-table)",
+      "error_location": "Section 4.3 Main Results, 'differences are within standard deviations' claim vs Tables 2/3",
+      "confidence": 0.55,
+      "supporting_evidence": "Section 4.3 claims the improvements over baselines are 'within standard deviations reported by prior works.' The paper's own Tables 2 and 3 contradict this. E.g., GRAB seen: Ours MPJPE 47.64±1.03 vs Text2HOI 56.29±2.13 (gap 8.65 mm, ~3.6x the combined sigma); FID 26.43±0.77 vs 33.72±1.27 (gap 7.29, ~4.9x combined sigma); MModality 24.59±2.01 vs 17.71±0.87. These margins are far outside the reported standard deviations, so the 'within standard deviations' characterization is not supported by the table data it refers to.",
+      "verifier_name": "verify-statistical",
+      "snippet_id": "8330::SECTION::10"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 53,
+    "snippets_verified": 53,
+    "errors_detected": 8,
+    "verifier_usage": {
+      "text": 8,
+      "math_equation": 4,
+      "statistical": 5,
+      "vision": 3,
+      "citation": 2,
+      "cross_section_consistency": 1,
+      "triage_low_risk": 30
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Uncertainty-mode (lenient strictness) verification of paper 8330 (OpenHOI). The manuscript was segmented into 53 typed snippets and passed through verify-triage: snippets with estimated uncertainty >= 0.30 were escalated to specialist verifiers (text, math, statistical, vision, citation, cross-section consistency); low-risk snippets were accepted as NO_ERROR with confidence 1 - uncertainty. Specialist verification included (a) re-derivation of the core mathematics (DDPM forward process Eq. 5, classifier-free guidance Eq. 7, posterior sampling mean/variance Eqs. 8 and 23-26, the three refinement losses Eqs. 9-11, and the DSG-style mixture update Eqs. 12-14), all of which check out; and (b) web verification of the bibliography and dataset claims, which confirmed that references [3] DiffH2O (real SIGGRAPH Asia 2024 paper) and [5] 'Human-Object Interaction via Automatically Designed VLM-Guided Motion Policy' (real arXiv:2503.18349 / ICLR 2026), as well as OakInk2 [53] (CVPR 2024) and the H2O dataset description (571,645 frames, five Kinect sensors, three scenes, 36 classes, split 344,645/73,380/153,620), are all genuine and accurate — no fabricated citations were found. The most serious confirmed error is a cross-section contradiction: the Introduction claims 'state-of-the-art performance, outperforming existing methods by a large margin,' while the Abstract and Section 4.3 explicitly disclaim a definitive advantage ('competitive performance but not a definitive advantage'), directly undermining the paper's central contribution claim (confidence 0.90). Additional confirmed issues: the MLLM training-loss equation is missing (equations jump 2 to 4) while the lambda_task/lambda_aff balancing weights it would define are still referenced in text; the ablation section calls the same components' effect both 'incremental' and 'significant improvements'; the 'training-free / without distribution-shifting' claim is in tension with the paper's own acknowledgment that gradient-descent refinement 'risks introducing artifacts and distribution shifts'; the Smooth Rate metric (Eq. 28) is defined as 'dFID/dt' with 'dt is the derivative of time,' which is mathematically incoherent; the qualitative section claims blanket 'physical realism and coherence' while the failure analysis documents degradation beyond three actions; and identical ARCTIC seen-object numbers carry different standard deviations in Table 3 vs Table 5, and the 'within standard deviations' claim in Section 4.3 is contradicted by the large margins visible in Tables 2/3. With one finding at confidence >= 0.85, the verdict is NEEDS_CORRECTION."
+}

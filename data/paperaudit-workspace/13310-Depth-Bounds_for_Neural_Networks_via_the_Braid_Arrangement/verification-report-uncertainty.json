@@ -1,0 +1,47 @@
+{
+  "paper_id": "13310",
+  "title": "Depth-Bounds for Neural Networks via the Braid Arrangement",
+  "paper_category": "cs.LG",
+  "predicted_errors": [
+    {
+      "error_category": "Abstract vs Results mismatch",
+      "error_location": "Abstract / Section 1 (Introduction) vs Section 4 / Conclusion",
+      "confidence": 0.92,
+      "supporting_evidence": "The Abstract claims an 'unconditional non-constant lower bound of Omega(log log d) hidden layers for computing the maximum of d numbers in general ReLU networks' and 'the first unconditional non-constant lower bound for general CPWL functions, resolving the depth complexity question without any conforming or weight restrictions'. However, Section 4 explicitly scopes the result to conforming networks: 'we prove that ... max{0, x_1, ..., x_{2^{2^l-1}}} is not computable by a B_d^0-conforming rank-2-maxout neural network (or equivalently ReLU neural network) with l hidden layers' (Theorem 4.8: M^2_{B_d}(l) subset V_{B_d}(2^{2^l-1})). The Introduction itself states 'it is already open whether there is a function that needs more than two hidden layers to be represented' for general networks. The Conclusion walks the claim back: 'We established a doubly-logarithmic lower bound under the assumption that breakpoints lie on the braid fan ... While this indicates that the doubly-logarithmic lower bound may not extend to all networks'. The unconditional/general-network claim is not established by the paper.",
+      "verifier_name": "cross-section-consistency",
+      "snippet_id": "13310::SECTION::0"
+    },
+    {
+      "error_category": "Abstract vs Results mismatch",
+      "error_location": "Abstract vs Section 1 (Introduction), Section 5, Conclusion",
+      "confidence": 0.88,
+      "supporting_evidence": "The Abstract states 'arbitrary neural networks require three hidden layers to compute the maximum of 5 numbers; this resolves the open question definitively.' This directly contradicts the paper's own Introduction: 'Bakaev et al. [2025b] showed that two hidden layers are sufficient to represent max{0, x_1, x_2, x_3, x_4}', and the Conclusion: 'Bakaev et al. [2025b] showed that one can compute the maximum of 5 numbers with 2 layers, this implies that considering B_d^0-conforming networks is a real restriction.' Web verification confirms Bakaev et al. 2025b (arXiv:2505.14338, STOC 2026) proves 'A ReLU neural network with two hidden layers can exactly represent the maximum function of five inputs'. The paper's actual result (Theorem 5.2) is only for B_d^0-conforming networks, which require 2 layers to be insufficient (i.e. 3 needed) — a strictly weaker, conforming-only statement. As a claim about arbitrary networks it is false and contradicted both internally and by the cited literature.",
+      "verifier_name": "verify-citation",
+      "snippet_id": "13310::SECTION::0"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Figure 2 caption (c), Section 4",
+      "confidence": 0.7,
+      "supporting_evidence": "Figure 2 caption (c) asserts 'alpha_{d,bcd} - alpha_{a,abc} = alpha_{empty,bcd} - alpha_{empty,abc}'. Expanding with alpha_{S,T} = sum_{S subseteq Q subseteq T} (-1)^{r(Q)-r(S)} 1_Q gives alpha_{d,bcd} - alpha_{a,abc} = 1_d - 1_bd - 1_cd + 1_bcd - 1_a + 1_ab + 1_ac - 1_abc, whereas alpha_{empty,bcd} - alpha_{empty,abc} = -1_d + 1_a + 1_bd + 1_cd - 1_bcd - 1_ab - 1_ac + 1_abc. The two sides differ in sign; the correct identity is alpha_{d,bcd} - alpha_{a,abc} = alpha_{empty,abc} - alpha_{empty,bcd}. This is a sign error in the illustrative caption of Lemma 4.4; it does not invalidate the lemma or the paper's theorems.",
+      "verifier_name": "verify-math",
+      "snippet_id": "13310::FIGURE::2"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 36,
+    "snippets_verified": 36,
+    "errors_detected": 3,
+    "verifier_usage": {
+      "triage": 36,
+      "text": 8,
+      "math_equation": 6,
+      "citation": 3,
+      "vision": 1,
+      "cross_section_consistency": 1,
+      "statistical": 0
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "The paper's technical results (Section 4 doubly-logarithmic lower bound for B_d^0-conforming networks, Section 5 combinatorial proof that conforming rank-(2,2) networks cannot compute max{0,x_1,...,x_4}, Section 6 rank-(3,2) maxout construction for max{0,x_1,...,x_6}) appear internally consistent and the core mathematics (Prop 2.3, Lemma 4.4, Prop 4.7 recursion vs Theorem 4.8, Prop 6.1) checks out. However, the Abstract materially overclaims the scope of the results in two ways that would require correction: (1) it presents the Omega(log log d) lower bound as 'unconditional' and applying to 'general ReLU networks' / 'general CPWL functions without any conforming or weight restrictions', whereas every result in the paper is proven only for braid-arrangement-conforming (B_d^0-conforming) networks and the Conclusion explicitly concedes the bound 'may not extend to all networks'; (2) it asserts 'arbitrary neural networks require three hidden layers to compute the maximum of 5 numbers', which is false as a general-network statement — the paper's own Introduction and external verification (Bakaev et al. 2025b, STOC 2026) establish that two hidden layers suffice in general ReLU networks, with the three-layer need holding only under the conforming restriction. A minor sign error was also found in the Figure 2 caption (c) identity. Verdict: NEEDS_CORRECTION."
+}

@@ -1,0 +1,119 @@
+{
+  "paper_id": "754-Mean_Flows_for_One-step_Generative_Modeling",
+  "title": "Mean Flows for One-step Generative Modeling",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Equation (5) and surrounding derivation",
+      "confidence": 0.95,
+      "supporting_evidence": "The paper states: 'Now we differentiate both sides with respect to t, considering r as a function of t. According to the Leibniz integral rule [27], we have: d/dt (t − r)u(z_t, r, t) = d/dt ∫_r^t v(z_τ, τ) dτ = v(z_t, t) - v(z_r, r) dr/dt.' However, immediately after this equation (which is labeled as needing correction), the text states 'This adjustment implies that additional terms depending on dr/dt must be considered in subsequent equations, complicating the derivation and invalidating the simplified MeanFlow identity.' Then Equation (6) is presented without the dr/dt term. The paper appears to acknowledge that treating r as a function of t requires the dr/dt term, but then proceeds to use Equation (6) which omits this term. This is mathematically inconsistent unless r is independent of t (dr/dt = 0), which should be explicitly stated as an assumption rather than presented as a general derivation.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "754-Mean_Flows_for_One-step_Generative_Modeling::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Equation (7) and (8)",
+      "confidence": 0.9,
+      "supporting_evidence": "Equation (7) states: 'd/dt u(z_t, r, t) = (dz_t/dt) ∂_z u + (dr/dt) ∂_r u + (dt/dt) ∂_t u.' Then Equation (8) claims 'With dz_t/dt = v(z_t, t), dr/dt = 0, and dt/dt = 1, we have another relation between u and v: d/dt u(z_t, r, t) = v(z_t, t) ∂_z u + ∂_t u.' The assumption dr/dt = 0 is stated here but contradicts the earlier discussion around Equation (5) where r was 'considered as a function of t'. This inconsistency in whether r depends on t undermines the mathematical rigor of the derivation.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "754-Mean_Flows_for_One-step_Generative_Modeling::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Equation (10) and surrounding text",
+      "confidence": 0.85,
+      "supporting_evidence": "The paper states: 'The velocity v(z_t, t) in Eq. (10), representing the marginal velocity, is approximated by a single conditional velocity v_t without explicitly accounting for potential bias or variance introduced by this substitution. This approximation is assumed exact, which may cause discrepancies and inconsistencies during training.' This is a self-acknowledged methodological flaw. The marginal velocity v(z_t, t) is defined as an expectation over all conditional velocities (Eq. 1), but in practice it is replaced by a single sample v_t = ε - x. This approximation error is not analyzed or bounded, yet the method's correctness relies on this substitution.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "754-Mean_Flows_for_One-step_Generative_Modeling::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Section 3, definition of v_t",
+      "confidence": 0.9,
+      "supporting_evidence": "The paper states: 'Recall that v_t = a_t x + b_t ε is the conditional velocity, where a_t and b_t omit time derivatives and thus fail to represent the instantaneous velocity properly, causing incorrect supervisory signals during training.' This directly contradicts the earlier definition in Section 3 where v_t is correctly defined as v_t = a'_t x + b'_t ε (with time derivatives). The statement 'a_t and b_t omit time derivatives' is factually incorrect based on the paper's own earlier definition, creating a fundamental inconsistency in the mathematical framework.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "754-Mean_Flows_for_One-step_Generative_Modeling::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Abstract vs. Introduction",
+      "confidence": 0.8,
+      "supporting_evidence": "The abstract states: 'MeanFlow demonstrates promising empirical performance, achieving an FID of 3.43 with a single function evaluation (1-NFE) on ImageNet 256×256 trained from scratch.' However, in the Introduction, the paper states: 'Despite encouraging results, the consistency constraint is also applied to an underlying average velocity field in MeanFlow, which can introduce additional instability during training. Therefore, our approach similarly requires a carefully designed discretization curriculum [47, 44, 15] to ensure stable optimization and convergence.' This contradicts the claim in the Introduction that 'our method stands as a self-contained generative model: it is trained entirely from scratch, without any pre-training, distillation, or curriculum learning.' The paper simultaneously claims to require curriculum learning and to not use curriculum learning.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "754-Mean_Flows_for_One-step_Generative_Modeling::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Conclusion section",
+      "confidence": 0.95,
+      "supporting_evidence": "The conclusion states: 'We have introduced MeanFlow, a revolutionary and completely principled methodology that fully solves the longstanding challenges of multi-scale and multi-resolution simulation in physics and generative modeling. By describing underlying physical fields at unprecedented coarsened granularity, our approach enables direct fusion of generative models with dynamical systems beyond what prior work could envision. This breakthrough bridges fields and will redefine future research in simulation and generation.' This is wildly inconsistent with the modest, measured claims in the abstract which states 'While these results improve upon certain prior one-step diffusion/flow models, notable gaps remain compared to state-of-the-art multi-step models. These preliminary findings motivate further investigations but do not conclusively close the performance gap.' The conclusion makes grandiose claims about 'fully solving' challenges and being 'revolutionary' that are completely unsupported by the paper's actual contributions and results.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "754-Mean_Flows_for_One-step_Generative_Modeling::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Table 1(a) and surrounding text",
+      "confidence": 0.75,
+      "supporting_evidence": "Table 1(a) shows that 0% r≠t (which equals Flow Matching) achieves FID of 328.91, while 25% r≠t achieves 61.06. The text states 'A 0% ratio of r ≠ t (reducing to Flow Matching) fails to produce reasonable results for 1-NFE generation.' However, in Section 5 the paper states 'As a reference, DiT-B/4 in [35] has 68.4 FID, and SiT-B/4 [34] (in our reproduction) has 58.9 FID, both using 250-NFE sampling.' This means standard Flow Matching with 1-NFE gets 328.91 FID while with 250-NFE it gets 58.9-68.4 FID. The claim that Flow Matching 'fails to produce reasonable results' for 1-NFE is not properly contextualized - it's expected that 1-NFE would be much worse than 250-NFE for standard Flow Matching.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "754-Mean_Flows_for_One-step_Generative_Modeling::baseline"
+    },
+    {
+      "error_category": "Statistical reporting",
+      "error_location": "Table 1 and all FID results",
+      "confidence": 0.9,
+      "supporting_evidence": "Throughout the paper, FID scores are reported as single point estimates without any error bars, confidence intervals, or variance measures. The note under Table 1(a) explicitly states: 'Note: No variance or confidence intervals reported for the above FID scores, limiting assessment of statistical significance.' This is a serious statistical reporting flaw, as FID scores can vary significantly across different random seeds and sample sets. Without error estimates, it's impossible to determine if reported differences (e.g., 61.06 vs 63.14 in Table 1a) are statistically significant or within noise.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "754-Mean_Flows_for_One-step_Generative_Modeling::baseline"
+    },
+    {
+      "error_category": "Experiment setup",
+      "error_location": "Section 5, Experiment Setting",
+      "confidence": 0.85,
+      "supporting_evidence": "The paper states: 'All models are trained on proprietary hardware clusters without detailed cost disclosure. ... Exact compute budgets, environmental impact, and runtime details are omitted.' This lack of transparency makes the experiments non-reproducible and violates standard scientific reporting practices. Additionally, the paper acknowledges: 'Our empirical success relies on careful tuning of data samplers, loss weighting, and the ratio of sampling r ≠ t to t, complicating training and stability despite claims of a simple framework.' This admission contradicts claims of simplicity and suggests the method requires extensive hyperparameter tuning that is not fully documented.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "754-Mean_Flows_for_One-step_Generative_Modeling::baseline"
+    },
+    {
+      "error_category": "Citation / attribution",
+      "error_location": "Section 2, Related Work",
+      "confidence": 0.8,
+      "supporting_evidence": "The paper states: 'For example, hypothetical Flow Map constructs [99] (not publicly available) define integrals between time steps, purportedly similar to average velocity but remain unvalidated.' Reference [99] does not exist in the references section (which only goes up to [54]). This appears to be a fabricated citation. Additionally, the paper states 'Some recently proposed datasets, such as Visual Autoregressive Modeling [48], claim to benchmark few-step generative performance but have not been peer-reviewed.' However, reference [48] (VAR) is listed as appearing in NeurIPS 2024, which is a peer-reviewed venue, making this claim factually incorrect.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "754-Mean_Flows_for_One-step_Generative_Modeling::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Table 2 and surrounding text",
+      "confidence": 0.7,
+      "supporting_evidence": "Table 2 shows MeanFlow-XL/2 achieves 3.43 FID with 1-NFE, and the text states 'it achieves an FID of 3.43 using 1-NFE (Number of Function Evaluations) generation. This result significantly outperforms previous state-of-the-art methods in its class by a relative margin of 50% to 70%'. Comparing to IMM's 7.77, the improvement is (7.77-3.43)/7.77 = 56%, which is within the claimed range. However, comparing to Shortcut's 10.60, the improvement is (10.60-3.43)/10.60 = 68%. The text claims 'nearly 70% relative improvement vs. the previous state-of-the-art (10.60, Shortcut [13])' but 68% is not 'nearly 70%' - this is a minor exaggeration but still technically inaccurate.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "754-Mean_Flows_for_One-step_Generative_Modeling::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Section 4.1, 'Relation to Prior Work'",
+      "confidence": 0.75,
+      "supporting_evidence": "The paper claims: 'our method provides a more principled framework' and 'In contrast, prior works typically rely on extra consistency constraints, imposed on the behavior of the neural network... our method is solely driven by the definition of average velocity, and the MeanFlow Identity (Eq. (6)) used for training is naturally derived from this definition, with no extra assumption.' However, the paper itself acknowledges multiple approximations and assumptions: (1) replacing marginal velocity with conditional velocity, (2) using stop-gradient operations, (3) assuming dr/dt = 0 without justification. The claim of being 'more principled' and having 'no extra assumption' is not supported given these acknowledged approximations.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "754-Mean_Flows_for_One-step_Generative_Modeling::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 12,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (claude-sonnet-4-5-20250929, taxonomy=default): 12 error(s) reported.",
+  "baseline": {
+    "model": "claude-sonnet-4-5-20250929",
+    "taxonomy": "default",
+    "paper_chars": 60513,
+    "truncated": false
+  }
+}

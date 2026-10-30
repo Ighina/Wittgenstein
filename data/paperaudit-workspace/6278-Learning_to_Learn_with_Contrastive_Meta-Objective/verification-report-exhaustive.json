@@ -1,0 +1,79 @@
+{
+  "paper_id": "6278-Learning_to_Learn_with_Contrastive_Meta-Objective",
+  "title": "Learning to Learn with Contrastive Meta-Objective",
+  "paper_category": "cs.LG",
+  "predicted_errors": [
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Appendix B.2 (Proof of Theorem 1)",
+      "confidence": 0.9,
+      "supporting_evidence": "The proof claims U_{p(τ)}(θ) = C_2 (its minimum) is achieved if and only if sup_{||v||≤1} E[⟨v,X⟩²] = 0, 'which is achieved if and only if ∀X, P(X) = P(−X), i.e., P is symmetric.' This equivalence is false: sup_{||v||≤1} E[⟨v,X⟩²] = λ_max(E[XX^T]) = 0 requires E[XX^T] = 0, i.e., X ≡ 0 almost surely (E[||X||²] = Tr(E[XX^T]) = 0). Symmetry P(X)=P(−X) only gives E[X]=0 (first moment) and does NOT zero the second moment — e.g., a symmetric Rademacher X ∈ {−1,+1} satisfies P(X)=P(−X) but E[⟨v,X⟩²] = E[X²] = 1 ≠ 0. Consequently, the final inference θ*_Lc ⇒ P symmetric ⇒ U(θ*)=C_2=min U does not follow.",
+      "verifier_name": "verify-math",
+      "snippet_id": "6278-Learning_to_Learn_with_Contrastive_Meta-Objective::PROOF::1"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Section 3.1 / Algorithms 2,3,4,5,6,7,8,9",
+      "confidence": 0.85,
+      "supporting_evidence": "The per-task inner-task distance d_τ^{in} is referenced as 'by (1)' in nine places (Algorithm 2 main text and Algorithms 3-9 in Appendix C; also Section 3.1 derives d^{in} = (1/B)∑_{τ∈b} d_τ^{in} without giving d_τ^{in}). Equation (1) is never displayed or defined anywhere in the paper: displayed equations are numbered (2) d^{out}, (3) L_ConML, (4) ψ(g(D;θ)), then (5)-(8) in the appendices. The central quantity d_τ^{in} (how inner-task distance is computed from subset representations e_τ^{κ_k} and e_τ^*) is therefore undefined, which blocks reproducibility.",
+      "verifier_name": "verify-text",
+      "snippet_id": "6278-Learning_to_Learn_with_Contrastive_Meta-Objective::SECTION::3"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Appendix B.2 (Proof of Theorem 1)",
+      "confidence": 0.85,
+      "supporting_evidence": "The proof asserts 'For arbitrary subset sampling strategy π_κ, we have min_θ L_c ≥ −1' with L_c* = −1. This is false. With cosine distance φ(a,b) = 1 − a·b/(||a||||b||), the derivation in the paper itself gives L_c = −E[cos_in − cos_out] = E[cos_out] − E[cos_in]. Since each cosine lies in [−1,1], L_c ∈ [−2,2] and the true minimum is −2, achievable when inner-task representations are identical (cos_in = 1 → d^in = 0) and inter-task representations are antipodal (cos_out = −1 → d^out = 2). The claimed lower bound of −1 and its 'if and only if' achievability conditions (E[cos_in]=1, E[cos_out]=0) characterize a non-extremal value, so the proof's extremal argument is invalid.",
+      "verifier_name": "verify-math",
+      "snippet_id": "6278-Learning_to_Learn_with_Contrastive_Meta-Objective::PROOF::1"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Appendix A.1 (Complexity Analysis for ICL)",
+      "confidence": 0.82,
+      "supporting_evidence": "Two contradictory statements appear within the same subsection. The opening says 'pretraining an LLM with ConML only requires K/n times the computation compared with pretraining an LLM without ConML' — which would imply ConML is a small FRACTION (K/n ≪ 1) of the baseline cost, i.e., less computation, even though ConML adds K extra forward calls. The concluding paragraph instead says 'the complexity to pretrain with ConML is (n+K)/n ≈ 1 times the complexity to pretrain without ConML.' The correct factor is 1 + K/n = (n+K)/n; the first formulation (K/n) is inconsistent with the extra work ConML performs.",
+      "verifier_name": "verify-math",
+      "snippet_id": "6278-Learning_to_Learn_with_Contrastive_Meta-Objective::APPENDIX::0"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Appendix B.1 (Proof of Lemma 1)",
+      "confidence": 0.78,
+      "supporting_evidence": "Several unsubstantiated steps. (i) ψ maps to R^d (d-dimensional model representation), but Lemma 3's universal approximator F : K → R is scalar; the proof never handles the d-dimensional output. (ii) 'F(X_g) ∈ R and ||F(X_g)|| = ||ψ(X_g)|| ≤ ||X_g|| by definition' — the inequality ||ψ(X_g)|| ≤ ||X_g|| is asserted 'by definition' but is not established by any stated property of ψ. (iii) The universal-approximation form F(x) = ∑_i v_i σ(w_i^T x + b_i) is replaced without justification by '∃ w_1,…,w_N ∈ R^{|H|}, ∑||w_k||² ≤ N, F(X_g) = ∑_k σ(⟨w_k, X_g⟩)', silently dropping the output coefficients v_i and biases b_i and imposing ∑||w_k||² ≤ N. These gaps mean the bound derivation in B.1 is not rigorous as written.",
+      "verifier_name": "verify-math",
+      "snippet_id": "6278-Learning_to_Learn_with_Contrastive_Meta-Objective::PROOF::0"
+    },
+    {
+      "error_category": "Conclusion vs Evidence mismatch",
+      "error_location": "Section 3.2 vs Appendix B",
+      "confidence": 0.75,
+      "supporting_evidence": "Section 3.2 states 'It is provable that a meta-learner which minimizes L_c has lower generalization error upper-bound than any other meta-learners,' and 'Minimizing the contrastive meta-objective L_c approximately minimizes U_{p(τ)}(θ).' The appendix proof of Theorem 1 does not establish this: (a) the claimed extremal value of L_c (−1) is not the true minimum (−2); (b) the claimed condition for U = C_2 (symmetric distribution) does not actually zero the second-order moment; and (c) the proof only discusses the degenerate extreme case (Dirac-delta concentration δ_τ(X)) rather than showing that minimizing L_c reduces the bound in general. The advertised 'safeguard' guarantee therefore does not follow from the supplied argument.",
+      "verifier_name": "verify-cross-section-consistency",
+      "snippet_id": "6278-Learning_to_Learn_with_Contrastive_Meta-Objective::SECTION::5"
+    },
+    {
+      "error_category": "Abstract vs Results mismatch",
+      "error_location": "Abstract vs Section 4.1",
+      "confidence": 0.72,
+      "supporting_evidence": "The Abstract claims ConML 'showing improvements on benchmark tasks in our experiments' with the hedge 'gains may vary by setting.' Section 4.1 discloses: 'we exclude several baselines and extensive negative cases where ConML fails to yield significant gains or degrades performance. The choice of hyperparameters was optimized post-hoc for strongest-performing setups. Variance estimates are optimistic as some runs with large fluctuations were excluded.' All reported tables (Table 2, 3, 4, 7) show w/ ConML ≥ w/o in every cell — a uniform-improvement pattern that is fully consistent with the selective reporting disclosed in the body but not reflected in the Abstract's headline claim.",
+      "verifier_name": "verify-cross-section-consistency",
+      "snippet_id": "6278-Learning_to_Learn_with_Contrastive_Meta-Objective::SECTION::0"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 73,
+    "snippets_verified": 73,
+    "errors_detected": 7,
+    "verifier_usage": {
+      "text": 28,
+      "math_equation": 10,
+      "vision": 16,
+      "statistical": 8,
+      "citation": 10,
+      "cross_section_consistency": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Exhaustive verification of the ConML paper (NeurIPS 2025 Oral, arXiv:2410.05975) identified 7 findings (3 with confidence ≥ 0.85). Most serious: (1) the Proof of Theorem 1 in Appendix B.2 contains two provable mathematical errors — the claim that sup_{||v||≤1} E[<v,X>^2] = 0 iff P(X)=P(-X) is false (symmetry zeros first, not second, moments; zero second moment requires X≡0 a.s.), and the claim min_θ L_c ≥ -1 is false given cosine distance (true minimum is -2, since L_c = E[cos_out] - E[cos_in] ∈ [-2,2]); consequently the advertised generalization-bound 'safeguard' (Section 3.2) is not established by the supplied proof. (2) The per-task inner-task distance d_τ^in is referenced as equation (1) in nine algorithms and in Section 3.1 but equation (1) is never displayed or defined anywhere — a reproducibility-blocking definitional gap. (3) Appendix A.1 gives contradictory complexity factors (K/n vs (n+K)/n ≈ 1). Lower-confidence findings include non-rigorous steps in the Proof of Lemma 1 (scalar F approximating d-dim ψ, unsupported ||ψ(X_g)|| ≤ ||X_g||, unjustified re-parameterization dropping v_i/b_i), the main-text Theorem 1 claim overstating what the flawed appendix proof shows, and the Abstract's 'improvements' claim resting on selectively reported results (excluded negative cases, post-hoc hyperparameters) disclosed only in Section 4.1. Citation verification (web-enabled) confirmed the paper and all cited references are genuine; no fabricated or misattributed citations were found, and the novelty claims are appropriately scoped against prior task-level contrastive/alignment meta-learning work. Statistical tables contain no impossible values; the '~2x memory' and 'linear growth in K' characterizations in Section 4.3.1 are loosely supported but not mathematically incoherent. Figures/tables show internally consistent captions, references and arithmetic (e.g., Table 7 deltas verify: 56.2-48.7=+7.5, etc.).",
+  "uncertainty_map": []
+}

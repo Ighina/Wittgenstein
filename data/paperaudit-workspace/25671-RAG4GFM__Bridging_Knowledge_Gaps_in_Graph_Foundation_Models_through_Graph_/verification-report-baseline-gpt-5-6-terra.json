@@ -1,0 +1,174 @@
+{
+  "paper_id": "25671-RAG4GFM__Bridging_Knowledge_Gaps_in_Graph_Foundation_Models_through_Graph_",
+  "title": "RAG4GFM: Bridging Knowledge Gaps in Graph Foundation Models through Graph ",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Abstract; Section 3.1; Appendix A.1",
+      "confidence": 0.99,
+      "supporting_evidence": "The abstract claims “efficient constant-time retrieval and fusion for all graph sizes.” Section 3.1 instead claims O(log2 N) retrieval, and Appendix A.1 gives overall per-query time O(log N + k|V|^2) for dense graphs or O(log N + k|E|) for sparse graphs. These are not constant time and explicitly grow with corpus and retrieved-graph size.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "25671-RAG4GFM__Bridging_Knowledge_Gaps_in_Graph_Foundation_Models_through_Graph_::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Section 3.1, “Hierarchical Index Construction”; Appendix A.1",
+      "confidence": 0.98,
+      "supporting_evidence": "The paper states that an HNSW index “guarantees efficient O(log2 N) end-to-end retrieval and fusion time for all graph sizes and densities.” HNSW is an approximate nearest-neighbor heuristic and does not provide a universal worst-case logarithmic-time guarantee; moreover, the paper's own fusion complexity is O(k|V|^2) or O(k|E|), which disproves the stated end-to-end guarantee.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "25671-RAG4GFM__Bridging_Knowledge_Gaps_in_Graph_Foundation_Models_through_Graph_::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Section 3.3, Eq. (10), Topological Structure Enhancement",
+      "confidence": 0.99,
+      "supporting_evidence": "Eq. (10) defines A' = A + Σ_i α_i^T A_i for the query adjacency matrix A and adjacency matrices A_i of retrieved graphs. Matrices from different graphs generally have different dimensions and different node identities/orderings, so this addition is undefined without an explicitly specified node alignment, padding scheme, graph matching, or disjoint-union construction. No such mechanism is described.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "25671-RAG4GFM__Bridging_Knowledge_Gaps_in_Graph_Foundation_Models_through_Graph_::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Section 3.3, Eqs. (5)–(9)",
+      "confidence": 0.94,
+      "supporting_evidence": "The graph-level fusion equation uses a query-node feature h_v in every summand, h_v'^G = (1/k)Σ_i(α_i^F β_v^i h_v), rather than a feature of a corresponding retrieved node. Thus it does not define how node features from differently sized retrieved graphs are mapped to query nodes. The needed node correspondence/alignment is absent, and Eq. (8) also omits an additive original-query term unlike Eqs. (5)–(7).",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "25671-RAG4GFM__Bridging_Knowledge_Gaps_in_Graph_Foundation_Models_through_Graph_::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Section 3.3, Eqs. (5)–(10)",
+      "confidence": 0.95,
+      "supporting_evidence": "The key relevance weights α_i^F and α_i^T are repeatedly used as if they were normalized similarity/attention weights, and thresholded at γ, but are never mathematically defined. The text only calls them semantic or graph-level relevance scores. Consequently the fusion operation, including the meaning of a fixed 0.5 threshold, is not reproducible.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "25671-RAG4GFM__Bridging_Knowledge_Gaps_in_Graph_Foundation_Models_through_Graph_::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Section 3.1, Structural Feature Encoding",
+      "confidence": 0.93,
+      "supporting_evidence": "The paper claims that Laplacian positional encoding concatenated with degrees is “invariant to node permutations and graph isomorphism.” Individual Laplacian eigenvectors have arbitrary sign, and eigenspaces associated with repeated eigenvalues have arbitrary rotations. Node-wise LapPE is normally permutation-equivariant when consistently associated with nodes, not an invariant vector representation without sign/basis handling. The stated invariance claim is therefore false as written.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "25671-RAG4GFM__Bridging_Knowledge_Gaps_in_Graph_Foundation_Models_through_Graph_::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Section 3.2, Eq. (3)",
+      "confidence": 0.88,
+      "supporting_evidence": "Eq. (3) is labeled reciprocal-rank fusion but defines rank_x^k(C) as a candidate's rank “in the full retrieval corpus.” Standard RRF sums reciprocal ranks of the same candidate across separate ranked retrieval lists/channels. The equation does not index the retrieval channel/list whose rank is used and sums over a feature set rather than clearly over channels, so it does not correctly specify RRF.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "25671-RAG4GFM__Bridging_Knowledge_Gaps_in_Graph_Foundation_Models_through_Graph_::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Section 3.2, Eq. (4)",
+      "confidence": 0.86,
+      "supporting_evidence": "Eq. (4) introduces h_q(G) for graph-level retrieval, although the graph representation was defined as h_g(G) in Eq. (2); h_q(G) is never defined. The equation also alternates between C and mathcal{C} and defines task feature sets in terms of whether the context is a node, edge, or graph rather than the predicted task τ(q), leaving the advertised task-aware retrieval rule internally incomplete.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "25671-RAG4GFM__Bridging_Knowledge_Gaps_in_Graph_Foundation_Models_through_Graph_::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 4.2, paragraphs below Table 2",
+      "confidence": 1.0,
+      "supporting_evidence": "The text twice says “GLEM+RAG4GFM achieves 83.12% accuracy” on Computers node classification. Table 2 reports 87.34, not 83.12. The accompanying claimed relative gain of “approximately 5.5%” is also incompatible with the table: 87.34 versus 79.45 is a 7.89 percentage-point gain, or about 9.9% relative.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "25671-RAG4GFM__Bridging_Knowledge_Gaps_in_Graph_Foundation_Models_through_Graph_::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 4.2, paragraph below Table 2",
+      "confidence": 0.99,
+      "supporting_evidence": "The text says GraphGPT+RAG4GFM's 60.37% link-prediction accuracy outperforms GraphGPT by 5.1%. In Table 2, 60.37 versus 54.27 is 6.10 percentage points, or approximately 11.2% relative; neither conventional interpretation yields 5.1%.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "25671-RAG4GFM__Bridging_Knowledge_Gaps_in_Graph_Foundation_Models_through_Graph_::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (figure-figure)",
+      "error_location": "Table 2 versus Table 3",
+      "confidence": 1.0,
+      "supporting_evidence": "Table 3 labels its History columns as “History (Link Pred.)” and reports RAG4GFM/AnyGraph accuracy 63.45 and ROC-AUC 64.12. In Table 2, those exact numbers are AnyGraph+RAG4GFM's History node-classification results. The History link-prediction values in Table 2 are instead 41.74 accuracy and 43.26 ROC-AUC. Thus Table 3 has inserted node-classification numbers under link-prediction headings.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "25671-RAG4GFM__Bridging_Knowledge_Gaps_in_Graph_Foundation_Models_through_Graph_::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Table 1 versus Table 2 and Section 4.2",
+      "confidence": 0.98,
+      "supporting_evidence": "Table 1 lists the four TAG datasets as Books-Children, Books-History, Ele-Computers, and Ele-Photo. Table 2 and its discussion instead refer to Computers, History, Fitness, and Photo. “Fitness” is not listed in Table 1 or otherwise defined, while Books-Children disappears. This makes the experimental dataset identity and the claimed four-dataset comparison unverifiable.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "25671-RAG4GFM__Bridging_Knowledge_Gaps_in_Graph_Foundation_Models_through_Graph_::baseline"
+    },
+    {
+      "error_category": "Experiment setup",
+      "error_location": "Sections 3–4 and Appendix B.3",
+      "confidence": 0.9,
+      "supporting_evidence": "The paper claims leakage-resistant zero-shot evaluation but never specifies the retrieval corpus split or exclusion rules for test instances. It constructs indices from “raw graph data” and retrieves subgraphs “for each task instance.” For link prediction especially, indexing the full graph can directly expose held-out test edges or their endpoint neighborhoods. Merely choosing datasets allegedly absent from pretraining does not prevent train/test retrieval leakage; a corpus construction protocol is required.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "25671-RAG4GFM__Bridging_Knowledge_Gaps_in_Graph_Foundation_Models_through_Graph_::baseline"
+    },
+    {
+      "error_category": "Experiment setup",
+      "error_location": "Section 4.1, Baselines; Table 3",
+      "confidence": 0.91,
+      "supporting_evidence": "Table 3 compares methods with incompatible objectives and unspecified backbones/configurations: Few-shot learning and CoT are prompting strategies, Prototype is a few-shot classifier, GNNSafe is an OOD detector, VanillaRAG is a text-generation framework, and GraphRAG/G-Retriever target graph/text QA rather than the listed generic numerical node/link/graph prediction tasks. Unlike the proposed method, no base GFM, adaptation procedure, or matched compute/input protocol is given for these rows, so the claimed performance comparison is not a valid controlled baseline comparison.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "25671-RAG4GFM__Bridging_Knowledge_Gaps_in_Graph_Foundation_Models_through_Graph_::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Abstract; Introduction; Conclusion",
+      "confidence": 0.99,
+      "supporting_evidence": "The paper claims to “completely” solve knowledge updating and faithful reasoning, provide “near-perfect accuracy in all tested scenarios,” and render prior approaches obsolete. The reported accuracies are commonly around 40–80% (e.g., Table 2 link-prediction AUC values around 35–46%; Table 5 BA2Motif accuracy 48.54%), not near-perfect. No hallucination, factuality, calibration, provenance, or reasoning-faithfulness metric is measured, so predictive-score improvements cannot substantiate the claimed elimination of unfaithful reasoning.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "25671-RAG4GFM__Bridging_Knowledge_Gaps_in_Graph_Foundation_Models_through_Graph_::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Section 4.3, discussion of Figure 3",
+      "confidence": 0.89,
+      "supporting_evidence": "The paper says retrieval is “by far the most critical component, accounting for over 80% of RAG4GFM's performance gains.” The ablation table provides no defined decomposition or additive attribution method. Removing components one at a time cannot establish percentage contribution in the presence of interactions, and the reported values do not themselves yield an 80% attribution.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "25671-RAG4GFM__Bridging_Knowledge_Gaps_in_Graph_Foundation_Models_through_Graph_::baseline"
+    },
+    {
+      "error_category": "Citation / attribution",
+      "error_location": "Table 1 and Appendix B.1, QM7bDataset citation [53]",
+      "confidence": 0.97,
+      "supporting_evidence": "QM7bDataset is cited in Table 1 as [53], but reference [53] is Blum and Reymond's “970 Million Druglike Small Molecules ... GDB-13,” not the QM7/QM7b atomization-energy dataset. The relevant original QM7b reference among the bibliography is [64], Rupp et al. (2012). Appendix B.1 partially cites “[53, 64]” but still incorrectly attributes the dataset to [53].",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "25671-RAG4GFM__Bridging_Knowledge_Gaps_in_Graph_Foundation_Models_through_Graph_::baseline"
+    },
+    {
+      "error_category": "Figure / table error",
+      "error_location": "Appendix C.1",
+      "confidence": 0.9,
+      "supporting_evidence": "Appendix C.1 presents one table labeled Table 5 and then an unlabeled second results table, but the subsequent prose says “Table 6 summarizes supplementary results.” No Table 6 caption or label appears. This misnumbering prevents unambiguous reference to the reported node-regression, link-classification, and graph-regression results.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "25671-RAG4GFM__Bridging_Knowledge_Gaps_in_Graph_Foundation_Models_through_Graph_::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 18,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (gpt-5.6-terra, taxonomy=default): 18 error(s) reported.",
+  "baseline": {
+    "model": "gpt-5.6-terra",
+    "provider": "openai",
+    "taxonomy": "default",
+    "paper_chars": 74925,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 18846,
+      "output_tokens": 5016,
+      "cache_read_input_tokens": null,
+      "cache_creation_input_tokens": null
+    }
+  }
+}

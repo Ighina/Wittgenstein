@@ -1,0 +1,118 @@
+{
+  "paper_id": "9982-FuXi-Ocean__A_Global_Ocean_Forecasting_System_with_Sub-Daily_Resolution",
+  "title": "FuXi-Ocean: A Global Ocean Forecasting System with Sub-Daily Resolution",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "evidence_data_integrity",
+      "error_location": "Section 4.1; Introduction; Appendix D/Table 1",
+      "confidence": 0.98,
+      "supporting_evidence": "The paper gives mutually inconsistent training periods: Section 4.1 says 'We trained on 7 years of HYCOM data (January 2006 to December 2012)'; the Introduction says 'with only 9 years of training data'; Appendix D says 'trained on a relatively shorter temporal range (2006-2014)'; Table 1 lists FuXi-Ocean's training data as '2006–2015'. These cannot all be correct and affect the validity of the reported results.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "9982-FuXi-Ocean__A_Global_Ocean_Forecasting_System_with_Sub-Daily_Resolution::baseline"
+    },
+    {
+      "error_category": "evidence_data_integrity",
+      "error_location": "Section 5.1 and Appendix C.1 vs Section 4.1",
+      "confidence": 0.95,
+      "supporting_evidence": "Section 4.1 states the test period is 'July to December 2013', but Section 5.1 says 'We first evaluate FuXi-Ocean on the 2015 HYCOM set derived from HYCOM reanalysis data' and Appendix C.1 says 'the RMSE here is tested on the HYCOM reanalysis data for 2015'. If Table 1's training range is 2006–2015, the 2015 test set may be inside the training period, creating potential train/test leakage. At minimum, the test set is inconsistently reported.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "9982-FuXi-Ocean__A_Global_Ocean_Forecasting_System_with_Sub-Daily_Resolution::baseline"
+    },
+    {
+      "error_category": "evidence_data_integrity",
+      "error_location": "Section 4.1 (HYCOM-RD paragraph)",
+      "confidence": 1.0,
+      "supporting_evidence": "The text explicitly states: 'Additionally, to enhance apparent performance, we filter out observational points with errors above an unreported threshold before model evaluation.' This is an admission of result manipulation: evaluation data are filtered with an undisclosed threshold for the purpose of improving apparent performance.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "9982-FuXi-Ocean__A_Global_Ocean_Forecasting_System_with_Sub-Daily_Resolution::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Section 4.1 (IV-TT Framework)",
+      "confidence": 0.9,
+      "supporting_evidence": "For the operational evaluation, the paper says: 'we compare HYCOM reanalysis data with observational data and remove outliers with high MAE from the observations to ensure fairness' and later 'The filters use HYCOM analysis field data as an anchor to remove outliers.' Since FuXi-Ocean is trained on HYCOM data, filtering observations based on agreement with HYCOM systematically biases the observational evaluation in the model's favor.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "9982-FuXi-Ocean__A_Global_Ocean_Forecasting_System_with_Sub-Daily_Resolution::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Appendix C.2, Figures 8–9",
+      "confidence": 0.85,
+      "supporting_evidence": "Figures 8 and 9 report ocean current U/V RMSE at lead times of 0, 2, 4, 6, 8, and 10 hours. However, FuXi-Ocean's native temporal resolution is 6-hourly (Section 3.1), and no interpolation or sub-6-hour forecasting mechanism is described. It is therefore unexplained how 2-, 4-, 8-, and 10-hour forecasts were produced.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "9982-FuXi-Ocean__A_Global_Ocean_Forecasting_System_with_Sub-Daily_Resolution::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 3.1",
+      "confidence": 0.95,
+      "supporting_evidence": "The text says 'N = 4 consecutive time steps (spanning 24 hours)' for 6-hourly data. Four consecutive 6-hourly steps span three intervals, i.e. 18 hours, not 24 hours.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "9982-FuXi-Ocean__A_Global_Ocean_Forecasting_System_with_Sub-Daily_Resolution::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 3.2.3 vs Appendix E",
+      "confidence": 0.9,
+      "supporting_evidence": "The MoT module is described as one that 'adaptively integrates predictions from multiple temporal contexts' and Eq. (3) is called a weighted integration. Appendix E states 'we set K = 1'. With K=1, TopK selects exactly one temporal window, so the model does not integrate or mix multiple contexts; it only selects one. This contradicts the central claimed mechanism.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "9982-FuXi-Ocean__A_Global_Ocean_Forecasting_System_with_Sub-Daily_Resolution::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 3.2.3",
+      "confidence": 0.85,
+      "supporting_evidence": "The selection matrix V is defined as V ∈ ℝ^{C×4}, with no spatial dimensions. Yet the text claims the model can 'dynamically adjust its reliance on different temporal windows for each variable and region.' A channel-wise, spatially global V cannot provide region-specific temporal weighting.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "9982-FuXi-Ocean__A_Global_Ocean_Forecasting_System_with_Sub-Daily_Resolution::baseline"
+    },
+    {
+      "error_category": "context_misalignment_incoherence",
+      "error_location": "Section 5.3 (ablation results)",
+      "confidence": 0.95,
+      "supporting_evidence": "After describing Figure 5, the paper contains an apparent reviewer/editorial comment: 'However, units and scales for salinity and temperature RMSE appear inconsistent with expected oceanographic ranges, indicating potential measurement or plotting errors reducing credibility of reported ablation results.' This sentence is not a coherent result statement and indicates that the reported ablation figure may contain erroneous units or scales; it appears to have been accidentally left in the text.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "9982-FuXi-Ocean__A_Global_Ocean_Forecasting_System_with_Sub-Daily_Resolution::baseline"
+    },
+    {
+      "error_category": "reference_background_fabrication",
+      "error_location": "Introduction, Section 1",
+      "confidence": 0.9,
+      "supporting_evidence": "The Introduction says 'inspired by recent advances [39], we introduce the Mixture-of-Time (MoT) module.' Reference [39] is Ryan et al., 'GODAE OceanView Class-4 forecast verification framework: Global ocean inter-comparison' — a forecast verification framework, not a source for Mixture-of-Time or temporal mixing methods. This citation does not support the claim.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "9982-FuXi-Ocean__A_Global_Ocean_Forecasting_System_with_Sub-Daily_Resolution::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Abstract and Conclusion vs Section 5.2",
+      "confidence": 0.85,
+      "supporting_evidence": "The abstract/conclusion claim 'superior performance over traditional numerical forecasting models at sub-daily intervals.' The only observational comparison in Section 5.2 is for daily-mean SST (6-hourly outputs averaged to daily) against HYCOM, BLK, and FOAM. No sub-daily observational validation of T, S, U, V, or SSH is presented, so the sub-daily superiority claim is not supported by the reported evidence.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "9982-FuXi-Ocean__A_Global_Ocean_Forecasting_System_with_Sub-Daily_Resolution::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 11,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (claude-sonnet-5, taxonomy=paperaudit): 11 error(s) reported.",
+  "baseline": {
+    "model": "claude-sonnet-5",
+    "provider": "anthropic",
+    "taxonomy": "paperaudit",
+    "paper_chars": 55739,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 13170,
+      "output_tokens": 23804,
+      "cache_read_input_tokens": 0,
+      "cache_creation_input_tokens": 0
+    }
+  }
+}

@@ -1,0 +1,413 @@
+{
+  "paper_name": "paper",
+  "paper_path": "/Users/iacopoghinassi/Documents/Github/Wittgenstein/data/paperaudit-workspace/1028-PlayerOne__Egocentric_World_Simulator/paper.md",
+  "tag": "opus5",
+  "lean_project": "MATH_VERIFICATION/Paper",
+  "lean_project_kept": true,
+  "lean_project_kept_reason": "Step 0 of verify-math-lean reused a pre-existing MATH_VERIFICATION/Paper (created 2026-08-27 by an earlier, unrelated run; already Mathlib-built, 7.4 GB). The skill's non-negotiable deletion rule — 'If Step 0 reused an existing project rather than creating it, treat it as --keep-lean and do not delete it' — overrides the orchestrator's final-call deletion, so the project was left on disk. Per-snippet scratch (claim.md, Paper/TMP.lean) was removed; each proof was archived to MATH_VERIFICATION/Paper/Paper/Verified/PlayerOne__<SNIPPET>.lean.",
+  "totals": {
+    "snippets_extracted": 12,
+    "routed_to_math": 7,
+    "routed_to_lean": 5,
+    "lean_passed": 2,
+    "lean_refuted": 3,
+    "lean_failed": 0,
+    "fallbacks_run": 0,
+    "errors_detected": 5
+  },
+  "results": [
+    {
+      "snippet_id": "paper::EQUATION::0",
+      "snippet_type": "EQUATION",
+      "location": "3.1 Overview (Eq. 1)",
+      "content": "L = E_{t∼U(0,1), ε∼N(0,I)} [ ||ε − εθ(zt, t)||_2^2 ], where zt = αt z0 + βt δt ε\n(1)\n\nwhere t = 1, …, T; αt^2 + δt^2 = 1. Since we only add noise to point map latents and video latents, we have z0 = zvideo ⊗ zpoint. ⊗ denotes the channel-wise concatenation operation, U(·) represents a uniform distribution, and T denotes the denoising steps.\n\n[Context, Sec. 3.1: 'The forward process gradually adds Gaussian noise, denoted as ε ∼ N(0, I), to a clean latent sample z0 ∈ R^{k×c×h×w} ... This transforms z0 into a noisy latent zt. In the reverse process, a learned denoising model εθ progressively removes the noise from zt to reconstruct the original latent representation.']",
+      "route": "verify-math-lean",
+      "route_rationale": "The noising schedule and its normalisation constraint are a crisp algebraic/measure-theoretic specification: the support of t and the variance-preserving identity are both decidable claims, so the compiler can settle them.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::0",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.9,
+        "reasoning": "Two claims were formalised. (A) The paper specifies the timestep twice and incompatibly: the expectation is taken over $t \\sim U(0,1)$, which forces $0 < t < 1$, while the following line states $t = 1, \\ldots, T$, which forces $t \\ge 1$. Lean proves `¬ ∃ t : ℝ, (0 < t ∧ t < 1) ∧ 1 ≤ t` and, more generally, that $\\mathrm{Icc}(1, T)$ and $\\mathrm{Ioo}(0,1)$ are disjoint for every $T \\ge 1$ — so the two stated ranges have no common point and the sampling distribution of $t$ is not well defined as written. (B) The only normalisation stated is $\\alpha_t^2 + \\delta_t^2 = 1$, the variance-preserving condition, but the coefficient actually multiplying $\\varepsilon$ in $z_t$ is $\\beta_t \\delta_t$, with $\\beta_t$ never defined anywhere in the paper. Lean proves `∃ α δ β, α^2 + δ^2 = 1 ∧ α^2 + (β*δ)^2 ≠ 1` (witness $\\alpha = \\delta = \\tfrac{\\sqrt 2}{2}$, $\\beta = 2$), so the stated constraint does not control the noise level of the schedule actually written; and `∀ α δ β, δ ≠ 0 → α^2 + δ^2 = 1 → (α^2 + (β*δ)^2 = 1 ↔ β^2 = 1)`, i.e. whenever noise is genuinely injected the schedule is variance preserving exactly when $\\beta_t = \\pm 1$. $\\beta_t$ is therefore either redundant or it breaks the paper's own normalisation. Hypotheses assumed: none beyond the paper's own text; no extra positivity or integrality assumptions were introduced. Formalisation and proving were done directly against the lean-lsp compiler rather than through a sampling loop; all four declarations compile with no severity-1 diagnostic and no sorryAx.",
+        "predicted_error_category": "Domain/Constraint violation",
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [
+          "L = E_{t∼U(0,1), ε∼N(0,I)}",
+          "where t = 1, …, T; αt^2 + δt^2 = 1",
+          "zt = αt z0 + βt δt ε"
+        ],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean (archived to Paper/Verified/PlayerOne__EQUATION__0.lean)",
+          "formal_statement": "theorem timestep_spec_unsatisfiable : ¬ ∃ t : ℝ, (0 < t ∧ t < 1) ∧ 1 ≤ t\n\ntheorem index_set_disjoint_from_unit_interval (T : ℕ) (hT : 1 ≤ T) : Disjoint (Set.Icc (1 : ℝ) (T : ℝ)) (Set.Ioo (0 : ℝ) 1)\n\ntheorem stated_constraint_does_not_give_vp : ∃ α δ β : ℝ, α ^ 2 + δ ^ 2 = 1 ∧ α ^ 2 + (β * δ) ^ 2 ≠ 1\n\ntheorem vp_iff_beta_sq_eq_one (α δ β : ℝ) (hδ : δ ≠ 0) (h : α ^ 2 + δ ^ 2 = 1) : α ^ 2 + (β * δ) ^ 2 = 1 ↔ β ^ 2 = 1",
+          "compiler_feedback": "lake env lean Paper/TMP.lean → exit 0.\nPaper/TMP.lean:15:55: warning: Variable name `hT` is not explicitly referenced.\n\nHint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:\n  [apply] _hT\n\nNote: This linter can be disabled with `set_option linter.unusedVariables false`\n\nlean_diagnostic_messages (severity=error): {\"partial\":false,\"success\":true,\"timed_out\":false,\"items\":[],\"failed_dependencies\":[]}",
+          "axioms": ["propext", "Classical.choice", "Quot.sound"],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::EQUATION::1",
+      "snippet_type": "EQUATION",
+      "location": "3.2 Model Components (Eq. 2)",
+      "content": "To further enhance the egocentric view alignment, we solely transform the head parameters of the human motion sequence into a sequence of camera extrinsics with only rotation values. We zero out the translation values in the camera extrinsics, assuming the head parameters are at the camera coordinate system's origin. Specifically, suppose the head parameter v = (θ_x, θ_y, θ_z). We first normalize the rotation axis as follows:\nu = v / ||v||, θ = ||v|| (2)",
+      "route": "verify-math",
+      "route_rationale": "Elementary axis-angle normalisation that a careful reader checks by inspection; the only mathematical content is the degenerate case ||v|| = 0, which needs no formal machinery.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::1",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.8,
+        "reasoning": "This is the standard axis–angle (exponential-coordinate) decomposition. With $v \\in \\mathbb{R}^3$ and $\\theta = \\|v\\|$, $u = v/\\|v\\|$ satisfies $\\|u\\| = 1$ and $\\theta u = v$, so the pair $(u, \\theta)$ losslessly re-encodes the SMPL head rotation vector. Correct. Two non-fatal observations: (i) $u$ is undefined at $v = 0$ (zero head rotation), where the intended output is $R = I$ — a measure-zero degeneracy that standard implementations guard, not a derivation error; (ii) the notation collides, since the components of $v$ are named $\\theta_x, \\theta_y, \\theta_z$ while $\\theta$ is then redefined as $\\|v\\|$, so $\\theta \\neq \\theta_x + \\theta_y + \\theta_z$ and $\\theta$ is not a component of $v$. Neither invalidates the derivation.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::EQUATION::2",
+      "snippet_type": "EQUATION",
+      "location": "3.2 Model Components (Eq. 3)",
+      "content": "Specifically, suppose the head parameter v = (θ_x, θ_y, θ_z). We first normalize the rotation axis as follows:\nu = v / ||v||, θ = ||v|| (2)\n\nThen we construct the rotation matrix as follows:\nR = I + sinθ · [u]_× + (1 + cosθ) · [u]_×^2 (3)\n\nwhere [u]_× is the cross-product (skew-symmetric) matrix of u, which can be denoted as follows:\n[u]_× = [ [0, −u_z, u_y], [u_z, 0, −u_x], [−u_y, u_x, 0] ] (4)\n\n[Context: R is the rotation part of the camera extrinsics derived from the SMPL head parameters, subsequently parameterised with Plücker rays and fed to the camera encoder whose output is added to the noised video latents.]",
+      "route": "verify-math-lean",
+      "route_rationale": "A closed-form matrix identity (Rodrigues' rotation formula) over explicit 3×3 real matrices — fully formalisable, and its correctness turns on the argument rather than on arithmetic.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::2",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.95,
+        "reasoning": "Eq. (3) is Rodrigues' rotation formula with the wrong sign on the quadratic term. The correct identity is $R = I + \\sin\\theta\\,[u]_\\times + (1 - \\cos\\theta)\\,[u]_\\times^2$; the paper prints $(1 + \\cos\\theta)$. I formalised both matrices over `Matrix (Fin 3) (Fin 3) ℝ` using the paper's own $[u]_\\times$ from Eq. (4), and Lean settled two statements. (A) **Refutation.** At the unit axis $u = (0,0,1)$ and $\\theta = 0$ — i.e. head parameter $v = 0$, no rotation at all — the correct formula gives $R = I$ (`Rrod 0 e3 = 1`, proved), while the paper's formula gives $I + 2[u]_\\times^2 = \\mathrm{diag}(-1,-1,1)$, a 180° rotation about $z$. Lean proves `Rpaper 0 e3 ≠ 1` and hence `Rpaper 0 e3 ≠ Rrod 0 e3`. So as printed, zero head rotation is mapped to a half-turn of the egocentric camera. (B) **Diagnosis.** For every axis $u$ and every angle $\\theta$, `Rpaper θ u = Rrod (π - θ) u` (proved, using $\\sin(\\pi-\\theta) = \\sin\\theta$ and $\\cos(\\pi-\\theta) = -\\cos\\theta$). The printed formula is therefore always *some* rotation about $u$, but by the angle $\\pi - \\theta$ instead of $\\theta$ — it is correct only at the single value $\\theta = \\pi/2$. Hypotheses assumed: $u$ is the unit vector produced by Eq. (2) (`e3_unit` checks $\\|e_3\\| = 1$, so the counterexample axis is admissible); no hypothesis was added that is absent from the paper, and the conclusion was not weakened. All five declarations compile with no severity-1 diagnostic and no sorryAx.",
+        "predicted_error_category": "Sign/Arithmetic error",
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [
+          "R = I + sinθ · [u]_× + (1 + cosθ) · [u]_×^2"
+        ],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean (archived to Paper/Verified/PlayerOne__EQUATION__2.lean)",
+          "formal_statement": "def K (u : Fin 3 → ℝ) : Matrix (Fin 3) (Fin 3) ℝ := !![0, -u 2, u 1; u 2, 0, -u 0; -u 1, u 0, 0]\n\nnoncomputable def Rpaper (θ : ℝ) (u : Fin 3 → ℝ) : Matrix (Fin 3) (Fin 3) ℝ := 1 + Real.sin θ • K u + (1 + Real.cos θ) • (K u * K u)\n\nnoncomputable def Rrod (θ : ℝ) (u : Fin 3 → ℝ) : Matrix (Fin 3) (Fin 3) ℝ := 1 + Real.sin θ • K u + (1 - Real.cos θ) • (K u * K u)\n\ndef e3 : Fin 3 → ℝ := ![0, 0, 1]\n\ntheorem e3_unit : e3 0 ^ 2 + e3 1 ^ 2 + e3 2 ^ 2 = 1\n\ntheorem rod_zero_eq_one : Rrod 0 e3 = 1\n\ntheorem paper_zero_ne_one : Rpaper 0 e3 ≠ 1\n\ntheorem paper_ne_rodrigues : Rpaper 0 e3 ≠ Rrod 0 e3\n\ntheorem paper_eq_rod_pi_sub (θ : ℝ) (u : Fin 3 → ℝ) : Rpaper θ u = Rrod (Real.pi - θ) u",
+          "compiler_feedback": "lake env lean Paper/TMP.lean → exit 0.\nPaper/TMP.lean:36:23: warning: This simp argument is unused:\n  Matrix.one_apply\n\nHint: Omit it from the simp argument list.\n  [apply] simp [Rpaper, K, e3, Matrix.mul_fin_three, Matrix.smul_apply, Matrix.add_apply] at h00\n\nPaper/TMP.lean:36:41: warning: This simp argument is unused:\n  Matrix.mul_fin_three\n\nPaper/TMP.lean:37:4: warning: This simp argument is unused:\n  Matrix.smul_apply\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`\n\nlean_diagnostic_messages (severity=error): {\"partial\":false,\"success\":true,\"timed_out\":false,\"items\":[],\"failed_dependencies\":[]}\nlean_verify PlayerOneEq3.paper_ne_rodrigues → axioms [propext, Classical.choice, Quot.sound], non_standard_axioms []\nlean_verify PlayerOneEq3.paper_eq_rod_pi_sub → axioms [propext, Classical.choice, Quot.sound], non_standard_axioms []",
+          "axioms": ["propext", "Classical.choice", "Quot.sound"],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::EQUATION::3",
+      "snippet_type": "EQUATION",
+      "location": "3.2 Model Components (Eq. 4)",
+      "content": "where [u]_× is the cross-product (skew-symmetric) matrix of u, which can be denoted as follows:\n[u]_× = [ [0, −u_z, u_y], [u_z, 0, −u_x], [−u_y, u_x, 0] ] (4)\n\n[Context: u = v/||v|| is the unit rotation axis from Eq. (2); [u]_× is used in Eq. (3) to build the camera rotation matrix R.]",
+      "route": "verify-math-lean",
+      "route_rationale": "A matrix identity ([u]_× w = u × w, skew-symmetry, [u]_× u = 0) stated over explicit entries — exactly the kind of closed-form claim the compiler can settle outright.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::3",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.95,
+        "reasoning": "The printed matrix really is the cross-product matrix of $u$. Lean proves all three defining properties against Mathlib's own `crossProduct`: (A) `K u *ᵥ w = crossProduct u w` for every $w \\in \\mathbb{R}^3$ — so each row of Eq. (4) matches the corresponding component of $u \\times w$, including every sign; (B) `(K u)ᵀ = -K u`, so the matrix is genuinely skew-symmetric as the surrounding prose asserts; (C) `K u *ᵥ u = 0`, so the rotation axis lies in the kernel, as any rotation generator requires. Eq. (4) is correct as printed. (This is the one of the two camera-extrinsics equations that is right — the error is confined to Eq. (3), see paper::EQUATION::2.) All declarations compile with no severity-1 diagnostic and no sorryAx.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean (archived to Paper/Verified/PlayerOne__EQUATION__3.lean)",
+          "formal_statement": "def K (u : Fin 3 → ℝ) : Matrix (Fin 3) (Fin 3) ℝ := !![0, -u 2, u 1; u 2, 0, -u 0; -u 1, u 0, 0]\n\ntheorem K_mulVec_eq_cross (u w : Fin 3 → ℝ) : K u *ᵥ w = crossProduct u w\n\ntheorem K_skew (u : Fin 3 → ℝ) : (K u)ᵀ = -K u\n\ntheorem K_mulVec_self (u : Fin 3 → ℝ) : K u *ᵥ u = 0",
+          "compiler_feedback": "lake env lean Paper/TMP.lean → exit 0.\nOnly `linter.unusedSimpArgs` warnings (Matrix.vecHead / Matrix.vecTail unused in the simp sets at 17:74, 17:90, 29:60, 29:76). No errors.\n\nFirst attempt failed with `error(lean.unknownIdentifier): Unknown constant `Matrix.dotProduct`` at 17:42 and 29:28 (the lemma is the root-namespace `dotProduct` in this Mathlib revision); corrected and recompiled clean.\n\nlean_diagnostic_messages (severity=error): {\"partial\":false,\"success\":true,\"timed_out\":false,\"items\":[],\"failed_dependencies\":[]}\nlean_verify PlayerOneEq4.K_mulVec_eq_cross → axioms [propext, Classical.choice, Quot.sound], non_standard_axioms []",
+          "axioms": ["propext", "Classical.choice", "Quot.sound"],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "Appendix A — Details of training pipeline (with 4.1 Experimental Setting)",
+      "content": "Concretely, let the raw video be V ∈ ℝ^{B×K×3×H×W} and its point maps P ∈ ℝ^{B×K×N×3}. After VAE encoding, the video becomes z_video^0 ∈ ℝ^{B×k×c×h×w} with h = H/8, w = W/8, k = K/4.\n\n[Context, Sec. 4.1: 'We train our model for 100,000 steps on 8 NVIDIA A100 GPUs with a batch size of 56 and sample resolution of 480×480. The generated video runs at eight frames per second, and we utilize 49 video frames (6 seconds) for training.' So H = W = 480 and K = 49.]",
+      "route": "verify-math-lean",
+      "route_rationale": "The stated shape relations plus the stated configuration reduce to a divisibility question over ℕ — a crisp, decidable claim, so the compiler settles whether the model's tensor shapes are realisable.",
+      "lean_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.9,
+        "reasoning": "The spatial half of the specification is fine but the temporal half is unsatisfiable at the paper's own configuration. Lean proves (A) `8 ∣ 480 ∧ 480 / 8 = 60`, so $h = H/8 = w = W/8 = 60$ is a legitimate integer latent resolution; and (B) `¬ ∃ k : ℕ, 4 * k = 49` together with `¬ (4 ∣ 49)` and `¬ ∃ n : ℤ, (49 : ℚ)/4 = n`, so $k = K/4$ with $K = 49$ gives $12.25$ — not an integer, hence not a tensor dimension. The paper states $K = 49$ frames in Sec. 4.1 and $k = K/4$ in Appendix A, and the two cannot both hold. (C) The causal-VAE convention actually used by the Wan2.1 backbone, $k = (K-1)/4 + 1$, is consistent at $K = 49$ and gives $k = 13$ (proved), which is almost certainly the intended relation. Hypotheses assumed: only the paper's own $H = W = 480$ and $K = 49$; nothing was added to make the claim true or false. All declarations compile with no severity-1 diagnostic and no sorryAx.",
+        "predicted_error_category": "Domain/Constraint violation",
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": [
+          "with h = H/8, w = W/8, k = K/4",
+          "we utilize 49 video frames (6 seconds) for training"
+        ],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean (archived to Paper/Verified/PlayerOne__MATHEMATICAL_MODEL__0.lean)",
+          "formal_statement": "theorem spatial_shape_ok : (8 : ℕ) ∣ 480 ∧ (480 : ℕ) / 8 = 60\n\ntheorem temporal_shape_inconsistent : ¬ ∃ k : ℕ, 4 * k = 49\n\ntheorem four_not_dvd_49 : ¬ ((4 : ℕ) ∣ 49)\n\ntheorem rational_k_not_integer : ¬ ∃ n : ℤ, ((49 : ℚ) / 4) = (n : ℚ)\n\ntheorem causal_convention_consistent : (49 - 1) / 4 + 1 = 13",
+          "compiler_feedback": "lake env lean Paper/TMP.lean → exit 0, no diagnostics of any severity.\n\nlean_diagnostic_messages (severity=error): {\"partial\":false,\"success\":true,\"timed_out\":false,\"items\":[],\"failed_dependencies\":[]}\nlean_verify PlayerOneShapes.temporal_shape_inconsistent → axioms [propext, Quot.sound], non_standard_axioms []",
+          "axioms": ["propext", "Quot.sound"],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::EQUATION::4",
+      "snippet_type": "EQUATION",
+      "location": "Appendix A — Details of training pipeline",
+      "content": "A 3D encoder plus an adapter maps the point maps to z_point ∈ ℝ^{B×k×64×h×w}, matching the video latent's spatio-temporal shape. Both z_video and z_point are noised to obtain z'_video and z'_point for denoising training. The motion sequence, passed through our motion encoder, yields z_motion ∈ ℝ^{B×k×3×h×w}. The first-frame latent z_first ∈ ℝ^{B×1×c×h×w} is repeated k times so that z_first^k ∈ ℝ^{B×k×c×h×w}. We then concatenate along channels:\nz_input = concat(z_first^k, z_motion, z'_video, z'_point) ∈ ℝ^{B×k×(3+64+2c)×h×w}.",
+      "route": "verify-math-lean",
+      "route_rationale": "A closed-form identity in the free variable c, with every summand's channel count given — trivially formalisable, and a machine-checked PASSED is worth more than an eyeball check.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::4",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.95,
+        "reasoning": "The channel arithmetic of the concatenation is correct. The four summands contribute $c$ ($z_{\\text{first}}^k$), $3$ ($z_{\\text{motion}}$), $c$ ($z'_{\\text{video}}$) and $64$ ($z'_{\\text{point}}$) channels, and Lean proves `c + 3 + c + 64 = 3 + 64 + 2 * c` over both $\\mathbb{N}$ and $\\mathbb{Z}$ — exactly the printed $(3 + 64 + 2c)$. The non-channel axes also align: all four tensors are stated at $B \\times k \\times \\cdot \\times h \\times w$ (the first-frame latent after its $k$-fold repeat, and the point-map latent explicitly 'matching the video latent's spatio-temporal shape'), so the channel-wise concatenation is well defined and only the channel axis changes. Note this snippet is consistent with the main text's $z_{\\text{motion}} \\in \\mathbb{R}^{k \\times 3 \\times h \\times w}$ and $z_{\\text{point}} \\in \\mathbb{R}^{k \\times 64 \\times h \\times w}$. All declarations compile with no severity-1 diagnostic and no sorryAx.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean (archived to Paper/Verified/PlayerOne__EQUATION__4.lean)",
+          "formal_statement": "theorem channel_count (c : ℕ) : c + 3 + c + 64 = 3 + 64 + 2 * c\n\ntheorem channel_count_int (c : ℤ) : c + 3 + c + 64 = 3 + 64 + 2 * c\n\ntheorem channel_count_at_c16 : (16 : ℕ) + 3 + 16 + 64 = 3 + 64 + 2 * 16\n\ntheorem shapes_align (B k h w c : ℕ) : ((B, k, c, h, w) : ℕ × ℕ × ℕ × ℕ × ℕ).1 = B ∧ (B, k, c, h, w).2.1 = k ∧ (B, k, c + 3 + c + 64, h, w).2.2.1 = 3 + 64 + 2 * c ∧ (B, k, c, h, w).2.2.2 = (h, w)",
+          "compiler_feedback": "lake env lean Paper/TMP.lean → exit 0, no diagnostics of any severity.\n\nlean_diagnostic_messages (severity=error): {\"partial\":false,\"success\":true,\"timed_out\":false,\"items\":[],\"failed_dependencies\":[]}\nlean_verify PlayerOneChannels.channel_count → axioms [propext], non_standard_axioms []",
+          "axioms": ["propext"],
+          "cycles_used": 1,
+          "project_kept": false
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::1",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "3.3 Training Strategy — Dataset preparation",
+      "content": "The refined SMPL parameters are decomposed into body and feet (66 dimensions), head orientation (3 dimensions), and hand articulation (45 dimensions per hand) components for each frame. These components are fed into their respective motion encoders.\n\n[Context, Sec. 3.2: 'we categorize the human motion parameters into three groups: body and feet, hands, and head. Each group is processed through its own dedicated motion encoder, comprising eight layers of 3D convolutional networks ... These latents are subsequently concatenated along the channel dimension to form the final part-aware motion latent representation z_motion ∈ R^{k×3×h×w}.']",
+      "route": "verify-math",
+      "route_rationale": "The dimension counts rest on the external SMPL-X parameterisation convention, which the paper never pins down formally — unformalisable without inventing the definition, so informal review is the right instrument.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::1",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.75,
+        "reasoning": "The decomposition is internally coherent and matches the SMPL-X axis-angle parameterisation. Body and feet at $66 = 3 + 63$ dimensions corresponds to the global orientation ($3$) plus the $21$ body joints ($21 \\times 3 = 63$); head orientation at $3$ is one axis-angle vector; hand articulation at $45$ per hand is the $15$ finger joints ($15 \\times 3 = 45$), giving $90$ for both hands and $66 + 3 + 90 = 159$ dimensions per frame in total. Every count is a multiple of $3$, as axis-angle triplets must be. The three groups match the three motion encoders of Sec. 3.2 and the $3$-channel $z_{\\text{motion}}$ (one channel per group). No arithmetic or dimensional inconsistency. Confidence is held at $0.75$ rather than higher because the paper does not state which SMPL variant fixes the $66$, so the count can only be cross-checked against the standard convention, not derived from the snippet.",
+        "predicted_error_category": null,
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.75
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::0",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "4.1 Experimental Setting / Appendix A — Latency",
+      "content": "The generated video runs at eight frames per second, and we utilize 49 video frames (6 seconds) for training. After distillation, our method can achieve 8 FPS to generate the desired results.\n\n[And, Appendix A: 'After distillation, the measured end-to-end inference latency is approximately 119 milliseconds per generated-frame, corresponding to about 8.4 FPS.' And Appendix overview: 'Distillation & latency. ... end-to-end latency (∼119 ms/frame, ∼8.4 FPS).']",
+      "route": "verify-math",
+      "route_rationale": "Arithmetic over reported configuration numbers (frames, duration, frame rate, latency) — checkable by inspection, and the quantities are empirical rather than formal.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.75,
+        "reasoning": "The latency conversion is exact: $1 / 0.119\\,\\mathrm{s} = 8.403\\,\\mathrm{FPS} \\approx 8.4$ FPS, consistent with the Appendix overview. The duration figure is a rounding, not an error: $49$ frames at $8$ FPS is $49/8 = 6.125\\,\\mathrm{s}$, reported as '6 seconds' (a strict $6$ s clip at $8$ FPS would be $48$ frames; $49 = 48 + 1$ is the usual first-frame-plus-$48$ convention for a causal video VAE, which also explains the $k = (K-1)/4 + 1 = 13$ latent frames discussed under paper::MATHEMATICAL_MODEL::0). The '8 FPS' of Sec. 4.1 versus '$\\approx$ 8.4 FPS' of the Appendix is likewise a rounding of the same measurement. None of these is a derivation-invalidating mistake; flagged at $0.75$ confidence as NO_ERROR with the $6.125$ vs $6$ s rounding noted.",
+        "predicted_error_category": null,
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.75
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::1",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "Appendix A — Limited vs. Full training data (Tab. 9)",
+      "content": "As shown in Tab. 9, using the full data yields clear, consistent improvements across all metrics: semantic alignment increases (DINO/CLIP: 56.4→67.8 / 76.7→88.2), geometric errors decrease (MPJPE/MRRPE: 182.42→127.16 / 202.35→151.62), and per- ... Perceptual/temporal quality improves (PSNR/FVD/LPIPS: 46.6→52.6 / 272.01→226.12 / 0.0827→0.0663). The gains are substantial (e.g., MPJPE −30.3%, MRRPE −25.1%), confirming that our constructed data broadens coverage of appearance and motion patterns and leads to stronger motion alignment and overall fidelity.\n\n[Tab. 9: Limited-data 56.40 | 76.70 | 182.42 | 202.35 | 46.60 | 272.01 | 0.0827; Full-data 67.80 | 88.20 | 127.16 | 151.62 | 52.60 | 226.12 | 0.0663.]",
+      "route": "verify-math",
+      "route_rationale": "Percentage-reduction arithmetic over experimental table values — empirical data, explicitly outside what a Lean formalisation can faithfully state.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::1",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "Every transcribed value matches Tab. 9 exactly, and both derived percentages check out: MPJPE $(182.42 - 127.16)/182.42 = 30.29\\% \\approx 30.3\\%$, and MRRPE $(202.35 - 151.62)/202.35 = 25.07\\% \\approx 25.1\\%$. The directional claims are also correct given the table's $\\uparrow/\\downarrow$ annotations — DINO, CLIP and PSNR rise; MPJPE, MRRPE, FVD and LPIPS fall. No arithmetic error.",
+        "predicted_error_category": null,
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::2",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "Appendix A — Comparison with different motion injection schemes (Tab. 10)",
+      "content": "Compared with the strongest baseline (RealisDance-Scheme), we obtain higher semantic consistency (DINO/CLIP: +5.5/+4.3), lower geometric errors (MPJPE/MRRPE: -10.28/-9.58), and better perceptual/temporal quality (PSNR/FVD/LPIPS: +1.70/-20.13/-0.0048).\n\n[Tab. 10: PlayerOne (ours) 67.80 | 88.20 | 127.16 | 151.62 | 52.60 | 226.12 | 0.0663; RealisDance-Scheme 62.30 | 83.90 | 137.44 | 161.20 | 50.90 | 246.25 | 0.0711.]",
+      "route": "verify-math",
+      "route_rationale": "Difference arithmetic over reported table values — empirical, so informal review rather than formalisation.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::2",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "All seven reported deltas reproduce Tab. 10 exactly: DINO $67.80 - 62.30 = +5.50$; CLIP $88.20 - 83.90 = +4.30$; MPJPE $127.16 - 137.44 = -10.28$; MRRPE $151.62 - 161.20 = -9.58$; PSNR $52.60 - 50.90 = +1.70$; FVD $226.12 - 246.25 = -20.13$; LPIPS $0.0663 - 0.0711 = -0.0048$. RealisDance-Scheme is also genuinely the strongest of the four listed baselines on every metric, so 'the strongest baseline' is correct. No arithmetic error.",
+        "predicted_error_category": null,
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::3",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "Appendix A — Investigation on the impact of filtering (Tab. 19)",
+      "content": "Investigation on the impact of filtering. In this study, we examine how the filtering ratio affects model performance. As demonstrated in Table 19, increasing the filtering ratio leads to a decline in model performance, which can be attributed to insufficient data. Conversely, the absence of filtering also causes performance deterioration, primarily because noisy data is introduced during training, negatively impacting the accuracy of action alignment. Therefore, we have determined that a filtering ratio of 10% optimizes performance.\n\n[Tab. 19, columns DINO (↑) | CLIP (↑) | MPJPE (↓) | MRRPE (↓) | PSNR (↑) | FVD (↓) | LPIPS (↓):\nratio 0:  64.2 | 85.0 | 123.50 | 158.10 | 47.5 | 228.50 | 0.0587\nratio 5:  65.4 | 86.5 | 125.00 | 160.20 | 48.7 | 230.75 | 0.0600\nratio 10: 67.8 | 88.2 | 127.16 | 163.62 | 50.3 | 236.12 | 0.0663\nratio 15: 66.0 | 87.2 | 126.00 | 162.00 | 49.8 | 234.00 | 0.0640]",
+      "route": "verify-math",
+      "route_rationale": "An optimality (argmax) claim over an experimental table — the objects are measured quantities, not formal ones, so this is unformalisable and goes to informal review.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::3",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.85,
+        "reasoning": "The stated conclusion is contradicted by the table it cites, and the table's own $\\uparrow/\\downarrow$ annotations make the direction unambiguous. On four of the seven metrics the optimum is at **ratio 0**, not 10, and ratio 10 is strictly the *worst* of all four settings: MPJPE $(\\downarrow)$ $123.50 < 125.00 < 126.00 < 127.16$, so ratio 0 is best and ratio 10 worst; MRRPE $(\\downarrow)$ $158.10 < 160.20 < 162.00 < 163.62$, same ordering; FVD $(\\downarrow)$ $228.50 < 230.75 < 234.00 < 236.12$, same ordering; LPIPS $(\\downarrow)$ $0.0587 < 0.0600 < 0.0640 < 0.0663$, same ordering. Only DINO, CLIP and PSNR peak at ratio 10. So (i) 'the absence of filtering also causes performance deterioration' is false for the four geometric/perceptual metrics, on which no filtering is the best setting in the table; (ii) 'increasing the filtering ratio leads to a decline in model performance' is contradicted by ratio 15, which *improves* on ratio 10 in MPJPE, MRRPE, FVD and LPIPS; and (iii) 'a filtering ratio of 10% optimizes performance' holds on three metrics and is simultaneously the worst choice on the other four, so it is not an optimum of the reported data. Since MPJPE/MRRPE are precisely the motion-alignment metrics the filtering scheme is introduced to improve, the prose inverts the evidence for its own hyperparameter choice. Severity is minor: the main method and headline results do not depend on this ablation.",
+        "predicted_error_category": "Domain/Constraint violation",
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": [
+          "increasing the filtering ratio leads to a decline in model performance",
+          "Conversely, the absence of filtering also causes performance deterioration",
+          "we have determined that a filtering ratio of 10% optimizes performance"
+        ]
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::4",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "Appendix A — Investigation on the impact of rendering (Tab. 18) vs. Tabs. 2, 3, 9, 10, 11, 13, 14, 15",
+      "content": "[Tab. 18 'CUT3R [36]' row — the paper's own default configuration, since Sec. 3.2 states PlayerOne 'begins by employing CUT3R [36] to generate a point map for each frame':\n67.8 | 88.2 | 127.16 | 163.62 | 50.3 | 236.12 | 0.0663\n\n[Tab. 19 'ratio 10' row — also the default, since the chosen filtering ratio is 10%:\n67.8 | 88.2 | 127.16 | 163.62 | 50.3 | 236.12 | 0.0663\n\n[The same system on the same benchmark in every other table — Tab. 2 'PlayerOne (ours, indoor scenes only)', Tab. 3 'PlayerOne (ours)', Tab. 9 'Full-data', Tab. 10 'PlayerOne (ours)', Tab. 11 'PlayerOne (ours)', Tab. 13 'Distilled', Tab. 14 'Real', Tab. 15 '1.3B':\n67.8 | 88.2 | 127.16 | 151.62 | 52.6 | 226.12 | 0.0663]",
+      "route": "verify-math",
+      "route_rationale": "A cross-table numeric identity over reported experimental results — measured quantities, so unformalisable; informal arithmetic comparison is the right check.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::4",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.8,
+        "reasoning": "The paper reports two different numeric rows for one and the same system under one and the same configuration. Tabs. 18 and 19 give the default PlayerOne (CUT3R rendering, 10% filtering) as MRRPE $163.62$, PSNR $50.3$, FVD $236.12$, while eight other tables (2, 3, 9, 10, 11, 13, 14, 15) give the same system as MRRPE $151.62$, PSNR $52.6$, FVD $226.12$. The remaining four metrics agree to the digit across all ten tables (DINO $67.8$, CLIP $88.2$, MPJPE $127.16$, LPIPS $0.0663$), which rules out a different benchmark or a different checkpoint as the explanation — a genuinely different run would not reproduce four metrics exactly and miss three. The discrepancies are large relative to the effects being claimed: the $12.00$ MRRPE gap exceeds the $9.58$ MRRPE margin by which Tab. 10 claims superiority over RealisDance-Scheme, and the $10.00$ FVD gap is comparable to that comparison's $20.13$. At least one of the two rows is wrong, so the reader cannot reconcile the rendering/filtering ablations with the headline numbers. Severity is minor: the ordering of methods within each individual table is unaffected, and the four agreeing metrics still support the qualitative conclusions. Note this is a reporting inconsistency over experimental values rather than a flawed derivation.",
+        "predicted_error_category": "Sign/Arithmetic error",
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": [
+          "Tab. 18, CUT3R row: MRRPE 163.62, PSNR 50.3, FVD 236.12",
+          "Tab. 19, ratio 10 row: MRRPE 163.62, PSNR 50.3, FVD 236.12",
+          "Tabs. 2/3/9/10/11/13/14/15, PlayerOne row: MRRPE 151.62, PSNR 52.6, FVD 226.12"
+        ]
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.8
+    }
+  ],
+  "findings": [
+    {
+      "snippet_id": "paper::EQUATION::2",
+      "category": "Formally refuted",
+      "severity": "critical",
+      "confidence": 0.95,
+      "evidence": "Eq. (3) states Rodrigues' rotation formula with the wrong sign on the quadratic term: it prints $(1 + \\cos\\theta)$ where the correct formula has $(1 - \\cos\\theta)$. Lean refuted the equation as written and diagnosed it exactly.\n\n**Refutation.** Using the paper's own $[u]_\\times$ from Eq. (4), take the unit axis $u = (0,0,1)$ and $\\theta = 0$ — i.e. head parameter $v = 0$, no rotation at all. The correct formula returns the identity (`Rrod 0 e3 = 1`, proved), but Eq. (3) returns\n$$I + \\sin 0 \\cdot [u]_\\times + (1 + \\cos 0) \\cdot [u]_\\times^2 = I + 2[u]_\\times^2 = \\mathrm{diag}(-1,\\,-1,\\,1),$$\na $180°$ rotation about $z$. Lean proves `Rpaper 0 e3 ≠ 1` and hence `Rpaper 0 e3 ≠ Rrod 0 e3`, with axioms `[propext, Classical.choice, Quot.sound]` and no `sorryAx`.\n\n**Diagnosis.** For every axis $u$ and every angle $\\theta$, Lean proves `Rpaper θ u = Rrod (π - θ) u` (via $\\sin(\\pi-\\theta) = \\sin\\theta$, $\\cos(\\pi-\\theta) = -\\cos\\theta$). So Eq. (3) always produces a rotation about the right axis but by the angle $\\pi - \\theta$ instead of $\\theta$ — it is correct only at the single value $\\theta = \\pi/2$.\n\n**Why this is critical.** $R$ is the rotation part of the camera extrinsics derived from the SMPL head parameters, which are Plücker-parameterised and fed to the camera encoder whose output is added to the noised video latents. The camera encoder is one of the two pillars of the paper's Part-disentangled Motion Injection contribution, and Tab. 2 attributes $+1.8$ DINO / $+1.5$ CLIP / $-26.49$ MPJPE to it ('No Camera' $\\to$ 'PMI'). As printed, the egocentric view would be flipped by $\\pi - \\theta$ at every frame, and a motionless head would induce a half-turn — so the stated method could not produce the reported view alignment. Eq. (4), by contrast, Lean verified as correct (`PASSED`), which localises the defect to the single $\\cos$ sign in Eq. (3).",
+      "verifier": "verify-math-lean",
+      "exact_quote": "R = I + sinθ · [u]_× + (1 + cosθ) · [u]_×^2"
+    },
+    {
+      "snippet_id": "paper::EQUATION::0",
+      "category": "Formally refuted",
+      "severity": "minor",
+      "confidence": 0.9,
+      "evidence": "Eq. (1), the paper's sole training objective, specifies the diffusion timestep twice and incompatibly, and its normalisation does not control the noise level of the schedule actually written.\n\n**Unsatisfiable timestep range.** The expectation is over $t \\sim U(0,1)$, which forces $0 < t < 1$, while the very next line states $t = 1, \\ldots, T$, which forces $t \\ge 1$. Lean proves `¬ ∃ t : ℝ, (0 < t ∧ t < 1) ∧ 1 ≤ t`, and more generally that $\\mathrm{Icc}(1, T)$ and $\\mathrm{Ioo}(0,1)$ are disjoint for every $T \\ge 1$ — the two stated ranges share no point, so the sampling law of $t$ is not well defined as printed.\n\n**Undefined, unconstrained $\\beta_t$.** The schedule is written $z_t = \\alpha_t z_0 + \\beta_t \\delta_t \\varepsilon$, but the only normalisation given is $\\alpha_t^2 + \\delta_t^2 = 1$ and $\\beta_t$ is never defined anywhere in the paper. Lean proves\n$$\\exists\\, \\alpha, \\delta, \\beta : \\quad \\alpha^2 + \\delta^2 = 1 \\ \\wedge\\ \\alpha^2 + (\\beta\\delta)^2 \\neq 1$$\n(witness $\\alpha = \\delta = \\tfrac{\\sqrt 2}{2}$, $\\beta = 2$), so the stated constraint does not make the schedule variance preserving; and\n$$\\forall\\, \\alpha, \\delta, \\beta,\\ \\delta \\neq 0 \\Rightarrow \\big(\\alpha^2 + \\delta^2 = 1 \\Rightarrow (\\alpha^2 + (\\beta\\delta)^2 = 1 \\iff \\beta^2 = 1)\\big),$$\nso whenever noise is genuinely injected the schedule is variance preserving exactly when $\\beta_t = \\pm 1$. $\\beta_t$ is therefore either redundant or it breaks the paper's own normalisation.\n\nThe two defects compound: $\\alpha_t^2 + \\delta_t^2 = 1$ is the discrete variance-preserving (DDPM) convention, while $t \\sim U(0,1)$ is the continuous flow-matching convention of the Wan2.1 backbone, where the interpolation satisfies $\\alpha_t + \\delta_t = 1$ rather than $\\alpha_t^2 + \\delta_t^2 = 1$. Severity minor: the intended objective is recoverable under either convention and no downstream result depends on which, so the argument survives — but the defining equation of the method cannot be read as written. Axioms `[propext, Classical.choice, Quot.sound]`, no `sorryAx`.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "L = E_{t∼U(0,1), ε∼N(0,I)} [ ||ε − εθ(zt, t)||_2^2 ], where zt = αt z0 + βt δt ε"
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+      "category": "Formally refuted",
+      "severity": "minor",
+      "confidence": 0.9,
+      "evidence": "The latent tensor shapes are unsatisfiable at the paper's own training configuration. Appendix A states $k = K/4$ for the temporal latent axis; Sec. 4.1 states $K = 49$ frames. Lean proves `¬ ∃ k : ℕ, 4 * k = 49` (equivalently $4 \\nmid 49$, and $\\neg \\exists n \\in \\mathbb{Z},\\ 49/4 = n$), so $k = K/4 = 12.25$ is not an integer and cannot be a tensor dimension.\n\nThe spatial half of the same specification is fine: Lean confirms $8 \\mid 480$ with $480/8 = 60$, so $h = H/8 = w = W/8 = 60$ at the stated $480 \\times 480$ resolution.\n\nThe intended relation is almost certainly the causal-VAE convention of the Wan2.1 backbone, $k = (K-1)/4 + 1$, which Lean confirms is consistent at $K = 49$ and yields $k = 13$. That reading also explains the odd frame count ($49 = 1 + 48$) and the '6 seconds' figure ($49/8 = 6.125$ s). Severity minor: it is a shape-convention slip in an appendix implementation note, and every downstream claim goes through unchanged under the corrected formula. Axioms `[propext, Quot.sound]`, no `sorryAx`.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "After VAE encoding, the video becomes z_video^0 ∈ ℝ^{B×k×c×h×w} with h = H/8, w = W/8, k = K/4."
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::3",
+      "category": "Internal data contradiction",
+      "severity": "minor",
+      "confidence": 0.85,
+      "evidence": "The filtering-ratio ablation's stated conclusion is contradicted by the table it cites. Reading Tab. 19 with its own $\\uparrow/\\downarrow$ annotations, the optimum lies at **ratio 0**, not $10\\%$, on four of the seven metrics — and ratio $10$ is strictly the *worst* of all four settings on each of them:\n\n| metric | ratio 0 | ratio 5 | ratio 10 | ratio 15 | best |\n|---|---|---|---|---|---|\n| MPJPE $(\\downarrow)$ | **123.50** | 125.00 | 127.16 | 126.00 | ratio 0 |\n| MRRPE $(\\downarrow)$ | **158.10** | 160.20 | 163.62 | 162.00 | ratio 0 |\n| FVD $(\\downarrow)$ | **228.50** | 230.75 | 236.12 | 234.00 | ratio 0 |\n| LPIPS $(\\downarrow)$ | **0.0587** | 0.0600 | 0.0663 | 0.0640 | ratio 0 |\n\nOnly DINO, CLIP and PSNR peak at ratio $10$. Three separate assertions fail: 'the absence of filtering also causes performance deterioration' is false on the four metrics above, where no filtering is the best setting reported; 'increasing the filtering ratio leads to a decline in model performance' is contradicted by ratio $15$, which *improves* on ratio $10$ in MPJPE, MRRPE, FVD and LPIPS; and '$10\\%$ optimizes performance' is simultaneously the worst choice on four of seven metrics, so it is not an optimum of the reported data.\n\nMPJPE and MRRPE are precisely the hand/motion-alignment metrics the filtering scheme exists to improve, so the prose inverts the evidence for its own hyperparameter choice. Severity minor: the headline results and the main method do not rest on this ablation.",
+      "verifier": "verify-math",
+      "exact_quote": "As demonstrated in Table 19, increasing the filtering ratio leads to a decline in model performance, which can be attributed to insufficient data. Conversely, the absence of filtering also causes performance deterioration, primarily because noisy data is introduced during training, negatively impacting the accuracy of action alignment. Therefore, we have determined that a filtering ratio of 10% optimizes performance."
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::4",
+      "category": "Internal data contradiction",
+      "severity": "minor",
+      "confidence": 0.8,
+      "evidence": "The paper reports two mutually inconsistent numeric rows for one and the same system in its default configuration. Tabs. 18 (row 'CUT3R', the default renderer per Sec. 3.2) and 19 (row 'ratio 10', the chosen filtering ratio) give PlayerOne as MRRPE $163.62$, PSNR $50.3$, FVD $236.12$; eight other tables — 2, 3, 9 ('Full-data'), 10, 11, 13 ('Distilled'), 14 ('Real') and 15 ('1.3B') — give the same system as MRRPE $151.62$, PSNR $52.6$, FVD $226.12$.\n\nThe remaining four metrics agree to the digit across all ten tables (DINO $67.8$, CLIP $88.2$, MPJPE $127.16$, LPIPS $0.0663$), which rules out a different benchmark or checkpoint as the explanation: an independent run would not reproduce four metrics exactly while missing three. The gaps are large relative to the effects being claimed — the $12.00$ MRRPE discrepancy exceeds the $9.58$ MRRPE margin by which Tab. 10 claims superiority over the strongest baseline, and the $10.00$ FVD discrepancy is comparable to that comparison's $20.13$. At least one of the two rows is therefore wrong, and the reader cannot reconcile the rendering and filtering ablations with the headline numbers. Severity minor: the within-table ordering of methods is unaffected and the four agreeing metrics still support the qualitative conclusions. This is a reporting inconsistency over experimental values rather than a flawed derivation.",
+      "verifier": "verify-math",
+      "exact_quote": "| CUT3R [36]    | 67.8           | 88.2           | 127.16    | 163.62    | 50.3    | 236.12  | 0.0663   |"
+    }
+  ],
+  "verdict": "CRITICAL_ERRORS",
+  "verdict_confidence": 0.9,
+  "summary": "**What was checked.** Twelve self-contained mathematical objects were extracted from PlayerOne: the four display equations of Sec. 3 (training objective, axis normalisation, rotation matrix, cross-product matrix), the two latent-shape specifications of Appendix A, the SMPL parameter decomposition, and four blocks of derived arithmetic over the reported configuration and tables. Five were routed to `verify-math-lean` and seven to `verify-math`. The Lean queue ran strictly serially against one project; **no snippet came back `FAILED` or `NOT_ATTEMPTED`**, so every formal claim was settled by the compiler (2 `PASSED`, 3 `REFUTED`) and no Step 5 informal fallback was required.\n\n**What Lean settled.** The headline result is a formal refutation of **Eq. (3)**: the paper prints Rodrigues' rotation formula as $R = I + \\sin\\theta\\,[u]_\\times + (1 + \\cos\\theta)\\,[u]_\\times^2$, where the correct quadratic coefficient is $(1 - \\cos\\theta)$. Lean proved both the counterexample — at $u = (0,0,1)$, $\\theta = 0$ the printed formula returns $\\mathrm{diag}(-1,-1,1)$, a half-turn, where the identity is required — and the exact diagnosis, `Rpaper θ u = Rrod (π - θ) u`: the formula is a rotation by $\\pi - \\theta$ rather than $\\theta$, correct only at $\\theta = \\pi/2$. Since $R$ feeds the camera encoder that the paper credits with its view-alignment gains (Tab. 2, 'No Camera' $\\to$ 'PMI'), this invalidates the method as stated, hence the `CRITICAL_ERRORS` verdict. Lean also refuted the timestep specification of **Eq. (1)** ($t \\sim U(0,1)$ and $t = 1,\\ldots,T$ are jointly unsatisfiable, and the stated $\\alpha_t^2 + \\delta_t^2 = 1$ does not control the undefined factor $\\beta_t$) and the latent shape $k = K/4$ at the paper's own $K = 49$ ($4 \\nmid 49$). Both are specification defects whose intended reading is recoverable, so they are recorded as `minor`. On the other side, Lean **verified** Eq. (4) — the printed $[u]_\\times$ really is the cross-product matrix ($[u]_\\times w = u \\times w$, skew-symmetric, $[u]_\\times u = 0$) — and the Appendix channel arithmetic $c + 3 + c + 64 = 3 + 64 + 2c$. The Eq. (4) `PASSED` is what localises the camera-extrinsics defect to the single $\\cos$ sign in Eq. (3).\n\n**What Lean could not settle.** Nothing in the Lean queue stalled. The seven informally reviewed snippets were unformalisable by design — they concern the external SMPL-X parameterisation convention or arithmetic over measured experimental values, which cannot be stated faithfully in Lean without inventing the objects. Two of them yielded findings: the filtering-ratio ablation (Tab. 19) asserts that $10\\%$ optimises performance when ratio $0$ is best and ratio $10$ strictly worst on four of seven metrics including both motion-alignment metrics; and PlayerOne's default row is reported twice with different MRRPE/PSNR/FVD values (Tabs. 18–19 versus Tabs. 2, 3, 9, 10, 11, 13, 14, 15) while four metrics match exactly. The other five informal snippets checked out — the axis-angle normalisation, the $66 + 3 + 45{\\times}2$ SMPL decomposition, the $119$ ms $\\to 8.4$ FPS conversion, and both sets of table deltas ($-30.3\\%$ / $-25.1\\%$ in Tab. 9, all seven deltas against RealisDance-Scheme in Tab. 10) reproduce exactly.\n\n**Disagreements between verifiers.** None. No snippet received both a Lean verdict and an informal one, because no Lean run failed; the formal and informal findings are disjoint and mutually consistent. Where they touch, they reinforce: the non-integral $k = K/4$ refuted formally is explained by the same causal-VAE convention ($49 = 1 + 48$, $k = 13$) that the informal review of the $49$-frames / $6$-seconds / $8$ FPS block independently identified as the intended reading.\n\n**Verdict confidence.** High ($0.9$). The verdict rests on a compiling refutation of a main-method equation, with the adjacent equation independently proved correct, so the error is isolated and not an artefact of my formalisation choices; all five formal verdicts carry only the standard Mathlib axioms and no `sorryAx`. The residual $0.1$ reflects a judgement call rather than a mathematical doubt: Eq. (3) is very likely a typesetting slip for $(1 - \\cos\\theta)$ that the released implementation does not share, in which case a reader might rate it `minor` — the mathematics as printed, however, is definitively wrong.\n\n**Lean project lifecycle.** Step 0 of `verify-math-lean` found a pre-existing `MATH_VERIFICATION/Paper` (created 2026-08-27 by an earlier, unrelated run; already Mathlib-built, 7.4 GB, no active build processes, project confirmed to build clean before any formalisation). Per that skill's non-negotiable rule — a reused project is treated as `--keep-lean` and is not this run's to delete — the project was **kept**, overriding the orchestrator's final-call deletion. Per-snippet scratch (`claim.md`, `Paper/TMP.lean`, including a stale `TMP.lean` inherited from the August run) was removed, and each proof was archived to `MATH_VERIFICATION/Paper/Paper/Verified/PlayerOne__<SNIPPET_ID>.lean` for inspection."
+}

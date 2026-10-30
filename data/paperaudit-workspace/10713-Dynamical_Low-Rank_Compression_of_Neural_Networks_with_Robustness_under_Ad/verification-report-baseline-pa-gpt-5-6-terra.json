@@ -1,0 +1,142 @@
+{
+  "paper_id": "10713-Dynamical_Low-Rank_Compression_of_Neural_Networks_with_Robustness_under_Ad",
+  "title": "Dynamical Low-Rank Compression of Neural Networks with Robustness under Ad",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 2, Eq. (1), and low-rank sensitivity discussion",
+      "confidence": 0.97,
+      "supporting_evidence": "The paper applies the standard matrix condition number κ(W)=||W||||W†|| to rank-deficient low-rank layers W=USVᵀ with r<n and claims it bounds the defined relative input-output sensitivity for arbitrary X. This is not generally true. For rank-deficient W, κ(W) based on the pseudoinverse ignores the null space, whereas the stated sensitivity contains ||X||/||f(X)|| and can be arbitrarily large depending on X. For example, W=diag(1,0), X=(ε,1) has κ(W)=1 but the relative output sensitivity to a perturbation in the first coordinate scales as ||X||/ε. The denominator can also vanish when X lies in the null space. Thus Eq. (1) cannot provide the asserted bound without substantial restrictions on inputs, outputs, and layer maps.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "10713-Dynamical_Low-Rank_Compression_of_Neural_Networks_with_Robustness_under_Ad::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Proposition 2, Section 4, versus Appendix C proof of Proposition 2",
+      "confidence": 0.99,
+      "supporting_evidence": "The stated proposition and its proof give incompatible bounds. Proposition 2 states κ(S) ≤ exp(R(S)/(2σ_r(S))) + c, with an unspecified additive constant c. The appendix instead derives ln κ(S) ≤ R(S)/(√2 σ_r(S)^2), hence κ(S) ≤ exp(R(S)/(√2 σ_r(S)^2)). The denominator has different units/power of σ_r, the factor differs, and the proof contains no additive c. The claimed explicit condition-number guarantee is therefore not the result actually proved.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "10713-Dynamical_Low-Rank_Compression_of_Neural_Networks_with_Robustness_under_Ad::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Proposition 1 and Proposition 3",
+      "confidence": 0.94,
+      "supporting_evidence": "The paper states that R is only differentiable almost everywhere, yet Proposition 3 defines a gradient flow using ∇R(S) and claims its estimate for arbitrary trajectories without excluding or defining the nondifferentiable set R(S)=0. Proposition 1's formula ∇R(S)=2S(SᵀS−α_S²I)/R(S) is undefined at every scaled orthogonal S with R(S)=0. No subgradient formulation, existence argument, or condition avoiding this set is supplied, so the gradient-flow theorem is not well-defined as stated.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "10713-Dynamical_Low-Rank_Compression_of_Neural_Networks_with_Robustness_under_Ad::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 5, definition of the regularized loss and Eq. (8); Algorithm 1, line 9",
+      "confidence": 0.97,
+      "supporting_evidence": "The text defines L̃ = L + βR. It then updates coefficients by Ŝ_{s+1}=Ŝ_s−λ∇_{Ŝ}L̃−β∇_{Ŝ}R(Ŝ_s), and Algorithm 1 similarly uses −λ∇L̃−β∇R. If L̃ has the definition given in the paper, this includes the regularizer twice, once scaled by λβ and once by β. If L̃ was intended to mean the unregularized loss in Eq. (8), that contradicts its explicit definition. Moreover, the second regularizer term is not multiplied by the learning rate, so it is not gradient descent on either stated objective.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "10713-Dynamical_Low-Rank_Compression_of_Neural_Networks_with_Robustness_under_Ad::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 5, Basis Augmentation paragraph",
+      "confidence": 0.9,
+      "supporting_evidence": "The claim R(USVᵀ)=R(S) is false if R is applied according to Definition 1 to the actual n×n low-rank matrix USVᵀ. Definition 1 uses an identity whose dimension is the matrix dimension and averages over all singular values. USVᵀ has n−r additional zero singular values, so its regularizer generally differs from the r×r regularizer of S. The equality only holds if the authors redefine R to ignore null-space singular values and normalize by r, but no such definition is provided. Consequently the stated inference that ∇_U R=∇_V R=0 does not follow from the defined full-matrix regularizer.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "10713-Dynamical_Low-Rank_Compression_of_Neural_Networks_with_Robustness_under_Ad::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Appendix B.1.1, Eqs. (12)–(13), and all results labeled “ℓ²-FGSM”",
+      "confidence": 0.99,
+      "supporting_evidence": "The purported ℓ²-FGSM attack normalizes the gradient by its ℓ∞ norm and then clips each coordinate independently to [−ε,ε]. This produces an ℓ∞-bounded perturbation, not an ℓ²-bounded one. A valid ℓ² attack would normalize/projection-bound using the ℓ² norm. Therefore the attack labels, perturbation magnitudes, and all reported “ℓ²-FGSM” robustness results are mischaracterized.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "10713-Dynamical_Low-Rank_Compression_of_Neural_Networks_with_Robustness_under_Ad::baseline"
+    },
+    {
+      "error_category": "evidence_data_integrity",
+      "error_location": "Table 2, UCM/VGG16 attack-column headers",
+      "confidence": 0.99,
+      "supporting_evidence": "Table 2 assigns attack results to incorrect attack types and ε values. For example, it labels the VGG16 baseline value 54.96 as “Jitter, ε=0.3,” but Appendix Figure 4 identifies 54.96 as the ℓ²-FGSM result at ε=0.3. It labels 85.05 as “Mixup, ε=0.045,” but Appendix Figure 5 identifies 85.05 as the Jitter result at ε=0.045. The value 77.77 is listed as Mixup ε=0.025 and matches Appendix Figure 6's Mixup ε=0.025. The apparent intended ordering is FGSM 0.05/0.1/0.3, Jitter 0.035/0.045, and Mixup 0.025/0.1/0.75, but Table 2 shifts and corrupts the headers. This invalidates the table's stated attack comparisons.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "10713-Dynamical_Low-Rank_Compression_of_Neural_Networks_with_Robustness_under_Ad::baseline"
+    },
+    {
+      "error_category": "evidence_data_integrity",
+      "error_location": "Table 2, UCM/VGG16 clean accuracies versus Appendix Figures 4–6",
+      "confidence": 0.98,
+      "supporting_evidence": "Table 2 reports UCM/VGG16 clean accuracy 94.40% for the baseline and 94.61% for RobustDLRT. Appendix Figure 4, which states it uses the same UCM/VGG16 setup and 10 runs, reports the corresponding ε=0 accuracies as 92.40% and 92.61%, respectively. The adversarial values in Table 2 match Figure 4 (e.g., baseline 86.71 at ε=0.05 and RobustDLRT 89.12), making the two-percentage-point clean-accuracy discrepancy especially conspicuous. Figures 5 and 6 additionally report different baseline clean values, 94.42% and 93.82%, without explaining that different model populations were evaluated. Clean accuracy should not vary by attack type for the same trained model.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "10713-Dynamical_Low-Rank_Compression_of_Neural_Networks_with_Robustness_under_Ad::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Table 2, Table 3, and Appendix Table 9 hyperparameter selection",
+      "confidence": 0.96,
+      "supporting_evidence": "The paper says Tables 2 and 3 report the “best performing β” from Table 9. But Table 9 chooses different β values by dataset, architecture, and attack: for UCM/VGG16 it uses β=0.075 for FGSM, β=0.2 for Jitter, and β=0.15 for Mixup. Thus a single row labeled “RobustDLRT” in Table 2 aggregates results from separately attack-tuned models rather than evaluating one model against all attacks. This is not a valid robustness comparison and is effectively attack-specific test tuning unless a separate validation protocol is specified; none is provided.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "10713-Dynamical_Low-Rank_Compression_of_Neural_Networks_with_Robustness_under_Ad::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Adversarial Training subsection and Table 6",
+      "confidence": 0.99,
+      "supporting_evidence": "The manuscript explicitly acknowledges that baseline and DLRT were trained only on clean static data while RobustDLRT was trained with adversarial batches: “This difference confounds attribution of performance gains solely to the regularizer.” Nevertheless, Table 6 and its caption present RobustDLRT as superior to DLRT and approximately matching baseline. The comparison does not isolate the proposed regularizer from adversarial training/data augmentation and therefore cannot support the claimed method-to-method conclusion.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "10713-Dynamical_Low-Rank_Compression_of_Neural_Networks_with_Robustness_under_Ad::baseline"
+    },
+    {
+      "error_category": "evidence_data_integrity",
+      "error_location": "Table 5 caption and its corresponding black-box-attack table",
+      "confidence": 0.96,
+      "supporting_evidence": "The Table 5 caption states that the regularized model is “RobustDLRT (β = 0.075),” but the displayed black-box table lists the regularized rows as β=0.05 for both VGG16 and VGG11. These are materially different hyperparameter settings, so the caption misidentifies the evaluated model.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "10713-Dynamical_Low-Rank_Compression_of_Neural_Networks_with_Robustness_under_Ad::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Introduction contribution bullet “Preservation of performance”",
+      "confidence": 0.99,
+      "supporting_evidence": "The paper claims to “prove analytically—and verify empirically—that our regularizer neither degrades training performance nor reduces clean validation accuracy.” Proposition 3 is only a stability inequality for a convex quadratic least-squares surrogate and does not prove this for neural-network training. The empirical tables also contradict the universal claim: Table 2 has RobustDLRT clean accuracy below baseline for UCM/VGG11 (93.57 vs. 94.23), CIFAR10/VGG11 (87.97 vs. 88.34), and CIFAR10/ViT-16b (94.66 vs. 95.42); Table 3 has ImageNet clean Top-1 lower for RobustDLRT (72.25 vs. 74.37).",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "10713-Dynamical_Low-Rank_Compression_of_Neural_Networks_with_Robustness_under_Ad::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Introduction and Abstract claims of theoretical condition-number control",
+      "confidence": 0.93,
+      "supporting_evidence": "The introduction advertises an “explicit bound on the condition number κ” that provides confidence in adversarial performance. Yet Proposition 2 itself concedes that variations in σ_r mean “the bound may not reliably predict the condition number throughout” and that R “provides a heuristic rather than a strict quantitative control.” Together with the inconsistency between Proposition 2 and its proof, the stronger framing of a theoretical robustness guarantee is unsupported.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "10713-Dynamical_Low-Rank_Compression_of_Neural_Networks_with_Robustness_under_Ad::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Appendix B.2, statement about randomness",
+      "confidence": 0.88,
+      "supporting_evidence": "The paper states that batch sampling is “the only source of randomness in our training setup.” However, its own attack definitions introduce randomness: the Jitter attack samples η∼N(0,σ²), and the Mixup attack samples λ∼Beta(β,β). If attack results are averaged or attack instances differ across runs, these are additional sources of variation; if seeds were fixed, that should be reported. This conflicts with the stated account of stochasticity and leaves uncertainty estimates inadequately specified.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "10713-Dynamical_Low-Rank_Compression_of_Neural_Networks_with_Robustness_under_Ad::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 14,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (gpt-5.6-terra, taxonomy=paperaudit): 14 error(s) reported.",
+  "baseline": {
+    "model": "gpt-5.6-terra",
+    "provider": "openai",
+    "taxonomy": "paperaudit",
+    "paper_chars": 93649,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 26617,
+      "output_tokens": 6142,
+      "cache_read_input_tokens": null,
+      "cache_creation_input_tokens": null
+    }
+  }
+}

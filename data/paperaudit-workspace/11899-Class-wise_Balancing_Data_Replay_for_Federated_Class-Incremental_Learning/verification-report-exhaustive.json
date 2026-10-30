@@ -1,0 +1,131 @@
+{
+  "paper_id": "11899",
+  "title": "Class-wise Balancing Data Replay for Federated Class-Incremental Learning",
+  "paper_category": "cs.LG",
+  "predicted_errors": [
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Equation 5 (Section 4.1, leverage score definition; depends on Eqs 3-4)",
+      "confidence": 0.85,
+      "supporting_evidence": "Eq 3 defines a FULL SVD with U in R^{n x n} and Eq 4 keeps all n columns (U_k in R^{|D_k| x n}). Because U is orthogonal, every row of U has unit Euclidean norm, so tau_k^{i,j} = ||e_{i,j}^T U_k||^2 = 1 for every sample. As printed the leverage scores are all identically 1, Eq 6 collapses to a uniform distribution, and the paper's importance-driven selection mechanism is degenerate — contradicting the claim that higher scores mean more representative samples. A correct leverage score requires truncating to the top-r (r <= d) singular vectors of a (reduced) SVD.",
+      "verifier_name": "verify-math",
+      "snippet_id": "11899::EQUATION::4"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section A.1.3 vs Figure 8 (Task 1 data)",
+      "confidence": 0.85,
+      "supporting_evidence": "A.1.3 states: 'in task 1, while classes 10 and 18 contain nearly 100 samples each, class 11 has fewer than 10.' The paper's own Figure 8 Task-1 table shows class 10 ~100 (ok), but class 18 ~60 (it is class 17 that is ~100), and class 11 ~30, not 'fewer than 10'. Both quantitative claims made as evidence of Re-Fed's imbalance are contradicted by the very figure they cite.",
+      "verifier_name": "verify-text",
+      "snippet_id": "11899::SECTION::26"
+    },
+    {
+      "error_category": "Cross-section inconsistency (caption-content mismatch)",
+      "error_location": "Figure 7 caption (Appendix A.1.2)",
+      "confidence": 0.85,
+      "supporting_evidence": "Figure 7's caption reads 'Comparison of per-class sample distributions in the replay buffer between FedCBDR and Re-Fed on the CIFAR100 dataset ... 10-task split and 5 clients', but the figure block it labels is a grid of test-accuracy-vs-task curves for CIFAR10/CIFAR100/TinyImageNet, and the referencing A.1.2 text describes a 10-CLIENT, CIFAR100-5-task performance-evolution experiment. The caption is a verbatim duplicate of Figure 8's caption and contradicts both the figure content and the section text.",
+      "verifier_name": "verify-cross-section-consistency",
+      "snippet_id": "11899::FIGURE::6"
+    },
+    {
+      "error_category": "Statistical reporting / data inconsistency",
+      "error_location": "Table 11, communication cost panel (Appendix)",
+      "confidence": 0.82,
+      "supporting_evidence": "The panel states Samples/Client n=100 with d=512 but reports Upload/Client = 3.906 MB. At n=100 the correct sizes are ~0.195 MiB (float32) / ~0.391 MiB (float64) — an order of magnitude smaller. The reported triples (3.906 / 0.9765 / 0.2441 MiB for d=512/128/32) exactly match n=1000 features/client at float64 (equivalently n=2000 at float32, the value used in the computation panel above), proving a uniform ~10x inconsistency between the stated sample count and the reported communication overhead. The 39.06 KB index download (~10,000 4-byte indices) is likewise inconsistent with n=100.",
+      "verifier_name": "verify-statistical",
+      "snippet_id": "11899::TABLE::8"
+    },
+    {
+      "error_category": "Table / Data consistency (missing values, row-column misalignment)",
+      "error_location": "Tables 2 and 3 (Section 5.2)",
+      "confidence": 0.8,
+      "supporting_evidence": "In Table 2 every baseline row contains 8 values (the TinyImageNet beta=0.1 cell is empty) while the FedCBDR row contains a 9th trailing value (18.35±1.0), so rows are not aligned with the 9-column header. In Table 3 the TinyImageNet beta=0.1 column is empty for ALL rows, including FedCBDR, i.e. a whole reported condition is missing. The 9-column layout of Tables 2/3 (which includes a 'CIFAR10 beta=0.1' column) also conflicts with Table 1 (CIFAR10 heterogeneity listed as 0.5/1.0 only) and with Table 4's 8-column layout, whose '+GDR+TTS' row reproduces the FedCBDR values under different column labels.",
+      "verifier_name": "verify-statistical",
+      "snippet_id": "11899::TABLE::1"
+    },
+    {
+      "error_category": "Table / Data consistency (Table 1 vs Section 5.1)",
+      "error_location": "Table 1 (Section 5.1, Federated Settings/Heterogeneity)",
+      "confidence": 0.8,
+      "supporting_evidence": "Table 1 lists CIFAR10 heterogeneity as '0.5/1.0' only, but Section 5.1 states the Dirichlet parameter beta = {0.1, 0.5, 1.0} is used across datasets and Tables 2 and 3 report CIFAR10 beta=0.1 results. The dataset-statistics table is therefore internally inconsistent with the experimental protocol and the results tables it is supposed to summarize.",
+      "verifier_name": "verify-vision",
+      "snippet_id": "11899::TABLE::0"
+    },
+    {
+      "error_category": "Equation inconsistency (Eq 7 vs Eq 9)",
+      "error_location": "Equation 7 (Section 4.2) vs Equation 9 (Section 4.3)",
+      "confidence": 0.78,
+      "supporting_evidence": "The TTS training objective is defined twice, incompatibly. Eq 7 normalizes jointly by 1/(N_old+N_new) and applies Softmax over each task's OWN logit subset only (CE(y_i, Softmax(z_i^old/tau_old))). Eq 9 normalizes each group separately (1/N_old and 1/N_new) and applies Softmax over the CONCATENATION of all class logits (Concat(f_old(x)/tau_old, f_new(x)/tau_new)). The two losses differ both in effective sample weighting and in softmax support (CE over a restricted class subset is a different objective than CE over all classes); no algebraic rearrangement makes them equivalent. Algorithm 1 states the update uses 'Eq. 9', so it is unclear which objective is actually optimized.",
+      "verifier_name": "verify-math",
+      "snippet_id": "11899::EQUATION::6"
+    },
+    {
+      "error_category": "Domain/Constraint violation (probability normalization)",
+      "error_location": "Equation 6 (Section 4.1)",
+      "confidence": 0.78,
+      "supporting_evidence": "Eq 6 normalizes leverage scores only within client k (denominator sums over j'=1..n_k^i), so the masses sum to 1 per client. But Section 4.1 states the server aggregates scores into a GLOBAL vector and performs i.i.d. sampling over p = {p_k^{i,j} | k=1..K; j=1..n_k^i}; over that global support the printed masses sum to K, not 1 — not a valid probability distribution, and it systematically over-weights clients with fewer samples. The denominator must sum over all clients to match the described global sampling distribution.",
+      "verifier_name": "verify-math",
+      "snippet_id": "11899::EQUATION::5"
+    },
+    {
+      "error_category": "Data Integrity (duplicated values)",
+      "error_location": "Figure 6, Fine-tune row, panels (a) and (e)",
+      "confidence": 0.76,
+      "supporting_evidence": "The Fine-tune row reports for input (a) 'bird': Frog 3.492, Horse 2.598, Truck 1.285, and for input (e) 'dog': Automobile 3.492, Frog 2.598, Horse 1.285 — the identical logit triple (3.492, 2.598, 1.285) to three decimals for two different input images with shifted class labels, indicating duplicated panel values in the baseline row of the case study.",
+      "verifier_name": "verify-vision",
+      "snippet_id": "11899::TABLE::3"
+    },
+    {
+      "error_category": "Algorithm logic gap",
+      "error_location": "Algorithm 1 (lines 6-11 vs 14-18)",
+      "confidence": 0.8,
+      "supporting_evidence": "Pseudo-feature computation/upload (line 11, Eq. 1) occurs only in the s>1 else-branch, so during task s=1 no client uploads pseudo-features; yet at r=R of every task line 17 aggregates 'pseudo-features from all clients' and line 18 performs the Global Sampling that must produce the replay IDs consumed at line 9 when task 2 begins. As printed, the features needed to select task-1 replay data are never computed, so the algorithm cannot construct the initial replay buffer. (Relatedly, line 17's 'Aggregate model parameters and pseudo-features ... using Eq. 2' conflates two different operations, since Eq 2 concatenates feature matrices, not model parameters.)",
+      "verifier_name": "verify-text",
+      "snippet_id": "11899::ALGORITHM::0"
+    },
+    {
+      "error_category": "Terminology inconsistency",
+      "error_location": "Figure 6 table (Section 5.8) vs Sections 4.1/5.3",
+      "confidence": 0.85,
+      "supporting_evidence": "The module is defined as 'Global-perspective Data Replay (GDR)' in Section 4.1 and 'Global-perspective Active Data Replay (GDR)' in Section 5.3, but the Figure 6 case-study table uses '+GADR' and '+GADR+TTS' throughout. Three different names (GDR / Active GDR / GADR) are used for the same module, and the '+GADR+TTS' label contradicts the abbreviation defined in the method.",
+      "verifier_name": "verify-text",
+      "snippet_id": "11899::SECTION::19"
+    },
+    {
+      "error_category": "Text quality (sentence fragment)",
+      "error_location": "Section 5.5 (paragraph after Table 5)",
+      "confidence": 0.8,
+      "supporting_evidence": "The paragraph begins with the orphaned fragment 'Under small and medium buffer settings.' followed by 'In particular, its accuracy is significantly lower than that of FedCBDR on CIFAR100 with M = 500 ...' with an ambiguous antecedent ('its' — Re-Fed). The text appears to be a truncated/mis-spliced sentence and reads incoherently as printed.",
+      "verifier_name": "verify-text",
+      "snippet_id": "11899::SECTION::16"
+    },
+    {
+      "error_category": "Missing content (referenced table absent)",
+      "error_location": "Section A.1.6 (Performance Assessment of the Final Model Across Tasks)",
+      "confidence": 0.8,
+      "supporting_evidence": "A.1.6 states 'As shown in Table 9, LANDER suffers from significant forgetting ... only 1.37% on Task 1 of CIFAR10 ... 57.00% on Task 5 of CIFAR100', but no Table 9 appears in the paper (the tables jump from Table 8 to Table 11, and the referenced Figure 9 of A.1.5 is likewise not present as a labeled figure). The quantitative claims of the section are therefore unverifiable against the reported content.",
+      "verifier_name": "verify-text",
+      "snippet_id": "11899::SECTION::29"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 52,
+    "snippets_verified": 52,
+    "errors_detected": 13,
+    "verifier_usage": {
+      "math_equation": 11,
+      "text": 40,
+      "statistical": 13,
+      "citation": 1,
+      "vision": 9,
+      "cross_section_consistency": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Exhaustive lenient-mode verification of the FedCBDR paper (52 snippets, all routed to specialist verifiers) found 13 findings above threshold, including five high-confidence (>=0.85) issues. Most serious: (1) the leverage-score formulation at the heart of the GDR module is mathematically degenerate as printed — with the full SVD of Eq 3 and the all-columns row selection of Eq 4, every leverage score in Eq 5 equals exactly 1, making the 'importance-driven' sampling provably uniform; relatedly, Eq 6's per-client normalization does not define a valid global sampling distribution (masses sum to K, not 1). (2) The TTS loss is defined incompatibly in Eq 7 vs Eq 9 (joint vs per-group normalization, subset vs full-softmax support). (3) Multiple data-reporting inconsistencies: A.1.3's quantitative claims contradict its own Figure 8 data (class 18 vs 17; 'fewer than 10' vs ~30); Figure 7 carries a verbatim duplicate of Figure 8's caption that contradicts its content; Table 11's communication costs are internally inconsistent with the stated 100 samples/client by ~10x; Tables 2/3 are missing the TinyImageNet beta=0.1 results (Table 2 only the FedCBDR row carries a 9th value; Table 3 has the column empty for all rows) and their column layout conflicts with Table 1 and Table 4; Table 1 omits beta=0.1 for CIFAR10 despite Section 5.1 and the results tables using it; the Figure 6 baseline row repeats an identical logit triple across two different input images; and Algorithm 1 as printed never computes the pseudo-features required to build the task-1 replay buffer. Additional lenient-mode findings: the module abbreviation is inconsistent (GDR / Active GDR / GADR), Section 5.5 contains an orphaned sentence fragment, and the referenced Table 9 in A.1.6 is absent from the paper. Citation spot-checks passed (key references exist and are correctly attributed; refs [51]/[52] are unrelated padding next to the valid [50], sub-threshold). Cross-section macro consistency passed — the abstract, intro, and conclusion are appropriately hedged relative to the mixed results, and the corrected Eq 7/abstract/conclusion wording is internally coherent. Verdict: NEEDS_CORRECTION, driven by the degenerate Eq 5 formulation and the multiple >=0.85-confidence data inconsistencies.",
+  "verification_settings": {
+    "mode": "exhaustive",
+    "strictness": "lenient",
+    "thresholds": {"math": 0.7, "statistical": 0.7, "text": 0.8, "citation": 0.8, "vision": 0.75}
+  }
+}

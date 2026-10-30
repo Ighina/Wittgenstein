@@ -1,0 +1,94 @@
+{
+  "paper_id": "8054-Representation_Entanglement_for_Generation__Training_Diffusion_Transformers",
+  "title": "Representation Entanglement for Generation: Training Diffusion Transformers",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "evidence_data_integrity",
+      "error_location": "Table 1 vs Table 9 and Section 4.2/Abstract",
+      "confidence": 0.98,
+      "supporting_evidence": "Table 1 and Table 9 report contradictory FID numbers for identical settings: SiT-B/2+REG 400K: 21.8 vs 15.2; SiT-L/2+REG 400K: 9.8 vs 4.6; SiT-XL/2+REG 400K: 5.6 vs 3.4; SiT-XL/2+REG 4M: 3.3 vs 1.8. Section 4.2 and the Abstract rely on the Table 9 values ('FID of 4.6 at 400K', 'record-low FID of 1.8', 'comparable FID to SiT-XL/2+REPA at 4M'), but Table 1 contradicts them.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "8054-Representation_Entanglement_for_Generation__Training_Diffusion_Transformers::baseline"
+    },
+    {
+      "error_category": "evidence_data_integrity",
+      "error_location": "Table 2 vs Table 8",
+      "confidence": 0.97,
+      "supporting_evidence": "The same REG-with-CFG configurations are reported with different numbers in Table 2 and Table 8: 80 epochs FID 2.15 vs 1.86, 160 epochs 1.75 vs 1.59, 480 epochs 1.38 vs 1.40, 800 epochs 1.34 vs 1.36; IS, sFID, precision and recall also differ. Both tables cannot be correct.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "8054-Representation_Entanglement_for_Generation__Training_Diffusion_Transformers::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 3.1, Eq. (7)",
+      "confidence": 0.95,
+      "supporting_evidence": "Given s(x,t) = -σ_t^{-1}E[ε|x_t], the inversion from velocity should be s = -(α_t v - αdot_t x)/(σ_t(α_t σdot_t - αdot_t σ_t)). Equation (7) omits the minus sign. Example: α_t=1-t, σ_t=t gives v=-x+ε and true score=-(v+x)/σ, while Eq. (7) yields ((1-t)v+x)/σ. This corrupts the reverse SDE.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "8054-Representation_Entanglement_for_Generation__Training_Diffusion_Transformers::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 3.2, Eq. (9)",
+      "confidence": 0.9,
+      "supporting_evidence": "The text says alignment is applied at a single selected layer n (4 or 8), but Eq. (9) sums over n=1..N. It also uses cosine similarity on matrices y_* and h_phi(h_t^{[n]}) of shape (N+1)×D_vf, and reuses N both as number of visual tokens and as summation limit. A per-token cosine-similarity average for the selected layer is needed.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "8054-Representation_Entanglement_for_Generation__Training_Diffusion_Transformers::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Section 4.2, first paragraph after Table 1",
+      "confidence": 0.9,
+      "supporting_evidence": "The text states 'All metrics report the average and standard deviation over three independent runs with different random seeds,' but no standard deviations, error bars, or seed values appear anywhere in the paper.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "8054-Representation_Entanglement_for_Generation__Training_Diffusion_Transformers::baseline"
+    },
+    {
+      "error_category": "reference_background_fabrication",
+      "error_location": "Table 2 and Table 8, 'CDM [46]' row; reference list [46]",
+      "confidence": 0.95,
+      "supporting_evidence": "Reference [46] is listed as 'Jonathan Ho and Tim Salimans. Classifier-Free Diffusion Guidance,' but the tables label CDM with [46]. CDM (Cascaded Diffusion Models) is a different paper, not classifier-free guidance.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "8054-Representation_Entanglement_for_Generation__Training_Diffusion_Transformers::baseline"
+    },
+    {
+      "error_category": "reference_background_fabrication",
+      "error_location": "Section 4.2, SOTA comparison",
+      "confidence": 0.8,
+      "supporting_evidence": "The paper says 'using the same guidance interval as REPA [56]', but [56] is Kynkäänniemi et al., 'Applying Guidance in a Limited Interval...', not REPA. REPA is reference [1].",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "8054-Representation_Entanglement_for_Generation__Training_Diffusion_Transformers::baseline"
+    },
+    {
+      "error_category": "context_misalignment_incoherence",
+      "error_location": "Section 4.3, 'Effect of β'",
+      "confidence": 0.85,
+      "supporting_evidence": "The text says 'β controls the contribution of the class token alignment loss,' but in Eq. (10) β weights the class-token velocity-prediction (denoising) loss; the alignment loss is weighted by λ in Eq. (11).",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "8054-Representation_Entanglement_for_Generation__Training_Diffusion_Transformers::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 8,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (claude-sonnet-5, taxonomy=paperaudit): 8 error(s) reported.",
+  "baseline": {
+    "model": "claude-sonnet-5",
+    "provider": "anthropic",
+    "taxonomy": "paperaudit",
+    "paper_chars": 70022,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 20130,
+      "output_tokens": 23917,
+      "cache_read_input_tokens": 0,
+      "cache_creation_input_tokens": 0
+    }
+  }
+}

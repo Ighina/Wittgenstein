@@ -1,0 +1,26 @@
+{
+  "findings": [
+    {
+      "snippet_id": "10969::TABLE::0",
+      "verifier_name": "math-equations",
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.78,
+      "reasoning": "Table 1 states 'The total number of sweeps equals the number of sweep augmentation combinations x 9981 objects.' Dataset (1) lists Speed 30 mm/s (1 option), Height {-5,0} (2), Rotation {0,30,90,120} (4), Distance {5,8} (2), Size 40 mm (1), i.e. 1x2x4x2x1 = 16 combinations. 16 x 9981 = 159,696, but the table prints 316,192. The mismatch is not a rounding artifact: 316,192 / 9981 = 31.68, which is not an integer, so no integer combination count can reconcile the printed total with the stated formula. For dataset (2), 2,076,048 / 9981 = 208 exactly, implying 208 augmentation combinations; but the note says speed, rotation, and size are each sampled 26 times, which with 3 heights and 1 distance gives 26 x 26 x 26 x 3 = 52,728 combinations (~5.26e8 sweeps), inconsistent with 2,076,048. The printed sweep totals are internally inconsistent with the stated combination formula.",
+      "predicted_error_category": "Sign/Arithmetic error",
+      "snippet_type": "TABLE",
+      "contradiction_locations": ["Table 1 (Appendix A1): Total Sweeps 316,192 for dataset (1) vs 159,696 computed", "Table 1 (Appendix A1): Total Sweeps 2,076,048 for dataset (2) vs combination count inconsistency"]
+    },
+    {
+      "snippet_id": "10969::EQUATION::10",
+      "verifier_name": "math-equations",
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.0,
+      "reasoning": "The noise-corrected RSA formula in Eq. 11 is the standard attenuation-correction used in NeuroAI: the observed split-half correlation RSA(s1^A, s2^B) is divided by the geometric mean of the Spearman-Brown-corrected self-reliabilities of the two animals, where RSA_tilde(X,Y) = 2*RSA(X,Y)/(1+RSA(X,Y)) is the textbook Spearman-Brown prediction for full-length reliability from split-half correlation. The formula is algebraically and conceptually correct; no sign, domain, or manipulation error found.",
+      "predicted_error_category": null,
+      "snippet_type": "EQUATION",
+      "contradiction_locations": []
+    }
+  ]
+}

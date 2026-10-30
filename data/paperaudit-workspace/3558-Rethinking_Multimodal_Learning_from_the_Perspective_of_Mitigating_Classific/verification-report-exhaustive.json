@@ -1,0 +1,126 @@
+{
+  "paper_id": "3558",
+  "title": "Rethinking Multimodal Learning from the Perspective of Mitigating Classification Ability Disproportion",
+  "paper_category": "cs.LG",
+  "predicted_errors": [
+    {
+      "error_category": "Abstract vs Results mismatch",
+      "error_location": "Abstract / Conclusion / Contribution 4",
+      "confidence": 0.92,
+      "supporting_evidence": "The Abstract states \"outperforming several recent baselines by a modest margin. However, some results exhibit overlapping confidence intervals with prior work, indicating the improvements may not be universally significant\", but the Conclusion states \"our proposed method can achieve state-of-the-art performance compared with various baselines by a large margin\" and Contribution 4 states \"outperform SOTA baselines to achieve the best performance by a large margin\". 'Modest margin / not universally significant' is directly contradicted by 'state-of-the-art performance ... by a large margin'. Additionally, Figure 1 shows a ~20.5-point gap between Ours (85.15%) and G-Blend (64.65%), which is not a 'modest margin'.",
+      "verifier_name": "verify-cross-section-consistency",
+      "snippet_id": "3558::SECTION::abstract"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Section 3.2 / Section 4.4 (missing equations)",
+      "confidence": 0.95,
+      "supporting_evidence": "Section 3.2 says \"our method sustainedly minimizes classification and residual errors by optimizing (5)\", and the ablation study (Section 4.4) references \"objectives in Equation (2), (3), and (4), respectively denoted as ϵ, ϵo, ϵp\". However, equations (3), (4), and (5) are never defined anywhere in the paper — only (1), (2), (6), (7), (8) appear. The loss L(x_i^o, y_i, n^o) in equation (6) is also never defined. The central optimization objective of the method is therefore unrecoverable from the text, making the method non-reproducible as written.",
+      "verifier_name": "verify-text",
+      "snippet_id": "3558::SECTION::method"
+    },
+    {
+      "error_category": "Conclusion vs Evidence mismatch",
+      "error_location": "Section 3.4 vs Contribution 3",
+      "confidence": 0.85,
+      "supporting_evidence": "Contribution 3 claims \"We theoretically analyze the impact of the boosting algorithm on the loss gap between different modalities and prove its convergence\", but Section 3.4 says \"While Theorem 1 provides an informal guarantee for convergence of the loss gap under idealized assumptions like strong convexity and smoothness, these conditions do not strictly hold for practical deep learning models ... The applicability of the theorem to real-world multimodal tasks remains an open question.\" The strong 'prove its convergence' claim is explicitly undercut by the paper's own hedge.",
+      "verifier_name": "verify-cross-section-consistency",
+      "snippet_id": "3558::SECTION::theoretical"
+    },
+    {
+      "error_category": "Data Inconsistency (figure-text)",
+      "error_location": "Introduction / Figure 1",
+      "confidence": 0.8,
+      "supporting_evidence": "Figure 1 reports MML w/ GB at 72.94% vs Naive MML 65.07% and G-Blend 64.65% — a +7.87 point jump over G-Blend. Yet the accompanying text states the boosting experiment \"improvements varied across runs and did not conclusively demonstrate consistent narrowing of modality gaps\". A +7.87 point improvement presented as not conclusively narrowing the gap is internally inconsistent with the plotted data.",
+      "verifier_name": "verify-vision",
+      "snippet_id": "3558::FIGURE::0"
+    },
+    {
+      "error_category": "Data Inconsistency (figure-figure)",
+      "error_location": "Appendix C.3 Table II vs Appendix C.6 Table VI",
+      "confidence": 0.9,
+      "supporting_evidence": "Table II (noise study, ζ=0, CREMA-D) reports accuracy 0.6559 at #CLS=2, while Table VI (computational cost vs #classifiers, same CREMA-D dataset) reports 0.8159 at #CLS=2. Same dataset, same classifier count, same method — a 0.16 discrepancy in the central accuracy metric. These two tables are mutually inconsistent.",
+      "verifier_name": "verify-vision",
+      "snippet_id": "3558::TABLE::appendix-ii"
+    },
+    {
+      "error_category": "Statistical reporting",
+      "error_location": "Appendix C.3 Table II (#CLS=1 row)",
+      "confidence": 0.75,
+      "supporting_evidence": "At #CLS=1 the reported accuracy is 0.1411 for both ζ=0 and ζ=20, but 0.2863 for ζ=50 — i.e., adding 50% Gaussian noise to the video modality more than doubles the single-classifier accuracy relative to the clean case. Noise monotonically increasing (ζ=0→20→50) while the base accuracy jumps 0.1411→0.1411→0.2863 is statistically implausible and internally incoherent.",
+      "verifier_name": "verify-statistical",
+      "snippet_id": "3558::TABLE::appendix-ii"
+    },
+    {
+      "error_category": "Data Inconsistency (text-table)",
+      "error_location": "Appendix C.3 text vs Table II",
+      "confidence": 0.7,
+      "supporting_evidence": "The text claims \"after reaching its optimal performance, the model's performance gradually degraded without a drastic drop\". For ζ=50 the accuracy is non-monotonic past the apparent optimum: 0.8212 (#CLS=5) → 0.8253 (#CLS=6, higher) → 0.8199 (#CLS=7) → 0.8239 (#CLS=8, higher) → 0.8185 → 0.8145. The 'gradually degraded' claim does not match the reported numbers, which rise and fall repeatedly.",
+      "verifier_name": "verify-statistical",
+      "snippet_id": "3558::TABLE::appendix-ii"
+    },
+    {
+      "error_category": "Experiment setup",
+      "error_location": "Section 4.1 Implementation Details",
+      "confidence": 0.85,
+      "supporting_evidence": "The paper admits: \"While the proposed method uses cross-validated hyperparameters and tailored learning rate schedules, the baselines were run using authors' default configurations or publicly available checkpoints without further tuning. This may imbalance the comparison favoring the proposed method due to unequal training optimizations.\" This is a direct admission that the head-to-head comparisons in Table 1 were not conducted under equal tuning regimes, undermining the SOTA ranking claims.",
+      "verifier_name": "verify-text",
+      "snippet_id": "3558::SECTION::experiments-setup"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "References [10] vs [40] / Appendix C.2",
+      "confidence": 0.9,
+      "supporting_evidence": "Reference [10] is listed as \"W. et al. What Makes Training Multi-Modal Classification Networks Hard? In CVPR, 2020\" — an incomplete placeholder with missing author names — while reference [40] is the complete same paper \"W. Wang, D. Tran, and M. Feiszli. What makes training multi-modal classification networks hard? In CVPR, pages 12692–12702, 2020\". The toy-experiment baseline G-Blend is cited as [10] in Appendix C.2 but as [40] in the Introduction and Table 1 context, i.e., the same work is referenced under two different numbers, one of which is malformed.",
+      "verifier_name": "verify-citation",
+      "snippet_id": "3558::SECTION::references"
+    },
+    {
+      "error_category": "Data inconsistency",
+      "error_location": "Section 4.1 / Appendix C.1 (KSounds split)",
+      "confidence": 0.8,
+      "supporting_evidence": "KSounds is stated to contain 19,000 clips, split into 15,000 (train) + 1,900 (validation) + 1,900 (test) = 18,800 clips. 200 clips are unaccounted for (1.1% of the dataset). The split arithmetic does not sum to the stated dataset size.",
+      "verifier_name": "verify-statistical",
+      "snippet_id": "3558::SECTION::datasets"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Section 4.1 Evaluation Protocols vs Table 1",
+      "confidence": 0.7,
+      "supporting_evidence": "Section 4.1 states \"we adopt accuracy, mean average precision (MAP) and MacroF1 as evaluation metrics\". However Table 1 reports MAP only for CREMAD/KSounds/VGGSound (no F1 there), and 'F1' (not 'MacroF1') for Twitter/Sarcasm/NVGesture with no MAP. The stated metric protocol does not match the reported table columns.",
+      "verifier_name": "verify-text",
+      "snippet_id": "3558::SECTION::experiments-setup"
+    },
+    {
+      "error_category": "Domain/Constraint violation",
+      "error_location": "Section 3.2, Equation (2)",
+      "confidence": 0.7,
+      "supporting_evidence": "The residual labels are defined as y_hat_{it}^o = y_i - λ Σ_{j<t} y_i ⊙ p_{ij}^o, with the text claiming the y_i masking \"ensures the non-negativity of residual labels\". For a one-hot y_i the residual at the ground-truth entry is 1 - λ Σ_j p_{ij}^(c); since Σ_j p_{ij}^(c) over multiple classifiers can exceed 1/λ, the residual can become negative — the non-negativity claim is not guaranteed by the masking. The paper's own paragraph also concedes the residual labels are \"ambiguously defined\" and risk \"conflicting optimization objectives\".",
+      "verifier_name": "verify-math",
+      "snippet_id": "3558::EQUATION::1"
+    },
+    {
+      "error_category": "Data Inconsistency (table-text)",
+      "error_location": "Table 1 (gray-background convention)",
+      "confidence": 0.65,
+      "supporting_evidence": "The caption states \"The results with gray background denote that the performance based on multimodal learning is inferior to that of the best unimodal approach\". On CREMAD the best unimodal accuracy is 0.6317 (Unimodal-2), yet ML-LSTM reports 0.6290 — below the best unimodal — while no gray background convention is applied anywhere in the rendered table. The stated highlighting rule is not honored by the data shown.",
+      "verifier_name": "verify-vision",
+      "snippet_id": "3558::TABLE::1"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 68,
+    "snippets_verified": 68,
+    "errors_detected": 13,
+    "verifier_usage": {
+      "math_equation": 21,
+      "vision": 18,
+      "text": 12,
+      "statistical": 14,
+      "citation": 2,
+      "cross_section_consistency": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "The paper was verified in exhaustive mode with lenient strictness. Multiple high-confidence (>=0.85) findings require correction: (1) a direct Abstract-vs-Conclusion contradiction over the reported performance margin ('modest/not universally significant' vs 'large margin SOTA'); (2) the central method objective is unrecoverable because equations (3), (4), and (5) are referenced but never defined, and L(x_i^o, y_i, n^o) in equation (6) is undefined; (3) the theoretical convergence claim in the contributions is explicitly undercut by the paper's own hedge in Section 3.4; (4) a ~0.16 absolute-accuracy discrepancy for the identical setting (#CLS=2, CREMA-D) between Table II and Table VI; (5) a malformed duplicate reference [10] that duplicates [40]; and (6) an admission that baselines were not equally tuned, which undermines the SOTA ranking. Additional moderate-confidence issues include an implausible #CLS=1 noise row, a non-monotonic degradation claim, KSounds split arithmetic not summing to 19,000, a metric-protocol mismatch (MAP/MacroF1 vs F1 columns), and residual-label non-negativity not being guaranteed by the stated masking. The paper is internally inconsistent across multiple sections and tables and is not reproducible as written; it requires correction before acceptance."
+}

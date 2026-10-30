@@ -1,0 +1,126 @@
+{
+  "paper_id": "20777-Memory_Mosaics_at_scale",
+  "title": "Memory Mosaics at scale",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 2, Eq. (3) to Eq. (4)",
+      "confidence": 0.99,
+      "supporting_evidence": "The stated algebra is incorrect. Expanding the Gaussian gives exp(-β||k-k_i||²)=exp(-β||k||²-β||k_i||²+2βkᵀk_i). If all stored keys have equal norm, the common terms cancel in the softmax, but the remaining score is exp(2βkᵀk_i), not exp(βkᵀk_i) as Eq. (4) states. Eq. (4) could be obtained only by redefining β, which the paper does not say it does.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20777-Memory_Mosaics_at_scale::baseline"
+    },
+    {
+      "error_category": "reference_background_fabrication",
+      "error_location": "Section 2, footnote 4",
+      "confidence": 0.97,
+      "supporting_evidence": "The claim that Gaussian kernel regression converges to E[V|K] when n→∞ and β=√n is not generally true for vector-valued keys in R^d. With exp(-β||k-k_i||²), the effective bandwidth is h proportional to β^{-1/2}; standard consistency conditions depend on dimension and require h→0 and nh^d→∞. β=√n gives nh^d proportional to n^(1-d/4), which fails for d≥4, whereas the model's key dimensions are necessarily much larger. Nadaraya and Watson do not support this dimension-independent condition.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20777-Memory_Mosaics_at_scale::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Section 6.1, Table 5 and its note",
+      "confidence": 0.98,
+      "supporting_evidence": "The claimed effect of using 8× more training data is confounded. The 8T row is explicitly not the same transformer recipe: “transformer large* uses grouped-query attention ... [and] increases training context length to 8k to boost long-context performance.” Thus Table 5 cannot isolate training-token count or support a data-scaling comparison against the 1T, 4k, multi-head-attention baseline.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20777-Memory_Mosaics_at_scale::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Abstract; Section 6.1, paragraph following Table 5",
+      "confidence": 0.99,
+      "supporting_evidence": "The paper says its results “definitively prove that data scaling alone cannot close the gap” and that transformers are inferior “regardless of training data quantity.” A comparison at only 200B, 1T, and one confounded 8T setting cannot establish a universal impossibility claim about all data scales, model sizes, training recipes, or transformer variants. The reported 8T result merely shows that this one altered baseline did not match one score.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20777-Memory_Mosaics_at_scale::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Section 5.3, footnote 13",
+      "confidence": 0.95,
+      "supporting_evidence": "The evaluation selects “the best prompt strategy for each n-shot classification task” after trying delimiter and ordering variants, with no held-out prompt-selection set or correction/reporting for this test-set model selection. Reporting the maximum over prompt variants can inflate each plotted score and makes the resulting accuracy curves non-reproducible without the per-variant results, selection data, seeds, and number of evaluated examples.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20777-Memory_Mosaics_at_scale::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Section 4 and Appendix C, training-data description",
+      "confidence": 0.94,
+      "supporting_evidence": "The paper claims training on 200B/1T/8T “carefully curated” real-world tokens but does not identify the component datasets, mixing weights, licenses, filtering/deduplication process, tokenizer-specific token counts, or benchmark/decontamination procedure. This omission is especially material because the paper interprets benchmark performance as persistent training knowledge versus new knowledge, and evaluates standard web-exposed datasets such as MMLU, GSM8K, HumanEval, RULER, Banking77, TACRED, and GoEmotions. Without contamination and provenance information, those interpretations and the claimed data-scale comparisons cannot be audited.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20777-Memory_Mosaics_at_scale::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Section 5.2, “The failures of many potential baselines”; Appendix D",
+      "confidence": 0.96,
+      "supporting_evidence": "The paper asserts that RNNs, xLSTM, RWKV, and state-space models “fail on this task by construction” because they cannot store all articles before the question. Fixed-state models have capacity limitations, but they are not mathematically incapable of encoding a bounded 4k–32k input or of solving a particular bounded retrieval distribution; success depends on state size, training, representation, and task distribution. The cited tables report selected models' empirical scores, not a construction-level impossibility theorem. This overstatement is then used to exclude whole baseline classes.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20777-Memory_Mosaics_at_scale::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Abstract and Section 5.3 summary",
+      "confidence": 0.96,
+      "supporting_evidence": "The abstract claims “universal superiority in zero-shot and few-shot scenarios,” but the reported in-context classification setup begins at multiple demonstrations: each shot includes one example from every class, and the described plots use 2–16 shots or 2–10 shots. No zero-shot results or zero-shot protocol are reported. Therefore the zero-shot portion of the headline claim is unsupported.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20777-Memory_Mosaics_at_scale::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Section 5.3, “Main Results” and summary; Appendix H, Figures 13–14 descriptions",
+      "confidence": 0.97,
+      "supporting_evidence": "The text says transformers “completely fail to improve” as more demonstrations are supplied and that Memory Mosaics benefits from additional shots “unlike transformers.” The paper's own Appendix H contradicts this general statement: Transformer-small on semantic Banking77 rises from about 0.58 to 0.70; semantic TACRED rises from about 0.30 to 0.32; anonymous Banking77 rises from about 0.30 to 0.50; and anonymous TACRED rises from about 0.12 to 0.20. Transformers may improve less or degrade on some tasks, but “completely fail to improve” is false for supplied results.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20777-Memory_Mosaics_at_scale::baseline"
+    },
+    {
+      "error_category": "rhetorical_presentation_manipulation",
+      "error_location": "Table 1 caption and Section 5.1 conclusion",
+      "confidence": 0.94,
+      "supporting_evidence": "Table 1 is captioned as “demonstrating superior average performance,” yet the large models have the identical displayed average (52.2 versus 52.2), and Memory Mosaics is lower on numerous individual benchmarks, including GSM8K (27.4 versus 32.4), ARC-Challenge (51.8 versus 52.6), HellaSwag (78.6 versus 79.2), NQ (30.9 versus 31.9), and MMLU-alt (48.2 versus 49.0). The appropriate conclusion is comparable average performance, as the prose elsewhere actually says; “superior” is unsupported by the table.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20777-Memory_Mosaics_at_scale::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Section 7; Section 4 and Appendix C batch-size specification",
+      "confidence": 0.91,
+      "supporting_evidence": "The headline claim that the model can fine-tune “with one minibatch” is presented as evidence of adaptation with very little data, but the stated recipe uses batch size 1,024 and 32,768-token sequences for the long-context fine-tuning. One such minibatch can therefore contain roughly 33.6 million token positions, before accounting for packing and repeated documents. The paper does not report the number of unique examples/documents, learning rate and schedule for the one-step comparison, random seeds, or uncertainty. Calling this one minibatch a small-data result is misleading without those quantities.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20777-Memory_Mosaics_at_scale::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Section 3.1 and Appendix C/Table 6",
+      "confidence": 0.9,
+      "supporting_evidence": "Eq. (6) declares α to be a learnable parameter constrained by 0<α<1, but the training-details table supplies reparameterizations and initializations for β0 and β1 while omitting α entirely. No constraint mechanism, initialization, or optimization implementation for α is given. Since α controls the central dependence of bandwidth on memory size, this is a material reproducibility omission.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20777-Memory_Mosaics_at_scale::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 12,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (gpt-5.6-terra, taxonomy=paperaudit): 12 error(s) reported.",
+  "baseline": {
+    "model": "gpt-5.6-terra",
+    "provider": "openai",
+    "taxonomy": "paperaudit",
+    "paper_chars": 74240,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 19167,
+      "output_tokens": 5359,
+      "cache_read_input_tokens": null,
+      "cache_creation_input_tokens": null
+    }
+  }
+}

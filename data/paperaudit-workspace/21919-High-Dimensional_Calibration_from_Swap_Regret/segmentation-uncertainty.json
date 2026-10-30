@@ -1,0 +1,1283 @@
+{
+  "paper_id": "21919",
+  "title": "High-Dimensional Calibration from Swap Regret",
+  "paper_category": "cs.LG",
+  "total_snippets": 123,
+  "snippets": [
+    {
+      "snippet_id": "21919::SECTION::0",
+      "snippet_type": "SECTION",
+      "location": "Abstract",
+      "content": "High-Dimensional Calibration from Swap Regret\n\nMaxwell Fishelson*\nmaxfish@mit.edu\n\nNoah Golowich\u2020\nnzg@mit.edu\n\nMehryar Mohri\u2021\nmohri@google.com\n\nJon Schneider\u00a7\njschnei@google.com\n\nAbstract\n\nWe study the online calibration of multi-dimensional forecasts over an arbitrary convex set $\\mathcal{P} \\subset \\mathbb{R}^d$ relative to an arbitrary norm $\\|\\cdot\\|$. We connect this with the problem of external regret minimization for online linear optimization, showing that if it is possible to guarantee $O(\\sqrt{\\rho T})$ worst-case regret after $T$ rounds when actions are drawn from $\\mathcal{P}$ and losses are drawn from the dual $\\|\\cdot\\|_*$ unit norm ball, then it is also possible to obtain $\\epsilon$-calibrated forecasts after $T = \\exp(O(\\rho/\\epsilon^2))$ rounds. When $\\mathcal{P}$ is the $d$-dimensional simplex and $\\|\\cdot\\|$ is the $\\ell_1$-norm, the existence of $O(\\sqrt{T \\log d})$-regret algorithms for learning with experts implies that it is possible to obtain $\\epsilon$-calibrated forecasts after $T = \\exp(O(\\log d/\\epsilon)) = d^{O(1/\\epsilon)}$ rounds, significantly improving upon the recent result of [Pen25].\n\nInterestingly, our algorithm obtains this guarantee without requiring access to any online linear optimization subroutine or knowledge of the optimal rate $\\rho$\u2014in fact, our algorithm is identical for every setting of $\\mathcal{P}$ and $\\|\\cdot\\|$. Instead, we show that the optimal regularizer for the above OLO problem can be used to upper bound the above calibration error by a swap regret, which we then minimize by running the recent TreeSwap algorithm ([DDFG24, PR24]) with Follow-The-Leader as a subroutine. The resulting algorithm is highly efficient, running in time O(L \u00b7 log T) per round, and plays a distribution over simple averages of past observations in each round, requiring only constant memory per tree node.\n\nFinally, we prove that any online calibration algorithm that guarantees $\\epsilon T$ $\\ell_1$-calibration error over the $d$-dimensional simplex requires $T \\geq \\exp(\\Omega(1/\\epsilon))$ (assuming $d \\geq \\text{poly}(1/\\epsilon)$). This strengthens the corresponding $d^{\\Omega(\\log 1/\\epsilon)}$ lower bound of [Pen25], and shows that an exponential dependence on $1/\\epsilon$ is necessary. Moreover, our lower bound is tight up to constant factors in the exponent, matching our upper bound.",
+      "content_length": 2361,
+      "metadata": {
+        "heading_level": 2
+      }
+    },
+    {
+      "snippet_id": "21919::SECTION::1",
+      "snippet_type": "SECTION",
+      "location": "Introduction",
+      "content": "1 Introduction\n\nConsider the problem faced by a forecaster who must report probabilistic predictions for a sequence of events (e.g. whether it will rain or not tomorrow). One of the most common methods to evaluate the quality of such a forecaster is to verify whether they are calibrated: for example, does it indeed rain with probability 40% on days where the forecaster makes this prediction? In addition to calibration being a natural property to expect from predictions, several applications across machine learning, fairness, and game theory require the ability to produce online calibrated predictions [ZME20, GPSW17, HJKRR18, FV97].\n\nWhen events have binary outcomes, calibration can be quantified by the notion of expected calibration error, which measures the expected distance between a prediction made by a forecaster and the actual empirical probability of the outcome on the days where they made that prediction. In a seminal result by Foster and Vohra [FV98], it was proved that it is possible for an online forecaster to efficiently\n\n*MIT.\n\n\u2020MIT.\n\n\u2021Courant Institute of Mathematical Sciences, New York.\n\n\u00a7Independent Researcher.\n\n39th Conference on Neural Information Processing Systems (NeurIPS 2025).\n\nguarantee a sublinear calibration error of O(T^{2/3}) against any adversarial sequence of T binary events. Equivalently, this can be interpreted as requiring at most O(\\epsilon^{-3}) rounds of forecasting to guarantee an \\epsilon per-round calibration error on average.\n\nHowever, many applications require forecasting sequences of multi-dimensional outcomes. The previous definition of calibration error easily extends to the multi-dimensional setting where predictions and outcomes belong to a d-dimensional convex set \\mathcal{P} \\subset \\mathbb{R}^d. Specifically, if a forecaster makes a sequence of predictions p_1, p_2, \\ldots, p_T \\in \\mathcal{P} for the outcomes y_1, y_2, \\ldots, y_T \\in \\mathcal{P}, their \\|\\cdot\\|-calibration error (for any norm \\|\\cdot\\| over \\mathbb{R}^d) is given by",
+      "content_length": 2017,
+      "metadata": {
+        "heading_level": 2
+      }
+    },
+    {
+      "snippet_id": "21919::EQUATION::0",
+      "snippet_type": "EQUATION",
+      "location": "Introduction",
+      "content": "\\[\n\\text{Cal}_T^{\\|\\cdot\\|} = \\sum_{t=1}^T \\|p_t - \\nu_{p_t}\\|\n\\]",
+      "content_length": 65,
+      "metadata": {
+        "label": null,
+        "display_mode": true
+      }
+    },
+    {
+      "snippet_id": "21919::SECTION::2",
+      "snippet_type": "SECTION",
+      "location": "Introduction",
+      "content": "where \\nu_{p_t} is the average of the outcomes y_t on rounds where the learner predicted p_t.\n\nThe algorithm of Foster and Vohra extends to the multidimensional calibration setting, but at the cost of producing bounds that decay exponentially in the dimension d. In particular, their algorithm only guarantees that the forecaster achieves an average calibration error of \\epsilon after (1/\\epsilon)^{\\Omega(d)} rounds. As demonstrated by [ZKL23], until recently, no known algorithm achieved a sub-exponential dependence on d in any non-trivial instance of multi-dimensional calibration, despite extensive efforts in the learning theory community.\n\nIn 2025, [Pen25] presented a new algorithm for high-dimensional calibration, demonstrating that it is possible to obtain \\ell_1-calibration rates of \\epsilon T in d^{O(1/\\epsilon^2)} rounds for predictions over the d-dimensional simplex (i.e., multi-class calibration). In particular, this is the first known algorithm achieving polynomial calibration rates in d for fixed constant \\epsilon. [Pen25] complements this with a lower bound, showing that in the worst case d^{\\Omega(\\log(1/\\epsilon))} rounds are necessary to obtain this rate (implying that a fully polynomial bound \\text{poly}(d, 1/\\epsilon) is impossible).",
+      "content_length": 1268,
+      "metadata": {
+        "heading_level": 2
+      }
+    },
+    {
+      "snippet_id": "21919::SECTION::3",
+      "snippet_type": "SECTION",
+      "location": "1.1 Our results",
+      "content": "Although the algorithm of [Pen25] is simple to describe, its analysis is fairly nuanced and tailored to \\ell_1-calibration over the simplex (e.g., by analyzing the KL divergence between predictions and distributions of historical outcomes). We present a very similar algorithm (TreeCal) for multidimensional calibration over an arbitrary convex set \\mathcal{P} \\subset \\mathbb{R}^d, but with a simple, unified analysis that provides simultaneous guarantees for calibration with respect to any norm \\|\\cdot\\|. In particular, we prove the following theorem.",
+      "content_length": 555,
+      "metadata": {
+        "heading_level": 2
+      }
+    },
+    {
+      "snippet_id": "21919::THEOREM::0",
+      "snippet_type": "THEOREM",
+      "location": "1.1 Our results",
+      "content": "**Theorem 1.1** (Informal restatement of Corollary C.5). Fix any convex set \\mathcal{P} (with no restrictions on symmetry or other geometric properties) and any norm \\|\\cdot\\| (including non-standard norms). Assume there exists a function R : \\mathcal{P} \\to \\mathbb{R} that is 1-strongly-convex with respect to \\|\\cdot\\| and has range (\\max_{x \\in \\mathcal{P}} R(x) - \\min_{x \\in \\mathcal{P}} R(x)) at most \\rho. Then TreeCal guarantees that the calibration error of its predictions is bounded by \\text{Cal}_T^{\\|\\cdot\\|} \\leq \\epsilon T for T \\geq (\\text{diam}_{\\|\\cdot\\|}(\\mathcal{P})/\\epsilon)^{O(\\rho/\\epsilon^2)} for all possible choices of \\mathcal{P} and \\|\\cdot\\|.",
+      "content_length": 673,
+      "metadata": {
+        "label": "Theorem 1.1",
+        "has_proof": false
+      }
+    },
+    {
+      "snippet_id": "21919::SECTION::4",
+      "snippet_type": "SECTION",
+      "location": "1.1 Our results",
+      "content": "Interestingly, the function R(p) and parameter \\rho appearing in the statement of Theorem 1.1 have an independent learning-theoretic interpretation: if we consider the online linear optimization problem where a learner plays actions in \\mathcal{P} and the adversary plays linear losses that are unit bounded in the dual norm \\|\\cdot\\|_*, then it is possible for the learner to guarantee a regret bound of at most O(\\sqrt{\\rho T}) by playing Follow-The-Regularized-Leader (FTRL) with R(p) as a regularizer. In fact, since universality results for mirror descent guarantee that some instantiation of FTRL achieves near-optimal rates for online linear optimization (as long as the action and loss sets are centrally convex) [SST11, GSJ24], this allows us to relate the performance of Theorem 3.1 directly to what rates are possible in online linear optimization.",
+      "content_length": 859,
+      "metadata": {
+        "heading_level": 2
+      }
+    },
+    {
+      "snippet_id": "21919::COROLLARY::0",
+      "snippet_type": "COROLLARY",
+      "location": "1.1 Our results",
+      "content": "**Corollary 1.2** (Informal restatement of Corollary C.6). Let \\mathcal{P} \\subseteq \\mathbb{R}^d be a centrally symmetric convex set, and let \\mathcal{L} = \\{y \\in \\mathbb{R}^d \\mid \\|y\\|_* \\leq 1\\} for some norm \\|\\cdot\\|. Then if there exists an algorithm for online linear optimization with action set \\mathcal{P} and loss set \\mathcal{L} that incurs regret at most O(\\sqrt{\\rho T}), TreeCal guarantees that the calibration error of its predictions is bounded by \\text{Cal}_T^{\\|\\cdot\\|} \\leq \\epsilon T for T \\geq (\\text{diam}_{\\|\\cdot\\|}(\\mathcal{P})/\\epsilon)^{O(\\rho/\\epsilon^2)}.",
+      "content_length": 588,
+      "metadata": {
+        "label": "Corollary 1.2",
+        "has_proof": false
+      }
+    },
+    {
+      "snippet_id": "21919::THEOREM::1",
+      "snippet_type": "THEOREM",
+      "location": "1.1 Our results",
+      "content": "Theorem 1.1 and its corollary allow us to immediately recover several existing and novel bounds on calibration error in a variety of settings:",
+      "content_length": 142,
+      "metadata": {
+        "label": "Theorem 1.1",
+        "has_proof": false
+      }
+    },
+    {
+      "snippet_id": "21919::SECTION::5",
+      "snippet_type": "SECTION",
+      "location": "1.1 Our results",
+      "content": "\u2022 When \u2118 is the d-simplex \u0394_d and ||\u00b7|| is the \u21131-norm, the existence of the negative entropy regularizer R(x) = \u2211_{i=1}^d x_i log x_i (which is 1-strongly convex w.r.t. the \u21131 norm with range \u03c1 = log d) implies that the \u21131 calibration error of TreeCal is at most (1/\u03b5)^{O(log d/\u03b5^2)} = d^{O(1/\u03b5^2)}. This recovers the result of [Pen25].\n\n\u2022 When \u2118 is the \u21132 ball and ||\u00b7|| is the \u21132 norm, the Euclidean regularizer (R(x) = ||x||^2) implies a calibration bound of (1/\u03b5)^{O(1/\u03b5^2)} (notably, this bound is completely independent of d, unlike all prior work which had at least logarithmic dependence on dimension).\n\nIt should be emphasized here that running TreeCal does not require any online linear optimization subroutine. While the theoretical analysis uses regularizers R(x) and ranges \u03c1, the algorithm itself has no functional dependence on any specific ||\u00b7|| and achieves ||\u00b7||-calibration at the above rate (Theorem 1.1) for all ||\u00b7|| simultaneously, with parameter choices that can be set adaptively. The TreeCal algorithm represents a novel approach that, while sharing some structural similarities with [Pen25], introduces several key algorithmic innovations. Both algorithms initialize a tree of sub-forecasters and at each round play a uniform combination of some subset of them (see Figure 1), but TreeCal's design is fundamentally different in its treatment of regularization and its ability to handle arbitrary norms.^5\n^5 Unlike [Pen25], which requires explicit regularization by mixing predictions with the uniform distribution, TreeCal achieves calibration without any such mixing, representing a significant algorithmic simplification.\n\nThe novelty in our analysis stems from the observation that TreeCal is simply a specific instantiation of our novel TreeSwap swap regret minimization algorithm (which generalizes ideas from [BM07]) and can be analyzed directly in this way. While [DDFG24, PR24] studied related tree-based approaches, our TreeSwap algorithm introduces several key innovations that enable the improved calibration bounds. In particular, our analysis consists of the following steps:\n\n1. First, minimizing calibration error can be reduced to minimizing swap regret, generalizing an idea of [LSS25, FKO^+25]. That is, it is possible to assign the learner loss functions \u2113_t : \u2118 \u2192 \u211d at each round such that their calibration error is upper bounded by the gap between the total loss they received and the minimal loss they could have received after applying an arbitrary \u201cswap function\u201d \u03c0 : \u2118 \u2192 \u2118 to their predictions.\n\n   In fact, any strongly convex function R (w.r.t. the norm ||\u00b7||) gives rise to one such reduction, by setting the loss function \u2113_t(p) to equal the Bregman divergence D_R(y_t\u2225p).\n\n2. Second, the TreeSwap algorithm of [DDFG24, PR24] provides a general recipe for converting external regret minimization algorithms into swap regret minimization algorithms. We obtain TreeCal by plugging in the Follow-The-Leader algorithm (the learning algorithm whi",
+      "content_length": 3967,
+      "metadata": {
+        "heading_level": 2
+      }
+    },
+    {
+      "snippet_id": "21919::THEOREM::2",
+      "snippet_type": "THEOREM",
+      "location": "1.1 Our results",
+      "content": "Theorem 1.3 (Informal restatement of Theorem 3.1). Fix a convex set \u2118 and a norm ||\u00b7||. Assume there exists a function R : \u2118 \u2192 \u211d that is 1-strongly-convex with respect to ||\u00b7|| and has range (max_{x\u2208\u2118} R(x) \u2212 min_{x\u2208\u2118} R(x)) at most \u03c1. Then TreeCal guarantees that the calibration error of its predictions is bounded by Cal_T^{||\u00b7||^2} \u2264 \u03b5 T for T \u2265 (diam_{||\u00b7||}(\u2118)/\u221a\u03b5)^{O(\u03c1/\u03b5)}.",
+      "content_length": 380,
+      "metadata": {
+        "label": "Theorem 1.3",
+        "has_proof": false
+      }
+    },
+    {
+      "snippet_id": "21919::SECTION::6",
+      "snippet_type": "SECTION",
+      "location": "1.1 Our results",
+      "content": "Note here we have only singly-exponential dependence on 1/\u03b5. We arrive at Theorem 1.1 as a corollary of this result by simply applying Cauchy\u2013Schwarz. Finally, we strengthen the lower bound of [Pen25] by showing an exponential dependence on 1/\u03b5 is necessary.",
+      "content_length": 258,
+      "metadata": {
+        "heading_level": 2
+      }
+    },
+    {
+      "snippet_id": "21919::THEOREM::3",
+      "snippet_type": "THEOREM",
+      "location": "1.1 Our results",
+      "content": "Theorem 1.4 (Informal restatement of Theorem 4.3). There is a sufficiently small constant c > 0 so that the following holds. Fix any \u03b5 > 0, d \u2208 \u2115. Then for any T \u2264 exp(c \u00b7 min{d^{1/14}, \u03b5^{-1/6}}), there is an oblivious adversary producing a sequence of outcomes so that any learning algorithm must incur \u21131-calibration error Cal_T^{||\u00b7||_1} \u2265 \u03b5 \u00b7 T.",
+      "content_length": 350,
+      "metadata": {
+        "label": "Theorem 1.4",
+        "has_proof": false
+      }
+    },
+    {
+      "snippet_id": "21919::SECTION::7",
+      "snippet_type": "SECTION",
+      "location": "1.1 Our results",
+      "content": "Unlike the lower bound of [Pen25], this lower bound requires no specialized construction. Instead, it follows from the original observation of [FV98] that any algorithm for online calibration can be used to construct an algorithm for swap regret minimization by simply best responding to a sequence of calibrated predictions of the adversary\u2019s losses. The existing lower bound for swap regret in [DFG+24] then immediately precludes the existence of sufficiently strong calibration bounds (e.g., of the form d^{O(\\log 1/\\epsilon)}, which was still allowed by the work of [Pen25]).\n\nUsing a similar technique, in Theorem D.2, we show a similar lower bound for \\ell_2 calibration, namely that \\exp(\\Omega(\\min\\{d^{1/14}, \\epsilon^{-1/7}\\})) time steps are needed to achieve \\ell_2 calibration error at most \\epsilon \\cdot T. For d \\ge \\epsilon^{-2}, this bound is tight up to a polynomial in the exponent.\n\nWe discuss additional related work in the appendix.",
+      "content_length": 955,
+      "metadata": {
+        "heading_level": 2
+      }
+    },
+    {
+      "snippet_id": "21919::SECTION::8",
+      "snippet_type": "SECTION",
+      "location": "Preliminaries",
+      "content": "2 Setup\n\nFor a positive integer n, we let [0 : n - 1] denote the sequence 0, 1, \\ldots, n - 1, and [n] denote the sequence 1, 2, \\ldots, n. We say a convex set S \\subseteq \\mathbb{R}^d is centrally symmetric if s \\in S \\Leftrightarrow -s \\in S for all s \\in \\mathbb{R}^d. A norm \\|\\cdot\\| is a function corresponding to a convex, bounded, centrally symmetric set S of the form \\|s\\| = \\inf\\{c \\in \\mathbb{R}_{\\ge 0} \\mid s \\in cS\\}. The corresponding dual norm is defined \\|v\\|_* = \\sup\\{\\langle s, v \\rangle \\mid \\|s\\| \\le 1\\}.",
+      "content_length": 528,
+      "metadata": {
+        "heading_level": 2
+      }
+    },
+    {
+      "snippet_id": "21919::SECTION::9",
+      "snippet_type": "SECTION",
+      "location": "2.1 Calibration",
+      "content": "We consider the following setting of multi-dimensional calibration. Positive integers d \\in \\mathbb{N} representing the number of dimensions and T \\in \\mathbb{N} representing the number of rounds are given. We let \\mathcal{P} \\subset \\mathbb{R}^d denote a bounded convex subset of \\mathbb{R}^d. An adversary and a learning algorithm interact for a total of T time steps; at each time step t \\in [T]:\n\n\u2022 The learning algorithm chooses a distribution<sup>6</sup> \\mathbf{x}_t \\in \\Delta(\\mathcal{P}) with finite support.\n\u2022 The adversary observes \\mathbf{x}_t and chooses an outcome y_t \\in \\mathcal{P}.\n\nIn order for the learner to be calibrated, we would like the average outcome conditional on the learner making a specific prediction p to be \u201cclose\u201d to p. We formalize this as follows. For a point p \\in \\mathcal{P}, we define \\nu_p to be the average outcome conditioned on the learner predicting p, that is:",
+      "content_length": 909,
+      "metadata": {
+        "heading_level": 2
+      }
+    },
+    {
+      "snippet_id": "21919::EQUATION::1",
+      "snippet_type": "EQUATION",
+      "location": "2.1 Calibration",
+      "content": "\\nu_p := \\frac{\\sum_{t=1}^T \\mathbf{x}_t(p) \\cdot y_t}{\\sum_{t=1}^T \\mathbf{x}_t(p)}.\n(1)",
+      "content_length": 89,
+      "metadata": {
+        "label": null,
+        "display_mode": true
+      }
+    },
+    {
+      "snippet_id": "21919::SECTION::10",
+      "snippet_type": "SECTION",
+      "location": "2.1 Calibration",
+      "content": "Fix a distance measure D : \\mathcal{P} \\times \\mathcal{P} \\to \\mathbb{R}_{\\ge 0}, namely an arbitrary non-negative valued function on \\mathcal{P} \\times \\mathcal{P}. Given a distance measure D, we define the D-calibration error as follows:",
+      "content_length": 239,
+      "metadata": {
+        "heading_level": 2
+      }
+    },
+    {
+      "snippet_id": "21919::EQUATION::2",
+      "snippet_type": "EQUATION",
+      "location": "2.1 Calibration",
+      "content": "\\text{Cal}_T^D(\\mathbf{x}_{1:T}, y_{1:T}) := \\sum_{p \\in \\mathcal{P}} \\left(\\frac{1}{T}\\sum_{t=1}^T \\mathbf{x}_t(p)\\right) \\cdot D(\\nu_p, p).",
+      "content_length": 141,
+      "metadata": {
+        "label": null,
+        "display_mode": true
+      }
+    },
+    {
+      "snippet_id": "21919::SECTION::11",
+      "snippet_type": "SECTION",
+      "location": "2.1 Calibration",
+      "content": "In the event that D(p, q) = \\|p - q\\|, we will write \\text{Cal}_T^{\\|\\cdot\\|}(\\mathbf{x}_{1:T}, y_{1:T}) = \\text{Cal}_T^D(\\mathbf{x}_{1:T}, y_{1:T}), and we define \\text{Cal}_T^{\\|\\cdot\\|^2}(\\mathbf{x}_{1:T}, y_{1:T}) analogously.",
+      "content_length": 230,
+      "metadata": {
+        "heading_level": 2
+      }
+    },
+    {
+      "snippet_id": "21919::SECTION::12",
+      "snippet_type": "SECTION",
+      "location": "2.2 Regret minimization",
+      "content": "For a sequence of actions p_1, \\cdots, p_T \\in \\mathcal{P} and loss functions \\ell_1, \\cdots, \\ell_T : \\mathcal{P} \\to \\mathbb{R}, we define",
+      "content_length": 140,
+      "metadata": {
+        "heading_level": 2
+      }
+    },
+    {
+      "snippet_id": "21919::EQUATION::3",
+      "snippet_type": "EQUATION",
+      "location": "2.2 Regret minimization",
+      "content": "\\text{ExtReg}_T(p_{1:T}, \\ell_{1:T}) := \\sup_{p^* \\in \\mathcal{P}} \\sum_{t=1}^T \\left(\\ell_t(p_t) - \\ell_t(p^*)\\right).",
+      "content_length": 119,
+      "metadata": {
+        "label": null,
+        "display_mode": true
+      }
+    },
+    {
+      "snippet_id": "21919::SECTION::13",
+      "snippet_type": "SECTION",
+      "location": "2.2 Regret minimization",
+      "content": "<sup>6</sup> Some authors refer to this setting as \u201cpseudo-calibration\u201d or \u201cdistributional calibration\u201d, and reserve the term \u201ccalibration\u201d for the setting where the learner is required to randomly select a pure forecast p_t \\in \\mathcal{P} each round instead of a distribution. In Appendix E we describe how to extend our results to this pure-strategy setting of calibration.\n\nFor a sequence of distributions $\\mathbf{x}_1, \\cdots, \\mathbf{x}_T \\in \\Delta(\\mathcal{P})$ and loss functions $\\ell_1, \\cdots, \\ell_T : \\mathcal{P} \\to \\mathbb{R}$, we define",
+      "content_length": 554,
+      "metadata": {
+        "heading_level": 2
+      }
+    },
+    {
+      "snippet_id": "21919::EQUATION::4",
+      "snippet_type": "EQUATION",
+      "location": "2.2 Regret minimization",
+      "content": "$$\\text{FullSwapReg}_T(\\mathbf{x}_{1:T}, \\ell_{1:T}) := \\sup_{\\pi: \\mathcal{P} \\to \\mathcal{P}} \\sum_{t=1}^T \\sum_{p \\in \\mathcal{P}} \\mathbf{x}_t(p) \\cdot (\\ell_t(p) - \\ell_t(\\pi(p))). \\tag{2}$$",
+      "content_length": 195,
+      "metadata": {
+        "label": null,
+        "display_mode": true
+      }
+    },
+    {
+      "snippet_id": "21919::SECTION::14",
+      "snippet_type": "SECTION",
+      "location": "2.2 Regret minimization",
+      "content": "Here, we adopt the convention of [FKO\u207a25], referring to the latter quantity as Full Swap Regret to emphasize that we consider all swap transformations $\\pi : \\mathcal{P} \\to \\mathcal{P}$ (instead of e.g. just linear transformations $\\pi$).\n\nThroughout, we consider the performance of regret minimizing algorithms. These algorithms sequentially map loss functions $\\ell_1, \\cdots, \\ell_T$ to actions $p_1, \\cdots, p_T$ or action distributions $\\mathbf{x}_1, \\cdots, \\mathbf{x}_T$ with the goal of minimizing the above quantities. We consider the performance of these algorithms on adversarially selected loss functions from a set $\\mathcal{L}$. Abusing notation slightly, for an external regret minimizing algorithm $\\text{Alg} : \\mathcal{L}^T \\to \\mathcal{P}^T$, we define",
+      "content_length": 772,
+      "metadata": {
+        "heading_level": 2
+      }
+    },
+    {
+      "snippet_id": "21919::EQUATION::5",
+      "snippet_type": "EQUATION",
+      "location": "2.2 Regret minimization",
+      "content": "$$\\text{ExtReg}_T(\\text{Alg}) := \\sup_{\\ell_{1:T} \\in \\mathcal{L}^T} \\text{ExtReg}_T(\\text{Alg}(\\ell_{1:T}), \\ell_{1:T}) \\tag{3}$$",
+      "content_length": 130,
+      "metadata": {
+        "label": null,
+        "display_mode": true
+      }
+    },
+    {
+      "snippet_id": "21919::SECTION::15",
+      "snippet_type": "SECTION",
+      "location": "2.2 Regret minimization",
+      "content": "and for a full swap regret minimizing algorithm $\\text{Alg} : \\mathcal{L}^T \\to \\Delta(\\mathcal{P})^T$, we define",
+      "content_length": 113,
+      "metadata": {
+        "heading_level": 2
+      }
+    },
+    {
+      "snippet_id": "21919::EQUATION::6",
+      "snippet_type": "EQUATION",
+      "location": "2.2 Regret minimization",
+      "content": "$$\\text{FullSwapReg}_T(\\text{Alg}) := \\sup_{\\ell_{1:T} \\in \\mathcal{L}^T} \\text{FullSwapReg}_T(\\text{Alg}(\\ell_{1:T}), \\ell_{1:T}).$$",
+      "content_length": 133,
+      "metadata": {
+        "label": null,
+        "display_mode": true
+      }
+    },
+    {
+      "snippet_id": "21919::SECTION::16",
+      "snippet_type": "SECTION",
+      "location": "2.2 Regret minimization",
+      "content": "We will denote the $t$th action played by Alg on a sequence of losses $\\ell_{1:T}$ by $\\text{Alg}_t(\\ell_{1:T})$. One important subclass of external regret minimization problems is the setting of online linear optimization (OLO), where all loss functions in $\\ell$ are linear. Here we slightly abuse notation and identify $\\mathcal{L}$ with a subset of $\\mathbb{R}^d$ (with the understanding that an element $\\ell \\in \\mathcal{L}$ refers to the linear loss function $\\ell(p) = \\langle p, \\ell \\rangle$). Although we will never actually employ any OLO algorithms themselves, the calibration bounds we obtain will be closely related to optimal regret bounds for instances of OLO (we discuss this further in Section 2.4).",
+      "content_length": 718,
+      "metadata": {
+        "heading_level": 2
+      }
+    },
+    {
+      "snippet_id": "21919::SECTION::17",
+      "snippet_type": "SECTION",
+      "location": "2.3 From swap regret to calibration",
+      "content": "As noted in [LSS25, FKO\u207a25], calibration with a distance measure $D$ that corresponds to a Bregman divergence can be written as a full swap regret with loss functions given by the associated proper scoring rule. Given a convex function $R : \\mathcal{P} \\to \\mathbb{R}$, the Bregman divergence associated to $R$, $D_R : \\mathcal{P} \\times \\mathcal{P} \\to \\mathbb{R}_{\\geq 0}$, is defined as\u2077",
+      "content_length": 390,
+      "metadata": {
+        "heading_level": 2
+      }
+    },
+    {
+      "snippet_id": "21919::EQUATION::7",
+      "snippet_type": "EQUATION",
+      "location": "2.3 From swap regret to calibration",
+      "content": "$$D_R(y \\| p) := R(p) - R(y) - \\langle \\nabla R(y), p - y \\rangle.$$",
+      "content_length": 68,
+      "metadata": {
+        "label": null,
+        "display_mode": true
+      }
+    },
+    {
+      "snippet_id": "21919::SECTION::18",
+      "snippet_type": "SECTION",
+      "location": "2.3 From swap regret to calibration",
+      "content": "Geometrically, this divergence is defined by taking the hyperplane tangent to $R$ at $p$ and computing the difference in height between $R$ and the hyperplane at $y$ (see Figure 2).\n\nWhen viewed as a loss function in $p$, the Bregman divergence $D_R(y \\| p)$ also has the property that it is a proper scoring rule. This refers to the fact that if $y$ is drawn from some distribution $\\mathbf{y} \\in \\Delta(\\mathcal{P})$, the optimal response $p$ (to minimize the expected loss $D_R(y \\| p)$) is simply the expectation $\\bar{y} = \\mathbb{E}_{y \\sim \\mathbf{y}}[y]$. In particular, we have the following lemma.",
+      "content_length": 608,
+      "metadata": {
+        "heading_level": 2
+      }
+    },
+    {
+      "snippet_id": "21919::LEMMA::0",
+      "snippet_type": "LEMMA",
+      "location": "2.3 From swap regret to calibration",
+      "content": "Lemma 2.1. For any $\\mathbf{y} \\in \\Delta(\\mathcal{P})$ and convex function $R : \\mathcal{P} \\to \\mathbb{R}$, let $\\bar{y} = \\mathbb{E}_{y \\sim \\mathbf{y}}[y]$, and $\\overline{R(y)} = \\mathbb{E}_{y \\sim \\mathbf{y}}[R(y)]$. For all $p \\in \\mathcal{P}$, $\\mathbb{E}_{y \\sim \\mathbf{y}}[D_R(y \\| p)] = D_R(\\bar{y} \\| p) + \\overline{R(y)} - R(\\bar{y})$. In particular, $\\ell(p) = \\mathbb{E}_{y \\sim \\mathbf{y}}[D_R(y \\| p)]$ is minimized at $p = \\bar{y}$ at a value of $\\overline{R(y)} - R(\\bar{y})$ (Figure 3).",
+      "content_length": 507,
+      "metadata": {
+        "label": "Lemma 2.1",
+        "has_proof": false
+      }
+    },
+    {
+      "snippet_id": "21919::SECTION::19",
+      "snippet_type": "SECTION",
+      "location": "2.3 From swap regret to calibration",
+      "content": "This implies the following connection between full swap regret and calibration.",
+      "content_length": 79,
+      "metadata": {
+        "heading_level": 2
+      }
+    },
+    {
+      "snippet_id": "21919::LEMMA::1",
+      "snippet_type": "LEMMA",
+      "location": "2.3 From swap regret to calibration",
+      "content": "Lemma 2.2. Fix any convex function $R : \\mathcal{P} \\to \\mathbb{R}$. For any sequence of distributions $\\mathbf{x}_1, \\mathbf{x}_2, \\ldots, \\mathbf{x}_T \\in \\Delta(\\mathcal{P})$ and outcomes $y_1, y_2, \\ldots, y_T \\in \\mathcal{P}$, define the sequence of loss functions $\\ell_1, \\ell_2, \\ldots, \\ell_T$ via $\\ell_t(p) = D_R(y_t \\| p)$. Then,",
+      "content_length": 341,
+      "metadata": {
+        "label": "Lemma 2.2",
+        "has_proof": false
+      }
+    },
+    {
+      "snippet_id": "21919::EQUATION::8",
+      "snippet_type": "EQUATION",
+      "location": "2.3 From swap regret to calibration",
+      "content": "$$\\text{FullSwapReg}_T(\\mathbf{x}_{1:T}, \\ell_{1:T}) = \\text{Cal}_T^{D_R}(\\mathbf{x}_{1:T}, y_{1:T}).$$",
+      "content_length": 103,
+      "metadata": {
+        "label": null,
+        "display_mode": true
+      }
+    },
+    {
+      "snippet_id": "21919::SECTION::20",
+      "snippet_type": "SECTION",
+      "location": "2.3 From swap regret to calibration",
+      "content": "The proofs of Lemmas 2.1 and 2.2 may be found in Appendix B.\n\n\u2077In the event that $R$ is not differentiable, we can replace the $\\nabla R(p)$ term with any element of the sub-gradient at $p$. When $\\mathcal{P}$ is not open and $p$ is on the boundary, the $\\nabla R(p)$ term represents the inward directional gradient.",
+      "content_length": 316,
+      "metadata": {
+        "heading_level": 2
+      }
+    },
+    {
+      "snippet_id": "21919::SECTION::21",
+      "snippet_type": "SECTION",
+      "location": "2.4 Rates and regularization",
+      "content": "In order to reduce our general calibration problem to a swap regret minimization problem (via Lemma 2.2), we will need to construct a convex function R whose Bregman divergence upper bounds our distance measure. It turns out that the optimal choice of such a function is closely related to the design of optimal regularizers for online linear optimization. In this section, we describe this functional optimization problem and detail this connection.\n\nWe say that a convex function R : \ud835\udcab \u2192 \u211d is \u03b1-strongly convex with respect to a given norm \u2016\u00b7\u2016 if for any points y, p \u2208 \ud835\udcab it is the case that\nR(y) \u2264 R(p) + \u27e8\u2207R(p), y \u2212 p\u27e9 + \u03b1\u2016y \u2212 p\u2016\u00b2.\nEquivalently, the Bregman divergence must satisfy D_R(y \u2225 p) \u2265 \u03b1\u2016y \u2212 p\u2016\u00b2. Thus, \u2016\u00b7\u2016\u00b2-calibration error is bounded by D_R-calibration error if R is \u2016\u00b7\u2016-norm 1-strongly convex.\n\nOur later analysis will need not only R to be strongly convex with respect to our norm, but for the Bregman divergence to have a small maximal value. Motivated by this, we will say that a convex function R : \ud835\udcab \u2192 \u211d has rate \u03c1 with respect to a given norm \u2016\u00b7\u2016 if: (1) R is 1-strongly convex with respect to \u2016\u00b7\u2016, and (2) the range of the Bregman divergence is at most \u03c1, i.e., max_{y,p\u2208\ud835\udcab} D_R(y \u2225 p) \u2264 \u03c1. We define Rate(\ud835\udcab, \u2016\u00b7\u2016) to be the infimum of the rates of all 1-strongly convex functions R : \ud835\udcab \u2192 \u211d.\n\nAs mentioned earlier, we call this quantity a \u201crate\u201d due to its connection with the optimal regret rates for online linear optimization. For a learning algorithm Alg : \ud835\udcdb^T \u2192 \ud835\udcab^T, we defined (in (3)) ExtReg_T(Alg) to be the worst-case regret against any sequence \u2113_{1:T} of T losses. It is known that for any fixed action set and loss set, the optimal worst-case regret bound is of the form \u221aRate_OLO(\ud835\udcab, \ud835\udcdb) \u00b7 \u221aT + o(\u221aT), for some constant Rate_OLO(\ud835\udcab, \ud835\udcdb). Formally, we define\nRate_OLO(\ud835\udcab, \ud835\udcdb) = limsup_{T\u2192\u221e} inf_{Alg} (1/T) \u00b7 ExtReg_T(Alg)\u00b2.\n\nOne important class of learning algorithms for online linear optimization is the class of Follow-The-Regularized-Leader (FTRL) algorithms. Each algorithm in this class is specified by a convex \u201cregularizer\u201d function R : \ud835\udcab \u2192 \u211d, and at round t selects the action\np_t = argmin_{p\u2208\ud835\udcab} \u2211_{s=1}^{t-1} \u27e8p, \u2113_s\u27e9 + R(p).\nThe work of [SST11] and [GSJ24] shows that there always exists some instantiation of FTRL which achieves (up to a universal constant factor) the optimal regret rate of \u221aRate_OLO(\ud835\udcab, \ud835\udcdb) \u00b7 \u221aT + o(\u221aT) defined above. Moreover, the optimal regularizer for this instance can be constructed by solving a similar functional optimization problem over strongly convex regularizers R, as described in the following theorem.",
+      "content_length": 2575,
+      "metadata": {
+        "heading_level": 2
+      }
+    },
+    {
+      "snippet_id": "21919::THEOREM::4",
+      "snippet_type": "THEOREM",
+      "location": "2.4 Rates and regularization",
+      "content": "Theorem 2.3. Let \ud835\udcab and \ud835\udcdb be centrally symmetric convex sets. Then, if the function R : \ud835\udcab \u2192 \u211d is 1-strongly convex with respect to the norm \u2016\u00b7\u2016_{\ud835\udcdb*} and has range \u03c1 (i.e., max_{p\u2208\ud835\udcab} R(p) \u2212 min_{p\u2208\ud835\udcab} R(p) = \u03c1), then Rate_OLO(\ud835\udcab, \ud835\udcdb) \u2264 \u03c1. Conversely, there exists a function R : \ud835\udcab \u2192 \u211d that is 1-strongly convex with respect to \u2016\u00b7\u2016_{\ud835\udcdb*} and has range O(Rate_OLO(\ud835\udcab, \ud835\udcdb)).",
+      "content_length": 363,
+      "metadata": {
+        "label": "Theorem 2.3",
+        "has_proof": true
+      }
+    },
+    {
+      "snippet_id": "21919::PROOF::0",
+      "snippet_type": "PROOF",
+      "location": "2.4 Rates and regularization",
+      "content": "Proof. The first result (that Rate_OLO(\ud835\udcab, \ud835\udcdb) \u2264 \u03c1) follows from the standard analysis of FTRL \u2014 see e.g. Theorem 5.2 in [H^+16]. The converse result follows from Theorem 2 of [GSJ24]. \u25a1",
+      "content_length": 184,
+      "metadata": {
+        "of": null
+      }
+    },
+    {
+      "snippet_id": "21919::THEOREM::5",
+      "snippet_type": "THEOREM",
+      "location": "2.4 Rates and regularization",
+      "content": "Theorem 2.3 allows us to relate the quantity Rate(\ud835\udcab, \u2016\u00b7\u2016) to the quantity Rate_OLO(\ud835\udcab, \ud835\udcdb) (where \ud835\udcdb is chosen to be the unit dual norm ball). Note that there is a slight difference in the two functional optimization problems defined above \u2014 the one for Rate(\ud835\udcab, \u2016\u00b7\u2016) asks us to bound the range of the Bregman divergence of R, while the one for Rate_OLO(\ud835\udcab, \ud835\udcdb) asks us to bound the range of R itself. While these two quantities do not directly bound each other (the negative entropy function R(p) = \u2211 p_i log p_i has bounded range over the simplex but unbounded Bregman divergence), we can nonetheless show that optimal solutions to one problem can be used to construct optimal solutions to the other problem of similar quality.",
+      "content_length": 723,
+      "metadata": {
+        "label": "Theorem 2.3",
+        "has_proof": false
+      }
+    },
+    {
+      "snippet_id": "21919::LEMMA::2",
+      "snippet_type": "LEMMA",
+      "location": "2.4 Rates and regularization",
+      "content": "Lemma 2.4. If the action set \ud835\udcab is centrally symmetric and \ud835\udcdb = {y \u2208 \u211d^d | \u2016y\u2016_* \u2264 1} (i.e., the unit ball in the dual norm to \u2016\u00b7\u2016), then Rate_OLO(\ud835\udcab, \ud835\udcdb) = \u0398(Rate(\ud835\udcab, \u2016\u00b7\u2016)).",
+      "content_length": 169,
+      "metadata": {
+        "label": "Lemma 2.4",
+        "has_proof": false
+      }
+    },
+    {
+      "snippet_id": "21919::SECTION::22",
+      "snippet_type": "SECTION",
+      "location": "Method",
+      "content": "3 Main result\n\nWe now describe our main algorithm for calibration, TreeCal (Algorithm 1). As we will see, it is equivalent to the TreeSwap algorithm for Full Swap Regret minimization ([DDFG24, PR24]; Algorithm 2), where the loss functions are given by appropriate Bregman divergences as determined by",
+      "content_length": 300,
+      "metadata": {
+        "heading_level": 2
+      }
+    },
+    {
+      "snippet_id": "21919::LEMMA::3",
+      "snippet_type": "LEMMA",
+      "location": "Method",
+      "content": "Lemma 2.2. Moreover, TreeCal is effectively the same as the main algorithm of [Pen25]. However, the perspective that TreeCal can be viewed as a particular instance of TreeSwap (Lemma 3.2) is novel to this work, and it enables us to tackle a much more general set of calibration problems (Theorem 3.1). We first describe the TreeCal and TreeSwap algorithms, then state Theorem 3.1 which establishes our main upper bound for TreeCal, and finally discuss the proof of Theorem 3.1, which uses the TreeSwap algorithm as a tool in the analysis.",
+      "content_length": 538,
+      "metadata": {
+        "label": "Lemma 2.2",
+        "has_proof": false
+      }
+    },
+    {
+      "snippet_id": "21919::SECTION::23",
+      "snippet_type": "SECTION",
+      "location": "3.1 Algorithm description",
+      "content": "Given some number of rounds $T \\in \\mathbb{N}$, TreeCal and TreeSwap sequentially produce distributions $\\mathbf{x}_1, \\cdots, \\mathbf{x}_T \\in \\Delta(\\mathcal{P})$. TreeCal receives from the adversary an outcome sequence $y_1, \\cdots, y_T \\in \\mathcal{P}$ whereas TreeSwap receives loss functions $\\ell_1, \\cdots, \\ell_T : \\mathcal{P} \\to \\mathbb{R}$.\n\nTo describe how the algorithms use the adversary\u2019s actions to produce the distributions $\\mathbf{x}_t$, we need some additional notation. The algorithms take as input parameters $H, L \\in \\mathbb{N}$ satisfying $H \\geq 2$ and $H^{L-1} \\leq T \\leq H^L$. We index time steps $t \\in [T]$ via base-$H$ $L$-tuples: in particular, for $t \\in [T]$, we let $t_1, \\ldots, t_L \\in [0 : H - 1]$ be the base-$H$ representation of $t - 1$; we will write $t - 1 = (t_1 t_2 \\cdots t_L)$. For all $0 \\leq l \\leq L$, for all $k \\in [0 : H - 1]^l$, let $\\Gamma_k^{(l)} \\subset [T]$ represent the interval of times $t$ with prefix $k$. That is, $t \\in \\Gamma_k^{(l)}$ iff $t_i = k_i$ for all $i \\in [1 : l]$. These intervals may be arranged to form an $H$-ary depth-$L$ tree, where the children of $\\Gamma_k^{(l)}$ are $\\Gamma_{k0}^{(l+1)}, \\Gamma_{k1}^{(l+1)}, \\cdots, \\Gamma_{k,H-1}^{(l+1)}$.^8\n\nBoth TreeCal and TreeSwap operate by assigning an action $p_k^{(l)}$ to each node $\\Gamma_k^{(l)}$ of the tree, except the root. At time $t$, both algorithms return the uniform distribution over the actions on the root-to-leaf-$t$ path, namely $\\mathbf{x}_t := \\mathrm{Unif}\\left(\\left\\{p_{t_1}^{(1)}, p_{t_1 t_2}^{(2)}, \\cdots, p_{t_1 t_2 \\cdots t_L}^{(L)}\\right\\}\\right)$ (see Figure 1). The algorithms differ in how the actions $p_k^{(l)}$ are chosen:",
+      "content_length": 1687,
+      "metadata": {
+        "heading_level": 2
+      }
+    },
+    {
+      "snippet_id": "21919::TABLE::0",
+      "snippet_type": "TABLE",
+      "location": "3.1 Algorithm description",
+      "content": "| $p_0^{(1)}$ |   | $p_1^{(1)}$ |   |   |   |\n| ------------ | - | ------------ | - | - | - |",
+      "content_length": 93,
+      "metadata": {
+        "caption": null,
+        "row_count": 1
+      }
+    },
+    {
+      "snippet_id": "21919::TABLE::1",
+      "snippet_type": "TABLE",
+      "location": "3.1 Algorithm description",
+      "content": "| $p_{00}^{(2)}$ | $p_{01}^{(2)}$ | $p_{02}^{(2)}$ | $p_{10}^{(2)}$ | $p_{11}^{(2)}$ |   |   |   |   |   |   |   |   |   |\n| --------------- | --------------- | --------------- | --------------- | --------------- | - | - | - | - | - | - | - | - | - |",
+      "content_length": 250,
+      "metadata": {
+        "caption": null,
+        "row_count": 1
+      }
+    },
+    {
+      "snippet_id": "21919::FIGURE::0",
+      "snippet_type": "FIGURE",
+      "location": "3.1 Algorithm description",
+      "content": "| $p_{000}^{(3)}$ | $p_{001}^{(3)}$ | $p_{002}^{(3)}$ | $p_{010}^{(3)}$ | $p_{011}^{(3)}$ | $p_{012}^{(3)}$ | $p_{020}^{(3)}$ | $p_{021}^{(3)}$ | $p_{022}^{(3)}$ | $p_{100}^{(3)}$ | $p_{101}^{(3)}$ | $p_{102}^{(3)}$ | $p_{110}^{(3)}$ | $p_{111}^{(3)}$ |   |   |   |   |   |   |   |   |   |   |   |   |   |\n| ---------------- | ---------------- | ---------------- | ---------------- | ---------------- | ---------------- | ---------------- | ---------------- | ---------------- | ---------------- | ---------------- | ---------------- | ---------------- | ---------------- | - | - | - | - | - | - | - | - | - | - | - | - | - |\nFigure 1: Visualization of the state of TreeCal/TreeSwap at time step $t$ (about half-way through the algorithm). For $H = 3$, we depict the intervals $\\Gamma$ of the first three non-root levels of the tree ($l = 1, 2, 3$). Each rectangular node represents an interval, with sibling nodes separated by red lines. We represent the specific time step $t$ via the vertical dashed green line. The yellow intervals it intersects at each level correspond to the nodes on the root-to-leaf-$t$ path. Accordingly, $\\mathbf{x}_t$ will be the uniform distribution over the labels $p$ of these yellow intervals. We see that the algorithm has committed to the labels of all intervals that started at or before time $t$, and has yet to label the future intervals.",
+      "content_length": 1375,
+      "metadata": {
+        "caption": "Figure 1: Visualization of the state of TreeCal/TreeSwap at time step $t$ (about half-way through the algorithm). For $H = 3$, we depict the intervals $\\Gamma$ of the first three non-root levels of the tree ($l = 1, 2, 3$). Each rectangular node represents an interval, with sibling nodes separated by red lines. We represent the specific time step $t$ via the vertical dashed green line. The yellow intervals it intersects at each level correspond to the nodes on the root-to-leaf-$t$ path. Accordingly, $\\mathbf{x}_t$ will be the uniform distribution over the labels $p$ of these yellow intervals. We see that the algorithm has committed to the labels of all intervals that started at or before time $t$, and has yet to label the future intervals."
+      }
+    },
+    {
+      "snippet_id": "21919::SECTION::24",
+      "snippet_type": "SECTION",
+      "location": "3.1 Algorithm description",
+      "content": "\u2022 TreeCal (Algorithm 1) assigns actions to nodes as follows. For all $1 \\leq l \\leq L$, $k \\in [0 : H - 1]^{l-1}$, $h \\in [0 : H - 1]$, at the start of $\\Gamma_{kh}^{(l)}$, TreeCal sets $p_{kh}^{(l)}$ to be the average over all $y_t$ that have been observed thus far in the parent interval $\\Gamma_k^{(l-1)}$. That is,",
+      "content_length": 318,
+      "metadata": {
+        "heading_level": 2
+      }
+    },
+    {
+      "snippet_id": "21919::EQUATION::9",
+      "snippet_type": "EQUATION",
+      "location": "3.1 Algorithm description",
+      "content": "$$\np_{kh}^{(l)} = \\frac{1}{h H^{L-l}} \\sum_{i=0}^{h-1} \\sum_{t \\in \\Gamma_{ki}^{(l)}} y_t\n$$\n(4)",
+      "content_length": 96,
+      "metadata": {
+        "label": null,
+        "display_mode": true
+      }
+    },
+    {
+      "snippet_id": "21919::SECTION::25",
+      "snippet_type": "SECTION",
+      "location": "3.1 Algorithm description",
+      "content": "\u2022 The more general TreeSwap algorithm (Algorithm 2) also takes as a parameter an external regret-minimizing algorithm Alg, which operates with horizon of length $H$: we denote the resulting algorithm by TreeSwap.Alg. TreeSwap.Alg associates each internal node of the tree, $\\Gamma_k^{(l-1)}$ (with $1 \\leq l \\leq L$), with an instance Alg, denoted $\\mathrm{Alg}_k^{(l-1)}$. The subroutine $\\mathrm{Alg}_k^{(l-1)}$ is responsible for choosing the actions $p_{k0}^{(l)}, p_{k1}^{(l)}, \\cdots, p_{k(H-1)}^{(l)}$. It does so by responding to the average losses over each of its child intervals. In particular: at the end of\n\n^8 We ignore the truncated branches that exist if $T < H^L$.",
+      "content_length": 681,
+      "metadata": {
+        "heading_level": 2
+      }
+    },
+    {
+      "snippet_id": "21919::FIGURE::1",
+      "snippet_type": "FIGURE",
+      "location": "3.1 Algorithm description",
+      "content": "![Figure 22](image_22.jpg)",
+      "content_length": 26,
+      "metadata": {
+        "caption": "Figure 22"
+      }
+    },
+    {
+      "snippet_id": "21919::SECTION::26",
+      "snippet_type": "SECTION",
+      "location": "3.1 Algorithm description",
+      "content": "<!-- Caption: Method, index 22 -->\n\n\nFor each child interval \u0393_{kh}^{(l)}, we pass Alg_k^{(l-1)} the average loss over that interval. Alg_k^{(l-1)} then outputs the action p_{k(h+1)}^{(l)} assigned to the next child interval.",
+      "content_length": 225,
+      "metadata": {
+        "heading_level": 2
+      }
+    },
+    {
+      "snippet_id": "21919::THEOREM::6",
+      "snippet_type": "THEOREM",
+      "location": "3.2 Main result",
+      "content": "Theorem 3.1 upper bounds the calibration error of TreeCal with respect to the squared norm ||\u00b7||^2.",
+      "content_length": 99,
+      "metadata": {
+        "label": "Theorem 3.1",
+        "has_proof": false
+      }
+    },
+    {
+      "snippet_id": "21919::THEOREM::7",
+      "snippet_type": "THEOREM",
+      "location": "3.2 Main result",
+      "content": "Theorem 3.1 (Main theorem). Let P \u2282 R^d be a bounded convex set and ||\u00b7|| be an arbitrary norm. Then, TreeCal (Algorithm 1) guarantees that for an arbitrary sequence of outcomes y_1, \u2026, y_T \u2208 P, the ||\u00b7||^2 calibration error of its predictions x_1, \u2026, x_T \u2208 \u0394(P) is bounded as follows:\nCal_T^{||\u00b7||^2}(x_{1:T}, y_{1:T}) \u2264 \u03b5 T for T \u2265 (diam(P)/\u221a\u03b5)^{O(Rate(P, ||\u00b7||)/\u03b5)}.",
+      "content_length": 369,
+      "metadata": {
+        "label": "Theorem 3.1",
+        "has_proof": false
+      }
+    },
+    {
+      "snippet_id": "21919::SECTION::27",
+      "snippet_type": "SECTION",
+      "location": "3.2 Main result",
+      "content": "It is straightforward to derive from Theorem 3.1 via an application of Jensen\u2019s inequality an upper bound on the calibration error of TreeCal with respect to the (non-squared) norm ||\u00b7||, as stated in Theorem 1.1; see Corollary C.5. In Appendix E, we additionally consider a variant of TreeCal which plays pure actions in P (i.e., not distributions) by sampling from the distributions x_t for each t \u2208 [T]. We show that the pure calibration error of this variant can be bounded by a similar quantity to that in Theorem 3.1.",
+      "content_length": 523,
+      "metadata": {
+        "heading_level": 2
+      }
+    },
+    {
+      "snippet_id": "21919::SECTION::28",
+      "snippet_type": "SECTION",
+      "location": "3.3 Outline of the proof of Theorem 3.1",
+      "content": "Step 1: Reduction from calibration error to swap regret. Let us choose a convex function R : P \u2192 R given P, ||\u00b7|| as described in Section 2.4. The first step in the proof of Theorem 3.1 is to reduce the problem of minimizing (squared-norm) calibration error to that of minimizing full swap regret for an appropriate sequence of loss functions. In particular, for any sequence x_1, \u2026, x_T \u2208 \u0394(P) and y_1, \u2026, y_T \u2208 P, we have\nCal_T^{||\u00b7||^2}(x_{1:T}, y_{1:T}) \u2264 Cal_T^{D_R}(x_{1:T}, y_{1:T}) = FullSwapReg_R(x_{1:T}, \u2113_{1:T}), (5)\nwhere \u2113_t : P \u2192 R is the loss function given by \u2113_t(p) := D_R(y_t || p); the inequality uses strong convexity of R, and the subsequent equality uses Lemma 2.2.\n\nStep 2: Equivalence with TreeSwap. Thus, it suffices to find an algorithm which minimizes the full swap regret quantity on the right-hand side of (5). Fortunately, the TreeSwap algorithm is known to do exactly this! (See Theorem C.1, from [DDFG24], for a formal statement for the swap regret bound of TreeSwap.) In order to apply the swap regret bound of Theorem C.1, we need to ensure that the TreeCal algorithm is an instantiation of TreeSwap.Alg for an appropriate choice of (a) the loss functions fed as input to TreeSwap and (b) the Alg subroutine. The loss functions have already been defined: given a sequence y_1, \u2026, y_T, recall that we chose \u2113_t(p) := D_R(y_t || p). Moreover, we let the Alg subroutine be given by Follow-the-Leader (FTL), which simply chooses an action at each step minimizing the sum of losses up to the previous time step. The following lemma shows that TreeSwap with the losses \u2113_t and the FTL subroutine produces the same action distributions as TreeCal:",
+      "content_length": 1675,
+      "metadata": {
+        "heading_level": 2
+      }
+    },
+    {
+      "snippet_id": "21919::LEMMA::4",
+      "snippet_type": "LEMMA",
+      "location": "3.3 Outline of the proof of Theorem 3.1",
+      "content": "Lemma 3.2. Let P \u2282 R^d be a bounded convex set and let R : P \u2192 R be a convex function. For a sequence of loss functions \u2113_1, \u2026, \u2113_H : P \u2192 R, define FTL_h(\u2113_{1:H}) = argmin_{p\u2208P} \u2211_{s=1}^{h-1} \u2113_s(p). For all sequences of outcomes y_{1:T} \u2208 P^T, the action distributions x_t produced by TreeCal on y_{1:T} equal those produced by TreeSwap.FTL on loss functions \u2113_t(p) = D_R(y_t || p) for all t.\nThe proof of Lemma 3.2 (given in full in the appendix) is a straightforward consequence of the fact that the Bregman divergence is a proper scoring rule: the action p \u2208 P minimizing an average of Bregman divergences D_R(y || p) is simply the average of the constituent points y (Lemma 2.1).",
+      "content_length": 684,
+      "metadata": {
+        "label": "Lemma 3.2",
+        "has_proof": false
+      }
+    },
+    {
+      "snippet_id": "21919::SECTION::29",
+      "snippet_type": "SECTION",
+      "location": "3.3 Outline of the proof of Theorem 3.1",
+      "content": "Step 3: Applying the swap regret bound of TreeSwap to FTL. Finally, we want to apply the main result of [DDFG24] (restated as Theorem C.1) to bound the full swap regret for the iterates x_{1:T} produced by TreeSwap.Alg, for an appropriate choice of Alg. The most natural way to do so would be to try to directly apply this result in the case when Alg = FTL (which corresponds to how we actually implement TreeSwap). However, applying this theorem requires an external regret bound on FTL for an arbitrary sequence of losses. While FTL is known to possess strong external regret\n\nInstead, the main idea is to consider the \u201cBe-The-Leader\u201d algorithm BTL, which is the same as FTL but where actions are shifted ahead in time by 1 time step: in particular, the action chosen by BTL at time step $h$ given a sequence $\\ell_1, \\ell_2, \\ldots, \\ell_H : \\mathcal{P} \\to \\mathbb{R}$ is $\\text{BTL}_h(\\ell_{1:H}) = \\text{FTL}_{h+1}(\\ell_{1:H}) = \\operatorname{argmin}_{p \\in \\mathcal{P}} \\sum_{s=1}^h \\ell_s(p)$. BTL can be efficiently implemented in practice by using a simple lookahead technique that observes \u2113_h before choosing the action at time step h. Since its regret is always non-positive (i.e., ExtReg_H(BTL) \u2264 0 for any H), if we apply Theorem C.1 to the algorithm TreeSwap.BTL, we get that FullSwapReg_T(TreeSwap.BTL) \u2264 \u03b5 \u00b7 T as long as T \u2265 H^(O(\u03c1/\u03b5)) for any choice of H (the arity parameter H used in TreeSwap). This implementability is a key advantage of our approach over prior work. Using (5), this implies that the calibration error of the iterates produced by TreeSwap.BTL can also be bounded above by $\\epsilon \\cdot T$.\n\nOf course, this result on its own is uninteresting (since BTL is unimplementable, as mentioned above). However, the key insight is that we can show that the actions chosen by TreeSwap.BTL are close to (as measured by the norm $\\|\\cdot\\|$) those chosen by TreeSwap.FTL, which in turn is equivalent to TreeCal (Lemma 3.2). This closeness is an immediate consequence of the fact that the actions chosen by FTL for our loss functions $D_R(y_1\\mid\\cdot), D_R(y_2\\mid\\cdot), \\ldots$ are simply the empirical average of all actions $y_1, y_2, \\ldots \\in \\mathcal{P}$ of the adversary up to the previous time step.^9 In turn, we can use this closeness to show that the calibration error of TreeSwap.FTL is close to that of TreeSwap.BTL. This latter part of the argument becomes slightly tricky due to the possibility that different nodes of the tree might output the same action $p \\in \\mathcal{P}$; accordingly, we need to work with a labeled variant of the action set and bound the swap regret over this labeled variant; see Appendix C for further details.",
+      "content_length": 2682,
+      "metadata": {
+        "heading_level": 2
+      }
+    },
+    {
+      "snippet_id": "21919::SECTION::30",
+      "snippet_type": "SECTION",
+      "location": "4 Lower bound",
+      "content": "To prove our calibration lower bound, we make use of the following swap regret lower bound.",
+      "content_length": 91,
+      "metadata": {
+        "heading_level": 2
+      }
+    },
+    {
+      "snippet_id": "21919::THEOREM::8",
+      "snippet_type": "THEOREM",
+      "location": "4 Lower bound",
+      "content": "Theorem 4.1 (Theorem 4.1 of [DFG^+24]). There is a sufficiently small constant $c_{4.1} > 0$ so that the following holds. Fix any $\\epsilon > 0$. For any $d \\in \\mathbb{N}$, there is a subset $\\mathcal{X} \\subset [-1, 1]^d$ so that the following holds for any $T \\leq \\exp(c_{4.1} \\min\\{d^{1/14}, \\epsilon^{-1/6}\\})$. There is an oblivious adversary producing a sequence $v_1, \\ldots, v_T$ with $\\|v_t\\|_1 \\leq 1$ and $\\|v_t\\|_\\infty \\leq \\max\\{d^{-13/14}, \\epsilon^{13/6}\\}$ for all $t$, which satisfies the following property. For linear loss functions $\\ell(x, v) = \\langle v, x \\rangle$ for vectors $v \\in \\mathbb{R}^d$ and $x \\in \\mathbb{R}^d$, any learning algorithm producing $\\mathbf{x}_1, \\ldots, \\mathbf{x}_T \\in \\Delta(\\mathcal{X})$,",
+      "content_length": 744,
+      "metadata": {
+        "label": "Theorem 4.1",
+        "has_proof": false
+      }
+    },
+    {
+      "snippet_id": "21919::EQUATION::10",
+      "snippet_type": "EQUATION",
+      "location": "4 Lower bound",
+      "content": "$$\\text{FullSwapReg}_T(\\mathbf{x}_{1:T}, \\ell(\\cdot, v_{1:T})) = \\sup_{\\pi: \\mathcal{X} \\to \\mathcal{X}} \\sum_{t=1}^T \\sum_{p \\in \\mathcal{X}} \\mathbf{x}_t(p) \\cdot (\\langle v_t, p \\rangle - \\langle v_t, \\pi(p) \\rangle) \\geq \\epsilon \\cdot T.$$",
+      "content_length": 244,
+      "metadata": {
+        "label": null,
+        "display_mode": true
+      }
+    },
+    {
+      "snippet_id": "21919::SECTION::31",
+      "snippet_type": "SECTION",
+      "location": "4 Lower bound",
+      "content": "We leverage the classic reduction from swap-regret minimization to calibration [FV98]: by producing calibrated predictions of the upcoming loss and best-responding to it, we can effectively minimize swap regret. This is formalized in the following lemma, proved in Appendix D.",
+      "content_length": 276,
+      "metadata": {
+        "heading_level": 2
+      }
+    },
+    {
+      "snippet_id": "21919::LEMMA::5",
+      "snippet_type": "LEMMA",
+      "location": "4 Lower bound",
+      "content": "Lemma 4.2. Fix a set $\\mathcal{P} \\subset \\mathbb{R}^d$, a norm $\\|\\cdot\\|$, and write $D(p, p') := \\|p - p'\\|$. Suppose that, for some $\\epsilon > 0, T \\in \\mathbb{N}$, there is an algorithm which chooses $\\mathbf{x}_1, \\ldots, \\mathbf{x}_T \\in \\Delta(\\mathcal{P})$ and which ensures that for every oblivious adversary choosing $y_1, \\ldots, y_T \\in \\mathcal{P}$, we have $\\text{Cal}^D(\\mathbf{x}_{1:T}, y_{1:T}) \\leq \\epsilon \\cdot T$. Then for every set $\\mathcal{P}' \\subset \\mathbb{R}^d$, there is an algorithm which chooses $\\mathbf{x}'_1, \\ldots, \\mathbf{x}'_T \\in \\Delta(\\mathcal{P}')$ and which ensures that for every oblivious adversary choosing $y_1, \\ldots, y_T \\in \\mathcal{P}$, we have",
+      "content_length": 699,
+      "metadata": {
+        "label": "Lemma 4.2",
+        "has_proof": false
+      }
+    },
+    {
+      "snippet_id": "21919::EQUATION::11",
+      "snippet_type": "EQUATION",
+      "location": "4 Lower bound",
+      "content": "$$\\text{FullSwapReg}_T(\\mathbf{x}'_{1:T}, \\ell(\\cdot, y_{1:T})) \\leq \\epsilon \\cdot T \\cdot \\text{diam}_{\\|\\cdot\\|}(\\mathcal{P}').$$",
+      "content_length": 132,
+      "metadata": {
+        "label": null,
+        "display_mode": true
+      }
+    },
+    {
+      "snippet_id": "21919::SECTION::32",
+      "snippet_type": "SECTION",
+      "location": "4 Lower bound",
+      "content": "Combining these two ideas, we demonstrate that an algorithm producing $\\epsilon$-calibrated predictions of outcomes on the simplex in $T \\leq \\exp(\\text{poly}(1/\\epsilon))$ rounds could be used in Lemma 4.2 to achieve a swap regret algorithm contradicting Theorem 4.1. This gives the following (proved in Appendix D).\n\n^9 An observant reader might note that this same argument also lets us provide bounds on the regret of FTL for these losses. One subtlety in the analysis is that we obtain better calibration bounds by bounding the distance between the predictions of FTL and BTL in the $\\|\\cdot\\|$ norm rather than in the losses $D_R(y_t\\mid\\cdot)$, and so it is important that we directly analyze TreeSwap.BTL instead of TreeSwap.FTL (the latter causes us to pick up an extra factor related to the smoothness of $R$).",
+      "content_length": 820,
+      "metadata": {
+        "heading_level": 2
+      }
+    },
+    {
+      "snippet_id": "21919::THEOREM::9",
+      "snippet_type": "THEOREM",
+      "location": "4 Lower bound",
+      "content": "Theorem 4.3. There is a sufficiently small constant c > 0 so that the following holds. Write D(p, p\u2032) = ||p \u2212 p\u2032||1, and fix any \u03b5 > 0, d \u2208 N. Then for any T \u2264 exp(c \u00b7 min{d^{1/7}, \u03b5^{\u22121/6}}), there is an oblivious adversary producing a sequence y1, \u2026, yT \u2208 \u0394^d so that for any learning algorithm producing x1, \u2026, xT \u2208 \u0394(\u0394^d), Cal_T^D(x_{1:T}, y_{1:T}) \u2265 \u03b5 \u00b7 T.",
+      "content_length": 361,
+      "metadata": {
+        "label": "Theorem 4.3",
+        "has_proof": false
+      }
+    },
+    {
+      "snippet_id": "21919::SECTION::33",
+      "snippet_type": "SECTION",
+      "location": "4 Lower bound",
+      "content": "In Theorem D.2 (see Appendix D.2), we show a similar lower bound for \u21132 calibration over the unit \u21132 ball.",
+      "content_length": 106,
+      "metadata": {
+        "heading_level": 2
+      }
+    },
+    {
+      "snippet_id": "21919::SECTION::34",
+      "snippet_type": "SECTION",
+      "location": "References",
+      "content": "References\n\n[ACRS25] Eshwar Ram Arunachaleswaran, Natalie Collina, Aaron Roth, and Mirah Shi. An elementary predictor obtaining distance to calibration. In Proceedings of the 2025 Annual ACM-SIAM Symposium on Discrete Algorithms (SODA), pages 1366\u20131370. SIAM, 2025.\n\n[AM11] Jacob Abernethy and Shie Mannor. Does an efficient calibrated forecasting strategy exist? In Proceedings of the 24th Annual Conference on Learning Theory, pages 809\u2013812. JMLR Workshop and Conference Proceedings, 2011.\n\n[BGHN23] Jaros\u0142aw B\u0142asiok, Parikshit Gopalan, Lunjia Hu, and Preetum Nakkiran. A unifying theory of distance from calibration. In Proceedings of the 55th Annual ACM Symposium on Theory of Computing, pages 1727\u20131740, 2023.\n\n[BM07] Avrim Blum and Yishay Mansour. From external to internal regret. Journal of Machine Learning Research, 8(6), 2007.\n\n[Daw82] A. Philip Dawid. The well-calibrated Bayesian. Journal of the American Statistical Association, 77(379):605\u2013610, 1982.\n\n[DDF+24] Yuval Dagan, Constantinos Daskalakis, Maxwell Fishelson, Noah Golowich, Robert Kleinberg, and Princewill Okoroafor. Breaking the t^{2/3} barrier for sequential calibration. arXiv preprint arXiv:2406.13668, 2024.\n\n[DDFG24] Yuval Dagan, Constantinos Daskalakis, Maxwell Fishelson, and Noah Golowich. From external to swap regret 2.0: An efficient reduction for large action spaces. In Proceedings of the 56th Annual ACM Symposium on Theory of Computing, pages 1216\u20131222, 2024.\n\n[DFG+24] Constantinos Daskalakis, Gabriele Farina, Noah Golowich, Tuomas Sandholm, and Brian Hu Zhang. A lower bound on swap regret in extensive-form games. arXiv preprint arXiv:2406.13116, 2024.\n\n[FH18] Dean P. Foster and Sergiu Hart. Smooth calibration, leaky forecasts, finite recall, and Nash dynamics. Games and Economic Behavior, 109:271\u2013293, 2018.\n\n[FKO+25] Maxwell Fishelson, Robert Kleinberg, Princewill Okoroafor, Renato Paes Leme, Jon Schneider, and Yifeng Teng. Full swap regret and discretized calibration. arXiv preprint arXiv:2502.09332, 2025.\n\n[FL99] Drew Fudenberg and David K. Levine. An easier way to calibrate. Games and Economic Behavior, 29(1\u20132):131\u2013137, 1999.\n\n[Fos99] Dean P. Foster. A proof of calibration via Blackwell\u2019s approachability theorem. Games and Economic Behavior, 29(1\u20132):73\u201378, 1999.\n\n[FV97] Dean P. Foster and Rakesh V. Vohra. Calibrated learning and correlated equilibrium. Games and Economic Behavior, 21(1\u20132):40\u201355, 1997.\n\n[FV98] Dean P. Foster and Rakesh V. Vohra. Asymptotic calibration. Biometrika, 85(2):379\u2013390, 1998.\n\n[GJRR24] Sumegha Garg, Christopher Jung, Omer Reingold, and Aaron Roth. Oracle efficient online multicalibration and omniprediction. In Proceedings of the 2024 Annual ACM-SIAM Symposium on Discrete Algorithms (SODA), pages 2725\u20132792. SIAM, 2024.\n\n[GPSW17] Chuan Guo, Geoff Pleiss, Yu Sun, and Kilian Q. Weinberger. On calibration of modern neural networks. In Doina Precup and Yee Whye Teh, editors, Proceedings of the 34th International Conference on Machine Learning, volume 70 of",
+      "content_length": 7117,
+      "metadata": {
+        "heading_level": 2
+      }
+    },
+    {
+      "snippet_id": "21919::SECTION::35",
+      "snippet_type": "SECTION",
+      "location": "A Additional Related Work",
+      "content": "There is a large range of other existing work on online (sequential) calibration [Daw82, FV97, FV98, QV21, DDF^+24, Har22, Fos99, FL99, KF08, MSA07, MS10, AM11, HK12, FH18, LSS24, NRRX23, KLST23, GJRR24, QZ24, ACRS25]. We briefly survey some of these areas below.\n\nBinary outcomes. For binary outcomes (i.e., one-dimensional calibration), classical results of [FV97, Fos99, BM07, AM11] demonstrate that it is possible to efficiently guarantee $$O(T^{2/3})$$ $$\\ell_1$$-calibration. The optimal possible rates for $$\\ell_1$$-calibration remain a major unsolved problem in online learning. Recently [QV21] improved over the naive lower bound of $$\\Omega(\\sqrt{T})$$ by demonstrating a lower bound of $$\\Omega(T^{0.528})$$; this was further improved to $$\\Omega(T^{0.543})$$ by [DDF^+24], who also improved on the upper bound, demonstrating the existence of an algorithm with $$O(T^{2/3-\\epsilon})$$ calibration for some constant $$\\epsilon > 0$$.\n\nCalibration and swap regret. The connection between calibration and swap regret has been acknowledged since the earliest works on swap regret. For example, the earliest algorithms for minimizing swap regret worked by best responding to online calibrated predictions [FV97] (later algorithms for swap regret minimization, such as [BM07] and [DDF^+24], obtain better swap regret bounds by side-stepping the need to generate calibrated predictions). In the other direction, several works minimize calibration by relating it to a swap regret that can then be minimized [FKO^+25, LSS25, AM11, Fos99].\n\nOther forms of calibration. Due to the difficulty of minimizing (high-dimensional) calibration, there has been a line of work on designing forecasting algorithms that minimize weaker forms of calibration that recover some of the important guarantees of calibration (e.g., trustworthiness by a decision-maker). These include distance from calibration [BGHN23, QZ24, ACRS25], omni-prediction error / U-calibration [KLST23, LSS24, GJRR24], calibration conditioned on downstream outcomes [NRRX23], and prediction for downstream swap regret [RS24, HW24]. Other work focuses on minimizing notions of calibration designed to lead to specific classes of equilibria, e.g., weak calibration [HK12], deterministic calibration [KF08], and smooth calibration [FH18].",
+      "content_length": 2296,
+      "metadata": {
+        "heading_level": 2
+      }
+    },
+    {
+      "snippet_id": "21919::SECTION::36",
+      "snippet_type": "SECTION",
+      "location": "B Proofs of preliminary results",
+      "content": "Figure 2: Geometric depiction of the Bregman divergence from $$p$$ to $$y$$.",
+      "content_length": 76,
+      "metadata": {
+        "heading_level": 2
+      }
+    },
+    {
+      "snippet_id": "21919::PROOF::1",
+      "snippet_type": "PROOF",
+      "location": "B Proofs of preliminary results",
+      "content": "Proof of Lemma 2.1.\n\n$$\\mathbb{E}_{y\\sim\\mathbf{y}}[D_R(y||p)] = \\mathbb{E}_{y\\sim\\mathbf{y}}[R(y) - R(p) - \\langle\\nabla R(p), y - p\\rangle]$$\n$$= \\overline{R}(\\bar{y}) - R(p) - \\langle\\nabla R(p), \\bar{y} - p\\rangle$$\n$$= D_R(\\bar{y}||p) + \\overline{R}(\\bar{y}) - R(\\bar{y})$$\n\nSee Figure 3 for a visual proof. $$\\square$$\n\n\n![Figure 35](image_35.jpg)\n<!-- Caption: Appendix, index 35 -->\n\n\nFigure 3: [Proof of Lemma 2.1] The average Bregman divergence (orange + purple) decomposes into the Jensen error (orange) and the Bregman divergence to the mean (purple). For example, when $$R(p) = \\|p\\|_2^2,$$ $$D_R(y|p) = \\|y - p\\|_2^2,$$ and we recover the bias\u2013variance decomposition.\n\nProof of Lemma 2.2. Fix any $$p \\in \\mathcal{P},$$ and consider the quantity $$\\max_{p^* \\in \\mathcal{P}} \\sum_t x_t(p)\\big(D_R(y_t|p) - D_R(y_t|p^*)\\big).$$ By considering the distribution $$y$$ that has weight $$x_t(p)/\\sum_i x_i(p)$$ on $$y_t,$$ Lemma 2.1 implies that this quantity is maximized when $$p^* = \\nu_p = \\big(\\sum_t x_t(p)y_t\\big)\\big/\\big(\\sum_t x_t(p)\\big).$$ At this optimal value of $$p^*,$$ this quantity can be rewritten as:\n$$\\sum_t x_t(p)\\big(D_R(y_t|p) - D_R(y_t|\\nu_p)\\big)$$\n$$= \\sum_t x_t(p)\\big[(R(y_t) - R(p) - \\langle\\nabla R(p), y_t - p\\rangle) - (R(y_t) - R(\\nu_p) - \\langle\\nabla R(\\nu_p), y_t - \\nu_p\\rangle)\\big]$$\n$$= \\sum_t x_t(p)\\big[(R(\\nu_p) - R(p) - \\langle\\nabla R(p), \\nu_p - p\\rangle) + \\langle\\nabla R(\\nu_p) - \\nabla R(p), y_t - \\nu_p\\rangle\\big]$$\n$$= \\sum_t x_t(p) D_R(\\nu_p|p) + \\left\\langle\\nabla R(\\nu_p) - \\nabla R(p), \\sum_t x_t(p)(y_t - \\nu_p)\\right\\rangle$$\n$$= \\sum_t x_t(p) D_R(\\nu_p|p).$$\n(Here the last term vanishes since $$\\sum_t x_t(p)y_t = \\sum_t x_t(p)\\nu_p$$). We therefore have that:\n\n\n![Figure 38](image_38.jpg)\n<!-- Caption: Appendix, index 38 -->\n\n\nFullSwapReg_T(\\mathbf{x}_{1:T}, \\ell_{1:T}) = \\sup_{\\pi:\\mathcal{P}\\to\\mathcal{P}} \\sum_{t=1}^T \\sum_{p\\in\\mathcal{P}} \\mathbf{x}_t(p)\\,(\\ell_t(p) - \\ell_t(\\pi(p)))\n= \\sum_{p\\in\\mathcal{P}} \\max_{p^*\\in\\mathcal{P}} \\sum_{t=1}^T \\mathbf{x}_t(p)\\,(\\ell_t(p) - \\ell_t(p^*))\n= \\sum_{p\\in\\mathcal{P}} \\max_{p^*\\in\\mathcal{P}} \\sum_{t=1}^T \\mathbf{x}_t(p)\\,(D_R(y_t\\,|\\,p) - D_R(y_t\\,|\\,p^*))\n= \\sum_{p\\in\\mathcal{P}} \\sum_{t=1}^T \\mathbf{x}_t(p)\\, D_R(\\nu_p\\,|\\,p)\n= \\mathrm{Cal}_T^{D_R}(\\mathbf{x}_{1:T}, y_{1:T}).\n\u25a1",
+      "content_length": 2314,
+      "metadata": {
+        "of": "Lemma 2"
+      }
+    },
+    {
+      "snippet_id": "21919::PROOF::2",
+      "snippet_type": "PROOF",
+      "location": "B Proofs of preliminary results",
+      "content": "Proof of Lemma 2.4. Note that if we define \\mathcal{L} = \\{y \\in \\mathbb{R}^d \\mid \\|y\\|_* \\le 1\\} to be the unit dual-norm ball for some norm \\|\\cdot\\|, then by duality the norm \\|\\cdot\\|_{\\mathcal{L}^*} corresponding to \\mathcal{L}^* is simply the original norm \\|\\cdot\\|. It therefore suffices to show that given a 1-strongly convex function R with bounded range \\rho, it is possible to construct a 1-strongly convex function R' with bounded Bregman divergence O(\\rho) (and vice versa).\n\nAssume R is 1-strongly convex and satisfies \\max_{p\\in\\mathcal{P}} R(p) - \\min_{p\\in\\mathcal{P}} R(p) = \\rho. Define R'(p) = 4\\,R\\!\\left(\\frac{p}{2}\\right) (since \\mathcal{P} is centrally symmetric, p/2 \\in \\mathcal{P}). If R is 1-strongly convex, then R(p/2) is 1/4-strongly convex, and so R' is also 1-strongly convex. We claim the maximum Bregman divergence of R' is at most O(\\rho). To show this, first note that for any z_1, z_2 \\in \\mathcal{P}, \\langle \\nabla R(\\tfrac{z_1}{2}), z_2 \\rangle \\le 2\\rho. Indeed, since R is convex and has range bounded by \\rho, we have \\rho \\ge R(x) - R(\\tfrac{z_1}{2}) \\ge \\langle \\nabla R(\\tfrac{z_1}{2}), x - \\tfrac{z_1}{2} \\rangle for all x \\in \\mathcal{P}. Setting x = \\tfrac{z_1 + z_2}{2} then gives \\langle \\nabla R(\\tfrac{z_1}{2}), z_2 \\rangle \\le 2\\rho. Now, note that\n\\max_{y,p\\in\\mathcal{P}} D_{R'}(y\\,|\\,p) = R'(y) - R'(p) - \\langle \\nabla R'(p), y - p \\rangle\n= 4\\,R\\!\\left(\\tfrac{y}{2}\\right) - 4\\,R\\!\\left(\\tfrac{p}{2}\\right) - 2\\left\\langle \\nabla R\\!\\left(\\tfrac{p}{2}\\right), y - p \\right\\rangle\n\\le 4\\left| R\\!\\left(\\tfrac{y}{2}\\right) - R\\!\\left(\\tfrac{p}{2}\\right) \\right| + 2\\left( \\langle \\nabla R\\!\\left(\\tfrac{p}{2}\\right), y \\rangle - \\langle \\nabla R\\!\\left(\\tfrac{p}{2}\\right), p \\rangle \\right)\n\\le 4\\rho + 4\\rho = 8\\rho.\n\nConversely, if R is 1-strongly convex and satisfies \\max_{y,p\\in\\mathcal{P}} D_R(y\\,|\\,p) \\le \\rho, define R'(p) = R(p) - \\langle \\nabla R(0), p \\rangle - R(0) (i.e., subtract a linear function to make 0 a minimizer of R'). Since R and R' differ by a linear function, R' is also 1-strongly convex. Moreover, D_R(y\\,|\\,0) = R(y) - R(0) - \\langle \\nabla R(0), y \\rangle = R'(y); since D_R is bounded in range by \\rho, it follows that so is R'.\n\u25a1",
+      "content_length": 2223,
+      "metadata": {
+        "of": "Lemma 2"
+      }
+    },
+    {
+      "snippet_id": "21919::SECTION::37",
+      "snippet_type": "SECTION",
+      "location": "C Proof of Theorem 3.1",
+      "content": "In this section, we prove Theorem 3.1. First, in Appendix C.1, we introduce a slightly stronger notion of calibration error and swap regret to deal with a technicality in the proof. We then give the proof of Theorem 3.1.",
+      "content_length": 220,
+      "metadata": {
+        "heading_level": 2
+      }
+    },
+    {
+      "snippet_id": "21919::SECTION::38",
+      "snippet_type": "SECTION",
+      "location": "C.1 Labeled calibration and swap regret",
+      "content": "Intuition. Recall that the TreeCal algorithm labels each interval \\Gamma_k^{(l)} of the tree with some action p_k^{(l)} \\in \\mathcal{P}. At each time step t, the algorithm outputs the uniform distribution over all p_k^{(l)}.",
+      "content_length": 224,
+      "metadata": {
+        "heading_level": 2
+      }
+    },
+    {
+      "snippet_id": "21919::ALGORITHM::0",
+      "snippet_type": "ALGORITHM",
+      "location": "C.1 Labeled calibration and swap regret",
+      "content": "Algorithm 1 TreeCal(\ud835\udcab, T, H, L)\nRequire: Action set \ud835\udcab \u2282 \u211d^d, time horizon T, parameters H, L with T \u2264 H^L.\n1: for 1 \u2264 t \u2264 T do\n2:     Write the base-H representation of t \u2212 1 as (h\u2081 \u2026 h_L), for h\u2081, \u2026, h_L \u2208 [0 : H \u2212 1].\n3:     for 1 \u2264 l \u2264 L do\n4:         Write k := (h\u2081 \u2026 h_{l\u22121}) \u2208 [0 : H \u2212 1]^{l\u22121}.\n5:         if h_{l+1} = \u22ef = h_L = 0 or l = L then\n6:             If h_l > 0, define \u03bd_{k,h_l\u22121}^{(l)} := (1/H^{L\u2212l}) \u00b7 \u2211_{s \u2208 \u0393_{k,h_l\u22121}^{(l)}} y_s.\n7:             Define p_{k,h_l}^{(l)} := (1/h_l) \u2211_{i=0}^{h_l\u22121} \u03bd_{k,i}^{(l)} if h_l > 0, otherwise choose arbitrary p_{k,h_l}^{(l)} \u2208 \ud835\udcab.\n8:         end if\n9:     end for\n10:    Output the uniform mixture x_t := Unif({p_{h\u2081}^{(1)}, \u2026, p_{h\u2081\u22efh_L}^{(L)}}), and observe y_t.\n11: end for\n\nwith \u0393_k^{(l)} \u220b t. When evaluating the calibration error, suppose that the actions p_k^{(l)} are all distinct, for l \u2208 [L], k \u2208 [0 : H \u2212 1]^l (as we discuss below, this case is in some sense the \u201cworst case\u201d). In this event, each action p_k^{(l)} is compared to the average outcome over the interval \u0393_k^{(l)}: \u0233_k^{(l)} = (1/|\u0393_k^{(l)}|) \u2211_{t \u2208 \u0393_k^{(l)}} y_t. Formally, this would give",
+      "content_length": 1126,
+      "metadata": {
+        "label": "Algorithm 1"
+      }
+    },
+    {
+      "snippet_id": "21919::SECTION::39",
+      "snippet_type": "SECTION",
+      "location": "C.1 Labeled calibration and swap regret",
+      "content": "Cal_T^D(x_{1:T}, y_{1:T}) = \u2211_{l=1}^L (H^{L\u2212l}/L) \u2211_{k \u2208 [H]^l} D(\u0233_k^{(l)}, p_k^{(l)}). (6)\nas each level l action is selected with 1/L mass for H^{L\u2212l} rounds.\n\nIf it happened that two distinct intervals \u0393_{k\u2081}^{(l\u2081)}, \u0393_{k\u2082}^{(l\u2082)} were assigned the same action p = p_{k\u2081}^{(l\u2081)} = p_{k\u2082}^{(l\u2082)}, then the calibration error would be at most the quantity on the right-hand side of (6) (by Jensen\u2019s inequality). In particular, rather than having to compare p to two potentially distinct quantities D(\u0233_{k\u2081}^{(l\u2081)}, p), D(\u0233_{k\u2082}^{(l\u2082)}, p), the mass placed on p would be categorized under the same forecast and we would only compare p to an appropriately weighted average of \u0233_{k\u2081}^{(l\u2081)} and \u0233_{k\u2082}^{(l\u2082)}.\n\nFor technical reasons, it will turn out to be necessary to upper bound the \u201cworst case quantity\u201d on the right-hand side of (6) (and an analogous version for swap regret), even in the event that the actions p_k^{(l)} are not all distinct. To streamline our notation, we introduce a generalization of these quantities which apply for arbitrary algorithms, which we call labeled calibration error and labeled swap regret.\n\nFormal definitions.\nGiven a convex set \ud835\udcab \u2282 \u211d^d, we define its labeled extension to be \ud835\udcab\u0304 := \ud835\udcab \u00d7 {0,1}^*, i.e., elements of \ud835\udcab\u0304 are tuples (p, \u03c3), where \u03c3 \u2208 {0,1}^* is a string that is said to label p. For a loss function \u2113 : \ud835\udcab \u2192 \u211d, we extend its domain to \ud835\udcab\u0304 in the natural way, i.e., \u2113((p, \u03c3)) := \u2113(p) for (p, \u03c3) \u2208 \ud835\udcab\u0304. Given a sequence of distributions over the labeled extension, x\u2081, \u2026, x_T \u2208 \u0394(\ud835\udcab\u0304), and loss functions \u2113\u2081, \u2026, \u2113_T : \ud835\udcab \u2192 \u211d, we define\nFullSwapReg_T(x_{1:T}, \u2113_{1:T}) := sup_{\u03c0 : \ud835\udcab\u0304 \u2192 \ud835\udcab\u0304} \u2211_{t=1}^T \u2211_{p \u2208 \ud835\udcab\u0304} x_t(p) \u00b7 (\u2113_t(p) \u2212 \u2113_t(\u03c0(p))).\nIn words, the full swap regret of x_{1:T} with respect to \u2113_{1:T} is defined identically as in (2), except that the swap function \u03c0 can now depend on the label \u03c3. In particular, the labeled extension allows us to consider a more refined notion of swap regret where identical actions played in different rounds can be swapped (via \u03c0) to different alternatives as long as they have different labels.\n\nIn a similar manner we define the calibration error for a sequence of labeled distributions: given x\u2081, \u2026, x_T \u2208 \u0394(\ud835\udcab\u0304) and y\u2081, \u2026, y_T \u2208 \ud835\udcab, we define\nCal_T^D := \u2211_{(p,\u03c3) \u2208 \ud835\udcab\u0304} (\u2211_{t=1}^T x_t((p,\u03c3))) \u00b7 D(\u03bd_{(p,\u03c3)}, p), \u03bd_{(p,\u03c3)} := (\u2211_{t=1}^T x_t((p,\u03c3)) \u00b7 y_t)/(\u2211_{t=1}^T x_t((p,\u03c3))).\n\nThe main result of [DDFG24] shows that the swap regret of TreeSwap is bounded, even when one labels the action produced at each node of the tree by the node of the tree. This labeled variant of TreeSwap is given in Algorithm 2. It functions exactly as discussed in Section 3.1, except that the distribution $\\mathbf{x}_t$ output at time step $t$ is in $\\Delta(\\bar{\\mathcal{P}})$ instead of $\\Delta(\\mathcal{P})$. In particular, each $p_k^{(l)} \\in \\mathcal{P}$ in the support of $\\mathbf{x}_t$ is labeled by the tuple $k \\in [0 : H - 1]^l$.^10\n\n^10 Technically, the analysis of [DDFG24] does not analyze the labeled version, but the ",
+      "content_length": 3211,
+      "metadata": {
+        "heading_level": 2
+      }
+    },
+    {
+      "snippet_id": "21919::THEOREM::10",
+      "snippet_type": "THEOREM",
+      "location": "C.1 Labeled calibration and swap regret",
+      "content": "Theorem C.1 (TreeSwap; Theorem 3.1 of [DDFG24]). Suppose that $H, L \\in \\mathbb{N}$ satisfy $H \\geq 2$ and $H^{L-1} \\leq T \\leq H^L$. For bounded convex action set $\\mathcal{P} \\subset \\mathbb{R}^d$ and loss function set $\\mathcal{L} \\subset \\{\\ell : \\mathcal{P} \\to [0, b]\\}$, let $\\text{Alg}_H : \\mathcal{L}^H \\to \\mathcal{P}^H$ be any algorithm. Then, the labeled TreeSwap algorithm (Algorithm 2) parametrized by $T, H, L, \\mathcal{P}, \\mathcal{L}, \\text{Alg}_H$ outputs labeled distributions $\\mathbf{x}_1, \\ldots, \\mathbf{x}_T \\in \\Delta(\\bar{\\mathcal{P}})$ satisfying the following: for any sequence $\\ell_1, \\ldots, \\ell_T \\in \\mathcal{L}$,\n$$\n\\text{FullSwapReg}_T(\\mathbf{x}_{1:T}, \\ell_{1:T}) \\leq T \\cdot \\left(\\frac{\\text{ExtReg}_H(\\text{Alg}_H)}{H} + \\frac{b}{L}\\right).\n$$",
+      "content_length": 785,
+      "metadata": {
+        "label": "Theorem C.1",
+        "has_proof": false
+      }
+    },
+    {
+      "snippet_id": "21919::ALGORITHM::1",
+      "snippet_type": "ALGORITHM",
+      "location": "C.1 Labeled calibration and swap regret",
+      "content": "Algorithm 2 TreeSwap.Alg($\\mathcal{P}, \\mathcal{L}, T, H, L$), labeled variant (see Appendix C.1)\n\nRequire: Action set $\\mathcal{P} \\subset \\mathbb{R}^d$, convex loss class $\\mathcal{L} \\subset (\\mathcal{P} \\to \\mathbb{R})$, no-external regret algorithm Alg, time horizon $T$, parameters $H, L$ with $T \\leq H^L$.\n\n1: For each sequence $h_1 \\cdots h_{l-1} \\in \\bigcup_{l=1}^L [0 : H - 1]^{\\,l-1}$, initialize an instance of Alg with time horizon $H$, denoted $\\text{Alg}_{h_{1:l-1}}$.\n2: for $1 \\leq t \\leq T$ do\n3:     Write the base-$H$ representation of $t-1$ as $t-1 = (h_1 \\cdots h_L)$, for $h_1, \\ldots, h_L \\in [0 : H - 1]$.\n4:     for $1 \\leq l \\leq L$ do\n5:         Write $k := (h_1 \\cdots h_{l-1}) \\in [0 : H - 1]^{\\,l-1}$.\n6:         if $h_{l+1} = \\cdots = h_L = 0$ or $l = L$ then\n7:             If $h_l > 0$, define $\\ell_{k,h_l-1}^{(l)} := \\frac{1}{H^{L-l}} \\cdot \\sum_{s \\in \\Gamma_{k,h_l-1}^{(l)}} \\ell_s \\in \\mathcal{L}$.\n8:             Define $p_{k,h_l}^{(l)} = \\text{Alg}_{k,h_l}\\!\\left(\\ell_{k,1:h_l-1}^{(l)}\\right) \\in \\mathcal{P}$. \u22b3 The $h_l$-th action of $\\text{Alg}_k$ given the loss sequence $\\ell_{k,1:h_l-1}^{(l)}$.\n9:         end if\n10:     end for\n11:     Output the uniform mixture $\\mathbf{x}_t := \\text{Unif}(\\{(p_{h_1}^{(1)}, h_1), \\ldots, (p_{h_{1:L}}^{(L)}, h_{1:L})\\}) \\in \\Delta(\\bar{\\mathcal{P}})$, and observe $\\ell_t$. \u22b3 Each action $p_k^{(l)}$ is labeled by the sequence $k$ (see Appendix C.1).\n12: end for",
+      "content_length": 1448,
+      "metadata": {
+        "label": "Algorithm 2"
+      }
+    },
+    {
+      "snippet_id": "21919::SECTION::40",
+      "snippet_type": "SECTION",
+      "location": "C.2 Proof of the main theorem",
+      "content": "First, we recall some definitions from Section 3. For all $l \\in [0 : L]$, for all $k \\in [H]^l$, let $\\Gamma_k^{(l)}$ represent the interval of times $t$ with prefix $k$. That is, $t \\in \\Gamma_k^{(l)}$ iff $t_i = k_i$ for all $i \\in [1 : l]$. These intervals form an $H$-ary depth-$L$ tree, where the children of $\\Gamma_k^{(l)}$ are $\\Gamma_{k0}^{(l+1)}, \\Gamma_{k1}^{(l+1)}, \\cdots, \\Gamma_{k(H-1)}^{(l+1)}$. In the calibration setting where the learner receives outcomes $y_{1:T}$, let $\\nu_k^{(l)} = \\frac{1}{|\\Gamma_k^{(l)}|} \\sum_{t \\in \\Gamma_k^{(l)}} y_t$ (as defined on Line 6 of Algorithm 1). In the swap regret setting where the learner receives loss functions $\\ell_{1:T}$, let $\\ell_k^{(l)} = \\frac{1}{|\\Gamma_k^{(l)}|} \\sum_{t \\in \\Gamma_k^{(l)}} \\ell_t$ (as defined in Line 7 of Algorithm 2).\n\nFinally, recall that for an online learning algorithm Alg with time horizon $H$, we define its action at time step $h \\in [H]$ given losses $\\ell_1, \\ldots, \\ell_H : \\mathcal{P} \\to \\mathbb{R}$ by $\\text{Alg}_h(\\ell_1, \\ldots, \\ell_H)$. If $\\text{Alg}_h$ only depends on the first $g$ losses, then we will write $\\text{Alg}_h(\\ell_1, \\ldots, \\ell_g)$. In the proof of Theorem 3.1 we will consider two algorithms in particular; the first, Follow-The-Leader (FTL) is defined as follows: for\n\nFor $\\ell_1, \\ldots, \\ell_{h-1} : \\mathcal{P} \\to \\mathbb{R}$, we have",
+      "content_length": 1371,
+      "metadata": {
+        "heading_level": 2
+      }
+    },
+    {
+      "snippet_id": "21919::EQUATION::12",
+      "snippet_type": "EQUATION",
+      "location": "C.2 Proof of the main theorem",
+      "content": "$$\\text{FTL}_h(\\ell_1, \\ldots, \\ell_{h-1}) = \\argmin_{p \\in \\mathcal{P}} \\sum_{i=1}^{h-1} \\ell_i(p).$$",
+      "content_length": 102,
+      "metadata": {
+        "label": null,
+        "display_mode": true
+      }
+    },
+    {
+      "snippet_id": "21919::SECTION::41",
+      "snippet_type": "SECTION",
+      "location": "C.2 Proof of the main theorem",
+      "content": "The second algorithm we consider is the Be-The-Leader algorithm (BTL), which is defined as follows: for $\\ell_1, \\ldots, \\ell_h : \\mathcal{P} \\to \\mathbb{R}$, we have",
+      "content_length": 166,
+      "metadata": {
+        "heading_level": 2
+      }
+    },
+    {
+      "snippet_id": "21919::EQUATION::13",
+      "snippet_type": "EQUATION",
+      "location": "C.2 Proof of the main theorem",
+      "content": "$$\\text{BTL}_h(\\ell_1, \\ldots, \\ell_h) = \\argmin_{p \\in \\mathcal{P}} \\sum_{i=1}^{h} \\ell_i(p).$$",
+      "content_length": 96,
+      "metadata": {
+        "label": null,
+        "display_mode": true
+      }
+    },
+    {
+      "snippet_id": "21919::SECTION::42",
+      "snippet_type": "SECTION",
+      "location": "C.2 Proof of the main theorem",
+      "content": "Note that since $\\text{BTL}_h(\\ell_{1:h})$ depends on the unobserved loss $\\ell_h$ at time step $h$, it is unimplementable. Nevertheless, it will be useful in our analysis.\n\nNext we prove Lemma 3.2, establishing the equivalence of TreeCal and TreeSwap.FTL. In fact, we establish the stronger claim, which immediately implies Lemma 3.2.",
+      "content_length": 335,
+      "metadata": {
+        "heading_level": 2
+      }
+    },
+    {
+      "snippet_id": "21919::LEMMA::6",
+      "snippet_type": "LEMMA",
+      "location": "C.2 Proof of the main theorem",
+      "content": "Lemma C.2. Fix distributions $q_0, \\ldots, q_h \\in \\Delta(\\mathcal{P})$, and define $\\ell_h(p) := \\mathbb{E}_{y \\sim q_h}[D_R(y\\|p)]$. Then for each $h > 0$, $\\text{FTL}_h(\\ell_0, \\ldots, \\ell_{h-1}) = \\frac{1}{h} \\sum_{i=0}^{h-1} \\mathbb{E}_{y \\sim q_i}[y]$.",
+      "content_length": 259,
+      "metadata": {
+        "label": "Lemma C.2",
+        "has_proof": true
+      }
+    },
+    {
+      "snippet_id": "21919::PROOF::3",
+      "snippet_type": "PROOF",
+      "location": "C.2 Proof of the main theorem",
+      "content": "Proof. The lemma is an immediate consequence of Lemma 2.1, noting that\n\n$$\\text{FTL}_h(\\ell_0, \\ldots, \\ell_{h-1}) = \\argmin_{p \\in \\mathcal{P}} \\sum_{i=0}^{h-1} \\ell_i(p) = \\argmin_{p \\in \\mathcal{P}} \\mathbb{E}_{i \\sim [0:h-1],\\, y \\sim q_i}[D_R(y\\|p)] = \\frac{1}{h} \\sum_{i=0}^{h-1} \\mathbb{E}_{y \\sim q_i}[y].$$\n(7)\n\n\u25a1",
+      "content_length": 322,
+      "metadata": {
+        "of": null
+      }
+    },
+    {
+      "snippet_id": "21919::PROOF::4",
+      "snippet_type": "PROOF",
+      "location": "C.2 Proof of the main theorem",
+      "content": "Proof of Lemma 3.2. At time $t$, both TreeCal (Line 10 of Algorithm 1) and TreeSwap.FTL (Line 11 of Algorithm 2) select $\\mathbf{x}_t = \\operatorname{Unif}\\left(\\left\\{p_{t_1}^{(1)}, p_{t_1 t_2}^{(2)}, \\cdots, p_{t_1 t_2 \\cdots t_L}^{(L)}\\right\\}\\right)$. It remains to demonstrate that both algorithms assign actions $p_k^{(l)}$ to intervals $\\Gamma_k^{(l)}$ identically. Fixing a choice of $l \\in [L]$ and $k \\in [0:H-1]^{l-1}$, this is an immediate consequence of Lemma C.2 with $q_h = \\operatorname{Unif}(\\{y_t : t \\in \\Gamma_{k,h}^{(l)}\\})$ and the fact that:\n\n\u2022 In TreeCal, $p_{k,h}^{(l)} = \\frac{1}{h} \\sum_{i=0}^{h-1} \\nu_{k,i}^{(l)}$ with $\\nu_{k,i}^{(l)} = \\mathbb{E}_{t \\sim \\operatorname{Unif}(\\Gamma_{k,i}^{(l)})}[y_t]$;\n\n\u2022 Whereas in TreeSwap.FTL, $p_{k,h}^{(l)} = \\text{FTL}_{h+1}(\\ell_{k,0}^{(l)}, \\ldots, \\ell_{k,h-1}^{(l)})$ with $\\ell_{k,i}^{(l)} = \\mathbb{E}_{t \\sim \\operatorname{Unif}(\\Gamma_{k,i}^{(l)})}[D_R(y_t\\|\\cdot)]$.\n\n\u25a1",
+      "content_length": 949,
+      "metadata": {
+        "of": "Lemma 3"
+      }
+    },
+    {
+      "snippet_id": "21919::SECTION::43",
+      "snippet_type": "SECTION",
+      "location": "C.2 Proof of the main theorem",
+      "content": "We are now ready to prove Theorem 3.1.",
+      "content_length": 38,
+      "metadata": {
+        "heading_level": 2
+      }
+    },
+    {
+      "snippet_id": "21919::PROOF::5",
+      "snippet_type": "PROOF",
+      "location": "C.2 Proof of the main theorem",
+      "content": "Proof of Theorem 3.1. Fix any convex set $\\mathcal{P}$ and a norm $\\|\\cdot\\|$, and let $R : \\mathcal{P} \\to \\mathbb{R}$ be chosen to be 1-strongly convex which has range $\\rho > 0$. Lemma 3.2 gives that the actions $\\mathbf{x}_1, \\ldots, \\mathbf{x}_T \\in \\Delta(\\mathcal{P})$ are identical to the actions played by TreeSwap.FTL with losses $\\ell_t(p) = D_R(y_t\\|p)$ (Algorithm 2; we are ignoring the labels here). Thus, from here on, it suffices to bound the calibration error of the corresponding distributions $\\mathbf{x}_1, \\ldots, \\mathbf{x}_T$ of TreeSwap.FTL. The actions $p_{k,h}^{(l)}$ (for $l \\in [L], k \\in [0:H-1]^{\\,l-1}, h \\in [0:H-1]$) of TreeSwap.FTL satisfy $p_{k,h}^{(l)} = \\text{FTL}_{h+1}(\\ell_{k,0}^{(l)}, \\ldots, \\ell_{k,h-1}^{(l)})$.\n\nNext, let $\\tilde{p}_{k,h}^{(l)}$ denote the corresponding actions played by TreeSwap.BTL, i.e., $\\tilde{p}_{k,h}^{(l)} = \\text{BTL}_{h+1}(\\ell_{k,0}^{(l)}, \\ldots, \\ell_{k,h}^{(l)})$. We let $\\mathbf{x}_t \\in \\Delta(\\bar{\\mathcal{P}})$ denote the (labeled) distribution chosen by TreeSwap.FTL (Line 11 of Algorithm 2), and let $\\tilde{\\mathbf{x}}_t \\in \\Delta(\\bar{\\mathcal{P}})$ denote the corresponding distribution for TreeSwap.BTL. To be concrete, if $t - 1 = (h_1 \\cdots h_L)$, then\n\n$$\\mathbf{x}_t = \\operatorname{Unif}(\\{(p_{h_1}^{(1)}, h_1), \\ldots, (p_{h_1 \\cdots h_L}^{(L)}, h_{1:L})\\}), \\quad \\tilde{\\mathbf{x}}_t = \\operatorname{Unif}(\\{(\\tilde{p}_{h_1}^{(1)}, h_1), \\ldots, (\\tilde{p}_{h_1 \\cdots h_L}^{(L)}, h_{1:L})\\}),$$\n(8)\n\nWe state the below claim, whose proof is deferred to the end of the section. (We remark that the primary purpose of introducing labeling is so that it is possible to establish Claim C.3.)",
+      "content_length": 1687,
+      "metadata": {
+        "of": "Theorem 3"
+      }
+    },
+    {
+      "snippet_id": "21919::CLAIM::0",
+      "snippet_type": "CLAIM",
+      "location": "C.2 Proof of the main theorem",
+      "content": "Claim C.3. It holds that\nCal_T^{||\u00b7||^2}(x_{1:T}, y_{1:T}) \u2212 2 Cal_T^{||\u00b7||^2}(\ud835\udc65\u0303_{1:T}, y_{1:T}) \u2265 (2 \u00b7 diam(\ud835\udcab)^2 / H^2) \u00b7 T. (9)",
+      "content_length": 130,
+      "metadata": {
+        "label": "Claim C.3",
+        "has_proof": false
+      }
+    },
+    {
+      "snippet_id": "21919::SECTION::44",
+      "snippet_type": "SECTION",
+      "location": "C.2 Proof of the main theorem",
+      "content": "The fact that BTL enjoys non-positive external regret (e.g., [SS11, Lemma 2.1]) gives that for an arbitrary sequence of loss functions \u2113_t : \ud835\udcab \u2192 \u211d, the external regret of BTL_H satisfies ExtReg_H(BTL_H) \u2264 0. Thus, by Theorem C.1, the swap regret of (the labeled version of) TreeSwap_T applied with Alg_H = BTL_H may be bounded as follows: for any sequence of losses \u2113_1, \u2026, \u2113_T : \ud835\udcab \u2192 [0, \u03c1],\nFullSwapReg_T(\ud835\udc65\u0303_{1:T}, \u2113_{1:T}) \u2264 T \u00b7 (3\u03c1)/L.\n\nUsing Lemma 2.2^11 and (9), we get that for an arbitrary sequence y_1, \u2026, y_T \u2208 \ud835\udcab,\nCal_T^{||\u00b7||^2}(x_{1:T}, y_{1:T}) \u2264 2 \u00b7 Cal_T^{||\u00b7||^2}(\ud835\udc65\u0303_{1:T}, y_{1:T}) + (2 \u00b7 diam(\ud835\udcab)^2/H^2) \u00b7 T\n\u2264 2 \u00b7 Cal_T^{D_R}(\ud835\udc65\u0303_{1:T}, y_{1:T}) + (2 \u00b7 diam(\ud835\udcab)^2/H^2) \u00b7 T\n= 2 \u00b7 FullSwapReg_T(\ud835\udc65\u0303_{1:T}, D_R(y_{1:T}[\u00b7])) + (2 \u00b7 diam(\ud835\udcab)^2/H^2) \u00b7 T\n\u2264 (6\u03c1 \u00b7 T)/L + (2 \u00b7 diam(\ud835\udcab)^2 \u00b7 T)/H^2.\n\nGiven any desired accuracy \u03b5 > 0, choosing L = 12\u03c1/\u03b5 and H = diam(\ud835\udcab)/\u221a\u03b5 gives that we can guarantee Cal_T^{||\u00b7||^2}(x_{1:T}, y_{1:T}) \u2264 \u03b5 \u00b7 T as long as T \u2265 H^L = (diam(\ud835\udcab)/\u221a\u03b5)^{12\u03c1/\u03b5}. \u25a1",
+      "content_length": 987,
+      "metadata": {
+        "heading_level": 2
+      }
+    },
+    {
+      "snippet_id": "21919::PROOF::6",
+      "snippet_type": "PROOF",
+      "location": "C.2 Proof of the main theorem",
+      "content": "Proof of Claim C.3. For each t \u2208 [T], we can write t \u2212 1 = h_1 h_2 \u00b7\u00b7\u00b7 h_L with h_i \u2208 [0 : H \u2212 1] for all i \u2208 [L], and x_t, \ud835\udc65\u0303_t are as given in (8). Let us write, for (p, \u03c3) \u2208 \ud835\udcab\u0303,\n\u03bd_{(p,\u03c3)} := (\u2211_{t=1}^T x_t((p, \u03c3)) \u00b7 y_t) / (\u2211_{t=1}^T x_t((p, \u03c3))),  \ud835\udc63\u0303_{(p,\u03c3)} := (\u2211_{t=1}^T \ud835\udc65\u0303_t((p, \u03c3)) \u00b7 y_t) / (\u2211_{t=1}^T \ud835\udc65\u0303_t((p, \u03c3))),\n\u03bd_\u03c3 := (\u2211_{p\u2208\ud835\udcab} \u2211_{t=1}^T x_t((p, \u03c3)) \u00b7 y_t) / (\u2211_{p\u2208\ud835\udcab} \u2211_{t=1}^T x_t((p, \u03c3))). (10)\n\nSince each p^{(l)}_{h_1\u00b7\u00b7\u00b7h_l} and each \ud835\udc5d\u0303^{(l)}_{\ud835\udc55\u0303_1\u00b7\u00b7\u00b7\ud835\udc55\u0303_l} is labeled by h_{1:l} in x_t and \ud835\udc65\u0303_t, respectively, it holds that for each \u03c3 of the form \u03c3 = h_1 \u00b7\u00b7\u00b7 h_l (for some l \u2208 [L]), there are unique p, \ud835\udc5d\u0303 \u2208 \ud835\udcab so that \u03bd_\u03c3 = \u03bd_{(p,\u03c3)} = \u03bd_{(\ud835\udc5d\u0303,\u03c3)};\n\n^11 Technically, we need a labeled version of Lemma 2.2, where the distributions x_t are over the labeled set \u0394(\ud835\udcab); it is immediate to see that the proof of Lemma 2.2 extends to the labeled case.\n\nin particular, we have p = p_{h_1 \\cdots h_l}^{(l)}, \\tilde{p} = \\tilde{p}_{h_1 \\cdots h_l}^{(l)}. We can therefore bound\n\nCal_T^{\\|\\cdot\\|^2}(\\mathbf{x}_{1:T}, y_{1:T}) - 2\\,Cal_T^{\\|\\cdot\\|^2}(\\tilde{\\mathbf{x}}_{1:T}, y_{1:T})\n\n= \\sum_{l \\in [L],\\, h_{1:l} \\in [0:H-1]^l} \\left( \\sum_{t=1}^T \\mathbf{x}_t\\big((p_{h_1 \\cdots h_l}^{(l)}, h_1 \\cdots h_l)\\big) \\right) \\cdot \\|\\nu_{h_1 \\cdots h_l} - p_{h_1 \\cdots h_l}^{(l)}\\|^2 \\tag{11}\n\n- 2 \\left( \\sum_{t=1}^T \\tilde{\\mathbf{x}}_t\\big((\\tilde{p}_{h_1 \\cdots h_l}^{(l)}, h_1 \\cdots h_l)\\big) \\right) \\cdot \\|\\nu_{h_1 \\cdots h_l} - \\tilde{p}_{h_1 \\cdots h_l}^{(l)}\\|^2\n\n= \\sum_{l \\in [L],\\, h_{1:l} \\in [0:H-1]^l} \\frac{H^{L-l}}{L} \\left( \\|\\nu_{h_1 \\cdots h_l} - p_{h_1 \\cdots h_l}^{(l)}\\|^2 - 2\\|\\nu_{h_1 \\cdots h_l} - \\tilde{p}_{h_1 \\cdots h_l}^{(l)}\\|^2 \\right)\n\n\\le 2 \\sum_{l \\in [L],\\, h_{1:l} \\in [0:H-1]^l} \\frac{H^{L-l}}{L} \\, \\|p_{h_1 \\cdots h_l}^{(l)} - \\tilde{p}_{h_1 \\cdots h_l}^{(l)}\\|^2\n\n\\le \\frac{2}{L} \\sum_{l=1}^L \\sum_{h_{1:l-1} \\in [0:H-1]^{l-1}} \\operatorname{diam}(\\mathcal{P})^2 \\cdot H^{L-l}\n\n\\le \\frac{2}{L} \\sum_{l=1}^L \\operatorname{diam}(\\mathcal{P})^2 \\cdot H^{L-1}\n\n= \\frac{2T\\,\\operatorname{diam}(\\mathcal{P})^2}{H},\n\nwhere the second-to-last inequality uses that \\sum_{h_l=0}^{H-1} \\|p_{h_1 \\cdots h_l}^{(l)} - \\tilde{p}_{h_1 \\cdots h_l}^{(l)}\\|^2 \\le \\operatorname{diam}(\\mathcal{P})^2 for all choices of h_1 \\cdots h_{l-1} (a consequence of Lemma C.4 and Lemma C.2).\n\n\u25a1",
+      "content_length": 2316,
+      "metadata": {
+        "of": "Claim C"
+      }
+    },
+    {
+      "snippet_id": "21919::LEMMA::7",
+      "snippet_type": "LEMMA",
+      "location": "C.2 Proof of the main theorem",
+      "content": "Lemma C.4. Fix any convex set \\mathcal{P} \\subset \\mathbb{R}^d and a convex function R : \\mathcal{P} \\to \\mathbb{R}. Fix a sequence y_1,\\ldots,y_H \\in \\mathcal{P}, and set",
+      "content_length": 171,
+      "metadata": {
+        "label": "Lemma C.4",
+        "has_proof": false
+      }
+    },
+    {
+      "snippet_id": "21919::SECTION::45",
+      "snippet_type": "SECTION",
+      "location": "C.2 Proof of the main theorem",
+      "content": "p_h = \\frac{1}{h-1} \\sum_{i=1}^{h-1} y_i \\ \\forall h \\in [H],\\, h>1, \\qquad \\tilde{p}_h = \\frac{1}{h} \\sum_{i=1}^h y_i \\ \\forall h \\in [H],\n\nas well as p_1 \\in \\mathcal{P} arbitrarily. Then",
+      "content_length": 189,
+      "metadata": {
+        "heading_level": 2
+      }
+    },
+    {
+      "snippet_id": "21919::EQUATION::14",
+      "snippet_type": "EQUATION",
+      "location": "C.2 Proof of the main theorem",
+      "content": "\\sum_{h=1}^H \\|p_h - \\tilde{p}_h\\|^2 \\le 2 \\cdot \\operatorname{diam}(\\mathcal{P})^2.",
+      "content_length": 84,
+      "metadata": {
+        "label": null,
+        "display_mode": true
+      }
+    },
+    {
+      "snippet_id": "21919::PROOF::7",
+      "snippet_type": "PROOF",
+      "location": "C.2 Proof of the main theorem",
+      "content": "Proof. Note that\n\n\\tilde{p}_h - p_h = \\frac{y_h}{h} - \\frac{1}{h(h-1)} \\sum_{i=1}^{h-1} y_i,\n\nwhich implies that \\|\\tilde{p}_h - p_h\\|^2 \\le \\frac{\\pi^2}{6} \\cdot \\operatorname{diam}(\\mathcal{P})^2 < 2\\,\\operatorname{diam}(\\mathcal{P})^2.\n\n\u25a1",
+      "content_length": 241,
+      "metadata": {
+        "of": null
+      }
+    },
+    {
+      "snippet_id": "21919::SECTION::46",
+      "snippet_type": "SECTION",
+      "location": "C.2 Proof of the main theorem",
+      "content": "Applying Cauchy\u2013Schwarz, we get the following corollary.",
+      "content_length": 56,
+      "metadata": {
+        "heading_level": 2
+      }
+    },
+    {
+      "snippet_id": "21919::COROLLARY::1",
+      "snippet_type": "COROLLARY",
+      "location": "C.2 Proof of the main theorem",
+      "content": "Corollary C.5. Let \\mathcal{P} \\subset \\mathbb{R}^d be a bounded convex set and \\|\\cdot\\| be an arbitrary norm. Then, TreeCal (Algorithm 1) guarantees that for an arbitrary sequence of outcomes y_1,\\ldots,y_T \\in \\mathcal{P}, the \\|\\cdot\\| calibration error of its predictions \\mathbf{x}_1,\\ldots,\\mathbf{x}_T \\in \\Delta(\\mathcal{P}) is bounded Cal_T^{\\|\\cdot\\|}(\\mathbf{x}_{1:T}, y_{1:T}) \\le \\epsilon T for T \\ge (\\operatorname{diam}_{\\|\\cdot\\|}(\\mathcal{P})/\\epsilon)^{O(\\operatorname{Rate}(\\mathcal{P}, \\|\\cdot\\|)/\\epsilon^2)}.",
+      "content_length": 531,
+      "metadata": {
+        "label": "Corollary C.5",
+        "has_proof": true
+      }
+    },
+    {
+      "snippet_id": "21919::PROOF::8",
+      "snippet_type": "PROOF",
+      "location": "C.2 Proof of the main theorem",
+      "content": "Proof. Using the fact that $\\sum_{p \\in \\mathcal{P}} \\sum_{t=1}^T \\mathbf{x}_t(p) = T$ together with Jensen's inequality, we have\n\n$\\displaystyle \\frac{1}{T}\\, \\mathrm{Cal}_T^{\\|\\cdot\\|}(\\mathbf{x}_{1:T}, y_{1:T}) = \\frac{1}{T} \\sum_{p \\in \\mathcal{P}} \\left( \\sum_{t=1}^T \\mathbf{x}_t(p) \\right) \\cdot \\|\\nu_p - p\\|$\n\n$\\displaystyle \\leq \\sqrt{\\frac{1}{T} \\sum_{p \\in \\mathcal{P}} \\left( \\sum_{t=1}^T \\mathbf{x}_t(p) \\right) \\cdot \\|\\nu_p - p\\|^2}$\n\n$\\displaystyle = \\sqrt{\\frac{1}{T} \\mathrm{Cal}_T^{\\|\\cdot\\|^2}(\\mathbf{x}_{1:T}, y_{1:T})} \\leq \\epsilon$\n\nfor $T \\geq (\\mathrm{diam}(\\mathcal{P})/\\epsilon)^{O(\\mathrm{Rate}(\\mathcal{P}, \\|\\cdot\\|)/\\epsilon^2)}$ by Theorem 3.1. Thus, $\\mathrm{Cal}_T^{\\|\\cdot\\|}(\\mathbf{x}_{1:T}, y_{1:T}) \\leq \\epsilon T$ for $T \\geq (\\mathrm{diam}(\\mathcal{P})/\\epsilon)^{O(\\mathrm{Rate}(\\mathcal{P}, \\|\\cdot\\|)/\\epsilon^2)}$, incurring an additional factor of 2 in the exponent constant, as desired. \u25a1",
+      "content_length": 939,
+      "metadata": {
+        "of": null
+      }
+    },
+    {
+      "snippet_id": "21919::SECTION::47",
+      "snippet_type": "SECTION",
+      "location": "C.2 Proof of the main theorem",
+      "content": "Finally, for the setting of centrally symmetric $\\mathcal{P}$, we can apply Lemma 2.4 to directly relate this regret bound to the optimal possible rate of an online linear optimization problem.",
+      "content_length": 193,
+      "metadata": {
+        "heading_level": 2
+      }
+    },
+    {
+      "snippet_id": "21919::COROLLARY::2",
+      "snippet_type": "COROLLARY",
+      "location": "C.2 Proof of the main theorem",
+      "content": "Corollary C.6. Let $\\mathcal{P} \\subset \\mathbb{R}^d$ be a bounded centrally symmetric convex set and $\\|\\cdot\\|$ be an arbitrary norm. Then, TreeCal (Algorithm 1) guarantees that for an arbitrary sequence of outcomes $y_1, \\ldots, y_T \\in \\mathcal{P}$, the $\\|\\cdot\\|$ calibration error of its predictions $\\mathbf{x}_1, \\ldots, \\mathbf{x}_T \\in \\Delta(\\mathcal{P})$ is bounded $\\mathrm{Cal}_T^{\\|\\cdot\\|}(\\mathbf{x}_{1:T}, y_{1:T}) \\leq \\epsilon T$ for $T \\geq (\\mathrm{diam}_{\\|\\cdot\\|}(\\mathcal{P})/\\epsilon)^{O(\\mathrm{Rate}_{\\mathrm{OLO}}(\\mathcal{P}, \\|\\cdot\\|)/\\epsilon^2)}$.",
+      "content_length": 583,
+      "metadata": {
+        "label": "Corollary C.6",
+        "has_proof": true
+      }
+    },
+    {
+      "snippet_id": "21919::PROOF::9",
+      "snippet_type": "PROOF",
+      "location": "C.2 Proof of the main theorem",
+      "content": "Proof. Follows immediately by applying Lemma 2.4 to Corollary C.5. \u25a1",
+      "content_length": 68,
+      "metadata": {
+        "of": null
+      }
+    },
+    {
+      "snippet_id": "21919::SECTION::48",
+      "snippet_type": "SECTION",
+      "location": "D Proofs for Section 4",
+      "content": "In this section, we prove lower bounds on high-dimensional calibration that tell us that in order to achieve calibration error at most $\\epsilon \\cdot T$, we need to take $T \\gtrsim \\exp(\\mathrm{poly}(1/\\epsilon))$. First, in Appendix D.1, we prove a lower bound for $\\ell_1$ calibration over the $d$-dimensional simplex, and then, in Appendix D.2, we prove a lower bound for $\\ell_2$ calibration over the unit $d$-dimensional Euclidean ball.",
+      "content_length": 442,
+      "metadata": {
+        "heading_level": 2
+      }
+    },
+    {
+      "snippet_id": "21919::SECTION::49",
+      "snippet_type": "SECTION",
+      "location": "D.1 Lower bound on $\\ell_1$ calibration",
+      "content": "First, we prove Theorem 4.3 which gives a lower bound on $\\ell_1$ calibration over the simplex $\\mathcal{P} = \\Delta^d$.",
+      "content_length": 120,
+      "metadata": {
+        "heading_level": 2
+      }
+    },
+    {
+      "snippet_id": "21919::PROOF::10",
+      "snippet_type": "PROOF",
+      "location": "D.1 Lower bound on $\\ell_1$ calibration",
+      "content": "Proof of Lemma 4.2. Fix an algorithm Alg which ensures that $\\mathrm{Cal}_T^D(\\mathbf{x}_{1:T}, y_{1:T}) \\leq \\epsilon \\cdot T$ as in the statement of the lemma. We construct the following algorithm Alg': it simulates Alg, but whenever Alg outputs the distribution $\\mathbf{x}_t \\in \\Delta(\\mathcal{P})$, Alg' chooses instead $\\mathbf{x}_t' \\in \\Delta(\\mathcal{P}')$, defined by\n\n$\\displaystyle \\mathbf{x}_t'(p') := \\sum_{\\substack{p \\in \\mathcal{P}: \\\\ p' = \\arg\\min_{q \\in \\mathcal{P}'} \\langle q, p \\rangle}} \\mathbf{x}_t(p).$\n\nTo simplify notation, we define BR(p) := argmin_{q\u2208P'} \u27e8q, p\u27e9. It follows that, for any oblivious adversary choosing a (random) sequence y\u2081, \u2026, y_T \u2208 P,\n\nFullSwapReg_T(x'_{1:T}, \u2113(\u00b7, y_{1:T}))\n= sup_{\u03c0: P' \u2192 P'} \u2211_{p'\u2208P'} \u2211_{t\u2208[T]} x'_t(p') \u00b7 \u27e8y_t, p' \u2212 \u03c0(p')\u27e9\n= sup_{\u03c0: P' \u2192 P'} \u2211_{p\u2208P} \u2211_{t\u2208[T]} x_t(p) \u00b7 \u27e8y_t, BR(p) \u2212 \u03c0(BR(p))\u27e9\n= sup_{\u03c0: P' \u2192 P'} \u2211_{p\u2208P} (\u2211_{t\u2208[T]} x_t(p)) \u00b7 \u27e8\u03bd_p, BR(p) \u2212 \u03c0(BR(p))\u27e9\n= sup_{\u03c0: P' \u2192 P'} \u2211_{p\u2208P} (\u2211_{t\u2208[T]} x_t(p)) \u00b7 (\u27e8\u03bd_p \u2212 p, BR(p) \u2212 \u03c0(BR(p))\u27e9 + \u27e8p, BR(p) \u2212 \u03c0(BR(p))\u27e9)\n\u2264 sup_{\u03c0: P' \u2192 P'} \u2211_{p\u2208P} (\u2211_{t\u2208[T]} x_t(p)) \u00b7 (\u2016\u03bd_p \u2212 p\u2016 \u00b7 \u2016BR(p) \u2212 \u03c0(BR(p))\u2016_*)\n\u2264 diam_{\u2016\u00b7\u2016_*}(P') \u00b7 Cal^D_T(x_{1:T}, y_{1:T}),\n\nwhere in the final inequality we have used the fact that \u2016BR(p) \u2212 \u03c0(BR(p))\u2016_* \u2264 diam_{\u2016\u00b7\u2016_*}(P'). \u25a1",
+      "content_length": 1267,
+      "metadata": {
+        "of": "Lemma 4"
+      }
+    },
+    {
+      "snippet_id": "21919::SECTION::50",
+      "snippet_type": "SECTION",
+      "location": "D.1 Lower bound on $\\ell_1$ calibration",
+      "content": "For p > 0, d \u2208 \u2115, write B^d_p := {x \u2208 \u211d^d | \u2016x\u2016_p \u2264 1} to denote the unit \u2113_p norm ball.\n\nTo map the lower bound Theorem 4.1 from the \u2016\u00b7\u2016\u2081-norm unit ball B^d_1 to the simplex and arrive at the desired contradiction using the above lemma, we use the following.",
+      "content_length": 259,
+      "metadata": {
+        "heading_level": 2
+      }
+    },
+    {
+      "snippet_id": "21919::LEMMA::8",
+      "snippet_type": "LEMMA",
+      "location": "D.1 Lower bound on $\\ell_1$ calibration",
+      "content": "Lemma D.1. Fix d \u2208 \u2115, and write D(x, y) := \u2016x \u2212 y\u2016\u2081 for x, y \u2208 \u211d^d. Suppose that there is an algorithm Alg for calibration over the domain P = \u0394^{2d+1} which produces x_{1:T} given the choices of an adversary y_{1:T} achieving calibration error Cal^D_T(x_{1:T}, y_{1:T}) \u2264 R(T), for T \u2208 \u2115. Then there is an algorithm Alg' for calibration over the domain B^d_1 which produces x'_{1:T} given y'_{1:T} achieving calibration error Cal^D_T(x'_{1:T}, y'_{1:T}) \u2264 R(T).",
+      "content_length": 462,
+      "metadata": {
+        "label": "Lemma D.1",
+        "has_proof": true
+      }
+    },
+    {
+      "snippet_id": "21919::PROOF::11",
+      "snippet_type": "PROOF",
+      "location": "D.1 Lower bound on $\\ell_1$ calibration",
+      "content": "Proof of Lemma D.1. We define a mapping \u03c6 : B^d_1 \u2192 \u0394^{2d+1} as follows: for y \u2208 B^d_1 \u2282 \u211d^d, we define\n\u03c6(y)_i =\n{ [y_j]_+ : i = 2j \u2212 1, j \u2208 [d]\n  [y_j]_- : i = 2j,     j \u2208 [d]\n  1 \u2212 \u2016y\u2016_1 : i = 2d + 1. }\n\nIt is straightforward to see that \u03c6 has a left inverse \u03c8, defined as follows: for z \u2208 \u0394^{2d+1},\n\u03c8(z)_i = z_{2i\u22121} \u2212 z_{2i}, i \u2208 [d],\nso that \u03c8 \u2218 \u03c6(y) = y for all y \u2208 B^d_1.\n\nWe define the algorithm Alg' as follows: given y'_t \u2208 B^d_1 \u2282 \u211d^d, it defines y_t \u2208 \u0394^{2d+1} by y_t = \u03c6(y'_t). Alg' then feeds y_t into Alg, and if we denote the distribution output by Alg at time step t by x_t, Alg' then plays the push-forward measure x'_t := \u03c8 \u2218 x_t \u2208 \u0394(B^d_1).\n\nOur bound on the calibration error of Alg gives\nCal^D_T(x_{1:T}, y_{1:T}) = \u2211_{p\u2208\u0394^{2d+1}} (\u2211_{t=1}^T x_t(p)) \u00b7 \u2016\u03bd_p \u2212 p\u2016_1 \u2264 R(T),\nwhere \u03bd_p = (\u2211_{t=1}^T x_t(p) \u00b7 y_t)/(\u2211_{t=1}^T x_t(p)) \u2208 \u0394^{2d+1}. For p' \u2208 B^d_1, let us denote\n\u03bd'_{p'} := (\u2211_{t=1}^T x'_t(p') \u00b7 y'_t)/(\u2211_{t=1}^T x'_t(p')) = \u03c8((\u2211_{t=1}^T x'_t(p') \u00b7 y_t)/(\u2211_{t=1}^T x'_t(p')); by linearity of \u03c8.\n\nWe may now bound the calibration error of Alg' by\n$$\\text{Cal}^D_T(\\mathbf{x}'_{1:T}, y'_{1:T}) = \\sum_{p' \\in \\mathcal{B}^{d'}_1} \\left( \\sum_{t=1}^T \\mathbf{x}'_t(p') \\right) \\cdot \\|\\nu'_{p'} - p'\\|_1$$\n$$\\leq \\sum_{p \\in \\Delta^{2d+1}} \\left( \\sum_{t=1}^T \\mathbf{x}_t(p) \\right) \\cdot \\|\\psi(\\nu_p) - \\psi(p)\\|_1$$\n$$\\leq \\text{Cal}^D_T(\\mathbf{x}_{1:T}, y_{1:T}).$$\n\u25a1",
+      "content_length": 1398,
+      "metadata": {
+        "of": "Lemma D"
+      }
+    },
+    {
+      "snippet_id": "21919::PROOF::12",
+      "snippet_type": "PROOF",
+      "location": "D.1 Lower bound on $\\ell_1$ calibration",
+      "content": "Proof of Theorem 4.3. Suppose to the contrary that there was an algorithm Alg which bounded calibration error by $\\epsilon T$ for $T \\leq \\exp(c \\cdot \\min\\{d^{1/14}, \\epsilon^{-1/6}\\})$. Then by Lemma D.1, for $d' = \\lfloor(d-1)/2\\rfloor$ there is an algorithm Alg' for calibration on the domain $\\mathcal{B}^{d'}_1 \\subset \\mathbb{R}^{d'}$ which, given $y'_{1:T}$, produces $\\mathbf{x}'_{1:T}$ satisfying $\\text{Cal}^D_T(\\mathbf{x}'_{1:T}, y'_{1:T}) \\leq \\epsilon \\cdot T$ for any $T \\leq \\exp(c \\cdot \\min\\{d^{1/14}, \\epsilon^{-1/6}\\})$.\n\nWe now apply Lemma 4.2 for $\\mathcal{P} = \\mathcal{B}^{d'}_1 \\subset \\mathbb{R}^{d'}$, the norm given by the $\\ell_1$ norm $\\|\\cdot\\|_1$, and $\\mathcal{P}' := [-1,1]^{d'}$. Note that $\\text{diam}_{\\|\\cdot\\|_\\infty}(\\mathcal{P}') = 1$. Then Lemma 4.2 ensures that there is an algorithm Alg'' which chooses $\\mathbf{x}''_1, \\ldots, \\mathbf{x}''_T \\in \\Delta(\\mathcal{P}')$ which ensures that for every oblivious adversary choosing $y''_1, \\ldots, y''_T \\in \\mathcal{B}^{d'}_1$, we have $\\text{FullSwapReg}_T(\\mathbf{x}''_{1:T}, \\ell(\\cdot, y''_{1:T})) \\leq \\epsilon \\cdot T$.\n\nBut if $T \\leq \\exp(c_{4.1} \\cdot \\min\\{(d')^{1/14}, \\epsilon^{-1/6}\\})$, we have a contradiction to Theorem 4.1, thus completing the proof of the theorem. \u25a1",
+      "content_length": 1274,
+      "metadata": {
+        "of": "Theorem 4"
+      }
+    },
+    {
+      "snippet_id": "21919::SECTION::51",
+      "snippet_type": "SECTION",
+      "location": "D.2 Lower bound for $\\ell_2$ calibration",
+      "content": "Next, we prove a lower bound for $\\ell_2$ calibration.",
+      "content_length": 54,
+      "metadata": {
+        "heading_level": 2
+      }
+    },
+    {
+      "snippet_id": "21919::THEOREM::11",
+      "snippet_type": "THEOREM",
+      "location": "D.2 Lower bound for $\\ell_2$ calibration",
+      "content": "Theorem D.2. There is a sufficiently small constant $c > 0$ so that the following holds. Write $D(p, p') = \\|p - p'\\|_2$ and fix any $\\epsilon > 0, d \\in \\mathbb{N}$. Then for any $T \\leq \\exp(c \\cdot \\min\\{d^{1/14}, \\epsilon^{-1/7}\\})$, there is an oblivious adversary producing a sequence $y_1, \\ldots, y_T \\in \\mathcal{B}^d_2$ so that for any learning algorithm producing $\\mathbf{x}_1, \\ldots, \\mathbf{x}_T \\in \\Delta(\\mathcal{B}^d_2)$, $\\text{Cal}^D_T(\\mathbf{x}_{1:T}, y_{1:T}) \\geq \\epsilon \\cdot T$.",
+      "content_length": 507,
+      "metadata": {
+        "label": "Theorem D.2",
+        "has_proof": true
+      }
+    },
+    {
+      "snippet_id": "21919::PROOF::13",
+      "snippet_type": "PROOF",
+      "location": "D.2 Lower bound for $\\ell_2$ calibration",
+      "content": "Proof. Fix $\\epsilon > 0, d \\in \\mathbb{N}$, and write $\\tilde{\\epsilon} = \\epsilon^{6/7}$. We may assume without loss of generality that $d \\leq \\tilde{\\epsilon}^{-14/6}$, so that $\\min\\{d^{1/14}, \\tilde{\\epsilon}^{-1/6}\\} = \\min\\{d^{1/14}, \\epsilon^{-1/7}\\} = d^{1/14}$: if this were not the case, we simply use the adversary resulting from $\\tilde{\\epsilon}^{-14/6}$ dimensions and project the forecaster's predictions down into this lower-dimensional subspace, which can only decrease calibration error. Now suppose to the contrary that there was an algorithm Alg which bounded calibration error by $\\epsilon T$ for $T \\leq \\exp(c \\cdot \\min\\{d^{1/14}, \\epsilon^{-1/7}\\}) = \\exp(c \\cdot d^{1/14})$. Then by Lemma 4.2 with $\\mathcal{P} = \\mathcal{B}^d_2$ and norm $\\|\\cdot\\| = \\|\\cdot\\|_2$, for any subset $\\mathcal{P}' \\subset \\mathcal{B}^d_2$ we get that there is an algorithm which chooses $\\mathbf{x}'_1, \\ldots, \\mathbf{x}'_T \\in \\Delta(\\mathcal{P}')$ and which ensures that for every oblivious adversary choosing $y_1, \\ldots, y_T \\in \\mathcal{B}^d_2$, we have\n$$\\text{FullSwapReg}_T(\\mathbf{x}'_{1:T}, (\\langle \\cdot, y_1 \\rangle, \\ldots, \\langle \\cdot, y_T \\rangle)) \\leq \\epsilon \\cdot T. \\tag{12}$$\n\nOn the other hand, the oblivious adversary of Theorem 4.1 guarantees a subset $\\mathcal{X} \\subset [-1,1]^d \\subset \\mathbb{R}^d$ and an oblivious adversary producing a sequence $v_1, \\ldots, v_T \\in \\mathbb{R}^d$ with $\\|v_t\\|_\\infty \\leq d^{-13/14}$ for all $t \\in [T]$, so that\n$$\\text{FullSwapReg}_T(\\mathbf{x}_{1:T}, (\\langle \\cdot, v_1 \\rangle, \\ldots, \\langle \\cdot, v_T \\rangle)) \\geq \\tilde{\\epsilon} \\cdot T \\tag{13}$$\nas long as $T \\leq \\exp(c_{4.1} \\cdot d^{1/14})$. We have $\\|v_t\\|_2 \\leq d^{1/2-13/14} = d^{-3/7}$ for all $t$, and scaling $\\mathcal{X}$ down by a factor of $1/\\sqrt{d}$ (i.e., letting $\\mathcal{P}' = \\mathcal{X}/\\sqrt{d}$) and all vectors $v_t$ up by a factor of $d^{3/7}$ (i.e., letting $v'_t = d^{3/7} \\cdot v_t$) ensures that any algorithm producing $\\mathbf{x}'_1, \\ldots, \\mathbf{x}'_T \\in \\mathcal{P}'$ must still have full swap regret\n$$\\text{FullSwapReg}_T(\\mathbf{x}'_{1:T}, (\\langle \\cdot, v'_1 \\rangle, \\ldots, \\langle \\cdot, v'_T \\rangle)) > \\tilde{\\epsilon} \\cdot T \\cdot d^{-1/14} \\geq \\tilde{\\epsilon}^{7/6} \\cdot T = \\epsilon \\cdot T,$$\nbut now ensures that $\\mathcal{P}' \\subset \\mathcal{B}^d_2$ and that $v'_t \\in \\mathcal{B}^d_2$ for all $t$. By taking $c = c_{4.1}$, this contradicts (12). \u25a1",
+      "content_length": 2456,
+      "metadata": {
+        "of": null
+      }
+    },
+    {
+      "snippet_id": "21919::SECTION::52",
+      "snippet_type": "SECTION",
+      "location": "E.1 Pure calibration",
+      "content": "In certain settings of calibration, the learner is required to randomly select a pure forecast p_t \u2208 P rather than a distribution x_t \u2208 \u0394(P). In these settings, the above definition of calibration is instead referred to as \u201cpseudo-calibration\u201d. Here, we stick to calling the above calibration, as we believe it to be the more natural definition, and instead refer to this alternative setting as \u201cpure-calibration\u201d. The learning task changes as follows.\n\nAt each time step t \u2208 [T]:\n\u2022 The learning algorithm chooses a distribution x_t \u2208 \u0394(P).\n\u2022 The adversary observes x_t and chooses an outcome y_t \u2208 P.\n\u2022 The learner samples p_t \u223c x_t.\n\nWe adjust the definitions of the \u201cpure average outcome\u201d and \u201cpure-calibration\u201d accordingly:\n\u03bd\u0307_p := (\u2211_{t=1}^T 1[p_t = p] \u00b7 y_t) / (\u2211_{t=1}^T 1[p_t = p]),\nPureCal_T^D(p_{1:T}, y_{1:T}) := \u2211_{p\u2208P} (\u2211_{t=1}^T 1[p_t = p]) \u00b7 D(\u03bd\u0307_p, p).",
+      "content_length": 868,
+      "metadata": {
+        "heading_level": 2
+      }
+    },
+    {
+      "snippet_id": "21919::ALGORITHM::2",
+      "snippet_type": "ALGORITHM",
+      "location": "E.1 Pure calibration",
+      "content": "Algorithm 3 SampleTreeCal(P, T, H, L, S)\n\nRequire: Action set P \u2282 \u211d^d, time horizon T, repetition parameter S; parameters H, L with T/S \u2264 H^L.\n1: Instantiate an instance TreeCal(P, T/S, H, L).\n2: for 1 \u2264 i \u2264 T/S do\n3: Let x_i \u2208 \u0394(P) denote the prediction of TreeCal at step i.\n4: for 1 \u2264 j \u2264 S do\n5: Sample p_{S(i\u22121)+j} \u223c x_i, and observe outcome y_{S(i\u22121)+j}.\n6: end for\n7: Feed the outcome \u0233_i := (1/S) \u2211_{j=1}^S y_{S(i\u22121)+j} to TreeCal.\n8: end for\n",
+      "content_length": 451,
+      "metadata": {
+        "label": "Algorithm 3"
+      }
+    },
+    {
+      "snippet_id": "21919::SECTION::53",
+      "snippet_type": "SECTION",
+      "location": "E.1 Pure calibration",
+      "content": "To obtain a bound on the (expected) pure calibration error, we use a slight modification of TreeCal, namely SampleTreeCal (Algorithm 3). It functions identically to TreeCal except that for each time step t of TreeCal, it samples S actions from x_t on each of S contiguous time steps. (Hence, TreeCal is used with time horizon T/S.) At a high level, we will use an appropriate concentration inequality to show that the calibration upper bound of Theorem 3.1 implies a pure calibration upper bound for SampleTreeCal.",
+      "content_length": 514,
+      "metadata": {
+        "heading_level": 2
+      }
+    },
+    {
+      "snippet_id": "21919::THEOREM::12",
+      "snippet_type": "THEOREM",
+      "location": "E.1 Pure calibration",
+      "content": "Theorem E.1 (Pure calibration error). Let P \u2282 \u211d^d be a bounded convex set and \u2016\u00b7\u2016 be an arbitrary norm with unit dual ball L := { f \u2208 \u211d^d | \u2016f\u2016_* \u2264 1 }. Then, SampleTreeCal (Algorithm 3, with an appropriate choice of parameters H, L, S) guarantees that for an arbitrary sequence of outcomes y_1, \u2026, y_T \u2208 P, the \u2016\u00b7\u2016^2 calibration error of its predictions x_1, \u2026, x_T \u2208 \u0394(P) is bounded as follows:\nE[PureCal_T^{\u2016\u00b7\u2016}(p_{1:T}, y_{1:T})] \u2264 \u03b5 T, for T \u2265 Rate(L, \u2016\u00b7\u2016_*) \u00b7 (diam_{\u2016\u00b7\u2016}(P)/\u03b5)^{O(Rate(P, \u2016\u00b7\u2016)/\u03b5^2)}.",
+      "content_length": 506,
+      "metadata": {
+        "label": "Theorem E.1",
+        "has_proof": true
+      }
+    },
+    {
+      "snippet_id": "21919::PROOF::14",
+      "snippet_type": "PROOF",
+      "location": "E.1 Pure calibration",
+      "content": "Proof. The proof uses Theorem 3.1 together with an appropriate concentration inequality, and closely follows that of [Pen25, Lemma 3.4].\n\nFix any 1 \u2264 i \u2264 T/S and 1 \u2264 j \u2264 S, and let \ud835\udd3d_{S(i\u22121)+j\u22121} denote the \u03c3-algebra generated by y_1, \u2026, y_{S(i\u22121)+j\u22121} and p_1, \u2026, p_{S(i\u22121)+j\u22121}; since TreeCal is deterministic, it follows that x_1, \u2026, x_i \u2208 \u0394(P) are \ud835\udd3d_{S(i\u22121)}-measurable. For any 1 \u2264 j \u2264 S, we have that, for any p \u2208 supp(x_i),\nE[(p \u2212 y_{S(i\u22121)+j}) \u00b7 1[p_{S(i\u22121)+j} = p] | \ud835\udd3d_{S(i\u22121)+j\u22121}] = (p \u2212 y_{S(i\u22121)+j}) \u00b7 x_i(p).\n\nFixing any i \u2208 [T/S], by Lemma E.2 applied to the sequence M_{S(i-1)+j} = (p - y_{S(i-1)+j}) \\cdot \\mathbb{1}[p_{S(i-1)+j} = p], for 1 \u2264 j \u2264 S (and the filtration \\mathcal{F}_{S(i-1)+j}), we see that\n$$\\mathbb{E}\\left[\\left\\|\\sum_{j=1}^{S}(p - y_{S(i-1)+j}) \\cdot \\mathbb{1}[p_{S(i-1)+j} = p] - \\sum_{j=1}^{S}(p - y_{S(i-1)+j}) \\cdot \\mathbf{x}_i(p)\\right\\|\\right] \\leq \\operatorname{diam}_{\\|\\cdot\\|}(\\mathcal{P}) \\cdot \\sqrt{8S \\cdot \\operatorname{Rate}(\\mathcal{L}, \\|\\cdot\\|_*)}.$$\nIt follows by summing over the L values of p \u2208 \\mathrm{supp}(\\mathbf{x}_i) that\n$$\\mathbb{E}\\left[\\sum_{p \\in \\mathcal{P}}\\left\\|\\sum_{j=1}^{S}(p - y_{S(i-1)+j}) \\cdot \\mathbb{1}[p_{S(i-1)+j} = p] - \\sum_{j=1}^{S}(p - y_{S(i-1)+j}) \\cdot \\mathbf{x}_i(p)\\right\\|\\right]$$\n$$\\leq L \\cdot \\operatorname{diam}_{\\|\\cdot\\|}(\\mathcal{P}) \\cdot \\sqrt{8S \\cdot \\operatorname{Rate}(\\mathcal{L}, \\|\\cdot\\|_*)} \\leq \\epsilon \\cdot S, \\qquad (14)$$\nas long as $$S \\geq \\frac{8 \\cdot \\operatorname{Rate}(\\mathcal{L}, \\|\\cdot\\|_*) \\cdot \\operatorname{diam}_{\\|\\cdot\\|}(\\mathcal{P})^2 \\cdot L^2}{\\epsilon^2}.$$\n\nThe guarantee of Corollary C.5 gives that, as long as $$T/S \\geq \\left(\\frac{\\operatorname{diam}_{\\|\\cdot\\|}(\\mathcal{P})}{\\epsilon}\\right)^{O(\\operatorname{Rate}(\\mathcal{P}, \\|\\cdot\\|)/\\epsilon^2)},$$ then\n$$\\operatorname{Cal}_T^{\\|\\cdot\\|}(\\mathbf{x}_{1:T/S}, \\bar{y}_{1:T/S}) = \\sum_{p \\in \\mathcal{P}}\\left\\|\\sum_{i=1}^{T/S}\\mathbf{x}_i(p) \\cdot (p - \\bar{y}_i)\\right\\|$$\n$$= \\sum_{p \\in \\mathcal{P}}\\left\\|\\sum_{i=1}^{T/S}\\frac{1}{S}\\sum_{j=1}^{S}\\mathbf{x}_i(p) \\cdot (p - y_{S(i-1)+j})\\right\\| \\leq \\frac{\\epsilon T}{S}. \\qquad (15)$$\n\nBy combining Equations (14) and (15), it follows that for an arbitrary adaptive adversary who chooses a sequence y_1, \u2026, y_T \u2208 \\mathcal{P},\n$$\\mathbb{E}\\left[\\operatorname{PureCal}_T^{\\|\\cdot\\|}(p_{1:T}, y_{1:T})\\right]$$\n$$= \\mathbb{E}\\left[\\sum_{p \\in \\mathcal{P}}\\left\\|\\sum_{t=1}^{T}(p - y_t) \\cdot \\mathbb{1}[p_t = p]\\right\\|\\right]$$\n$$\\leq \\mathbb{E}\\left[\\sum_{p \\in \\mathcal{P}}\\left\\|\\sum_{i=1}^{T/S}\\sum_{j=1}^{S}(p - y_{S(i-1)+j}) \\cdot \\mathbf{x}_i(p)\\right\\| + \\sum_{i=1}^{T/S}\\sum_{p \\in \\mathcal{P}}\\left\\|\\sum_{j=1}^{S}\\big((p - y_{S(i-1)+j}) \\cdot (\\mathbb{1}[p_{S(i-1)+j} = p] - \\mathbf{x}_i(p))\\big)\\right\\|\\right]$$\n$$\\leq 2\\epsilon T.$$\nThe result follows by rescaling \u03b5 and our choice of L = O(\\operatorname{Rate}(\\mathcal{P}, \\|\\cdot\\|)/\\epsilon^2). \u25a1",
+      "content_length": 2925,
+      "metadata": {
+        "of": null
+      }
+    },
+    {
+      "snippet_id": "21919::SECTION::54",
+      "snippet_type": "SECTION",
+      "location": "E.1 Pure calibration",
+      "content": "As example applications of Theorem E.1:\n\u2022 When \\|\\cdot\\| is the \\ell_1 norm and \\mathcal{P} is the simplex, we have \\operatorname{diam}_{\\|\\cdot\\|}(\\mathcal{P}) = 1, \\mathcal{L} = \\{f \\in \\mathbb{R}^d \\mid \\|f\\|_\\infty \\leq 1\\} satisfies \\operatorname{Rate}(\\mathcal{L}, \\|\\cdot\\|_*) \\leq d (as we can take the function R(x) = \\|x\\|_2^2), which gives that for T \\geq d^{O(1/\\epsilon^2)}, we can have \\mathbb{E}[\\operatorname{PureCal}_T^{\\|\\cdot\\|_1}] \\leq \\epsilon T. This result recovers the main upper bound of [Pen25] (Theorem 1.1 therein).\n\u2022 When \\|\\cdot\\| is the \\ell_2 norm and \\mathcal{P} is the unit \\ell_2 ball, we have \\operatorname{diam}_{\\|\\cdot\\|}(\\mathcal{P}) = 1, \\mathcal{L} = \\{f \\in \\mathbb{R}^d \\mid \\|f\\|_2 \\leq 1\\} satisfies \\operatorname{Rate}(\\mathcal{L}, \\|\\cdot\\|_*) \\leq 1 (as we can take the function R(x) = \\|x\\|_2^2), which gives that for T \\geq \\exp(O(1/\\epsilon^2)), we can have \\mathbb{E}[\\operatorname{PureCal}_T^{\\|\\cdot\\|_2}] \\leq \\epsilon T.",
+      "content_length": 977,
+      "metadata": {
+        "heading_level": 2
+      }
+    },
+    {
+      "snippet_id": "21919::SECTION::55",
+      "snippet_type": "SECTION",
+      "location": "E.2 Sequential law of large numbers",
+      "content": "Fix a convex set \\mathcal{P} \\subset \\mathbb{R}^d and a norm \\|\\cdot\\| on \\mathbb{R}^d. We define",
+      "content_length": 97,
+      "metadata": {
+        "heading_level": 2
+      }
+    },
+    {
+      "snippet_id": "21919::EQUATION::15",
+      "snippet_type": "EQUATION",
+      "location": "E.2 Sequential law of large numbers",
+      "content": "$$\\mathcal{R}_n(\\mathcal{P}, \\|\\cdot\\|) := \\sup_{\\mathbf{p}} \\mathbb{E}_{\\epsilon}\\left[\\left\\|\\frac{1}{n}\\sum_{i=1}^{n}\\epsilon_i\\,\\mathbf{p}_i(\\epsilon)\\right\\|\\right].$$",
+      "content_length": 172,
+      "metadata": {
+        "label": null,
+        "display_mode": true
+      }
+    },
+    {
+      "snippet_id": "21919::SECTION::56",
+      "snippet_type": "SECTION",
+      "location": "E.2 Sequential law of large numbers",
+      "content": "where the supremum is over all sequences of mappings $\\mathbf{p}_1, \\ldots, \\mathbf{p}_n$, where $\\mathbf{p}_i : \\{-1, 1\\}^{i-1} \\to \\mathcal{P}$, and the expectation is over an i.i.d. sequence of Rademacher random variables $\\epsilon = (\\epsilon_1, \\ldots, \\epsilon_n)$, $\\epsilon_i \\sim \\text{Unif}(\\{\\pm 1\\})$. The below lemma (essentially contained in [RST15]) establishes a martingale law of large numbers for $\\mathcal{P}$-valued martingales, in terms of geometric properties of $\\mathcal{P}$ and $\\|\\cdot\\|$.",
+      "content_length": 515,
+      "metadata": {
+        "heading_level": 2
+      }
+    },
+    {
+      "snippet_id": "21919::LEMMA::9",
+      "snippet_type": "LEMMA",
+      "location": "E.2 Sequential law of large numbers",
+      "content": "Lemma E.2 ([RST15]). Consider a convex set $\\mathcal{P} \\subset \\mathbb{R}^d$, a norm $\\|\\cdot\\|$ on $\\mathbb{R}^d$, and let $M_1, \\ldots, M_n$ denote a sequence of random variables adapted to a filtration $(\\mathcal{F}_i)_{i \\in [n]}$. Let $\\mathcal{L} = \\{f \\mid \\|f\\|_* \\le 1\\}$ be the unit ball of the dual norm $\\|\\cdot\\|_*$. Then\n$$\n\\mathbb{E}\\left[\\left\\|\\sum_{i=1}^n M_i - \\mathbb{E}[M_i \\mid \\mathcal{F}_{i-1}]\\right\\|\\right]\n\\le \\operatorname{diam}_{\\|\\cdot\\|}(\\mathcal{P}) \\cdot \\sqrt{8n \\cdot \\operatorname{Rate}(\\mathcal{L}, \\|\\cdot\\|_*)}.\n$$",
+      "content_length": 555,
+      "metadata": {
+        "label": "Lemma E.2",
+        "has_proof": true
+      }
+    },
+    {
+      "snippet_id": "21919::PROOF::15",
+      "snippet_type": "PROOF",
+      "location": "E.2 Sequential law of large numbers",
+      "content": "Proof. By applying an appropriate translation to $\\mathcal{P}$, we can assume that $\\mathcal{P}$ contains the origin. We apply Theorem 2 of [RST15] with the domain $\\mathcal{Z}$ equal to $\\mathcal{P}$ and the function class $\\mathcal{F}$ equal to the class of mappings $\\{z \\mapsto \\langle z, f \\rangle : \\|f\\|_* \\le 1\\}$ indexed by unit-dual norm linear functions on $\\mathcal{Z}$. The theorem implies that\n$$\n\\mathbb{E}\\left[\\frac{1}{n}\\left\\|\\sum_{i=1}^n M_i - \\mathbb{E}[M_i \\mid \\mathcal{F}_{i-1}]\\right\\|\\right]\n\\le 2 \\cdot \\sup_{\\mathbf{p}} \\mathbb{E}_{\\epsilon}\\left[\\sup_{\\|f\\|_* \\le 1} \\frac{1}{n}\\left\\langle\\sum_{i=1}^n \\epsilon_i \\mathbf{p}_i(\\epsilon), f\\right\\rangle\\right]\n= 2 \\cdot \\mathcal{R}_n(\\mathcal{P}, \\|\\cdot\\|).\n$$\nWrite $\\mathcal{L} = \\{f \\in \\mathbb{R}^d : \\|f\\|_* \\le 1\\}$ to denote the unit ball for the dual norm $\\|\\cdot\\|_*$. Proposition 16 of [RST15] gives that, if there is a function $R : \\mathcal{L} \\to \\mathbb{R}$ which is 1-strongly convex with respect to $\\|\\cdot\\|_*$ and which has range $\\rho$, then $\\mathcal{R}_n(\\mathcal{P}, \\|\\cdot\\|) \\le \\sqrt{\\frac{2\\rho}{n}} \\cdot \\operatorname{diam}_{\\|\\cdot\\|}(\\mathcal{P})$. In particular,\n$\\mathcal{R}_n(\\mathcal{P}, \\|\\cdot\\|) \\le \\operatorname{diam}_{\\|\\cdot\\|}(\\mathcal{P}) \\cdot \\sqrt{\\frac{2\\,\\operatorname{Rate}(\\mathcal{L}, \\|\\cdot\\|_*)}{n}}$. $\\square$",
+      "content_length": 1348,
+      "metadata": {
+        "of": null
+      }
+    }
+  ]
+}

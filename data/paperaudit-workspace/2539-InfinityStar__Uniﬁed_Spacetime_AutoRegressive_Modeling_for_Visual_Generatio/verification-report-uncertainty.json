@@ -1,0 +1,64 @@
+{
+  "paper_id": "2539",
+  "title": "InfinityStar: Unified Spacetime AutoRegressive Modeling for Visual Generation",
+  "paper_category": "cs.CV",
+  "predicted_errors": [
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Section 3.2 Spacetime Pyramid Modeling for Unified Generation (Equation 2)",
+      "confidence": 0.72,
+      "supporting_evidence": "The formal likelihood of the whole video omits the inter-clip conditioning that the surrounding prose and the model description both require. The prose states 'For inter-clip predictions, clips are generated sequentially conditioned on prior clip predictions and the text input in an autoregressive manner,' and Section 3.4 (Spacetime Sparse Attention) states the model 'only attend[s] to the last scale of the preceding clip.' However, Equation 2 as printed is p(r_1^1, ..., r_K^N) = product_{c=1}^{N} product_{k=1}^{K} p(r_k^c | r_1^c, ..., r_{k-1}^c, psi(t)), whose conditioning set contains only within-clip tokens (r_1^c..r_{k-1}^c) and the text psi(t) — no prior-clip token r^{<c} appears. As written, the equation factors the video into conditionally independent clips given the text, which contradicts both the stated sequential generation process and the attention mechanism (attend to the preceding clip's last scale) that constitutes the paper's central contribution. The correct form should include r^{<c} (at minimum r_K^{c-1}) in each factor's conditioning set.",
+      "verifier_name": "text",
+      "snippet_id": "2539::SECTION::5"
+    },
+    {
+      "error_category": "Abstract vs Results mismatch",
+      "error_location": "Abstract vs Section 4.5 Inference Latency / Table 6",
+      "confidence": 0.65,
+      "supporting_evidence": "The Abstract claims 'Without extra optimizations, our model generates a 5s, 720p video approximately 10× faster than leading diffusion-based methods,' and the Introduction similarly claims 'a 10× reduction in inference latency relative to leading diffusion models.' However, the paper's own experimental section (4.5) and Table 6 report a 32× speedup over the leading diffusion model Wan 2.1 for the identical setting (5s, 720p, 81 frames): Wan 2.1 1864s vs InfinityStar 58s, 1864/58 = 32.1. No diffusion baseline supporting the 10× figure is provided anywhere in the paper. The abstract/introduction figure is inconsistent with the headline experimental result (10× vs 32×, a ~3× discrepancy), though notably in the conservative direction (under-claiming rather than over-claiming performance).",
+      "verifier_name": "cross-section-consistency",
+      "snippet_id": "2539::FULL_PAPER::0"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Abstract vs Introduction (contribution claims)",
+      "confidence": 0.5,
+      "supporting_evidence": "Contribution 2 in the Introduction states 'InfinityStar is the first discrete autoregressive model capable of generating high-quality videos,' while the Abstract hedges to 'InfinityStar is among the first discrete autoregressive video generators capable of producing high-quality 720p videos.' The paper's own Table 2 lists Emu3 [30] — a discrete autoregressive video model — achieving a VBench overall score of 80.96, which is consistent with the hedged 'among the first' but in tension with the unqualified 'the first' phrasing used in the Introduction. This is an internal inconsistency in the strength of the primary contribution claim, though it does not invalidate any quantitative result.",
+      "verifier_name": "text",
+      "snippet_id": "2539::SECTION::1"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 31,
+    "snippets_verified": 31,
+    "errors_detected": 3,
+    "verifier_usage": {
+      "text": 9,
+      "math_equation": 1,
+      "statistical": 8,
+      "cross_section": 1
+    }
+  },
+  "verdict": "NEEDS_REVIEW",
+  "summary": "Uncertainty-mode verification of paper 2539 (InfinityStar) with lenient strictness. The pipeline segmented the paper into 31 snippets (15 sections, 2 equations, 6 tables, 8 figures) and triaged 18 of them as high-uncertainty, routing them to specialist verifiers (text, math, statistical, cross-section). The primary finding is a formal inconsistency in Equation 2, the paper's central likelihood statement: the prose says clips are generated 'conditioned on prior clip predictions' and Section 3.4 says the model attends to the preceding clip's last scale, yet the printed equation conditions only on within-clip tokens and the text, omitting the inter-clip dependency that is the core contribution (confidence 0.72). A secondary finding (0.65) is that the Abstract/Introduction claim 'approximately 10× faster' generation conflicts with the paper's own reported 32× speedup over Wan 2.1 in Section 4.5/Table 6 — a conservative-direction numeric mismatch with no supporting baseline for the 10× figure. A lower-confidence finding (0.5) notes the Introduction's 'the first discrete autoregressive model' claim is hedged to 'among the first' in the Abstract and sits in tension with Emu3's strong VBench result in the paper's own Table 2. All statistical checks passed: Table 6 speedups recompute exactly (1864/58=32.1, 1864/354=5.27, 354/58=6.1, with the table's Nova '5' being the Wan-2.1-relative ratio and the text's '6×' being the InfinityStar-vs-Nova ratio — both consistent); Table 3's 'None > Image VAE' PSNR is unusual but consistent with the paper's own argument that image-pretrained weights transfer poorly to video; and every Section 4.4 ablation claim (81.28 vs 81.07/80.30/75.72/80.77/80.75) matches Table 4 exactly. Clip duration (80 frames @ 16fps = 5s) and semantic-scale-repetition parameters (first 7 scales, 6 times) are internally consistent. Given one medium-confidence finding (0.7-0.85) on the formal statement of the method and two lower-confidence inconsistencies, the verdict is NEEDS_REVIEW.",
+  "uncertainty_map": [
+    {"snippet_id": "2539::SECTION::0", "uncertainty": 0.55, "route": "text", "escalated": true},
+    {"snippet_id": "2539::SECTION::1", "uncertainty": 0.5, "route": "text", "escalated": true},
+    {"snippet_id": "2539::SECTION::4", "uncertainty": 0.35, "route": "text", "escalated": true},
+    {"snippet_id": "2539::SECTION::5", "uncertainty": 0.7, "route": "text", "escalated": true},
+    {"snippet_id": "2539::SECTION::6", "uncertainty": 0.4, "route": "text", "escalated": true},
+    {"snippet_id": "2539::SECTION::7", "uncertainty": 0.45, "route": "text", "escalated": true},
+    {"snippet_id": "2539::SECTION::8", "uncertainty": 0.35, "route": "text", "escalated": true},
+    {"snippet_id": "2539::SECTION::9", "uncertainty": 0.3, "route": "text", "escalated": true},
+    {"snippet_id": "2539::SECTION::10", "uncertainty": 0.4, "route": "text", "escalated": true},
+    {"snippet_id": "2539::SECTION::11", "uncertainty": 0.4, "route": "statistical", "escalated": true},
+    {"snippet_id": "2539::SECTION::12", "uncertainty": 0.5, "route": "statistical", "escalated": true},
+    {"snippet_id": "2539::EQUATION::1", "uncertainty": 0.75, "route": "math", "escalated": true},
+    {"snippet_id": "2539::TABLE::0", "uncertainty": 0.35, "route": "statistical", "escalated": true},
+    {"snippet_id": "2539::TABLE::1", "uncertainty": 0.35, "route": "statistical", "escalated": true},
+    {"snippet_id": "2539::TABLE::2", "uncertainty": 0.4, "route": "statistical", "escalated": true},
+    {"snippet_id": "2539::TABLE::3", "uncertainty": 0.4, "route": "statistical", "escalated": true},
+    {"snippet_id": "2539::TABLE::4", "uncertainty": 0.3, "route": "statistical", "escalated": true},
+    {"snippet_id": "2539::TABLE::5", "uncertainty": 0.5, "route": "statistical", "escalated": true}
+  ]
+}

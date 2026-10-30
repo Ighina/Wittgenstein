@@ -1,0 +1,451 @@
+{
+  "paper_name": "paper",
+  "paper_path": "/Users/iacopoghinassi/Documents/Github/Wittgenstein/data/paperaudit-workspace/7418-Dynam3D__Dynamic_Layered_3D_Tokens_Empower_VLM_for_Vision-and-Language_Navi/paper.md",
+  "tag": "opus5",
+  "lean_project": "MATH_VERIFICATION/Paper",
+  "lean_project_kept": true,
+  "totals": {
+    "snippets_extracted": 13,
+    "routed_to_math": 8,
+    "routed_to_lean": 5,
+    "lean_passed": 3,
+    "lean_refuted": 2,
+    "lean_failed": 0,
+    "fallbacks_run": 0,
+    "errors_detected": 4
+  },
+  "results": [
+    {
+      "snippet_id": "paper::EQUATION::0",
+      "snippet_type": "EQUATION",
+      "location": "3.1 Dynamic Layered 3D Representation Model — Encoding/Updating the Patch Feature Points",
+      "content": "For each feature $\\mathbf{g}_{t,i}$, the observed horizontal orientation $\\theta_{t,i}$ and the regional size $s_{t,i}$ are also calculated and stored to enhance the spatial representation. The set of feature points $\\mathcal{M}$ can therefore be updated online as:\n$$\\mathcal{M}_t = \\mathcal{M}_{t-1} \\cup \\{[\\mathbf{g}_{t,i}, P_{t,i}, \\theta_{t,i}, s_{t,i}]\\}_{i=1}^{I}.$$ (1)\n\nUpdating the Patch Feature Points. ... we employ the Frustum Culling strategy to dynamically update the feature points set $\\mathcal{M}$ by discarding outdated features and incorporating new ones, which differs from previous methods [46, 45, 28, 15] that simply add new feature points regardless of object motion or removal. ... A feature point $P_w$ is removed from the feature points set $\\mathcal{M}$ by the FrustumCulling$(\\cdot)$ function when $0 < z_c < \\min(d_{u,v} + \\delta, \\Delta)$, $0 < u < W$ and $0 < v < H$ ... The frustum culling is first applied and followed by adding the new feature points when an RGB-D observation is obtained.",
+      "route": "verify-math-lean",
+      "route_rationale": "Set-update recurrence; monotonicity of $\\mathcal{M}_{t-1} \\cup S_t$ is a crisp formally checkable property, and its compatibility with the paper's removal mechanism is decidable.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::0",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.93,
+        "reasoning": "Formalised Equation (1) verbatim as `Eq1 Mprev S Mcur : Prop := Mcur = Mprev ∪ S` over `Set α` for an arbitrary type, feature points left opaque (the equation never inspects [g, P, θ, s]). The paper's position was stated as one existential, `PaperClaim : ∃ (Mprev S Mcur : Set ℕ) (p : ℕ), Mcur = Mprev ∪ S ∧ p ∈ Mprev ∧ p ∉ Mcur` — Equation (1) holds and yet a point present at t-1 is gone at t, as frustum culling requires. No extra hypotheses were assumed. Lean proved the negation `¬ PaperClaim` clean, via `eq1_monotone : p ∈ A → p ∈ A ∪ S` (`Set.mem_union_left`). Non-vacuity was discharged separately by `eq1_satisfiable`, so the refutation is not an empty-setting artefact. Consequence: Equation (1), being monotone in M_{t-1}, cannot express the removal the paper's frustum-culling mechanism performs; the stated update rule and the described mechanism are incompatible as written.",
+        "predicted_error_category": "Formally refuted",
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [
+          "3.1 Dynamic Layered 3D Representation Model — Equation (1)",
+          "3.1 Updating the Patch Feature Points — FrustumCulling(·) removal condition"
+        ],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/7418-Dynam3D-opus5/paper__EQUATION__0.lean",
+          "formal_statement": "def Eq1 {α : Type} (Mprev S Mcur : Set α) : Prop := Mcur = Mprev ∪ S\n\ndef PaperClaim : Prop :=\n  ∃ (Mprev S Mcur : Set ℕ) (p : ℕ), Eq1 Mprev S Mcur ∧ p ∈ Mprev ∧ p ∉ Mcur\n\ntheorem eq1_satisfiable :\n    ∃ (Mprev S Mcur : Set ℕ) (p : ℕ), Eq1 Mprev S Mcur ∧ p ∈ Mprev := by\n  refine ⟨{0}, {1}, {0} ∪ {1}, 0, rfl, ?_⟩\n  simp\n\ntheorem eq1_monotone {α : Type} (A S : Set α) (p : α) (hp : p ∈ A) : p ∈ A ∪ S :=\n  Set.mem_union_left S hp\n\ntheorem not_paperClaim : ¬ PaperClaim := by\n  rintro ⟨Mprev, S, Mcur, p, hEq, hmem, hnot⟩\n  exact hnot (hEq ▸ eq1_monotone Mprev S p hmem)",
+          "compiler_feedback": "$ lake env lean Paper/TMP.lean\nEXIT=0\n\n$ lean_diagnostic_messages\n{\"result\":{\"partial\":false,\"still_elaborating_lines\":null,\"success\":true,\"timed_out\":false,\"items\":[],\"failed_dependencies\":[]}}\n\n$ lake build Paper.TMP\n✔ [8706/8706] Built Paper.TMP (13s)\nBuild completed successfully (8706 jobs).\n\n$ lake env lean /tmp/ax_check.lean\n'Dynam3DEq1.not_paperClaim' does not depend on any axioms\n'Dynam3DEq1.eq1_monotone' does not depend on any axioms\n'Dynam3DEq1.eq1_satisfiable' depends on axioms: [propext]\nEXIT=0",
+          "axioms": [],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.93
+    },
+    {
+      "snippet_id": "paper::EQUATION::1",
+      "snippet_type": "EQUATION",
+      "location": "3.1 Dynamic Layered 3D Representation Model — Updating the Patch Feature Points",
+      "content": "Specifically, after obtaining the observed depth image $\\mathbf{D}_t \\in \\mathbb{R}^{H \\times W}$, the frustum culling strategy transforms the 3D world coordinate $P_w \\in \\mathcal{M}$ of each feature point into the pixel coordinate of the depth image using the camera pose $[\\mathbf{R}, \\mathbf{T}]$ and camera intrinsics $\\mathbf{K}$ as follows:\n$$P_c^{\\top} = \\begin{bmatrix} x_c \\\\ y_c \\\\ z_c \\end{bmatrix} = \\mathbf{R}P_w^{\\top} + \\mathbf{T}, \\quad \\begin{bmatrix} u \\\\ v \\\\ 1 \\end{bmatrix} = \\frac{1}{z_c}\\mathbf{K}\\begin{bmatrix} x_c \\\\ y_c \\\\ z_c \\end{bmatrix},$$\nFrustumCulling$$(P_w)$$, if $$0 < z_c < \\min(d_{u,v} + \\delta, \\Delta)$$, $$0 < u < W$$, and $$0 < v < H$$. (2)\n\n$$d_{h,w}$$ denotes the depth value in row $$h$$ and column $$w$$ of the depth image $$\\mathbf{D}_t \\in \\mathbb{R}^{H \\times W}$$. A feature point $$P_w$$ is removed from the feature points set $$\\mathcal{M}$$ by the FrustumCulling$$(\\cdot)$$ function when $$0 < z_c < \\min(d_{u,v} + \\delta, \\Delta)$$, $$0 < u < W$$ and $$0 < v < H$$, where $$\\delta$$ is a noise threshold and $$\\Delta$$ is the farthest culling distance.",
+      "route": "verify-math-lean",
+      "route_rationale": "Pinhole projection algebra plus a depth-indexed culling predicate; both well-definedness and the projection identity have crisp formal content.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::1",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.93,
+        "reasoning": "Formalised Equation (2)'s implicit well-definedness claim for the depth lookup d_{u,v}: for all H, W, u, v : ℕ with 0 < u < W and 0 < v < H (Eq. 2's own guards), (u,v) is a valid (row, column) index of D_t ∈ ℝ^{H×W}, i.e. u < H ∧ v < W under the paper's stated d_{h,w} = (row h, column w) convention. No relation between H and W was assumed, since the paper states none. Lean compiled the negation `eq2_depth_lookup_not_well_defined` clean, with explicit kernel-checked witness H=480, W=640, u=600, v=100: both guards hold yet row index 600 ≥ H = 480, so d_{u,v} is out of range. Diagnostics empty, axioms standard, no sorryAx. Two companion lemmas localise the defect: `eq2_depth_lookup_well_defined_of_square` proves the claim DOES hold when H = W, and `eq2_transposed_lookup_well_defined` proves d_{v,u} is well defined for general H, W — so the error is an index transposition, almost certainly a typo for d_{v,u}. The secondary pinhole sanity lemma `pinhole_third_component_eq_one` PASSED: for K = !![fx,0,cx; 0,fy,cy; 0,0,1] and z_c ≠ 0, the third entry of (1/z_c) • (K *ᵥ ![x_c,y_c,z_c]) is exactly 1, confirming Eq. (2)'s projection algebra is sound and the defect is confined to the depth index ordering.",
+        "predicted_error_category": "Domain/Constraint violation",
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [
+          "Section 3.1, Equation (2) — culling predicate 0 < z_c < min(d_{u,v} + δ, Δ)",
+          "Section 3.1, text after Equation (2) — 'd_{h,w} denotes the depth value in row h and column w'"
+        ],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/7418-Dynam3D-opus5/paper__EQUATION__1.lean",
+          "formal_statement": "def ValidIndex (H W a b : ℕ) : Prop := a < H ∧ b < W\n\ndef Eq2DepthLookupWellDefined : Prop :=\n  ∀ (H W u v : ℕ), 0 < u → u < W → 0 < v → v < H → ValidIndex H W u v\n\ntheorem eq2_depth_lookup_not_well_defined : ¬ Eq2DepthLookupWellDefined := by\n  intro h\n  obtain ⟨h1, _⟩ := h 480 640 600 100 (by norm_num) (by norm_num) (by norm_num) (by norm_num)\n  omega\n\ntheorem eq2_witness :\n    (0 < 600 ∧ 600 < 640 ∧ 0 < 100 ∧ 100 < 480) ∧ ¬ ValidIndex 480 640 600 100 := by\n  refine ⟨by norm_num, ?_⟩\n  simp [ValidIndex]\n\ntheorem eq2_depth_lookup_well_defined_of_square (N u v : ℕ)\n    (_hu : 0 < u) (huW : u < N) (_hv : 0 < v) (hvH : v < N) : ValidIndex N N u v :=\n  ⟨huW, hvH⟩\n\ntheorem eq2_transposed_lookup_well_defined (H W u v : ℕ)\n    (_hu : 0 < u) (huW : u < W) (_hv : 0 < v) (hvH : v < H) : ValidIndex H W v u :=\n  ⟨hvH, huW⟩\n\nopen Matrix in\ntheorem pinhole_third_component_eq_one\n    (fx fy cx cy xc yc zc : ℝ) (hz : zc ≠ 0) :\n    ((1 / zc) • ((!![fx, 0, cx; 0, fy, cy; 0, 0, 1] : Matrix (Fin 3) (Fin 3) ℝ)\n        *ᵥ ![xc, yc, zc])) 2 = 1 := by\n  simp [Matrix.vecHead, Matrix.vecTail]\n  field_simp",
+          "compiler_feedback": "$ lake env lean Paper/TMP.lean -> EXIT=0, no output\n$ lean_diagnostic_messages -> {\"items\":[]}\n$ lean_verify Dynam3D.eq2_depth_lookup_not_well_defined -> non_standard_axioms: [] (only warning: 'ripgrep (rg) not installed - warnings unavailable', unrelated to soundness)\n$ grep sorry -> none\n$ #print axioms -> the two purely structural lemmas depend on no axioms at all\nArchived file re-compiled at its final path: EXIT=0",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.93
+    },
+    {
+      "snippet_id": "paper::EQUATION::2",
+      "snippet_type": "EQUATION",
+      "location": "3.1 Dynamically Encoding 3D Instance Representations (Equation 3)",
+      "content": "Within each mask, a transformer-based instance encoder aggregates the corresponding patch features {g_m}_{m=1}^M with positional embeddings {p_m}_{m=1}^M into a compact instance-level representation ℰ using a learnable token q as query:\n\np_m = MLP([P_m − Average({P_m}_{m=1}^M), s_m, cos(θ_m), sin(θ_m)]).\n\nℰ = InstanceEncoder(q, {g_m ⊕ p_m}_{m=1}^M). (3)",
+      "route": "verify-math",
+      "route_rationale": "Definitional encoder/positional-embedding construction; dimensional coherence is checkable by inspection and there is no theorem to formalise.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::2",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "No derivation-invalidating error. (a) The MLP argument is a well-defined 6-vector: 3 (centred coordinate) + 1 (s_m) + 1 (cos) + 1 (sin). (b) The circled-plus is underspecified, not wrong: if elementwise, MLP output dim is 768; if concatenation, encoder input is 768+dim(p_m). Both readings are internally consistent, and output dims of an MLP are free parameters, so no dimensional contradiction is provable. (c) Average({P_m}) is the within-mask centroid, well defined for M>=1; p_m is therefore translation-invariant by construction, which is intended for instance-local geometry. Absolute position is not lost to the method: Section 3.2 separately encodes agent-relative coordinates [x_c,y_c,z_c,D_c,cos,sin] per token. (d) Only under-specification of notation, which this verifier must not flag.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [
+          "ℰ = InstanceEncoder(q, {g_m ⊕ p_m}_{m=1}^M)",
+          "p_m = MLP([P_m − Average({P_m}_{m=1}^M), s_m, cos(θ_m), sin(θ_m)])"
+        ]
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::EQUATION::3",
+      "snippet_type": "EQUATION",
+      "location": "3.1 Dynamic Layered 3D Representation Model — Merging Discriminator training loss (Equation 4)",
+      "content": "For training, the discriminator outputs a binary classification indicating whether a 2D-3D instance pair corresponds to the same object instance.\n\n𝓛_segm = (1/J) ∑_{j=1}^{J} ∑_{k=1}^{K} CrossEntropy(MergingDiscriminator(ℰ_j^{2D}, ℰ_k^{3D}, D_{j,k}), 𝒢_{j,k}). (4)\n\nThe function MergingDiscriminator(·) is an MLP network which takes as input the 2D instance features ℰ_j^{2D}, 3D instance features ℰ_k^{3D} and their Euclidean distance D_{j,k}, and outputs a two-dimensional logit vector.",
+      "route": "verify-math-lean",
+      "route_rationale": "Normalisation and well-posedness claims over a double sum are formalisable; the 1/J prefactor against a J·K-term sum is worth a machine check.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::3",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.95,
+        "reasoning": "Formalised Equation (4) as `Lsegm J K c = (1/J) * ∑_{j:Fin J} ∑_{k:Fin K} c j k`, with only the paper's own standing hypotheses: `c : Fin J → Fin K → ℝ`, `∀ j k, 0 ≤ c j k` (binary cross-entropy is non-negative), and `1 ≤ J`. Nothing else assumed about c. Lean proved both halves of the primary claim: `lsegm_nonneg` (𝓛_segm ≥ 0) and `lsegm_eq_zero_iff` (𝓛_segm = 0 ↔ every per-pair loss is 0). Equation (4) is therefore a well-posed non-negative loss whose zero set is exactly perfect per-pair classification. The secondary lemma also compiled: `lsegm_const` gives 𝓛_segm = K·a on a constant family, plus corollaries `lsegm_const_not_K_invariant` (for a > 0, distinct K give distinct losses) and `lsegm_const_eq_mean_iff` (𝓛_segm equals the per-pair mean iff K = 1). Methodological observation only: the 1/J prefactor averages over the J 2D instances but sums over the K Top-K candidates, so the loss magnitude and its gradient scale linearly in the retrieval hyperparameter K — couplings between K and the learning rate are implicit. The paper never claims 𝓛_segm is a mean over the J·K pairs, so this is a scaling convention, not a mathematical error.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/7418-Dynam3D-opus5/paper__EQUATION__3.lean",
+          "formal_statement": "noncomputable def Lsegm (J K : ℕ) (c : Fin J → Fin K → ℝ) : ℝ :=\n  (1 / (J : ℝ)) * ∑ j : Fin J, ∑ k : Fin K, c j k\n\ntheorem lsegm_nonneg (J K : ℕ) (hJ : 1 ≤ J) (c : Fin J → Fin K → ℝ)\n    (hc : ∀ j k, 0 ≤ c j k) : 0 ≤ Lsegm J K c\n\ntheorem lsegm_eq_zero_iff (J K : ℕ) (hJ : 1 ≤ J) (c : Fin J → Fin K → ℝ)\n    (hc : ∀ j k, 0 ≤ c j k) : Lsegm J K c = 0 ↔ ∀ j k, c j k = 0\n\ntheorem lsegm_const (J K : ℕ) (hJ : 1 ≤ J) (a : ℝ) :\n    Lsegm J K (fun _ _ => a) = (K : ℝ) * a\n\ntheorem lsegm_const_not_K_invariant (J K₁ K₂ : ℕ) (hJ : 1 ≤ J) (a : ℝ) (ha : 0 < a)\n    (hK : K₁ ≠ K₂) :\n    Lsegm J K₁ (fun _ _ => a) ≠ Lsegm J K₂ (fun _ _ => a)\n\ntheorem lsegm_const_eq_mean_iff (J K : ℕ) (hJ : 1 ≤ J) (a : ℝ) (ha : 0 < a) :\n    Lsegm J K (fun _ _ => a) = a ↔ K = 1",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 4,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::EQUATION::4",
+      "snippet_type": "EQUATION",
+      "location": "3.1 Feature Distillation and Language Alignment for 3D Instances (Equation 5)",
+      "content": "Given a 3D instance feature ℰ_i and its corresponding annotated language description feature T_i extracted from the CLIP text encoder, we treat T_i as the positive sample and descriptions of other instances serve as negatives:\n$$\\mathcal{L}_{\\text{instance\\_text}} = \\frac{1}{I} \\sum_{i=1}^{I} \\text{CrossEntropy}\\left(\\left\\{\\text{CosSim}(\\mathcal{O}_i, T_j)/\\tau\\right\\}_{j=1}^{J}, i\\right).$$ (5)",
+      "route": "verify-math-lean",
+      "route_rationale": "Softmax cross-entropy over bounded cosine logits: well-posedness, strict positivity and the temperature-dependent loss floor are all formalisable and non-trivial.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::4",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.95,
+        "reasoning": "Formalised Equation (5) as softmax cross-entropy CE l i = -log(exp(l i)/∑_j exp(l j)) over `Fin J` with `l : Fin J → ℝ` wholly arbitrary (no magnitude assumptions). Lean proved CE_pos: J ≥ 2 → 0 < CE l i for every target, via ∑_j exp(l j) > exp(l i) (two-element subset bound + exp > 0) and Real.log_neg. Lifted to instance_text_pos: I ≥ 1, J ≥ 2, I ≤ J → 0 < (1/I)·∑_i CE (l i) (castLE i). The secondary lemma also closed inside budget: CE_ge_temperature_floor gives log(1 + (J−1)·exp(−2/τ)) ≤ CE (s·/τ) i for s j ∈ [−1,1], τ > 0, quantifying the τ- and J-dependent floor. Both compile clean with only standard Mathlib axioms. Secondary observation (under-specification, not an error): Eq. (5) ranges the target index i over 1..I while logits are indexed j = 1..J, so it is only well-defined under the unstated side condition I ≤ J (intended reading I = J, in-batch negatives); `O_i` appears where the text introduced `ℰ_i`; and `I` was earlier bound to the 24×24 = 576 patch count. These are symbol-scope sloppiness, not mathematical errors.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/7418-Dynam3D-opus5/paper__EQUATION__4.lean",
+          "formal_statement": "noncomputable def CE {J : ℕ} (ℓ : Fin J → ℝ) (i : Fin J) : ℝ :=\n  -Real.log (Real.exp (ℓ i) / ∑ j, Real.exp (ℓ j))\n\ntheorem CE_pos {J : ℕ} (hJ : 2 ≤ J) (ℓ : Fin J → ℝ) (i : Fin J) : 0 < CE ℓ i\n\ntheorem instance_text_pos {I J : ℕ} (hI : 1 ≤ I) (hJ : 2 ≤ J) (hIJ : I ≤ J)\n    (ℓ : Fin I → Fin J → ℝ) :\n    0 < (1 / (I : ℝ)) * ∑ i : Fin I, CE (ℓ i) (Fin.castLE hIJ i)\n\ntheorem CE_ge_temperature_floor {J : ℕ} (hJ : 2 ≤ J) (τ : ℝ) (hτ : 0 < τ)\n    (s : Fin J → ℝ) (hs : ∀ j, s j ∈ Set.Icc (-1 : ℝ) 1) (i : Fin J) :\n    Real.log (1 + ((J : ℝ) - 1) * Real.exp (-2 / τ)) ≤ CE (fun j => s j / τ) i",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 3,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::EQUATION::5",
+      "snippet_type": "EQUATION",
+      "location": "3.1 Feature Distillation and Language Alignment for 3D Instances (Equation 6)",
+      "content": "However, the generalization ability is limited since the scale of 3D-language data remains substantially smaller than that of image-language datasets: millions vs. billions [11]. We thus further enhance generalization by distilling visual knowledge from CLIP [11] into our Dynam3D model:\n$$\\mathcal{L}_{\\text{instance\\_distillation}} = \\frac{1}{I} \\sum_{i=1}^{I} \\text{CrossEntropy}\\left(\\left\\{\\text{CosSim}(\\mathcal{O}_i, \\mathcal{O}_j^{gt})/\\tau\\right\\}_{j=1}^{J}, i\\right).$$ (6)\n\nTo obtain the ground-truth instance feature $\\mathcal{O}_j^{gt}$ for distillation, we apply FastSAM to generate 2D instance masks and adopt the Masked Average Pooling (MAP) strategy from Feature Splatting [51] to average-pool patch-level features within each instance mask and obtain $\\mathcal{O}_j^{gt}$.",
+      "route": "verify-math",
+      "route_rationale": "Structurally identical to Equation 5; the Lean check on paper::EQUATION::4 already covers its softmax/cosine structure, so an informal pass on notation suffices.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::5",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.75,
+        "reasoning": "The objective is a standard CLIP-style InfoNCE: softmax over scaled cosine similarities with the matched index as target is mathematically valid (cosine is bounded, tau>0, logits need no normalisation), so (d) is fine. (a) Well-posedness needs I<=J; the paper never states it, but the intended reading is one positive per instance with in-batch negatives, i.e. I=J, matching Eqs. 5-7 identically. That is an unstated assumption, not a provable mistake. (b) O_i is used without definition after E_i was introduced, and (c) I is reused for patch count (I = 24 x 24) and instance count. Both are symbol-scope sloppiness that a careful reader resolves from context; neither alters the computed loss nor invalidates a derivation, so no erratum-level error.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [
+          "Given a 3D instance feature ℰ_i and its corresponding annotated language description feature T_i",
+          "\\text{CosSim}(\\mathcal{O}_i, \\mathcal{O}_j^{gt})/\\tau",
+          "I = 24 × 24"
+        ]
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.75
+    },
+    {
+      "snippet_id": "paper::EQUATION::6",
+      "snippet_type": "EQUATION",
+      "location": "3.1 Feature Distillation and Language Alignment for 3D Instances — Subspace Contrastive Learning (Equation 7)",
+      "content": "Consequently, we propose a strategy of Subspace Contrastive Learning:\n$$\\mathcal{L}_{\\text{subspace\\_distillation}} = \\frac{1}{I} \\sum_{i=1}^{I} \\text{CrossEntropy}\\left(\\left\\{\\text{CosSim}\\big((\\mathcal{O}_i - \\mathcal{V}_j), (\\mathcal{O}_j^{gt} - \\mathcal{V}_j)\\big)/\\tau\\right\\}_{j=1}^{J}, i\\right),$$ (7)\n\nwhere $\\mathcal{V}_j$ is computed by average pooling all patch features within the given 2D view to yield the local semantic center of this view, i.e. semantic subspace. In Equation 6, instance features are optimized by maximizing cosine similarity with respect to the origin of the CLIP semantic space as the anchor. As a result, positive samples are pulled closer and negative samples are pushed farther apart. However, ground-truth bias of different views can impede this contrastive process. In Equation 7, we replace the origin anchor with the semantic center $\\mathcal{V}_j$ of the view to mitigate the bias effect, impose a stronger optimization constraint, and promote a sparser feature space with improved representational capacity.",
+      "route": "verify-math-lean",
+      "route_rationale": "The re-anchoring claim is a genuine statement about cosine similarity under translation — exactly the kind of thing Lean settles outright.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::6",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.95,
+        "reasoning": "Formalised the primary claim that cosine similarity is not invariant under a common translation of both arguments, in EuclideanSpace ℝ (Fin 2) with CosSim x y = ⟪x,y⟫_ℝ/(‖x‖*‖y‖). Witness a=(1,0), b=(0,1), v=(-1,-1): all of a, b, a−v, b−v nonzero, CosSim a b = 0 while CosSim (a−v) (b−v) = 4/5. Lean compiled this clean, so Equation (7) is a genuinely different objective from Equation (6) and the paper's origin-anchored vs V_j-anchored description is coherent. Secondary Lemma 1 also compiled: for λ>0, CosSim (λ•a) b = CosSim a b (plus the right-hand version), confirming CosSim sees only directions measured from the origin — the precise sense of 'the origin as the anchor'. Secondary Lemma 2 also closed: with a,b ≠ 0 and a = v, ‖a‖*‖b‖ ≠ 0 but ‖a−v‖*‖b−v‖ = 0, so Eq. (7)'s quotient is 0/0 where Eq. (6)'s is not — an under-specification the paper does not exclude, not an error. The prose claims 'stronger optimization constraint' and 'sparser feature space with improved representational capacity' are not formalisable as stated (no definition of constraint strength or sparsity is given) and were not attempted.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/7418-Dynam3D-opus5/paper__EQUATION__6.lean",
+          "formal_statement": "noncomputable def CosSim {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]\n    (x y : E) : ℝ := inner ℝ x y / (‖x‖ * ‖y‖)\n\ntheorem cosSim_smul_left {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]\n    (a b : E) (ha : a ≠ 0) (hb : b ≠ 0) {l : ℝ} (hl : 0 < l) :\n    CosSim (l • a) b = CosSim a b\n\nnoncomputable def wa : EuclideanSpace ℝ (Fin 2) := WithLp.toLp 2 ![1, 0]\nnoncomputable def wb : EuclideanSpace ℝ (Fin 2) := WithLp.toLp 2 ![0, 1]\nnoncomputable def wv : EuclideanSpace ℝ (Fin 2) := WithLp.toLp 2 ![-1, -1]\n\nlemma cosSim_untranslated : CosSim wa wb = 0\nlemma cosSim_translated : CosSim (wa - wv) (wb - wv) = 4 / 5\n\ntheorem cosSim_not_translation_invariant :\n    ∃ a b v : EuclideanSpace ℝ (Fin 2),\n      a ≠ 0 ∧ b ≠ 0 ∧ a - v ≠ 0 ∧ b - v ≠ 0 ∧\n        CosSim a b ≠ CosSim (a - v) (b - v)\n\ntheorem eq7_denominator_degenerate {E : Type*} [NormedAddCommGroup E]\n    [InnerProductSpace ℝ E] (a b v : E) (ha : a ≠ 0) (hb : b ≠ 0) (hav : a = v) :\n    ‖a‖ * ‖b‖ ≠ 0 ∧ ‖a - v‖ * ‖b - v‖ = 0 ∧ CosSim (a - v) (b - v) = 0",
+          "compiler_feedback": "$ lake env lean Paper/TMP.lean\nEXIT=0\n(no output)\n\nlean_diagnostic_messages:\n[{\"severity\":\"warning\",\"message\":\"This line exceeds the 100 character limit, please shorten it!\\n\\nNote: This linter can be disabled with `set_option linter.style.longLine false`\",\"line\":13,\"column\":101,\"category\":\"diagnostic\"}]\n\nlean_verify Dynam3DEq7.cosSim_not_translation_invariant -> {\"axioms\":[\"propext\",\"Classical.choice\",\"Quot.sound\"],\"trust\":\"standard\",\"non_standard_axioms\":[]}\nlean_verify Dynam3DEq7.cosSim_smul_left -> {\"axioms\":[\"propext\",\"Classical.choice\",\"Quot.sound\"],\"trust\":\"standard\",\"non_standard_axioms\":[]}\nlean_verify Dynam3DEq7.eq7_denominator_degenerate -> {\"axioms\":[\"propext\",\"Classical.choice\",\"Quot.sound\"],\"trust\":\"standard\",\"non_standard_axioms\":[]}\n\nNo `sorry` / `admit` / `native_decide` / `axiom` in source. Only diagnostic is a style linter warning on a docstring line.",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "3.1 / 3.2 — patch grid, panoramic ray grid and positional encoding",
+      "content": "we follow HNR [45] and g3D-LF [15] in using CLIP-ViT-L/14@336px [11] as the encoder for RGB images to extract 2D patch features {g_{t,i} ∈ R^{768}}_{i=1}^I. g_{t,i} denotes the i-th patch feature of the 2D feature map extracted from t-th frame observed by the agent and I = 24 × 24.\n\nSpecifically, we uniformly sample 12×48 rays covering a 90° vertical and 360° horizontal field-of-view around the agent, rendering both the 3D patch features $\\hat{\\mathbf{g}}$ and their corresponding depth estimates.\n\nThe 3D patch tokens {patch_tokens} rendered from the generalizable feature field are organized in a row-major order of 12×48 tokens, starting from the rays directly behind the agent and proceeding clockwise.\n\nTo encode the relative positional relationship between 3D tokens and the agent, the relative coordinates [x_c, y_c, z_c], i.e., camera coordinates of each 3D token to the agent, are calculated along with the relative distance D_c and the relative horizontal angle θ_c. [x_c, y_c, z_c, D_c, cos(θ_c), sin(θ_c)] of each token are then fed into an MLP network to generate the corresponding positional embeddings.",
+      "route": "verify-math",
+      "route_rationale": "Dimensional and angular arithmetic a careful reader checks by inspection; nothing to formalise.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.88,
+        "reasoning": "Dimensions are consistent. ViT-L/14 at 336px gives 336/14 = 24 patches per side, so I = 24x24 = 576 patch tokens of dim 768. The ray grid is isotropic: 90/12 = 7.5 degrees vertically and 360/48 = 7.5 degrees horizontally, so 12x48 exactly tiles the stated FOV. D_c = sqrt(x_c^2+y_c^2+z_c^2) is functionally redundant given the coordinates, as are cos/sin(theta_c), but the text only claims these are computed and fed to an MLP, which is valid feature engineering, not a false mathematical statement. Reuse of I for instances in Eqs. 5-7 is notational overloading, not a derivation error.",
+        "predicted_error_category": null,
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.88
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::0",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "4.5 Computational Cost and Real-Time Analysis",
+      "content": "We evaluate computational cost on the R2R-CE dataset using a single NVIDIA RTX 4090 GPU. During training, each navigation step takes 455 ms (~0.46 seconds) on average: 83 ms for 3D representation updates, 315 ms for the large language model, and 57 ms for other operations. During inference, the average step time increases to 649 ms (~0.65 seconds) with 83 ms for 3D representation updates, 540 ms for large language model inference, and 26 ms for the remaining components. Most navigation episodes can be completed within 20 to 40 navigation steps, and our navigation system supports real-time 3D representation updates and navigation action prediction for efficient training and inference.",
+      "route": "verify-math",
+      "route_rationale": "Timing budget arithmetic — a sum and two roundings, checkable by inspection.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.93,
+        "reasoning": "All arithmetic is exact. Training: 83+315+57 = 455 ms, matching the stated total; 455 ms = 0.455 s, which rounds to 0.46 s under round-half-up. Inference: 83+540+26 = 649 ms, matching the stated total; 0.649 s rounds to 0.65 s. The 3D-update cost is consistently 83 ms in both modes. The real-time claim is numerically coherent: at 0.649 s/step, 20-40 steps give roughly 13-26 s per episode, well inside interactive navigation budgets. No algebraic, rounding, or domain violation.",
+        "predicted_error_category": null,
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.93
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::1",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "4.1 Comparison with SOTA Methods (Tables 1 and 2)",
+      "content": "Compared to prior state-of-the-art methods, e.g., g3D-LF and Uni-NaVid, our Dynam3D achieves modest improvements of approximately 1-2% in navigation success rate (SR), aligning with expected margins given the task difficulty. Although Dynam3D uses a large model, it maintains a smaller parameter footprint (3.8B vs. 7B) relative to the video-based Uni-NaVid.\n\nOur Dynam3D demonstrates incremental improvements, outperforming NaVid by approximately 3-5% in Success Rate (SR) on REVERIE-CE and NavRAG-CE.\n\n[Table 1, R2R-CE Val SR] g3D-LF 47.2, Uni-NaVid 47.0, Dynam3D 52.9; [R2R-CE Test SR] g3D-LF 46.3, Dynam3D 51.4.\n[Table 2] REVERIE-CE Val SR: NaVid 26.6, g3D-LF 34.4, Dynam3D 40.1; NavRAG-CE Val SR: NaVid 19.4, g3D-LF 21.4, Dynam3D 24.7.",
+      "route": "verify-math",
+      "route_rationale": "Arithmetic on experimental tables — unformalisable in Lean, but a direct numerical consistency check between prose and tabulated data.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::1",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.95,
+        "reasoning": "Both magnitudes contradict the tables under either reading. Table 1 R2R-CE Val SR: 52.9-47.2=+5.7pp vs g3D-LF (+12.1% rel.) and 52.9-47.0=+5.9pp vs Uni-NaVid (+12.6% rel.); Test: 51.4-46.3=+5.1pp (+11.0% rel.). None is 'approximately 1-2%'. Table 2 vs NaVid: REVERIE-CE 40.1-26.6=+13.5pp (+50.8% rel.); NavRAG-CE 24.7-19.4=+5.3pp (+27.3% rel.). Neither matches 'approximately 3-5%' jointly: REVERIE-CE is off by ~3-10x either way. The text understates the paper's own results by roughly a factor of 3-5, an arithmetic inconsistency between prose and tabulated data. The 3.8B figure is corroborated elsewhere (LLaVA-Phi-3-mini).",
+        "predicted_error_category": "Sign/Arithmetic error",
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": [
+          "achieves modest improvements of approximately 1-2% in navigation success rate (SR)",
+          "outperforming NaVid by approximately 3-5% in Success Rate (SR) on REVERIE-CE and NavRAG-CE",
+          "| g3D-LF [15]         | ×   | Feature Fields                 | 5.70               | 59.5                | 47.2",
+          "| Dynam3D (Ours)      | ✓   | 3D Patch-Instance-Zone Tokens  | 5.34               | 62.1                | 52.9",
+          "| NaVid [5]           | ✓   | Video Frames                  | 6.74               | 36.3                | 26.6"
+        ]
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::2",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "4.6 Ablation Study (Table 6)",
+      "content": "Contribution of 3D Representations. From the full model (last row), removing the rendered panoramic patch tokens (row 1), instance tokens (row 4), zone tokens (row 5), or both instance and zone tokens (row 3) leads to performance drops of varying degrees. The results show that the impact on performance follows the order: Patch > Instance > Zone tokens.\n\nSpecifically, when both 3D instance and zone representations are removed and only 3D patch tokens from the feature fields [15] are used (row 3), there is a substantial performance drop, particularly on REVERIE-CE, where SR decreases by nearly 15%.\n\nImportance of Subspace Alignment. Without Subspace Alignment supervision (row 6), the navigation performance significantly decreases.\n\nValue of Rendered Panoramic Views. ... Comparing row 2 and last row in Table 6, replacing the rendered panoramic tokens with CLIP patch features extracted from the current monocular view results in about a 10% drop in navigation success rates on both R2R-CE and REVERIE-CE.",
+      "route": "verify-math",
+      "route_rationale": "Arithmetic on experimental tables plus row-reference bookkeeping — unformalisable, checkable by inspection.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::2",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "All row citations match Table 6's checkmark patterns: row 1 = no patch tokens, row 4 = instance removed, row 5 = zone removed, row 3 = both removed. Drops vs row 7 (52.9/40.1 SR) are Patch 20.2/20.8, Instance 5.0/13.3, Zone 0.5/0.8, so the claimed ordering Patch > Instance > Zone holds on both benchmarks. 'Nearly 15%' matches REVERIE 40.1-25.7 = 14.4 points for row 3. 'About a 10% drop' matches row 2: 9.8 points (R2R) and 11.7 points (REVERIE) - a loose but fair approximation. Row 6's 'significantly decreases' corresponds to only 2.2/1.7 points, which is rhetorically overstated relative to the 20-point patch ablation, but it is a qualitative wording issue, not an arithmetic or derivational error.",
+        "predicted_error_category": null,
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::3",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "4.3 Experiments on Real-World and Dynamic Environments (Tables 4 and 5)",
+      "content": "As shown in Tables 4, 5 and Figure 4, we evaluate our Dynam3D on real-world static and dynamic environments using the Hello Robot Stretch 3. Each setting includes 20 test cases, and navigation is considered successful if the robot stops within 1 meter of the target. In the static environment (Table 4), Dynam3D achieves higher success rates than baselines, reaching 70% after pre-exploration.\n\n[Table 4, static, NE/OSR/SR] NaVid 2.2/45/35; g3D-LF 3.1/40/30; Dynam3D 1.4/65/55; + Pre-exploration 0.8/75/70.\n[Table 5, dynamic, NE/OSR/SR] NaVid 3.6/45/20; g3D-LF 4.6/35/10; Dynam3D 1.9/60/45; + Pre-exploration 1.4/75/45.",
+      "route": "verify-math",
+      "route_rationale": "Rate granularity against a stated sample size of 20, plus the OSR ≥ SR structural constraint — experimental data, informal check.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::3",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "Granularity holds: with n=20, rates must be multiples of 5%. Table 4 (45/35, 40/30, 65/55, 75/70) and Table 5 (45/20, 35/10, 60/45, 75/45) are all multiples of 5, i.e. integer counts 9/7, 8/6, 13/11, 15/14 and 9/4, 7/2, 12/9, 15/9. OSR>=SR holds in all eight rows. NE is coherent with the 1 m threshold: the hard bound NE >= (1-SR)x1m is satisfied everywhere (0.8>=0.3; 2.2>=0.65; 4.6>=0.9). Implied mean failure distances are plausible (NE 0.8/SR 70% implies ~1.5 m failures; NE 2.2/SR 35% implies ~3.1 m). The 70% claim matches Table 4. No mathematical error.",
+        "predicted_error_category": null,
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::4",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "4.6 Robustness to Noise (Table 7)",
+      "content": "To simulate SLAM noise, we introduce localization noise uniformly sampled from −5 cm to +5 cm and orientation noise from −3° to +3° at each step. Depth camera noise is added with a magnitude proportional to distance.\n\nIn addition to these, we perform ablation by degrading the quality of 3D instance and zone embeddings through feature dropout and spatial jitter to evaluate sensitivity. Table 7 shows that while navigation success rate (SR) decreases with noise addition, it degrades significantly more when 3D representation quality is compromised. This indicates the navigation performance heavily depends on the fidelity of the hierarchical 3D representations, exposing potential failure modes. A significant reason is that our Dynam3D leverages 2D foundation models (e.g., CLIP [11], FastSAM [12]) to extract visual semantic features, which are unaffected by SLAM and depth noise. Even with minor spatial position deviations due to noise, the 3D-aware representations obtained by our model through the hierarchical encoding of Patch-Instance-Zone remain sufficient for perceiving spatial geometry and scene layout at the object and zone levels.\n\n[Table 7, R2R-CE Val Unseen, SLAM/Depth noise → NE/OSR/SR/SPL] ×,× → 5.34/62.1/52.9/45.7; ✓,× → 5.46/61.3/52.1/45.0; ×,✓ → 5.39/61.9/52.3/45.2; ✓,✓ → 5.47/60.7/50.9/44.1.",
+      "route": "verify-math",
+      "route_rationale": "Quantitative claim checked against the data actually tabulated — experimental, unformalisable in Lean.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::4",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.86,
+        "reasoning": "The text attributes to Table 7 a comparison the table does not contain. Table 7 has only four rows spanning SLAM and depth noise; no row reports degraded 3D instance/zone embeddings (feature dropout, spatial jitter), so the claim that performance 'degrades significantly more when 3D representation quality is compromised' has no numerical support and no magnitude can be computed. The paragraph is also self-contradictory: it concludes performance 'heavily depends on the fidelity of the hierarchical 3D representations' while simultaneously asserting the features are 'unaffected by SLAM and depth noise' and 'remain sufficient'. The actual data support only the second reading: combined noise moves SR 52.9 to 50.9, a 2.0-point (3.8% relative) drop, consistent with 'decreases with noise addition' but contradicting the 'heavily depends' and 'failure modes' conclusion.",
+        "predicted_error_category": "Domain/Constraint violation",
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": [
+          "Table 7 shows that while navigation success rate (SR) decreases with noise addition, it degrades significantly more when 3D representation quality is compromised",
+          "we perform ablation by degrading the quality of 3D instance and zone embeddings through feature dropout and spatial jitter",
+          "the navigation performance heavily depends on the fidelity of the hierarchical 3D representations, exposing potential failure modes",
+          "which are unaffected by SLAM and depth noise",
+          "remain sufficient for perceiving spatial geometry and scene layout at the object and zone levels",
+          "| ✓          | ✓           | 5.47 | 60.7 | 50.9 | 44.1 |"
+        ]
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.86
+    }
+  ],
+  "findings": [
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::1",
+      "category": "Prose/table numerical inconsistency",
+      "severity": "minor",
+      "confidence": 0.95,
+      "evidence": "The stated improvement magnitudes contradict the paper's own tables under **either** reading. Table 1 (R2R-CE Val SR): $52.9 - 47.2 = +5.7$ points vs g3D-LF ($+12.1\\%$ relative) and $52.9 - 47.0 = +5.9$ points vs Uni-NaVid ($+12.6\\%$ relative); Test split $51.4 - 46.3 = +5.1$ points. None of these is \"approximately 1-2%\". Table 2 vs NaVid: REVERIE-CE $40.1 - 26.6 = +13.5$ points ($+50.8\\%$ relative) and NavRAG-CE $24.7 - 19.4 = +5.3$ points ($+27.3\\%$ relative) — the REVERIE-CE figure misses \"approximately 3-5%\" by a factor of roughly $3$ to $10$. The prose understates the paper's own measured gains by a factor of about $3$–$5$. Severity is minor because the error runs in the conservative direction: the tables are internally consistent and the main performance claim survives (indeed it is stronger than stated).",
+      "verifier": "verify-math",
+      "exact_quote": "our Dynam3D achieves modest improvements of approximately 1-2% in navigation success rate (SR), aligning with expected margins given the task difficulty"
+    },
+    {
+      "snippet_id": "paper::EQUATION::0",
+      "category": "Formally refuted",
+      "severity": "minor",
+      "confidence": 0.93,
+      "evidence": "Lean refuted the conjunction of Equation (1) with the paper's own frustum-culling behaviour. Equation (1) has the form $\\mathcal{M}_t = \\mathcal{M}_{t-1} \\cup S_t$, which is **monotone** in $\\mathcal{M}_{t-1}$: `not_paperClaim : ¬ ∃ (Mprev S Mcur : Set ℕ) (p : ℕ), Mcur = Mprev ∪ S ∧ p ∈ Mprev ∧ p ∉ Mcur` compiles with **zero** axiom dependencies (not even `propext`), and non-vacuity was discharged separately by `eq1_satisfiable`. So no feature point present at step $t-1$ can be absent at step $t$ — yet two paragraphs later the paper states that \"A feature point $P_w$ is removed from the feature points set $\\mathcal{M}$ by the FrustumCulling$(\\cdot)$ function\", and explicitly contrasts the method with \"previous methods [46, 45, 28, 15] that simply add new feature points\" — which is exactly what Equation (1) as printed does. The equation needs a removal term, e.g. $\\mathcal{M}_t = (\\mathcal{M}_{t-1} \\setminus R_t) \\cup S_t$. Severity is minor: the removal rule is fully specified separately in Equation (2), so the method is implementable; it is the stated update equation that is incomplete.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "$$\\mathcal{M}_t = \\mathcal{M}_{t-1} \\cup \\{[\\mathbf{g}_{t,i}, P_{t,i}, \\theta_{t,i}, s_{t,i}]\\}_{i=1}^{I}.$$"
+    },
+    {
+      "snippet_id": "paper::EQUATION::1",
+      "category": "Domain/Constraint violation",
+      "severity": "minor",
+      "confidence": 0.93,
+      "evidence": "Lean refuted the well-definedness of the depth lookup in Equation (2)'s culling predicate. The paper fixes the convention \"$d_{h,w}$ denotes the depth value in row $h$ and column $w$\" of $\\mathbf{D}_t \\in \\mathbb{R}^{H \\times W}$, and the guards $0 < u < W$, $0 < v < H$ make $u$ a **column** index and $v$ a **row** index — yet the predicate reads $d_{u,v}$, i.e. row $u$, column $v$. `eq2_depth_lookup_not_well_defined` compiles clean with the kernel-checked witness $H = 480$, $W = 640$, $u = 600$, $v = 100$: both guards hold, but the row index $600 \\ge H = 480$ is out of range. Two companion lemmas localise the defect — `eq2_depth_lookup_well_defined_of_square` shows the claim does hold when $H = W$, and `eq2_transposed_lookup_well_defined` shows $d_{v,u}$ is well defined for general $H, W$ — so this is an index transposition, almost certainly a typo for $d_{v,u}$. The projection algebra itself is sound: the companion lemma `pinhole_third_component_eq_one` proves the third component of $\\frac{1}{z_c}\\mathbf{K}[x_c, y_c, z_c]^\\top$ is exactly $1$ for standard intrinsics and $z_c \\neq 0$.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "FrustumCulling$$(P_w)$$, if $$0 < z_c < \\min(d_{u,v} + \\delta, \\Delta)$$, $$0 < u < W$$, and $$0 < v < H$$."
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::4",
+      "category": "Claim unsupported by cited data / internal contradiction",
+      "severity": "minor",
+      "confidence": 0.86,
+      "evidence": "The sentence attributes to Table 7 a comparison the table does not contain. Table 7 has exactly four rows, spanning only SLAM noise and depth noise; there is **no** row for degraded 3D instance/zone embeddings, so the claim that performance \"degrades significantly more when 3D representation quality is compromised\" has no numerical support and no magnitude can be computed from the presented data. The paragraph is also self-contradictory: it concludes that performance \"heavily depends on the fidelity of the hierarchical 3D representations, exposing potential failure modes\", then asserts in the next two sentences that the features are \"unaffected by SLAM and depth noise\" and \"remain sufficient\". Only the second reading is supported by the data: combined noise moves SR from $52.9$ to $50.9$, a $2.0$-point ($3.8\\%$ relative) drop. Severity is minor — the defect is confined to the §4.6 robustness discussion and does not bear on the benchmark results.",
+      "verifier": "verify-math",
+      "exact_quote": "Table 7 shows that while navigation success rate (SR) decreases with noise addition, it degrades significantly more when 3D representation quality is compromised."
+    }
+  ],
+  "verdict": "MINOR_ERRORS",
+  "verdict_confidence": 0.82,
+  "summary": "Dynam3D is an empirical systems paper: it contains no theorems or proofs, and its mathematical content is seven display equations (a set-update recurrence, a pinhole-projection/culling predicate, an instance-encoder definition, and four contrastive/distillation losses) plus a body of quantitative claims about its own tables. Thirteen snippets were extracted; 5 were routed to Lean 4 and 8 to informal review. All five Lean runs completed in budget — **2 REFUTED, 3 PASSED, 0 FAILED, 0 NOT_ATTEMPTED** — so no fallback informal passes were needed and nothing is left unsettled by the formal arm.\n\n**What Lean settled against the paper (2 refutations, both minor):** Equation (1), $\\mathcal{M}_t = \\mathcal{M}_{t-1} \\cup \\{\\dots\\}$, is monotone in $\\mathcal{M}_{t-1}$ — `not_paperClaim` compiles with *zero* axiom dependencies — so the paper's only stated online update rule provably cannot perform the removal that its own frustum-culling mechanism performs, and that the paper explicitly advertises as what distinguishes it from \"previous methods ... that simply add new feature points\". It needs a removal term such as $\\mathcal{M}_t = (\\mathcal{M}_{t-1} \\setminus R_t) \\cup S_t$. Separately, Equation (2)'s culling predicate indexes the depth map as $d_{u,v}$ while the paper's own convention is $d_{h,w} =$ (row, column) and its guards make $u < W$ a column and $v < H$ a row; Lean refuted well-definedness with the witness $H{=}480, W{=}640, u{=}600, v{=}100$, and companion lemmas show the claim holds iff $H = W$ and that $d_{v,u}$ is well defined in general — i.e. a transposition typo. Both are presentation defects in otherwise-implementable mathematics, hence `minor`.\n\n**What Lean settled in the paper's favour (3 passes):** Equation (4) is a well-posed non-negative loss whose zero set is exactly perfect per-pair classification (`lsegm_nonneg`, `lsegm_eq_zero_iff`); Equation (5) is a valid softmax cross-entropy that is strictly positive for $J \\ge 2$ and admits the explicit temperature floor $\\mathrm{CE} \\ge \\log\\!\\left(1 + (J-1)e^{-2/\\tau}\\right)$ under the cosine bound; and the Subspace Contrastive Learning claim behind Equation (7) is mathematically coherent — `cosSim_not_translation_invariant` exhibits $\\mathrm{CosSim}(a,b) = 0$ against $\\mathrm{CosSim}(a - v, b - v) = 4/5$, and positive-scale invariance (`cosSim_smul_left`) confirms the precise sense in which Equation (6) is origin-anchored. Three Lean-recorded observations are deliberately **not** findings: Equation (4) sums over $K$ while dividing by $J$, so it scales linearly in the Top-$K$ hyperparameter (a scaling convention the paper never claims is a mean); Equations (5)–(7) are well-defined only under the unstated side condition $I \\le J$; and Equation (7) introduces a $0/0$ degeneracy when $\\mathcal{O}_i = \\mathcal{V}_j$ that Equation (6) does not have. The symbol drift $\\mathcal{E}_i \\to \\mathcal{O}_i$ and the overloading of $I$ (patch count $576$ vs. instance count) are likewise notation, not mathematics.\n\n**Informal arm:** 6 of 8 snippets came back clean and the checks were substantive, not vacuous — the §4.5 timing budget sums exactly ($83{+}315{+}57 = 455$ ms, $83{+}540{+}26 = 649$ ms, both roundings correct); $336/14 = 24$ confirms $I = 24 \\times 24$ and the $12 \\times 48$ ray grid tiles a $90^\\circ \\times 360^\\circ$ FOV at an isotropic $7.5^\\circ$ step; every Table 6 row reference matches its checkmark pattern and the claimed Patch $>$ Instance $>$ Zone ordering holds on both benchmarks ($20.2/5.0/0.5$ points on R2R-CE); and all eight real-world rates respect the $5\\%$ granularity forced by $n = 20$ with $\\mathrm{OSR} \\ge \\mathrm{SR}$ throughout and $\\mathrm{NE} \\ge (1 - \\mathrm{SR}) \\times 1\\,\\mathrm{m}$. The two informal findings are the §4.1 magnitude claims, which understate the paper's own tabulated gains by a factor of $3$–$5$ (\"1-2%\" for an actual $+5.7$/$+5.9$ points; \"3-5%\" for an actual $+13.5$ points on REVERIE-CE), and the §4.6 robustness paragraph, which cites Table 7 for a 3D-representation-degradation ablation absent from it and then contradicts itself within three sentences.\n\n**Disagreements between the two arms:** none. The two verifiers never examined the same claim and reached opposite verdicts; where they overlapped in subject matter (Equations 5 and 6) both returned clean, and the informal pass on Equation (6) independently reached the same \"under-specification, not error\" judgement that the Lean pass on Equation (5) recorded.\n\n**Verdict: MINOR_ERRORS at confidence 0.82.** Four confident findings, none critical: two are machine-checked refutations of equation presentation whose underlying mechanisms remain correctly specified elsewhere in the text, and two are quantitative-reporting defects that do not invalidate the benchmark results (the §4.1 error in fact understates them). No main claim is refuted, and the paper's three substantive loss formulations were formally proven well-posed. Confidence is held at $0.82$ rather than higher because four of the paper's thirteen mathematical objects are claims about experimental data that no verifier here can check against the underlying runs, and the paper's headline contributions are empirical rather than mathematical, so a clean mathematical bill of health constrains its correctness only weakly.\n\n**Lean project lifecycle note:** `PAPER_NAME` is `paper`, so `PROJECT_NAME` derives to `Paper` — the *shared* `MATH_VERIFICATION/Paper` project that already existed on disk and is reused by every `paper.md` run on this machine. Per the skill's own reuse rule (\"If Step 0 reused an existing project rather than creating it ... it is not yours to remove\"), all five Lean calls were pinned to `--project=Paper --keep-lean`, including the last; the project was verified intact after the run, per-snippet scratch (`TMP.lean`, `claim.md`) was removed, and the five proofs were archived additively under `MATH_VERIFICATION/Paper/Paper/Verified/7418-Dynam3D-opus5/`. Hence `lean_project_kept: true`."
+}

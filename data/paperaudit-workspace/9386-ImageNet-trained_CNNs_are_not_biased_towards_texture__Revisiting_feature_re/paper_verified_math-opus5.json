@@ -1,0 +1,200 @@
+{
+  "paper_name": "paper",
+  "paper_path": "/Users/iacopoghinassi/Documents/Github/Wittgenstein/data/paperaudit-workspace/9386-ImageNet-trained_CNNs_are_not_biased_towards_texture__Revisiting_feature_re/paper.md",
+  "tag": "opus5",
+  "lean_project": "MATH_VERIFICATION/Paper",
+  "lean_project_kept": true,
+  "totals": {
+    "snippets_extracted": 6,
+    "routed_to_math": 5,
+    "routed_to_lean": 1,
+    "lean_passed": 0,
+    "lean_refuted": 1,
+    "lean_failed": 0,
+    "fallbacks_run": 0,
+    "errors_detected": 2
+  },
+  "results": [
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::0",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "4.1 Quantitative Validation of Suppression Transformations",
+      "content": "Section 4.1, aggregation rule for Table 2:\n\n\"All metrics are normalized to the range [0, 1] by dividing by the scores of the unsuppressed image. Higher values of ESSIM and GC indicate better preservation of edge and structural information, while lower values of LV and HFE reflect stronger suppression of texture features. Further, we compute a harmonic mean across the two texture metrics (Texture) and the two shape metrics (Shape) for each transformation.\"\n\nTable 2 (all values to three decimals; Texture/Shape are the aggregate columns, LV/HFE the texture components, ESSIM/GC the shape components):\n\n| Transformation    | Param ID | Texture | Shape | LV    | HFE   | ESSIM | GC    |\n| Bilateral Filter  | A        | 0.521   | 0.796 | 0.548 | 0.493 | 0.737 | 0.855 |\n| Box Blur          | B        | 0.193   | 0.363 | 0.237 | 0.148 | 0.436 | 0.289 |\n| Gaussian Blur     | C        | 0.349   | 0.662 | 0.392 | 0.306 | 0.744 | 0.579 |\n| Median Filter     | D        | 0.357   | 0.506 | 0.399 | 0.316 | 0.584 | 0.429 |\n| NLMeans Denoising | E        | 0.706   | 0.797 | 0.723 | 0.690 | 0.730 | 0.864 |\n| Patch Shuffle     | F        | 1.000   | 0.176 | 1.000 | 1.000 | 0.205 | 0.147 |\n| Patch Rotation    | F        | 1.000   | 0.293 | 1.000 | 1.000 | 0.339 | 0.247 |\n\nThe verifiable claim: each Texture entry equals the harmonic mean of that row's LV and HFE, and each Shape entry equals the harmonic mean of that row's ESSIM and GC.",
+      "route": "verify-math-lean",
+      "route_rationale": "The aggregation rule is a closed-form identity over explicit rationals, so it is exactly decidable in Lean; a refutation here is formal evidence rather than an informal reading.",
+      "lean_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::0",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.97,
+        "reasoning": "Formalised the paper's stated Table 2 aggregation rule against its own reported numbers, using the Box Blur row (the row with the largest discrepancy). Hypotheses assumed: only the six printed figures of that row, plus the rounding tolerance 0.0005 implied by three-decimal reporting. No hypotheses were added that are not in the paper.\n\n`table2_boxblur_not_harmonic_but_arithmetic` compiles clean: the harmonic means $H(0.237,0.148)=0.18221\\ldots$ and $H(0.436,0.289)=0.34760\\ldots$ differ from the reported $0.193$ and $0.363$ by $0.0108$ and $0.0154$ respectively — far beyond rounding — while the arithmetic means $0.1925$ and $0.3625$ agree with both reported figures to within the $0.0005$ tolerance.\n\nBecause the component metrics are themselves rounded to three decimals, I additionally proved two rounding-robust statements quantified over every unrounded metric value consistent with the printed figures: `table2_boxblur_texture_not_harmonic_robust` shows $|H(\\mathrm{LV},\\mathrm{HFE}) - 0.193| > 0.01$ and `table2_boxblur_shape_not_harmonic_robust` shows $|H(\\mathrm{ESSIM},\\mathrm{GC}) - 0.363| > 0.014$ for all admissible inputs. So no choice of unrounded component values can rescue the harmonic-mean claim.\n\nCompiler: `lake env lean Paper/TMP.lean` exited 0 with empty output; `lean_diagnostic_messages` returned zero items (no errors, no warnings, no `sorry`); `lean_verify` on all three theorems returned axioms `[propext, Classical.choice, Quot.sound]` with no `sorryAx` and no non-standard axioms. This is a compiling refutation of the paper's stated rule, hence REFUTED.\n\nScope note: Lean settled the Box Blur row. Outside Lean I checked all 7 rows / 14 aggregate entries arithmetically — every one matches the arithmetic mean to within 0.0005, while the harmonic mean is off by up to 0.0154, so the mislabelling is systematic across the whole table rather than a single-row slip.",
+        "predicted_error_category": "Formally refuted",
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": [
+          "Section 4.1: \"we compute a harmonic mean across the two texture metrics (Texture) and the two shape metrics (Shape)\"",
+          "Table 2, Box Blur row: Texture = 0.193, Shape = 0.363"
+        ],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/9386-TextureBiasRevisited__FORMULA_BLOCK__0_opus5.lean",
+          "formal_statement": "noncomputable def hmean (a b : ℝ) : ℝ := 2 * a * b / (a + b)\nnoncomputable def amean (a b : ℝ) : ℝ := (a + b) / 2\n\ntheorem table2_boxblur_not_harmonic_but_arithmetic :\n    |hmean 0.237 0.148 - 0.193| > 0.0005 ∧\n    |hmean 0.436 0.289 - 0.363| > 0.0005 ∧\n    |amean 0.237 0.148 - 0.193| ≤ 0.0005 ∧\n    |amean 0.436 0.289 - 0.363| ≤ 0.0005 := by\n  refine ⟨?_, ?_, ?_, ?_⟩ <;>\n    simp only [hmean, amean] <;>\n    rw [abs_sub_comm] <;>\n    rw [abs_of_nonneg (by norm_num)] <;>\n    norm_num\n\ntheorem table2_boxblur_texture_not_harmonic_robust\n    (lv hfe : ℝ) (hlv : |lv - 0.237| ≤ 0.0005) (hhfe : |hfe - 0.148| ≤ 0.0005) :\n    |hmean lv hfe - 0.193| > 0.01 := by\n  rw [abs_le] at hlv hhfe\n  obtain ⟨hlv1, hlv2⟩ := hlv\n  obtain ⟨hhfe1, hhfe2⟩ := hhfe\n  have hpos : (0:ℝ) < lv + hfe := by linarith\n  have key : hmean lv hfe < 0.183 := by\n    rw [hmean, div_lt_iff₀ hpos]\n    nlinarith [sq_nonneg (lv - hfe)]\n  rw [abs_sub_comm, abs_of_nonneg (by linarith)]\n  linarith\n\ntheorem table2_boxblur_shape_not_harmonic_robust\n    (es gc : ℝ) (hes : |es - 0.436| ≤ 0.0005) (hgc : |gc - 0.289| ≤ 0.0005) :\n    |hmean es gc - 0.363| > 0.014 := by\n  rw [abs_le] at hes hgc\n  obtain ⟨hes1, hes2⟩ := hes\n  obtain ⟨hgc1, hgc2⟩ := hgc\n  have hpos : (0:ℝ) < es + gc := by linarith\n  have key : hmean es gc < 0.349 := by\n    rw [hmean, div_lt_iff₀ hpos]\n    nlinarith [sq_nonneg (es - gc)]\n  rw [abs_sub_comm, abs_of_nonneg (by linarith)]\n  linarith",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.97
+    },
+    {
+      "snippet_id": "paper::EQUATION::0",
+      "snippet_type": "EQUATION",
+      "location": "5.1 Experiment I: Human vs. CNNs Feature Reliance",
+      "content": "Definition of the paper's headline metric, Section 5.1 and Table 3 caption:\n\n\"Figure 3 presents a comparative overview of the performance of humans and CNNs under feature suppression, plotted as the relative accuracy (i.e., accuracy under suppression divided by baseline accuracy on original images).\"\n\n\"Table 3: Relative accuracy (accuracy under suppression divided by accuracy on original images) for each feature-suppression type across models and human observers.\"\n\nThat is, $r = a_{\\text{suppressed}} / a_{\\text{original}}$. The accompanying prose reports: ResNet50-standard retains 80% under texture suppression and 83% under global shape suppression, dropping to 28% under local shape suppression; humans retain 76% under local shape suppression; ResNet50-sota reaches 62% and ConvNeXtV2 65% under local shape suppression. Table 3 lists for these cells: ResNet50-standard 0.795 (texture), 0.832 (global shape), 0.276 (local shape); Humans 0.763 (local shape); ResNet50-sota 0.618; ConvNeXtV2 0.647.",
+      "route": "verify-math",
+      "route_rationale": "A single ratio definition plus its instantiation against a table — checkable by inspection, with no non-trivial argument to formalise.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "The metric is a plain ratio of two accuracies, which is well defined whenever the baseline accuracy is non-zero; every baseline in Table 3 is between 0.856 and 0.969, so no division by zero or sign issue arises. Every percentage quoted in the prose reconciles with Table 3 under this definition: $0.795 \\to 80\\%$, $0.832 \\to 83\\%$, $0.276 \\to 28\\%$, $0.763 \\to 76\\%$, $0.618 \\to 62\\%$, $0.647 \\to 65\\%$, all correct to the stated rounding. The ratio is not bounded above by 1 in principle, and indeed the reported values stay at or below 0.999, so nothing exceeds its admissible range. No algebraic, sign, or domain error.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::DEFINITION::0",
+      "snippet_type": "DEFINITION",
+      "location": "4.1 Quantitative Validation of Suppression Transformations",
+      "content": "Section 4.1, normalisation of the four validation metrics:\n\n\"All metrics are normalized to the range [0, 1] by dividing by the scores of the unsuppressed image.\"\n\nThe metrics are Local Variance (LV) and High-Frequency Energy (HFE) for texture, Edge-SSIM (ESSIM) and Gradient Correlation (GC) for shape. The relevant Table 2 entries are the shape-suppressing rows, where LV and HFE are marked \"higher is better\" (Texture↑, LV↑, HFE↑):\n\n| Patch Shuffle  | F | Texture 1.000 | Shape 0.176 | LV 1.000 | HFE 1.000 | ESSIM 0.205 | GC 0.147 |\n| Patch Rotation | F | Texture 1.000 | Shape 0.293 | LV 1.000 | HFE 1.000 | ESSIM 0.339 | GC 0.247 |\n\nSection 4 states of these same transformations: \"Patch Rotation rotates individual patches, which may partially disrupt both shape and local texture cues due to edge discontinuities introduced within patches.\"",
+      "route": "verify-math",
+      "route_rationale": "A range claim about image statistics the paper never pins down formally; a Lean statement would either be a triviality about ratios or require inventing the metrics' definitions.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::DEFINITION::0",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.8,
+        "reasoning": "The stated normalisation does not achieve the asserted range. Dividing a metric score by the corresponding score of the unsuppressed image yields a ratio in $[0, \\infty)$, not in $[0,1]$: the quotient $m(T(x))/m(x)$ exceeds 1 for any transformation $T$ that *increases* the metric. This is not a hypothetical here. The paper itself says Patch Rotation introduces \"edge discontinuities ... within patches\", and Patch Shuffle likewise creates new seams between permuted patches. Both local variance and high-frequency energy are raised by such discontinuities, so $\\mathrm{LV}$ and $\\mathrm{HFE}$ ratios for these two transformations should be strictly greater than 1 — which is precisely why the table marks them \"↑, higher is better\" for shape suppression.\n\nInstead, all four of those entries are reported as exactly $1.000$ (Patch Shuffle LV and HFE, Patch Rotation LV and HFE). Four independent image statistics over 800 images landing on exactly the baseline value is not a plausible outcome of the stated division; it is the signature of clipping or capping at 1 to enforce the claimed $[0,1]$ range, which the text does not disclose. Either way the asserted range $[0,1]$ does not follow from the stated operation — a domain-constraint violation in the definition.\n\nSeverity is limited: the aggregate texture figure for the shape-suppressing rows is used only to argue that these transformations \"preserve texture\", a conclusion that capping at 1 understates rather than overstates. But it does mean Table 2 cannot show how much texture energy Patch Shuffle and Patch Rotation actually *add*, which is relevant to the paper's own caveat that these transformations \"can unintentionally affect texture\".",
+        "predicted_error_category": "Domain/Constraint violation",
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": [
+          "Section 4.1: \"All metrics are normalized to the range [0, 1] by dividing by the scores of the unsuppressed image.\"",
+          "Table 2, Patch Shuffle and Patch Rotation rows: LV = 1.000, HFE = 1.000"
+        ]
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::1",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "4.1 Quantitative Validation of Suppression Transformations",
+      "content": "Section 4.1, the selection argument drawn from Table 2:\n\n\"Among texture-suppressing methods, bilateral filtering yields the most balanced trade-off between reducing texture (LV: 0.54, HFE: 0.49) and preserving shape (ESSIM: 0.74, GC: 0.85). Gaussian Blur suppresses texture more uniformly but leads to a greater loss of shape information. Box blur and median filtering remove texture strongly, but at a substantial cost to shape preservation.\"\n\nTable 2 texture-suppressing rows, as (Texture↓, Shape↑): Bilateral Filter (0.521, 0.796); Box Blur (0.193, 0.363); Gaussian Blur (0.349, 0.662); Median Filter (0.357, 0.506); NLMeans Denoising (0.706, 0.797).",
+      "route": "verify-math",
+      "route_rationale": "A comparative ordering claim over tabulated numbers; checkable by inspection and with no closed-form content to formalise.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::1",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "The four quoted component values round correctly from Table 2: $0.548 \\to 0.54$, $0.493 \\to 0.49$, $0.737 \\to 0.74$, $0.855 \\to 0.85$. The comparative claim is consistent with the table under the paper's own objective (lower Texture, higher Shape). Bilateral Filter (0.521, 0.796) weakly dominates NLMeans (0.706, 0.797): essentially identical shape preservation with far stronger texture suppression. Against Gaussian Blur (0.349, 0.662), Box Blur (0.193, 0.363) and Median Filter (0.357, 0.506) it trades less texture suppression for markedly better shape preservation, exactly as the prose describes, so no row Pareto-dominates it. The subsidiary claims also hold: Gaussian Blur does suppress texture more (0.349 < 0.521) at greater shape cost (0.662 < 0.796), and Box Blur and Median Filter have the two lowest Shape scores in the table. Note that the Texture and Shape figures this argument rests on are the mislabelled aggregates flagged in paper::FORMULA_BLOCK::0; the ordering conclusion is unaffected, because substituting the true harmonic means preserves the relative ranking of all five rows.",
+        "predicted_error_category": null,
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "5.2 Experiment II: Domain-specific Feature Reliance",
+      "content": "Section 5.2, normalisation used for Figures 4 and 5:\n\n\"Chance-level accuracies were rescaled to zero and baseline accuracies to one to enable cross-domain visual comparison, though this normalization masks inherent reliability differences.\"\n\nThe axes of Figure 4 are labelled \"Accuracy (Relative to No Suppression)\", and Section 5.1 / Table 3 define relative accuracy as \"accuracy under suppression divided by accuracy on original images\". The two maps are $r = a/a_0$ and $r' = (a - c)/(a_0 - c)$ for chance level $c$.",
+      "route": "verify-math",
+      "route_rationale": "Two competing normalisations stated in prose; no crisp formal assertion to prove or refute, and the chance levels are never tabulated.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.65,
+        "reasoning": "The paper uses two non-equivalent normalisations under one label. The ratio map $r = a/a_0$ of Section 5.1 and Table 3 sends chance level $c$ to $c/a_0 > 0$, not to zero, so it cannot be the map described in Section 5.2; the affine map $r' = (a-c)/(a_0-c)$ does send chance to zero but is not \"accuracy relative to no suppression\" in the sense of the Figure 4 axis label. The two coincide only when $c = 0$. Both maps are individually well defined (the denominators are non-zero, since every reported baseline exceeds chance), both send the baseline to one, and the affine map is the appropriate choice for the cross-domain comparison Figure 5 makes — the chance levels involved differ by orders of magnitude between, say, a two-class MedMNIST task and 1000-class ImageNet. So this is an inconsistent reuse of one axis label across two definitions rather than an invalid derivation, and it does not rise to the level of an algebraic, sign, or domain error warranting a correction. Flagging it is better left to a cross-section consistency check; recorded here as a caveat, not an error.",
+        "predicted_error_category": null,
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.65
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::1",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "5.1 Experiment I / Table 2 legend",
+      "content": "Table 2 legend, Section 4.1:\n\n\"Legend: A: $d=11$, $\\sigma_c=170$, $\\sigma_s=75$; B: $k=11$; C: $k=11$, $\\sigma=2.0$; D: $k=11$; E: $h=20$, $tws=11$, $sws=11$; F: $grid=6$.\"\n\nSection 5.1, parameters of the main human-versus-model experiment:\n\n\"Each feature was suppressed via a single transformation with fixed hyperparameters: Patch Shuffle with grid size 3 (global shape), grid size 6 (local shape), bilateral filtering with d=12, σ_color=170 and σ_space=75 (texture), and grayscale conversion (color). See Section 4.1 for justification.\"",
+      "route": "verify-math",
+      "route_rationale": "Parameter-value consistency between two sections; nothing to formalise.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::1",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.6,
+        "reasoning": "The bilateral-filter diameter differs between the two places: Param ID A in the Table 2 legend is $d=11$, whereas Section 5.1 reports $d=12$ while explicitly citing Section 4.1 as its justification. The two $\\sigma$ values agree ($\\sigma_c = 170$, $\\sigma_s = 75$), so only the diameter is in conflict, and the validated configuration is therefore not literally the one used in the main experiment. A one-unit difference in kernel diameter is a plausible transcription slip rather than a mathematical error, and per the verifier's rules typographical discrepancies in accompanying text are not to be flagged. Recorded as a reporting inconsistency; no mathematical defect.",
+        "predicted_error_category": null,
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.6
+    }
+  ],
+  "findings": [
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::0",
+      "category": "Formally refuted",
+      "severity": "minor",
+      "confidence": 0.97,
+      "evidence": "Lean refuted the paper's stated aggregation rule for Table 2. Section 4.1 asserts the `Texture` and `Shape` columns are **harmonic** means of their two component metrics, but every entry in the table is the **arithmetic** mean. For the Box Blur row, $H(0.237, 0.148) = 0.1822$ against a reported $0.193$, and $H(0.436, 0.289) = 0.3476$ against a reported $0.363$ — errors of $0.011$ and $0.015$, where three-decimal reporting allows only $0.0005$. The arithmetic means $A(0.237,0.148) = 0.1925$ and $A(0.436,0.289) = 0.3625$ both match to within that tolerance.\n\nBecause the component metrics are themselves rounded, the refutation was proved in a rounding-robust form, quantified over every unrounded value consistent with the printed figures: $|H(\\mathrm{LV},\\mathrm{HFE}) - 0.193| > 0.01$ and $|H(\\mathrm{ESSIM},\\mathrm{GC}) - 0.363| > 0.014$. No admissible inputs rescue the claim. All three theorems compile with axioms `[propext, Classical.choice, Quot.sound]` and no `sorryAx`.\n\nThe mislabelling is systematic, not a one-row slip: across all 7 rows and 14 aggregate entries, the arithmetic mean matches the reported figure to within $0.0005$ every time, while the harmonic mean is off by up to $0.0154$ in 12 of 14 (the two exceptions being rows where the two components are equal, so the means coincide). Severity is `minor` because the harmonic/arithmetic substitution preserves the relative ranking of the transformations, so the paper's choice of bilateral filtering and its empirical conclusions still stand; the defect is in the reported methodology of the validation table.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "Further, we compute a harmonic mean across the two texture metrics (Texture) and the two shape metrics (Shape) for each transformation."
+    },
+    {
+      "snippet_id": "paper::DEFINITION::0",
+      "category": "Domain/Constraint violation",
+      "severity": "minor",
+      "confidence": 0.8,
+      "evidence": "The stated normalisation cannot produce the asserted range. Dividing a metric by its value on the unsuppressed image gives a ratio in $[0, \\infty)$, not $[0,1]$: the quotient exceeds $1$ for any transformation that increases the metric. The paper itself notes that Patch Rotation introduces \"edge discontinuities ... within patches\", and Patch Shuffle creates seams between permuted patches; both raise local variance and high-frequency energy above baseline, which is why Table 2 marks LV and HFE as \"↑, higher is better\" for the shape-suppressing rows.\n\nYet all four of those entries are reported as exactly $1.000$ (Patch Shuffle LV and HFE, Patch Rotation LV and HFE). Four separate image statistics averaged over 800 images landing exactly on baseline is not a plausible result of the stated division; it indicates undisclosed clipping at $1$ to enforce the claimed range. Severity is `minor` — capping understates rather than overstates the texture preserved by these transformations — but it does prevent Table 2 from quantifying how much texture energy they add, which bears on the paper's own caveat that shape-suppressing transformations \"can unintentionally affect texture\".",
+      "verifier": "verify-math",
+      "exact_quote": "All metrics are normalized to the range [0, 1] by dividing by the scores of the unsuppressed image."
+    }
+  ],
+  "verdict": "MINOR_ERRORS",
+  "verdict_confidence": 0.82,
+  "summary": "This is an empirical computer-vision paper: it contains no theorems, lemmas, proofs or display equations, so the mathematically verifiable surface is small — six self-contained objects, all concerning the definition of the paper's metrics and the internal arithmetic of its validation table. Five were routed to informal review and one, the Table 2 aggregation rule, to Lean 4.\n\n**What Lean settled.** The single Lean snippet came back `REFUTED`, the strongest available outcome. Section 4.1 states that the `Texture` and `Shape` columns of Table 2 are harmonic means of their two component metrics; they are arithmetic means. Lean proved, for the Box Blur row, that the harmonic means miss the reported aggregates by $0.011$ and $0.015$ when three-decimal reporting permits only $0.0005$, while the arithmetic means match. Two further theorems make this robust to the rounding of the component metrics themselves, quantifying over all admissible unrounded inputs. All three compile with only the standard Mathlib axioms and no `sorryAx`. Checking the remaining rows arithmetically outside Lean confirms the mislabelling is systematic: all 14 aggregate entries match the arithmetic mean to within rounding, and the harmonic mean fails in 12 of 14.\n\n**What informal review added.** One further confident finding: the claim that the four validation metrics are \"normalized to the range [0, 1] by dividing by the scores of the unsuppressed image\" is not achievable by that operation, and the four exact $1.000$ entries for Patch Shuffle and Patch Rotation point to undisclosed clipping. Three snippets came back clean: the relative-accuracy definition reconciles with every percentage quoted against Table 3, and the \"most balanced trade-off\" argument for bilateral filtering holds under the table's own objective (and survives substituting the true harmonic means, since the ranking is preserved).\n\n**Caveats recorded but not flagged.** Figures 4–5 describe a chance-to-zero affine rescaling while carrying the Section 5.1 ratio definition's axis label; these are non-equivalent maps sharing one name. And the bilateral filter is validated at $d=11$ in the Table 2 legend but applied at $d=12$ in the main experiment that cites that validation. Both are reporting inconsistencies rather than mathematical defects, and are better handled by a cross-section consistency pass.\n\n**Disagreements.** None — no snippet was checked by both verifiers, because the one Lean snippet was settled outright and so triggered no informal fallback.\n\n**Verdict.** `MINOR_ERRORS`. Both confident findings are real and one is machine-refuted, but neither touches the paper's headline empirical claim that ImageNet-trained CNNs rely on local shape rather than texture: that claim rests on the suppression experiments of Sections 5.1–5.2, which are experimental rather than mathematical and lie outside this skill's scope. The defects are confined to how the methodological validation in Section 4.1 is described.\n\n**Lean project note.** `MATH_VERIFICATION/Paper` was reused, not created, by this run: it holds a prebuilt Mathlib and saved proofs from many other papers' runs, so per `verify-math-lean`'s rule that a reused project is not the caller's to delete, it was kept rather than removed by the final Lean call. Only per-snippet scratch (`TMP.lean`, `claim.md`) was deleted; the proof is preserved at `Paper/Verified/9386-TextureBiasRevisited__FORMULA_BLOCK__0_opus5.lean`."
+}

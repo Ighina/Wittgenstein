@@ -1,0 +1,150 @@
+{
+  "paper_id": "19233-Understanding_and_Mitigating_Numerical_Sources_of_Nondeterminism_in_LLM_In",
+  "title": "Understanding and Mitigating Numerical Sources of Nondeterminism in LLM In",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "evidence_data_integrity",
+      "error_location": "Table 23 (and Table 5)",
+      "confidence": 0.98,
+      "supporting_evidence": "For Qwen2.5-7B-Instruct on MATH500 (n=4), the BF16 row (90.65, 91.15, 90.40, 90.95, 90.85, 90.35) is identical to the BF16 row for DeepSeek-R1-Distill-Qwen-7B in Table 21. Qwen2.5-7B-Instruct's FP32/FP16 rows are ~74.8, so BF16 cannot be ~90.8; this appears to be an inadvertent copy-paste. Table 5 repeats the resulting 0.3158 stdev.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "19233-Understanding_and_Mitigating_Numerical_Sources_of_Nondeterminism_in_LLM_In::baseline"
+    },
+    {
+      "error_category": "evidence_data_integrity",
+      "error_location": "Appendix E, Tables 8 and 9",
+      "confidence": 0.95,
+      "supporting_evidence": "Table 8 reports -1 (no divergent examples) for Qwen2.5-7B-Instruct under FP32 on AIME'24 and MATH500, while Table 9 reports Div_Percent = 6.67% and 1.80% for the same settings. These cannot both be true.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "19233-Understanding_and_Mitigating_Numerical_Sources_of_Nondeterminism_in_LLM_In::baseline"
+    },
+    {
+      "error_category": "evidence_data_integrity",
+      "error_location": "Section 3.2, text near Figure 5",
+      "confidence": 0.8,
+      "supporting_evidence": "The text says FP32 on MATH500 yields 'only 2.2% of the samples diverging' for DeepSeek-R1-Distill-Qwen-7B, but Table 9 reports Div_Percent = 5.80% for this exact setting.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "19233-Understanding_and_Mitigating_Numerical_Sources_of_Nondeterminism_in_LLM_In::baseline"
+    },
+    {
+      "error_category": "evidence_data_integrity",
+      "error_location": "Appendix E.1, Qwen3-32B paragraph",
+      "confidence": 0.95,
+      "supporting_evidence": "The text says FP32 could not be loaded in 'such as 4 GPUs with batch size 32', but Table 10 shows FP32 succeeded on 4 GPUs with BS=32 (both A100 and L40S); the OOM entries are 2×L40S.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "19233-Understanding_and_Mitigating_Numerical_Sources_of_Nondeterminism_in_LLM_In::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Section 3.1, random-sampling setup",
+      "confidence": 0.85,
+      "supporting_evidence": "The sentence 'Pass@1 evaluations use 4, 16, and 64 runs for MATH500 and AIME'24 respectively, without justification or confidence interval reporting, limiting statistical rigor' is malformed (three numbers cannot be paired with two benchmarks) and contains a reviewer-style criticism rather than a protocol description. Correct protocol is 4 runs for MATH500, 16 and 64 for AIME'24.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "19233-Understanding_and_Mitigating_Numerical_Sources_of_Nondeterminism_in_LLM_In::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Section 3.1, Pass@1 stability description",
+      "confidence": 0.9,
+      "supporting_evidence": "It says the standard deviation of Pass@1 is computed across 6 runtime configurations 'varying GPU count (2 vs. 4) and numerical precision (BF16, FP16, FP32)'. But Table 5 and Tables 21-24 compute stdev across 3 batch sizes × 2 GPU counts for each precision separately, not across precisions.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "19233-Understanding_and_Mitigating_Numerical_Sources_of_Nondeterminism_in_LLM_In::baseline"
+    },
+    {
+      "error_category": "context_misalignment_incoherence",
+      "error_location": "Appendix G, first paragraph",
+      "confidence": 0.95,
+      "supporting_evidence": "It says 'The standard deviations are calculated across numeric precision types (BF16, FP16, FP32)', but the Stdev columns in Tables 21-24 are row-wise standard deviations across the six batch/GPU configurations for each precision, contradicting both the appendix statement and Section 3.3's correct explanation.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "19233-Understanding_and_Mitigating_Numerical_Sources_of_Nondeterminism_in_LLM_In::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 4, LayerCast description",
+      "confidence": 0.98,
+      "supporting_evidence": "Step (3) says 'performing computations without upcasting to FP32 at runtime', directly contradicting the abstract, Figure 7, and the following paragraph, which state that LayerCast 'performs all computations in FP32' while storing weights in 16-bit.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "19233-Understanding_and_Mitigating_Numerical_Sources_of_Nondeterminism_in_LLM_In::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Appendix H, LayerCast discussion",
+      "confidence": 0.8,
+      "supporting_evidence": "'The only difference from pure FP32 inference is the just-in-time casting from BF16 storage to FP32' is inaccurate: pure FP32 inference uses FP32-valued weights, whereas LayerCast uses BF16-quantized weights cast to FP32, so the stored weight values differ, not just the casting operation.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "19233-Understanding_and_Mitigating_Numerical_Sources_of_Nondeterminism_in_LLM_In::baseline"
+    },
+    {
+      "error_category": "reference_background_fabrication",
+      "error_location": "Section 2, PyTorch deterministic sentence",
+      "confidence": 0.95,
+      "supporting_evidence": "The text cites reference [2] for torch.use_deterministic_algorithms(True), but [2] is the GPT-4 Technical Report. The appropriate citation is the PyTorch reproducibility documentation (later [10]).",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "19233-Understanding_and_Mitigating_Numerical_Sources_of_Nondeterminism_in_LLM_In::baseline"
+    },
+    {
+      "error_category": "reference_background_fabrication",
+      "error_location": "Reference [13]",
+      "confidence": 0.95,
+      "supporting_evidence": "Reference [13] attributes 'DeepSeek-R1: incentivizing reasoning capability in LLMs via reinforcement learning' to Guhao Feng et al. The arXiv paper 2501.12948 is by DeepSeek-AI (Guo et al.), not Feng et al.; Feng et al. are the authors of [12] on numerical precision.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "19233-Understanding_and_Mitigating_Numerical_Sources_of_Nondeterminism_in_LLM_In::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Section 2, BF16 description",
+      "confidence": 0.95,
+      "supporting_evidence": "The text says BF16 has 'reduced mantissa bits and range'. BF16 has the same 8-bit exponent range as FP32; its precision is reduced only in mantissa bits (7 vs 23). FP16, not BF16, has a smaller exponent range.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "19233-Understanding_and_Mitigating_Numerical_Sources_of_Nondeterminism_in_LLM_In::baseline"
+    },
+    {
+      "error_category": "context_misalignment_incoherence",
+      "error_location": "Appendix E, Table 8 caption",
+      "confidence": 0.95,
+      "supporting_evidence": "The caption says Div_Index is 'in the 0–1 range; a Div_Index of 1 means the 12 responses ... have exactly the same token at each position', but the main text defines Div_Index as the absolute token position where divergence occurs, and Table 8 values are >1 or -1. The caption describes a different normalized similarity metric.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "19233-Understanding_and_Mitigating_Numerical_Sources_of_Nondeterminism_in_LLM_In::baseline"
+    },
+    {
+      "error_category": "context_misalignment_incoherence",
+      "error_location": "Preliminaries after Table 2 / Introduction bullet list",
+      "confidence": 0.7,
+      "supporting_evidence": "The numbered practical-suggestions bullet in the Introduction is truncated ('Report the mean accuracy, average answer length, and'), and a stray paragraph beginning 'Error bars. Note that with 16-bit precision...' appears isolated in the Preliminaries with no connection to the surrounding text. This appears to be misplaced/truncated content.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "19233-Understanding_and_Mitigating_Numerical_Sources_of_Nondeterminism_in_LLM_In::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Section 3.3, AIME'24 statistical-noise sentence",
+      "confidence": 0.9,
+      "supporting_evidence": "The text says 'With only 30 problems in AIME'24, a single answer can shift Pass@1 by about 3.33%'. Under the paper's Pass@1 protocol, Pass@1 is averaged over 30×16 or 30×64 samples, so one sampled answer changes the estimate by 1/(30×16) ≈ 0.21% or 1/(30×64) ≈ 0.05%, not 3.33%.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "19233-Understanding_and_Mitigating_Numerical_Sources_of_Nondeterminism_in_LLM_In::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 15,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (claude-sonnet-5, taxonomy=paperaudit): 15 error(s) reported.",
+  "baseline": {
+    "model": "claude-sonnet-5",
+    "provider": "anthropic",
+    "taxonomy": "paperaudit",
+    "paper_chars": 124957,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 88,
+      "output_tokens": 55946,
+      "cache_read_input_tokens": 29824,
+      "cache_creation_input_tokens": 0
+    }
+  }
+}

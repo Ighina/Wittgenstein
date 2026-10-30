@@ -1,0 +1,102 @@
+{
+  "paper_id": "3501-TransferTraj__A_Vehicle_Trajectory_Learning_Model_for_Region_and_Task_Trans",
+  "title": "TransferTraj: A Vehicle Trajectory Learning Model for Region and Task Trans",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Sections 4.1.2 and 4.2; Eq. (2) applied to masked spatial modalities and fully masked points",
+      "confidence": 0.98,
+      "supporting_evidence": "TRIE requires each point's actual spatial coordinates to compute the rotation, q_i = R_{Phi(x_i,y_i)} W_q e_i and k_i = R_{Phi(x_i,y_i)} W_k e_i. But the task scheme replaces spatial modality with [m], and fully masked points are p_[m]=([m],[m],[m],[m]). No rule is given for computing (x_i,y_i), Phi(x_i,y_i), or R_{Phi(x_i,y_i)} for such points. This affects exactly the TP and TR inputs, which contain fully masked future/missing points. As written, the model cannot execute its stated TRIE operation on its principal masked inputs.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "3501-TransferTraj__A_Vehicle_Trajectory_Learning_Model_for_Region_and_Task_Trans::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Section 4.2, spatial-modality masking definition",
+      "confidence": 0.96,
+      "supporting_evidence": "For a spatially masked point p_i^{ms}=([m],t_i,P_i,R_i), the paper explicitly leaves POI and road modalities unmasked. Yet P_i and R_i were defined in Section 4.1.1 as sets selected by dis(l,p_i) <= phi_dist^poi and dis(r,p_i) <= phi_dist^road, i.e., they are constructed using the true hidden point location. Thus the purported spatial-masking/recovery objective supplies target-location-derived neighborhood information after masking the location. This is target leakage unless the paper specifies an independently available source for these modalities at inference; it does not.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "3501-TransferTraj__A_Vehicle_Trajectory_Learning_Model_for_Region_and_Task_Trans::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Section 4.2 ('Pre-training with the scheme') versus Appendix B.2",
+      "confidence": 0.97,
+      "supporting_evidence": "The main method says to randomly select one start/end pair s,e and fully mask the single contiguous subtrajectory <p_s,...,p_e>; it then says that for the remaining points it randomly masks either spatial or temporal modality. Appendix B.2 instead says each trajectory is divided into multiple non-overlapping segments, with number of segments 0.2 x |T|, 40% of segments are selected for full point masking, and only 20% of remaining points receive modality masking. These are materially different masking algorithms and masking rates, so the reported pre-training protocol is not reproducible from the paper.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "3501-TransferTraj__A_Vehicle_Trajectory_Learning_Model_for_Region_and_Task_Trans::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Appendix B.2 versus Appendix F",
+      "confidence": 0.98,
+      "supporting_evidence": "Appendix B.2 states that the reported TransferTraj setting uses '128 hidden state dimensions.' Appendix F subsequently states, 'The optimal value for d is 256.' Since d is explicitly the hidden-state dimension and Appendix F presents its selection as the hyperparameter analysis for the reported trajectory-prediction experiments, the paper gives incompatible model configurations without explaining whether different tables use different d values.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "3501-TransferTraj__A_Vehicle_Trajectory_Learning_Model_for_Region_and_Task_Trans::baseline"
+    },
+    {
+      "error_category": "evidence_data_integrity",
+      "error_location": "Table 6 versus Table 1",
+      "confidence": 0.99,
+      "supporting_evidence": "The full TransferTraj row in Table 6 reports TP RMSE = 197.91 and TP MAE = 144.53. The corresponding overall TP results in Table 1 report TransferTraj RMSE = 187.91 and MAE = 144.53 for Chengdu. The exact agreement of the MAE, and of Table 6's TR and OD-TTE full-model values with the Chengdu task tables (135.15/97.87 and 2.861/2.060/9.360), establishes that Table 6 is using the same setting; its TP RMSE differs by 10 m without explanation.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "3501-TransferTraj__A_Vehicle_Trajectory_Learning_Model_for_Region_and_Task_Trans::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 4.1.4, Eq. (5)",
+      "confidence": 0.94,
+      "supporting_evidence": "The text says that MSE is applied to both predicted spatial and temporal modalities. However, the temporal loss is written as L_i^t = ||hat{t}_i - t_i||_2, which is an unsquared Euclidean norm, not mean squared error (and not even a mean over temporal components). The stated objective and displayed objective are inconsistent, which matters for implementation and reproducibility.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "3501-TransferTraj__A_Vehicle_Trajectory_Learning_Model_for_Region_and_Task_Trans::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Section 4.1.2 and Appendix C, claims about 'true relative distances'",
+      "confidence": 0.93,
+      "supporting_evidence": "The model defines x_i=lng_i-lng_1 and y_i=lat_i-lat_1, then claims TRIE 'naturally consider[s] the true relative distances Phi(x_i-x_j,y_i-y_j).' Longitude/latitude differences in degrees are not true Earth-surface distances: one degree of longitude has latitude-dependent physical length, while latitude and longitude are on different angular axes. No local metric projection or geodesic-distance conversion is defined. The proof only establishes an algebraic relative-coordinate rotation, not use of true geographic distances.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "3501-TransferTraj__A_Vehicle_Trajectory_Learning_Model_for_Region_and_Task_Trans::baseline"
+    },
+    {
+      "error_category": "reference_background_fabrication",
+      "error_location": "Appendix B.4, t2vec baseline citation",
+      "confidence": 0.99,
+      "supporting_evidence": "Appendix B.4 identifies 't2vec [9]' and describes it as a denoising-autoencoder trajectory model. But reference [9] is Fang et al., 'Spatio-temporal trajectory similarity learning in road networks' (KDD 2022), not t2vec. The t2vec paper listed in this bibliography is Li et al. 2018, reference [18], which is also the citation used for t2vec in Section 2. This is a definite mis-citation and creates ambiguity over which baseline was actually implemented.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "3501-TransferTraj__A_Vehicle_Trajectory_Learning_Model_for_Region_and_Task_Trans::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Table 7 and Section 5.2 Efficiency Study",
+      "confidence": 0.95,
+      "supporting_evidence": "Table 7 repeats each dataset name three times but supplies no column labels or units for any of the nine numerical columns. The prose says the table measures model size and training and testing time, but it does not identify which of the three values per dataset corresponds to which quantity or whether times are per epoch, total training, per batch, or per test set. Consequently the efficiency comparison cannot be interpreted or reproduced.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "3501-TransferTraj__A_Vehicle_Trajectory_Learning_Model_for_Region_and_Task_Trans::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 9,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (gpt-5.6-terra, taxonomy=paperaudit): 9 error(s) reported.",
+  "baseline": {
+    "model": "gpt-5.6-terra",
+    "provider": "openai",
+    "taxonomy": "paperaudit",
+    "paper_chars": 112574,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 28849,
+      "output_tokens": 4591,
+      "cache_read_input_tokens": null,
+      "cache_creation_input_tokens": null
+    }
+  }
+}

@@ -1,0 +1,110 @@
+{
+  "paper_id": "11899-Class-wise_Balancing_Data_Replay_for_Federated_Class-Incremental_Learning",
+  "title": "Class-wise Balancing Data Replay for Federated Class-Incremental Learning",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "Figure / table error",
+      "error_location": "Table 2 and Table 3",
+      "confidence": 0.82,
+      "supporting_evidence": "Table 2 and Table 3 headers list 9 data columns (CIFAR10 β=0.5/1.0/0.1, CIFAR100 β=0.5/1.0/0.1, TinyImageNet β=0.5/1.0/0.1), but every baseline row in Table 2 (and every row, including FedCBDR, in Table 3) contains only 8 numeric values, indicating a missing/shifted column (the CIFAR10 β=0.1 column). Cross-checking with Table 4 (the ablation table, which reuses the same underlying numbers with an explicit column order of CIFAR100 β=0.1/0.5/1.0) shows that the value 15.17±2.2, labeled as 'CIFAR10 β=0.1' in Table 2, is actually the CIFAR100 β=0.1 Finetune result in Table 4. This proves the columns in Tables 2 and 3 are mislabeled/shifted, producing internally inconsistent data across tables.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "11899-Class-wise_Balancing_Data_Replay_for_Federated_Class-Incremental_Learning::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Abstract vs. Section 5.2 (Table 2, CIFAR100 β=1.0)",
+      "confidence": 0.85,
+      "supporting_evidence": "The abstract claims FedCBDR yields '2%-15% Top-1 accuracy improvement compared to several state-of-the-art methods under evaluated settings.' However, Section 5.2 explicitly states: 'Notably, on CIFAR100 with 5 tasks and β = 1.0, FedCBDR (52.06%) underperforms LANDER (52.77%).' This is a direct contradiction — in this setting FedCBDR does not improve over the SOTA baseline at all, yet the abstract presents the improvement as a blanket/universal result.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "11899-Class-wise_Balancing_Data_Replay_for_Federated_Class-Incremental_Learning::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Eq. 7 vs. Eq. 9 (Sections 4.2 and 4.3)",
+      "confidence": 0.75,
+      "supporting_evidence": "Eq. 7 defines L_TTS with a single global normalization factor 1/(N_old+N_new) applied to a sum of two separately-softmaxed cross-entropy terms (Softmax(z^old/τ_old) and Softmax(z^new/τ_new) computed independently). Eq. 9, presented as the training objective implementing the same L_TTS in Stage 2, instead uses two separate normalization factors (1/N_old and 1/N_new) applied individually to each term, and computes a single joint Softmax over the Concat(f^old/τ_old, f^new/τ_new) logits rather than two independent softmaxes. These are mathematically different loss functions, yet both are presented as the same quantity (L_TTS), which is an internal inconsistency.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "11899-Class-wise_Balancing_Data_Replay_for_Federated_Class-Incremental_Learning::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Eq. 6 and surrounding text (Section 4.1)",
+      "confidence": 0.55,
+      "supporting_evidence": "The text states the server 'aggregates them into a global vector τ^i ... and normalizes it to obtain a sampling distribution,' implying a global normalization across all clients. However, Eq. 6 defines p_k^{i,j} = τ_k^{i,j} / Σ_{j'=1}^{n_k^i} τ_k^{i,j'}, which only sums over client k's own samples (n_k^i), not over the full global vector τ^i across all clients. This contradicts the stated goal of forming a globally normalized sampling distribution.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "11899-Class-wise_Balancing_Data_Replay_for_Federated_Class-Incremental_Learning::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Implementation Details (Section 5.1) vs. Section 5.6 Sensitivity Analysis",
+      "confidence": 0.6,
+      "supporting_evidence": "Implementation Details states the temperature/weight search ranges used are τ_old ∈ {0.8, 0.9}, w_old ∈ {1.1, 1.2, 1.3, 1.4}, τ_new ∈ {1.1, 1.2}, w_new ∈ {0.7, 0.8, 0.9}. However, Section 5.6 describes the sensitivity analysis as using τ_old ∈ {0.5, 0.7, 0.9}, τ_new ∈ {1.1, 1.5, 2.0}, w_old ∈ {1.1, 1.5, 2.0}, w_new ∈ {0.5, 0.7, 0.9} — substantially different and non-overlapping ranges for τ_old and τ_new/w_old, raising doubts about which hyperparameter configuration was actually used/tuned for the main results.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "11899-Class-wise_Balancing_Data_Replay_for_Federated_Class-Incremental_Learning::baseline"
+    },
+    {
+      "error_category": "Citation / attribution",
+      "error_location": "Section 5.1, Datasets paragraph",
+      "confidence": 0.5,
+      "supporting_evidence": "CIFAR10 and CIFAR100 are cited as [53, 54], where [53] is the correct Krizhevsky CIFAR reference, but [54] is 'Clustering-based curriculum construction for sample-balanced federated learning' by Qi et al., a federated learning methodology paper unrelated to the creation or description of the CIFAR datasets. Attributing dataset provenance to this paper is a misattribution.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "11899-Class-wise_Balancing_Data_Replay_for_Federated_Class-Incremental_Learning::baseline"
+    },
+    {
+      "error_category": "Citation / attribution",
+      "error_location": "Section 4.1, leverage score citation [50, 51, 52]",
+      "confidence": 0.55,
+      "supporting_evidence": "The leverage score concept is cited to [50, 51, 52]. While [50] (Drineas et al., on matrix coherence and statistical leverage) is appropriate, [51] ('Efficient collaborative crowdsourcing') and [52] ('Dynamic witness selection for trustworthy distributed cooperative sensing in cognitive radio networks') are unrelated to leverage scores or SVD-based sampling, making this citation misleading/misattributed.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "11899-Class-wise_Balancing_Data_Replay_for_Federated_Class-Incremental_Learning::baseline"
+    },
+    {
+      "error_category": "Citation / attribution",
+      "error_location": "Section 5.2, baseline list",
+      "confidence": 0.4,
+      "supporting_evidence": "Both 'Finetune [19]' and 'LANDER [19]' are attributed to the same reference [19] (Tran et al., the LANDER paper), despite being presented as two distinct baseline methods. Attributing a generic Finetune baseline to the same single paper as LANDER is an inconsistent/misleading citation.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "11899-Class-wise_Balancing_Data_Replay_for_Federated_Class-Incremental_Learning::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Appendix, 'computational complexity of the SVD step'",
+      "confidence": 0.45,
+      "supporting_evidence": "The paper states 'Client-side iSVD costs O(n_k d^2) per client.' However, the operation described in Eq. 1 is X_k' = P_k X_k Q, where P_k is n_k×n_k and Q is d×d. Computing P_k X_k costs O(n_k^2 d) and then multiplying by Q costs O(n_k d^2); the dominant term when n_k > d (as in the reported n=2000, d=512 setting) is O(n_k^2 d), which is omitted from the stated complexity, making the complexity claim incomplete/incorrect.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "11899-Class-wise_Balancing_Data_Replay_for_Federated_Class-Incremental_Learning::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Algorithm 1 (lines 9-11) vs. Figure 2 caption",
+      "confidence": 0.4,
+      "supporting_evidence": "Figure 2's caption states pseudo-features are extracted 'after a fixed number of communication rounds,' implying this happens once near the end of each task's training. However, Algorithm 1 places the pseudo-feature computation (line 11) inside the per-round client loop, to be executed in every communication round, while aggregation of pseudo-features only occurs conditionally at the final round (r == R, line 17). This causes unnecessary repeated computation inconsistent with the described 'fixed number of rounds' mechanism in Figure 2.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "11899-Class-wise_Balancing_Data_Replay_for_Federated_Class-Incremental_Learning::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 10,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (claude-sonnet-5, taxonomy=default): 10 error(s) reported.",
+  "baseline": {
+    "model": "claude-sonnet-5",
+    "provider": "anthropic",
+    "taxonomy": "default",
+    "paper_chars": 81830,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 35298,
+      "output_tokens": 18273,
+      "cache_read_input_tokens": 0,
+      "cache_creation_input_tokens": 0
+    }
+  }
+}

@@ -1,0 +1,102 @@
+{
+  "paper_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction",
+  "title": "KVzip: Query-Agnostic KV Cache Compression with Context Reconstruction",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 3.2, Eq. (2) and the preceding attention-tensor definitions",
+      "confidence": 0.99,
+      "supporting_evidence": "The stated tensor shapes are incompatible with attention over the cached context. The text says that forwarding the repeat input 'with KV_c' produces Q_{l,h} of shape G × (n_c+n_in) × d and K_{l,h} of shape n_in × d, giving A of shape G × (n_c+n_in) × n_in. In a cached forward pass, however, new queries have length n_in and keys include the n_c cached keys plus new keys, i.e. n_c+n_in. The subsequent claim that a slice of this A is 'relevant to KV_c' is impossible if its key dimension is only n_in. Eq. (2) also treats j as a KV-cache index while indexing the declared attention tensor inconsistently. Algorithm 1 instead gives different, more plausible shapes (Q length n_in and K length n_c+n_in), so the formal method and pseudocode contradict each other.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 3.4, 'Chunked Scoring' and 'Complexity Analysis'",
+      "confidence": 0.98,
+      "supporting_evidence": "The paper first claims chunking reduces computation from O(n_c^2) to O(m n_c), but then acknowledges that each chunk is forwarded through f_LM 'with KV_c' and that FlashAttention costs O(n_c m + m^2/2) per chunk. Across n_c/m chunks, the paper itself derives O(n_c^2 + n_c m/2), not O(m n_c). Thus chunking bounds score-materialization/peak-memory costs but does not make the complete importance-scoring computation linear in context length. The earlier linear-complexity claim is materially false or at least improperly presented as the method's overall complexity.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction::baseline"
+    },
+    {
+      "error_category": "evidence_data_integrity",
+      "error_location": "Figure 22, Mix.RepoQA+KV table at KV cache ratio 1.0",
+      "confidence": 0.99,
+      "supporting_evidence": "At a cache ratio of 1.0, no KV pairs should be evicted, so all listed eviction methods should decode from the same full cache under the paper's claimed common setup. Yet the table reports KVzip = 80, H2O = 40, SnapKV = 60, and PyramidKV = 50. Importance-score computation alone cannot change the already-prefilled full KV cache when no eviction occurs. These incompatible full-cache results indicate altered, non-comparable, or erroneous data/protocol.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction::baseline"
+    },
+    {
+      "error_category": "evidence_data_integrity",
+      "error_location": "Figure 23, full-cache (1.0) rows for NIAH, SQuAD, and GSM8K",
+      "confidence": 0.99,
+      "supporting_evidence": "The same impossible full-cache discrepancy recurs: at ratio 1.0, NIAH is reported as KVzip 100 versus H2O/SnapKV 100 and PyramidKV 100, but SQuAD is KVzip/SnapKV 100 versus H2O/PyramidKV 100 in the displayed row while GSM8K is KVzip/SnapKV 65 versus H2O/PyramidKV 60. A 1.0 KV-cache budget means every original pair is retained; therefore cache-eviction methods should yield identical outputs and scores given identical model, prompts, decoding, and evaluation. The nonidentical values show that the comparisons are not conducted as claimed or the results are erroneous.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Section 4.1, 'Eviction Structure,' 'Evaluation,' and Appendix A, 'Baseline Methods'",
+      "confidence": 0.96,
+      "supporting_evidence": "The main comparison gives KVzip a favorable non-uniform, cross-head allocation ('retain KV pairs corresponding to the top r% importance scores across all attention heads') while SnapKV is forced to a uniform allocation and PyramidKV to its original layer schedule. The paper explicitly acknowledges this asymmetry but nevertheless calls the setup fair and uses it for superiority claims. In addition, SnapKV's prescribed observation window is repurposed as a trailing-context window when no task query is present, although SnapKV was designed to use query information during prefill; H2O is also described as a custom 'prefill version.' These are materially modified and disadvantaged baselines, not evaluations of the cited methods under their intended protocol. A matched allocation ablation and clearly labeled/re-tuned query-agnostic adaptations are required for the central comparative claims.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction::baseline"
+    },
+    {
+      "error_category": "context_misalignment_incoherence",
+      "error_location": "Abstract versus Introduction and Section 4.1/Appendix A dataset description",
+      "confidence": 0.94,
+      "supporting_evidence": "The abstract says evaluations use 'context lengths up to 100K tokens.' The Introduction says contexts are 'up to 170K tokens,' and Section 4.1 and Appendix A repeatedly state that Qwen-tokenized SCBench examples reach 170K tokens. These are incompatible descriptions of the reported experimental scope and require correction or an explicit distinction between experiments included in the abstract and additional experiments.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Section 4.3, immediately after Table 1 ('Behavior Analysis Beyond Task Solving')",
+      "confidence": 0.98,
+      "supporting_evidence": "The prose claims that compressed caches can 'leak sensitive information omitted by full caches.' However, the only displayed example has the same refusal for both conditions: full KV: 'I cannot provide personal contact information'; evicted KV: 'I cannot provide personal contact information.' The context and query are removed, so no independently checkable evidence of a leak is supplied. The stated privacy-risk finding directly contradicts the table offered to support it.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction::baseline"
+    },
+    {
+      "error_category": "reference_background_fabrication",
+      "error_location": "Appendix D, paragraph and Figure 23 referring to 'LLaMA3.1-3B [21]'",
+      "confidence": 0.98,
+      "supporting_evidence": "Reference [21], the Llama 3 technical report, does not provide an official LLaMA 3.1 3B model; the Llama 3.1 family consists of 8B, 70B, and 405B models. A 3B model exists in the later Llama 3.2 family, not as 'LLaMA3.1-3B.' Therefore the reported model identity and citation are wrong, and the Figure 23 results cannot be reproduced from the stated model/reference.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Appendix D, 'RULER Benchmark' and Figure 17",
+      "confidence": 0.9,
+      "supporting_evidence": "Figure 17 introduces a Qwen3-8B RULER evaluation, although Qwen3-8B is absent from the experimental setup, model list, and references. The result is said to be 'publicly available in the NVIDIA KVPress repository,' but the paper supplies neither an evaluation protocol, model checkpoint/version, cache budgets and allocation details, decoding configuration, nor a citation for Qwen3. It is therefore not a reproducible experiment under the paper's stated setup and should not be used as evidence for the paper's performance claims without full methodological disclosure.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 9,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (gpt-5.6-terra, taxonomy=paperaudit): 9 error(s) reported.",
+  "baseline": {
+    "model": "gpt-5.6-terra",
+    "provider": "openai",
+    "taxonomy": "paperaudit",
+    "paper_chars": 83648,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 20909,
+      "output_tokens": 5455,
+      "cache_read_input_tokens": null,
+      "cache_creation_input_tokens": null
+    }
+  }
+}

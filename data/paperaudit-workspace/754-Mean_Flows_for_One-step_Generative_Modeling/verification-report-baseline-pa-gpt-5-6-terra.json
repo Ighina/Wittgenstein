@@ -1,0 +1,118 @@
+{
+  "paper_id": "754-Mean_Flows_for_One-step_Generative_Modeling",
+  "title": "Mean Flows for One-step Generative Modeling",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 4.1, derivation of the MeanFlow Identity (between Eqs. (4) and (6))",
+      "confidence": 0.99,
+      "supporting_evidence": "The text says it differentiates Eq. (4) while “considering r as a function of t,” correctly notes that Leibniz's rule then gives an extra term \"- v(z_r,r) dr/dt,\" and even states that this “invalidat[es] the simplified MeanFlow identity.” It nevertheless immediately presents Eq. (6), u = v - (t-r) d u/dt, which omits all dr/dt terms. Eq. (6) follows only after explicitly fixing r (dr/dt=0), as is done later in Eq. (8); the stated derivation is internally contradictory and must be corrected.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "754-Mean_Flows_for_One-step_Generative_Modeling::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 4.1, paragraph immediately after Eq. (10)",
+      "confidence": 0.98,
+      "supporting_evidence": "The paper first correctly defines the conditional velocity as v_t = a'_t x + b'_t epsilon in Section 3, but later states: \"Recall that v_t = a_t x + b_t ε is the conditional velocity, where a_t and b_t omit time derivatives.\" This is mathematically false: a_t x + b_t epsilon is z_t, not its instantaneous velocity. It directly contradicts the earlier definition and would yield incorrect supervision if followed. Algorithm 1 instead correctly uses v = epsilon - x for a_t=1-t, b_t=t.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "754-Mean_Flows_for_One-step_Generative_Modeling::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 4.1, paragraph after Eq. (10) claiming a single conditional velocity introduces unaccounted bias",
+      "confidence": 0.94,
+      "supporting_evidence": "The paper says the marginal velocity is \"approximated by a single conditional velocity v_t without explicitly accounting for potential bias or variance\" and that this is \"assumed exact.\" This conflicts with its own Section 3, which states that conditional Flow Matching minimizes an objective equivalent to marginal Flow Matching. A sampled conditional velocity is a stochastic regression target whose conditional expectation is the marginal velocity; it is not asserted to equal the marginal velocity pointwise. The claim incorrectly characterizes the standard conditional-FM estimator.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "754-Mean_Flows_for_One-step_Generative_Modeling::baseline"
+    },
+    {
+      "error_category": "context_misalignment_incoherence",
+      "error_location": "Introduction, first paragraph versus Abstract and later Introduction/Section 5 claims",
+      "confidence": 0.99,
+      "supporting_evidence": "The first Introduction paragraph states that MeanFlow \"similarly requires a carefully designed discretization curriculum\" for stable convergence. The Abstract says MeanFlow \"requires no ... curriculum learning,\" and the later Introduction and Section 5 repeat that it is trained \"without ... curriculum learning.\" These mutually exclusive statements leave the actual training protocol unclear and require resolution.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "754-Mean_Flows_for_One-step_Generative_Modeling::baseline"
+    },
+    {
+      "error_category": "reference_background_fabrication",
+      "error_location": "Section 2, Related Work paragraph beginning “Several recent works”",
+      "confidence": 0.99,
+      "supporting_evidence": "The text cites hypothetical \"Flow Map constructs [99] (not publicly available),\" but the bibliography ends at [54] and contains no reference [99]. The bibliography does contain [3], Boffi et al., “Flow map matching,” which is not cited in this discussion. An unavailable, nonexistent bibliography entry cannot support the claimed background comparison.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "754-Mean_Flows_for_One-step_Generative_Modeling::baseline"
+    },
+    {
+      "error_category": "reference_background_fabrication",
+      "error_location": "Section 2, claim about Visual Autoregressive Modeling [48]",
+      "confidence": 0.99,
+      "supporting_evidence": "The paper says Visual Autoregressive Modeling [48] \"have not been peer-reviewed.\" Its own bibliography identifies [48] as Tian et al., “Visual Autoregressive Modeling: Scalable Image Generation via Next-Scale Prediction,” in NeurIPS 2024. The related-work statement is therefore false.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "754-Mean_Flows_for_One-step_Generative_Modeling::baseline"
+    },
+    {
+      "error_category": "rhetorical_presentation_manipulation",
+      "error_location": "Section 5.1, “Loss Metrics” paragraph",
+      "confidence": 0.99,
+      "supporting_evidence": "The manuscript explicitly says, \"we omit reporting the underperformance of standard squared L2 loss to maintain a positive narrative\" and claims that all metrics are comparable. This is selective reporting. Moreover, the displayed Table 1 reports p=0 (squared L2) at FID 79.75 versus 61.06 for p=1.0, a substantial degradation rather than a minor comparable difference. The complete loss-metric evidence and an accurate interpretation are required.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "754-Mean_Flows_for_One-step_Generative_Modeling::baseline"
+    },
+    {
+      "error_category": "evidence_data_integrity",
+      "error_location": "Section 5.2, paragraph on 2-NFE ImageNet comparisons versus Table 2",
+      "confidence": 0.98,
+      "supporting_evidence": "The prose states that SiT has \"FID 2.15,\" whereas Table 2 reports SiT-XL/2 at 250×2 NFE with FID 2.06. The paper gives two incompatible numbers for the same cited baseline; the correct value and its source need to be established.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "754-Mean_Flows_for_One-step_Generative_Modeling::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Section 5.2, claim that MeanFlow “largely closes the gap” to many-step diffusion/flow models",
+      "confidence": 0.93,
+      "supporting_evidence": "The claim is stronger than the reported comparison supports. Table 2 gives MeanFlow 1-NFE FID 3.43, while the listed many-step SiT+REPA result is 1.42 and the listed StyleGAN-XL result is 2.30; the 2-NFE MeanFlow-XL/2+ result of 2.20 likewise remains far above 1.42. The Abstract's more cautious statement that “notable gaps remain” is consistent with the table, while the body claim is misleading.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "754-Mean_Flows_for_One-step_Generative_Modeling::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Conclusion, Section 6",
+      "confidence": 1.0,
+      "supporting_evidence": "The conclusion claims MeanFlow \"fully solves the longstanding challenges of multi-scale and multi-resolution simulation in physics,\" enables fusion with dynamical systems, and \"will redefine future research.\" The paper presents only image-generation experiments on ImageNet and CIFAR-10, with no physics, simulation, multiscale, or dynamical-systems evaluation. These claims are unsupported by the reported evidence.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "754-Mean_Flows_for_One-step_Generative_Modeling::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Section 5, Experiment Setting",
+      "confidence": 0.85,
+      "supporting_evidence": "The paper acknowledges that models were trained on \"proprietary hardware clusters without detailed cost disclosure\" and that \"Exact compute budgets, environmental impact, and runtime details are omitted.\" Given that the work emphasizes efficiency, scalability, and low-NFE deployment, omitting total training compute, wall-clock time, hardware configuration, and training-resource information prevents assessment and reproduction of those practical claims.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "754-Mean_Flows_for_One-step_Generative_Modeling::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 11,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (gpt-5.6-terra, taxonomy=paperaudit): 11 error(s) reported.",
+  "baseline": {
+    "model": "gpt-5.6-terra",
+    "provider": "openai",
+    "taxonomy": "paperaudit",
+    "paper_chars": 60513,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 17126,
+      "output_tokens": 4266,
+      "cache_read_input_tokens": null,
+      "cache_creation_input_tokens": null
+    }
+  }
+}

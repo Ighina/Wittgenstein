@@ -1,0 +1,125 @@
+{
+  "paper_id": "19233",
+  "title": "Understanding and Mitigating Numerical Sources of Nondeterminism in LLM Inference",
+  "paper_category": "cs.LG",
+  "predicted_errors": [
+    {
+      "error_category": "Data Inconsistency (text-table)",
+      "error_location": "Table 23 (Appendix G, Pass@1 for Qwen2.5-7B-Instruct)",
+      "confidence": 0.95,
+      "supporting_evidence": "The MATH500 (n=4) BF16 row (90.65, 91.15, 90.40, 90.95, 90.85, 90.35; Stdev 0.3158) is bit-identical to the DeepSeek-R1-Distill-Qwen-7B row in Table 21, a copy-paste error. It is implausible for Qwen2.5-7B-Instruct (a non-reasoning model whose own FP16/FP32 MATH500 rows are ~74.8%) and contradicts main-paper Table 5, which reports 0.4663 for this same cell.",
+      "verifier_name": "statistical",
+      "snippet_id": "19233::TABLE::21"
+    },
+    {
+      "error_category": "Data Inconsistency (text-table)",
+      "error_location": "Table 8 (Appendix E, Average Div_Index)",
+      "confidence": 0.95,
+      "supporting_evidence": "Table 8's caption defines -1 as 'no divergence occurred for any example', which must imply 0% divergence, yet Table 9 reports Div_Percent of 6.67% (AIME'24) and 1.80% (MATH500) for Qwen2.5-7B-Instruct under FP32, whose Table 8 Div_Index cells are -1. Every other -1 cell in Table 8 corresponds to 0% in Table 9, confirming the direct logical contradiction.",
+      "verifier_name": "statistical",
+      "snippet_id": "19233::TABLE::7"
+    },
+    {
+      "error_category": "Data Inconsistency (text-table)",
+      "error_location": "Table 9 (Appendix E, Div_Percent)",
+      "confidence": 0.95,
+      "supporting_evidence": "Div_Percent of 6.67% (AIME'24) and 1.80% (MATH500) for Qwen2.5-7B-Instruct under FP32 contradict Table 8's Div_Index of -1 for the same cells, where -1 is defined in the paper as no divergence for any example (must imply 0%). The contradiction is provable from the paper's own definitions.",
+      "verifier_name": "statistical",
+      "snippet_id": "19233::TABLE::8"
+    },
+    {
+      "error_category": "Misattribution (external)",
+      "error_location": "References, entry [13]",
+      "confidence": 0.95,
+      "supporting_evidence": "Reference [13] credits 'DeepSeek-R1: incentivizing reasoning capability in LLMs via reinforcement learning' (arXiv:2501.12948) to the author list 'Guhao Feng, Kai Yang, Yuntian Gu, Xinyue Ai, Shengjie Luo, Jiacheng Sun, Di He, Zhenguo Li, and Liwei Wang', which is verbatim the author list of reference [12] (the Feng et al. numerical-precision paper). The actual authors of the DeepSeek-R1 paper are the DeepSeek-AI team (Daya Guo, Dejian Yang, Haowei Zhang, et al.); Guhao Feng is not an author. Verified against the arXiv listing.",
+      "verifier_name": "citation",
+      "snippet_id": "19233::SECTION::11"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Section 4, LayerCast method description",
+      "confidence": 0.93,
+      "supporting_evidence": "Step (3) states LayerCast performs 'computations without upcasting to FP32 at runtime', directly contradicting the very next paragraph ('this approach ensures all computations occur in full FP32 precision'), the Abstract ('performs all computations in FP32'), and Appendix H ('just-in-time casting from BF16 storage to FP32 for computation'). If weights are never upcast to FP32, computations cannot occur in full FP32 precision; this is a methodology-defining contradiction in the paper's main contribution.",
+      "verifier_name": "text",
+      "snippet_id": "19233::SECTION::8"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Appendix E, Div_Index definition",
+      "confidence": 0.92,
+      "supporting_evidence": "Appendix E states Div_Index is 'in the 0-1 range; a Div_Index of 1 means the 12 responses ... have exactly the same token at each position', but Table 8 reports average Div_Index values of 45.67, 430.13, 1825.79, 5807.83 and -1 (values >1 are impossible under a 0-1 scale). Section 3.1 defines Div_Index as the token position where responses diverge ('A higher Div_Index indicates greater consistency'), under which a value of 1 means early divergence, contradicting the appendix gloss.",
+      "verifier_name": "text",
+      "snippet_id": "19233::SECTION::15"
+    },
+    {
+      "error_category": "Data Inconsistency (text-table)",
+      "error_location": "Section 3.2, Figure 5 discussion",
+      "confidence": 0.9,
+      "supporting_evidence": "The text claims that under FP32 'only 2.2% of the samples diverging' for DeepSeek-R1-Distill-Qwen-7B on MATH500, but the paper's own Appendix Table 9 (Div_Percent) reports 5.80% for exactly this cell (MATH500 FP32 DeepSeek-R1-Distill-Qwen-7B). 2.2% of 500 = 11 samples vs 5.80% of 500 = 29 samples; neither is a rounding of the other, and 2.2% matches no Table 9 cell.",
+      "verifier_name": "statistical",
+      "snippet_id": "19233::SECTION::5"
+    },
+    {
+      "error_category": "Data Inconsistency (text-table)",
+      "error_location": "Table 5 (Section 3.3, Std of Pass@1)",
+      "confidence": 0.9,
+      "supporting_evidence": "Table 5 reports Qwen2.5-7B-Instruct MATH500 (n=4) BF16 Std = 0.4663, but appendix Table 23's raw values (90.65, 91.15, 90.40, 90.95, 90.85, 90.35) recompute to a sample std of 0.3158, matching Table 23's own value. The two tables report different numbers for the identical cell; both cannot be correct.",
+      "verifier_name": "statistical",
+      "snippet_id": "19233::TABLE::4"
+    },
+    {
+      "error_category": "Misattribution (external)",
+      "error_location": "Preliminaries, citation [2]",
+      "confidence": 0.9,
+      "supporting_evidence": "The Preliminaries text cites 'torch.use_deterministic_algorithms(True)' to reference [2], 'GPT-4 technical report' (arXiv:2303.08774). The GPT-4 technical report does not document PyTorch's determinism API; the correct support is the paper's own reference [10] 'PyTorch Docs. Reproducibility'. This is an attribution mismatch.",
+      "verifier_name": "citation",
+      "snippet_id": "19233::SECTION::3"
+    },
+    {
+      "error_category": "Data Inconsistency (text-table)",
+      "error_location": "Appendix H / LayerCast comparison table (Qwen-7B A100 LCB-Hard BF16)",
+      "confidence": 0.85,
+      "supporting_evidence": "The LayerCast comparison table reports Qwen-7B A100 LCB-Hard BF16 Std@Acc as 6.65%, but Table 25's raw A100 values for the same cell (0.0569, 0.0732, 0.0569, 0.0650, 0.0569, 0.0650) yield a sample std of 0.66% (Table 25 itself reports 0.0066), a factor-10 discrepancy. Every other comparable cell between the two tables matches.",
+      "verifier_name": "statistical",
+      "snippet_id": "19233::TABLE::23"
+    },
+    {
+      "error_category": "Data Inconsistency (text-table)",
+      "error_location": "Appendix E.1, Qwen3-32B OOM discussion",
+      "confidence": 0.85,
+      "supporting_evidence": "The text says FP32 Qwen3-32B 'cannot be loaded into several runtime configurations ... (such as 4 GPUs with batch size 32)', but Table 10 shows all 4-GPU FP32 cells (A100 and L40S, all batch sizes) loaded successfully (76.67%), while the OOM cells are the 2x L40S configurations (BS=8/16/32). The text's example contradicts the reported table.",
+      "verifier_name": "statistical",
+      "snippet_id": "19233::SECTION::16"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Section 3.1, Pass@1 6-configuration description",
+      "confidence": 0.85,
+      "supporting_evidence": "Section 3.1 states the Pass@1 standard deviation is computed 'across 6 runtime configurations, varying GPU count (2 vs. 4) and numerical precision (BF16, FP16, FP32)', which conflicts with Table 5's caption '(3 batch sizes x 2 GPU counts)', Section 3.3's '(batch sizes and GPU counts)', and Appendix G's 'calculated across numeric precision types'. The appendix tables (each row = one precision, Stdev = sample std across the 6 batch x GPU columns) prove the std is per-precision across batch size and GPU count; the Section 3.1 and Appendix G descriptions are therefore incompatible with the reported computation.",
+      "verifier_name": "statistical",
+      "snippet_id": "19233::SECTION::4"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Appendix G, standard-deviation description",
+      "confidence": 0.8,
+      "supporting_evidence": "Appendix G states 'The standard deviations are calculated across numeric precision types (BF16, FP16, FP32)', which is false: each table row is a single precision and the Stdev column is the sample standard deviation across the 6 batch-size x GPU-count configurations, contradicting Section 3.3 and Table 5's caption. This is the same 6-configuration methodology inconsistency as in Section 3.1.",
+      "verifier_name": "statistical",
+      "snippet_id": "19233::SECTION::18"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 69,
+    "snippets_verified": 69,
+    "errors_detected": 13,
+    "verifier_usage": {
+      "statistical": 28,
+      "text": 6,
+      "math": 1,
+      "citation": 2
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "In uncertainty mode (threshold 0.30, lenient strictness), the paper's 69 snippets were triaged; 37 high-uncertainty snippets were escalated to specialist verifiers (statistical, text, math, citation) and 32 low-risk snippets were accepted without specialist review. 13 verified errors were confirmed. The most serious are: (1) a copy-paste error in Table 23 (Appendix G) where the Qwen2.5-7B-Instruct MATH500 BF16 Pass@1 row duplicates the DeepSeek-R1-Distill-Qwen-7B row, also making Table 5's 0.4663 inconsistent with Table 23's 0.3158 for the same cell; (2) a direct contradiction between Table 8 (Div_Index = -1 = 'no divergence') and Table 9 (Div_Percent 6.67%/1.80%) for Qwen2.5-7B-Instruct FP32; (3) a methodology-defining contradiction in Section 4 describing LayerCast as performing computations 'without upcasting to FP32' while simultaneously claiming 'all computations occur in full FP32 precision' (Abstract and Appendix H confirm the intended mechanism is upcasting); (4) Appendix E's claim that Div_Index is in the 0-1 range, contradicted by Table 8 values up to 5807.83 and by the Section 3.1 definition; (5) a '2.2% of samples diverging' claim in Section 3.2 contradicted by Table 9's 5.80%; (6) two citation errors - reference [13] (DeepSeek-R1) is credited to the wrong author list (copied from [12]) and the PyTorch determinism flag is cited to the GPT-4 technical report; (7) an internal factor-10 discrepancy (6.65% vs 0.66%) in a LayerCast Std@Acc table; (8) an OOM example in Appendix E.1 contradicting Table 10; and (9) repeated inconsistencies about what the '6 runtime configurations' are for the Pass@1 variance. Because multiple findings carry confidence >= 0.85, the paper requires correction.",
+  "uncertainty_map": "see segmentation/uncertainty_map.json"
+}

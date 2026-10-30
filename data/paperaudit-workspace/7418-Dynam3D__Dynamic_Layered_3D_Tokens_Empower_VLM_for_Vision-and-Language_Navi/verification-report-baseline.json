@@ -1,0 +1,103 @@
+{
+  "paper_id": "7418-Dynam3D__Dynamic_Layered_3D_Tokens_Empower_VLM_for_Vision-and-Language_Navi",
+  "title": "Dynam3D: Dynamic Layered 3D Tokens Empower VLM for Vision-and-Language Navi",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 3.1, Equation (2)",
+      "confidence": 0.95,
+      "supporting_evidence": "Equation (2) defines the FrustumCulling function with variables d_{u,v} (depth at pixel u,v), but the text immediately before states 'the depth image D_t ∈ R^{H×W}' and then says 'd_{h,w} denotes the depth value in row h and column w'. The equation uses subscripts u,v while the explanation uses h,w, creating inconsistent notation for the same depth image indexing.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "7418-Dynam3D__Dynamic_Layered_3D_Tokens_Empower_VLM_for_Vision-and-Language_Navi::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Section 3.1, Equation (3)",
+      "confidence": 0.85,
+      "supporting_evidence": "The equation shows 'ℰ = InstanceEncoder(q, {g_m ⊕ p_m}_{m=1}^M)' where ⊕ denotes concatenation or addition of patch features g_m and positional embeddings p_m. However, the positional embedding p_m is defined as 'p_m = MLP([P_m − Average({P_m}_{m=1}^M), s_m, cos(θ_m), sin(θ_m)])' which outputs a vector, but g_m is a 768-dimensional CLIP feature. The dimensions and operation compatibility are not specified, making it unclear how these are combined.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "7418-Dynam3D__Dynamic_Layered_3D_Tokens_Empower_VLM_for_Vision-and-Language_Navi::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Abstract vs Table 1",
+      "confidence": 0.75,
+      "supporting_evidence": "The abstract claims 'our Dynam3D achieves competitive performance on VLN benchmarks including R2R-CE, REVERIE-CE, and NavRAG-CE under monocular settings.' However, Table 1 shows R2R-CE Test results are missing for several baselines (NaVid, Uni-NaVid show '-' for test metrics), making it difficult to verify the 'competitive' claim on the test set. The comparison is incomplete.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "7418-Dynam3D__Dynamic_Layered_3D_Tokens_Empower_VLM_for_Vision-and-Language_Navi::baseline"
+    },
+    {
+      "error_category": "Experiment setup",
+      "error_location": "Section 4.2, Table 3",
+      "confidence": 0.9,
+      "supporting_evidence": "Table 3 presents 'Lifelong Memory' experiments where 'navigation samples from the same scene evaluated consecutively within a group' and 'previously stored 3D representations can be leveraged in subsequent episodes.' However, the paper does not specify whether the test scenes overlap with training scenes, creating potential data leakage. The text acknowledges 'experimental details regarding agent familiarity with the test scenes and overlap with training data are limited, raising concerns about potential overfitting' but proceeds to report results without addressing this critical flaw.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "7418-Dynam3D__Dynamic_Layered_3D_Tokens_Empower_VLM_for_Vision-and-Language_Navi::baseline"
+    },
+    {
+      "error_category": "Statistical reporting",
+      "error_location": "Table 3",
+      "confidence": 0.8,
+      "supporting_evidence": "Table 3 shows Dynam3D with Pre-exploration achieving R2R-CE Val SR of 57.1% and with Lifelong Memory achieving 55.6%, but with both Pre-exploration AND Lifelong Memory achieving only 58.4%. This is suspicious because combining two beneficial conditions (57.1% and 55.6%) yields only 58.4%, which is barely higher than Pre-exploration alone. The additive effect is unexpectedly small and not explained.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "7418-Dynam3D__Dynamic_Layered_3D_Tokens_Empower_VLM_for_Vision-and-Language_Navi::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Section 4.3, Tables 4 and 5",
+      "confidence": 0.85,
+      "supporting_evidence": "The paper claims real-world validation with 'Each setting includes 20 test cases' but provides no information about statistical significance, variance, or confidence intervals. With only 20 samples, the reported differences (e.g., SR 55% vs 30% in Table 4) may not be statistically significant. The paper also states 'ethical approval, participant consent, and safety protocols for these manipulations are not discussed, limiting transparency' which is a self-acknowledged limitation that undermines the validity of these experiments.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "7418-Dynam3D__Dynamic_Layered_3D_Tokens_Empower_VLM_for_Vision-and-Language_Navi::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 4.5 vs Section A.1",
+      "confidence": 0.7,
+      "supporting_evidence": "Section 4.5 states training uses 'a single NVIDIA RTX 4090 GPU' with timing of '455 ms per step'. However, Section A.1 states 'We pre-train our Dynam3D representation model... using four RTX 6000 Ada GPUs' and '3D-VLM model... using two RTX 6000 Ada GPUs'. The hardware setup is inconsistent between sections, making it unclear which GPU configuration was actually used.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "7418-Dynam3D__Dynamic_Layered_3D_Tokens_Empower_VLM_for_Vision-and-Language_Navi::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Section 3.1, Feature Distillation",
+      "confidence": 0.75,
+      "supporting_evidence": "The paper describes obtaining ground-truth instance features O_j^{gt} using 'Masked Average Pooling (MAP) strategy from Feature Splatting [51]' but then criticizes this approach saying 'instance-level features extracted in this strategy are interfered by noise from the overall image background' and proposes Equation (7) as a solution. However, if the ground-truth O_j^{gt} is noisy and biased, using it in Equation (7) still propagates this noise. The methodology does not explain how subtracting V_j (which is also computed from the same noisy features) resolves the fundamental ground-truth quality issue.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "7418-Dynam3D__Dynamic_Layered_3D_Tokens_Empower_VLM_for_Vision-and-Language_Navi::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 2 vs Section 3.1",
+      "confidence": 0.65,
+      "supporting_evidence": "Section 2 states 'Our Dynam3D introduces a hierarchical multi-level 3D representation with dynamic updates, further advancing these directions, though comparative assessment with similar recent models remains ongoing.' This acknowledges missing comparisons. However, the paper proceeds to make strong claims about superiority without these comparisons, particularly against 'concurrent approaches [that] also explore 3D-VLMs for dynamic environment navigation' mentioned in Section 2.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "7418-Dynam3D__Dynamic_Layered_3D_Tokens_Empower_VLM_for_Vision-and-Language_Navi::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Table 2",
+      "confidence": 0.8,
+      "supporting_evidence": "The caption states 'we retrained NaVid and g3D-LF on our training dataset for evaluation' to provide 'fair comparison'. However, this is not a fair comparison because: (1) NaVid and g3D-LF were not originally designed for these datasets, (2) the retraining may not use optimal hyperparameters for these methods, (3) the original authors did not perform this retraining. The paper presents this as 'fair' when it actually introduces potential bias favoring their method.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "7418-Dynam3D__Dynamic_Layered_3D_Tokens_Empower_VLM_for_Vision-and-Language_Navi::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 10,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (claude-sonnet-4-5-20250929, taxonomy=default): 10 error(s) reported.",
+  "baseline": {
+    "model": "claude-sonnet-4-5-20250929",
+    "taxonomy": "default",
+    "paper_chars": 65449,
+    "truncated": false
+  }
+}

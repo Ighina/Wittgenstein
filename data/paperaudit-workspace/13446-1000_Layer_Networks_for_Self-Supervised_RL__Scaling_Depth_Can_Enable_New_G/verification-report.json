@@ -1,0 +1,110 @@
+{
+  "paper_id": "13446",
+  "title": "1000 Layer Networks for Self-Supervised RL: Scaling Depth Can Enable New Goal-Reaching Capabilities",
+  "paper_category": "cs.LG",
+  "predicted_errors": [
+    {
+      "error_category": "Algebraic manipulation",
+      "error_location": "Section 4.4, 'Width vs. Depth' paragraph 2",
+      "confidence": 0.95,
+      "supporting_evidence": "The text states 'the parameter count scales linearly with width but quadratically with depth' — mathematically inverted. MLP parameters scale as depth x width^2 (quadratic in width, linear in depth). The paper's own example proves it: 4 layers x 2048 hidden = ~35M params vs 32 layers x 256 hidden = ~2M params — the shallow-wide network has ~17x more parameters, impossible under the printed scaling law. Appendix B.6 states the correct relationship ('scale quadratically with width but only linearly with depth'), directly contradicting Section 4.4.",
+      "verifier_name": "verify-math",
+      "snippet_id": "13446::SECTION::7"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 4.4 'Deep Networks Unlock Batch Size Scaling' vs Figure 7 caption",
+      "confidence": 0.85,
+      "supporting_evidence": "The subsection title and Figure 7 caption claim 'as depth increases from 4 to 64 in Humanoid, larger networks can effectively leverage batch size scaling to achieve further improvements,' but the body text analyzing the same figure states the opposite: 'Figure 7 shows only marginal or inconsistent improvements from increasing batch size, even for larger depth models... the overall benefit of batch size scaling remains uncertain.' The same experiment cannot support both conclusions.",
+      "verifier_name": "verify-text",
+      "snippet_id": "13446::SECTION::9"
+    },
+    {
+      "error_category": "Abstract vs Results mismatch",
+      "error_location": "Abstract vs Sections 1, 4.2, Table 1, Conclusion",
+      "confidence": 0.85,
+      "supporting_evidence": "Abstract: 'increases performance... by up to 5x on manipulation tasks and demonstrates sporadic larger gains in select navigation environments. Increasing model depth improves success rates modestly.' Body: 'more than 20x in half of the environments' (Introduction), '2-5x... over 20x... over 50x gains' (Section 4.2), improvements up to 600x (Table 1), 'performance consistently improves as scale increases' (Conclusion). 'Modest/sporadic' contradicts the paper's own quantitative results and headline claim.",
+      "verifier_name": "verify-cross-section-consistency",
+      "snippet_id": "13446::FULL_PAPER::0"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 4.3, paragraph 2",
+      "confidence": 0.8,
+      "supporting_evidence": "Section 4.3 states 'we do not find conclusive quantitative evidence that these behaviors represent consistent qualitative leaps. Many behaviors remain unstable,' while the same section and the paper's framing assert the opposite: 'Remarkably, at a depth of 256, the agent learns unique behaviors... this is the first goal-conditioned approach to document such behaviors'; Figure 1 caption: jumps 'correspond to the emergence of qualitatively distinct policies'; Introduction bullet: 'performance gains correspond to qualitatively distinct policies that emerge with scale.' The disclaimer negates the emergence finding presented as a contribution.",
+      "verifier_name": "verify-text",
+      "snippet_id": "13446::SECTION::6"
+    },
+    {
+      "error_category": "Sign/Arithmetic error",
+      "error_location": "Figure 9 caption (Section 4.5)",
+      "confidence": 0.8,
+      "supporting_evidence": "Caption defines Q(s,a,g) = ||phi(s,a) - psi(g)||_2 (an L2 distance) yet claims the depth-64 network 'clusters HIGH Q values at the goal.' Under the printed formula, near-goal states minimize the distance, so Q would be LOW at the goal — the formula is missing a negation (Q ~ -||phi - psi||_2). It also conflicts with the Preliminaries, which define the critic as a dot-product similarity f = phi^T psi.",
+      "verifier_name": "verify-math",
+      "snippet_id": "13446::FIGURE::16"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Appendix B.2 'Python Environment Differences'",
+      "confidence": 0.8,
+      "supporting_evidence": "'In all plots presented in the paper, we used MJX 3.2.6 and Brax 0.10.1' is immediately contradicted by 'We use an unmodified CleanRL version of JaxGCRL with default MJX 3.2.5 and Brax 0.10.2 packages.' The claimed default versions differ from the versions claimed for all plots; Figure 20 labels 'MJX=3.2.6 with Brax=0.10.1 (ours)'. JaxGCRL is also not a CleanRL codebase (Section 4.1 attributes it to Bortkiewicz et al., 2024). As printed, the software environment is self-contradictory and irreproducible.",
+      "verifier_name": "verify-text",
+      "snippet_id": "13446::SECTION::28"
+    },
+    {
+      "error_category": "Data Inconsistency (text-table)",
+      "error_location": "Table 1 vs Figure 13 (Appendix A.2)",
+      "confidence": 0.75,
+      "supporting_evidence": "Same depth-scaling runs, incompatible values: Humanoid D=4: 12.6 +/- 1.3 (Table 1) vs 19.5 (Figure 13, ~5.3 SD apart); Humanoid D=64: 530 +/- 19 vs 756 (~11.9 SD); Arm Push Easy D=64: 620 +/- 30 vs 762 (~4.7 SD). Protocol differences cannot explain it because Ant Big Maze values agree within error in both sources and Arm Push Easy agrees exactly at D=4 (308 vs 308).",
+      "verifier_name": "verify-statistical",
+      "snippet_id": "13446::TABLE::3"
+    },
+    {
+      "error_category": "Data Inconsistency (figure-text)",
+      "error_location": "Figure 6 (actor/critic depth grid) and caption",
+      "confidence": 0.75,
+      "supporting_evidence": "(1) Grid diagonal contradicts Figure 13's joint-scaling results: critic16/actor16 Humanoid ~20 vs Figure 13 depth-16 = 696; critic32/actor32 = 460 vs depth-32 = 780. (2) Caption's 'average 30% improvement' of coordinated over critic-only scaling computes to ~11.7% from the printed grid (5.6%, 23.6%, 5.8%). (3) Caption claims 'in Ant Big Maze, the actor matters more,' but the grid shows critic-depth variation (+401 at fixed actor) dominates actor-depth variation (+109 at fixed critic). Critic-depth rows are also non-monotonically ordered (64, 8, 32, 16, 4) with values inconsistent with every other scaling result in the paper.",
+      "verifier_name": "verify-statistical",
+      "snippet_id": "13446::FIGURE::7"
+    },
+    {
+      "error_category": "Data Inconsistency (figure-text)",
+      "error_location": "Figure 2 caption vs Section 4.1",
+      "confidence": 0.75,
+      "supporting_evidence": "Figure 2's caption is self-contradictory on the paper's central variable: it first defines 'network depth as the number of residual blocks N... so the effective number of layers is 4N,' then states 'experimental depths (4, 8, 16, etc.) refer explicitly to the total number of Dense layers.' Under the first definition depth 4 = 16 Dense layers; under the second depth 4 = 4 Dense layers. Section 4.1 uses only the second definition. A 4x ambiguity in the definition of 'depth' (including the titular 1000 layers) is material.",
+      "verifier_name": "verify-vision",
+      "snippet_id": "13446::FIGURE::2"
+    },
+    {
+      "error_category": "Data Inconsistency (figure-figure)",
+      "error_location": "Figure 12 (Section 4.4/4.6 'Testing the limits') and Figure 12 (Appendix A.1 baselines)",
+      "confidence": 0.75,
+      "supporting_evidence": "Two different figures are both captioned 'Figure 12': the testing-the-limits figure (depths 256-1024 on Humanoid mazes) and the Appendix A.1 baselines-comparison figure. Both numbers are actively cross-referenced (Section 4.2 cites Figure 12 for the baselines comparison; Section 4.4 cites Figure 12 for the 256/1024-layer results), making at least one citation incorrect.",
+      "verifier_name": "verify-vision",
+      "snippet_id": "13446::FIGURE::21"
+    },
+    {
+      "error_category": "Data Inconsistency (text-table)",
+      "error_location": "Figure 14 / Section A.3 (QRL online)",
+      "confidence": 0.7,
+      "supporting_evidence": "Text and caption state depth scaling for QRL 'yields negative results,' but the printed QRL (Online, FetchPush) values increase with depth: 0.160, 0.200, 0.180, 0.260, 0.250 for depths 2-32 (~56% relative improvement at the deepest settings), contradicting the stated conclusion.",
+      "verifier_name": "verify-statistical",
+      "snippet_id": "13446::TABLE::11"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 107,
+    "snippets_verified": 107,
+    "errors_detected": 11,
+    "verifier_usage": {
+      "math_equation": 6,
+      "text": 54,
+      "vision": 49,
+      "statistical": 12,
+      "citation": 4,
+      "cross_section_consistency": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Exhaustive verification (strict mode) of all 107 snippets flagged 11 errors, 3 at high confidence (>=0.85). The most severe is a mathematically inverted scaling claim in Section 4.4 ('parameter count scales linearly with width but quadratically with depth') that is disproved by the paper's own numerical example and contradicted by Appendix B.6. Two high-confidence internal contradictions follow: the 'Deep Networks Unlock Batch Size Scaling' subsection whose body text reports only marginal/inconsistent batch-size benefits while its title and Figure 7 caption claim the opposite, and an Abstract that characterizes gains as 'up to 5x... sporadic... modest' while the body reports consistent 20x-600x improvements. Additional confirmed issues: a self-negating emergence disclaimer in Section 4.3; a sign error in Figure 9's Q-value formula (L2 distance with 'high Q at goal' interpretation, also conflicting with the dot-product critic in Preliminaries); contradictory MJX/Brax version claims in Appendix B.2; Table 1 vs Figure 13 value mismatches far outside reported error bars (Humanoid, Arm Push Easy); an internally incoherent Figure 6 actor/critic grid whose caption claims (30% average improvement; 'actor matters more' in Ant Big Maze) are unsupported by its own data; a self-contradictory depth definition in Figure 2's caption; duplicate 'Figure 12' numbering; and a 'negative results' claim for online QRL contradicted by its improving depth-scaling values. Citations were spot-verified via web search with no fabrication or misattribution found; the four display equations are mathematically sound. The paper requires correction of these internal inconsistencies before its conclusions can be considered reliably reported."
+}

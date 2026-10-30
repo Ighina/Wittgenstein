@@ -1,0 +1,142 @@
+{
+  "paper_id": "3558-Rethinking_Multimodal_Learning_from_the_Perspective_of_Mitigating_Classific",
+  "title": "Rethinking Multimodal Learning from the Perspective of Mitigating Classific",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 3.2, residual-label definition following the reference to Equation (2)",
+      "confidence": 0.98,
+      "supporting_evidence": "The paper claims that masking by y_i \"ensure[s] the non-negativity of residual labels,\" but the defined true-class residual is 1 - lambda * sum_{j<t} p_{ij,y_i}^o. This becomes negative whenever lambda times the accumulated true-class probabilities exceeds 1, which is entirely possible for lambda=1 and multiple classifiers. Thus the stated non-negativity property is false, and the proposed residual target can contain negative components.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "3558-Rethinking_Multimodal_Learning_from_the_Perspective_of_Mitigating_Classific::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Sections 3.2 and 4.4; references to Equations (2), (3), (4), and (5)",
+      "confidence": 0.99,
+      "supporting_evidence": "The method repeatedly relies on equations that are absent. Section 3.2 says the residual labels are defined in \"Equation (2)\" and that the method jointly optimizes losses in \"(5),\" but neither a numbered Equation (2) nor Equations (3)--(5) are provided. Section 4.4 further says the ablation components epsilon, epsilon_o, and epsilon_p are objectives in Equations (2), (3), and (4), yet no definitions of these losses occur in the paper. The only subsequently displayed overall loss, Equation (6), contains an undefined L(x_i^o,y_i,n^o). Consequently, the claimed training objective and ablation variants are not mathematically specified or reproducible.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "3558-Rethinking_Multimodal_Learning_from_the_Perspective_of_Mitigating_Classific::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 3.3 and Algorithm 1, adaptive classifier assignment rule",
+      "confidence": 0.99,
+      "supporting_evidence": "The text calls tau a \"dead zone,\" but Algorithm 1 assigns a classifier whenever s_a - sigma s_v > tau or s_a - sigma s_v < tau. Except at exact equality, one of those conditions always holds. In particular, values inside the alleged dead zone, such as s_a - sigma s_v = 0 when tau=0.01, satisfy the second condition and add an audio classifier. A dead-zone rule would require a lower threshold such as < -tau, not < tau.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "3558-Rethinking_Multimodal_Learning_from_the_Perspective_of_Mitigating_Classific::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 3.3, confidence-score definition",
+      "confidence": 0.95,
+      "supporting_evidence": "The proposed score s_t^o = (1/N) sum_i y_i^T[sum_{j=1}^{n^o}p_{ij}^o] sums predictions over classifiers without division by n^o. It is therefore not a normalized confidence score and mechanically increases with the number of assigned classifiers even if their per-classifier quality is unchanged. Since the score itself controls whether more classifiers are assigned, this creates a classifier-count-dependent feedback mechanism rather than a comparison of modality classification ability.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "3558-Rethinking_Multimodal_Learning_from_the_Perspective_of_Mitigating_Classific::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Appendix C.5 versus Section 3.3",
+      "confidence": 0.98,
+      "supporting_evidence": "Appendix C.5 states that the method \"use[s] the ratio between different modal metrics to compare against the threshold tau.\" The actual method defines and uses the difference s_t^a - sigma s_t^v, both in Section 3.3 and Algorithm 1; no ratio is defined. This is a direct inconsistency in the classifier-assignment procedure, and it makes the entropy/loss score-function experiment impossible to interpret as described.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "3558-Rethinking_Multimodal_Learning_from_the_Perspective_of_Mitigating_Classific::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 3.1--3.2 and Table 1",
+      "confidence": 0.94,
+      "supporting_evidence": "The formal method defines only modality-specific encoders, classifiers, predictions, and unimodal cross-entropy losses. It never defines a multimodal fusion operator, a multimodal prediction, or a multimodal training loss. Nevertheless, the paper reports a \"Multi\" result throughout Table 1 and other tables, and claims a shared-head/fusion-based multimodal method. Without a defined fused predictor and inference rule, the central reported multimodal metric is not specified.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "3558-Rethinking_Multimodal_Learning_from_the_Perspective_of_Mitigating_Classific::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Appendix A, Lemma 1 and Theorem 1",
+      "confidence": 0.99,
+      "supporting_evidence": "The proof makes invalid or unstated deductions. Equation (22) replaces L^a(Phi*) - L^v(Phi*) by zero, although Assumption 4 says only that both gradients vanish and does not imply equal optimal loss values. Equality of optimal losses is introduced later as an additional \"Suppose\" rather than a theorem assumption. More seriously, Equation (31), |L^a(Phi(t))-L^v(Phi*)| >= |L^a(Phi(t))-L^v(Phi(t))|, does not follow from strong convexity, smoothness, or equality at Phi*: the two differences can cancel or have either ordering. Therefore the asserted gradient-to-gap bound in Lemma 1, on which the O(1/T) convergence claim depends, is not established.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "3558-Rethinking_Multimodal_Learning_from_the_Perspective_of_Mitigating_Classific::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Appendix A, Equations (40)--(42), relative to Sections 3.2--3.3",
+      "confidence": 0.98,
+      "supporting_evidence": "The theorem assumes \"parameters for each modality are independent,\" so that L^v(Phi(t+1))=L^v(Phi(t)). This contradicts the proposed architecture, which explicitly uses a shared Layer2 head \"for all modalities\" and jointly updates DNN parameters in Algorithm 1. It also conflicts with the stated shared encoders among classifiers. Hence the key step establishing a decrease in the loss gap does not apply to the implemented method.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "3558-Rethinking_Multimodal_Learning_from_the_Perspective_of_Mitigating_Classific::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Section 3.1/Algorithm 1 versus the NVGesture experiment in Sections 4.1--4.2",
+      "confidence": 0.91,
+      "supporting_evidence": "The algorithm, score, assignment conditions, and theory are defined solely for two modalities, audio and video. The paper says extension to more modalities is \"easy\" but gives no multiclass-modality assignment rule: it does not state how the weakest of RGB, optical flow, and depth is selected, how scores are compared, or how classifier additions are allocated. Yet Table 1 reports NVGesture results for three modalities. The NVGesture protocol is therefore underspecified and not reproducible.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "3558-Rethinking_Multimodal_Learning_from_the_Perspective_of_Mitigating_Classific::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Section 4.1, implementation details and baseline-comparison protocol",
+      "confidence": 0.94,
+      "supporting_evidence": "The paper admits that its own hyperparameters were cross-validated and its learning-rate schedules were tailored, whereas baselines used authors' defaults or public checkpoints \"without further tuning.\" It also leaves key procedures vague, e.g., reducing learning rate \"upon observing that the loss saturates,\" and does not specify a stopping criterion or maximum classifier count in the main method. This is not a controlled comparison and can favor the proposed method, so the SOTA comparisons cannot support the claimed performance advantage.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "3558-Rethinking_Multimodal_Learning_from_the_Perspective_of_Mitigating_Classific::baseline"
+    },
+    {
+      "error_category": "rhetorical_presentation_manipulation",
+      "error_location": "Table 1 caption and Table 1 result formatting",
+      "confidence": 0.99,
+      "supporting_evidence": "The caption says bold denotes the best result and underline the second best, but several highlighted entries violate this. On KSounds MAP, Ours is bold at .7901 while MLA reports .7945. On Twitter F1, Ours is bold at .6962 while LFM reports .7057. Thus the visual emphasis falsely presents non-best results as best.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "3558-Rethinking_Multimodal_Learning_from_the_Perspective_of_Mitigating_Classific::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Introduction contributions and Conclusion",
+      "confidence": 0.97,
+      "supporting_evidence": "The paper claims best performance \"by a large margin\" and says it achieves SOTA by a large margin, but Table 1 shows many margins are tiny or negative: KSounds accuracy is .7263 versus LFM .7253; Twitter accuracy is .7512 versus LFM .7501; Sarcasm accuracy is .8510 versus LFM .8497; and, as shown in the same table, Ours is worse than MLA on KSounds MAP and worse than LFM on Twitter F1. The abstract and Section 4.2 themselves acknowledge overlapping confidence intervals and context-dependent improvements. The broad large-margin/SOTA framing is not supported by the displayed evidence.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "3558-Rethinking_Multimodal_Learning_from_the_Perspective_of_Mitigating_Classific::baseline"
+    },
+    {
+      "error_category": "reference_background_fabrication",
+      "error_location": "Reference [10] and Appendix C.2",
+      "confidence": 0.96,
+      "supporting_evidence": "Reference [10] is a malformed duplicate of Reference [40]: it lists the author as \"W. et al.\" and gives the same title, \"What Makes Training Multi-Modal Classification Networks Hard?\" Appendix C.2 then cites G-Blend as [10], while the correctly formed citation to the Wang, Tran, and Feiszli G-Blend paper is [40]. This is an erroneous/misattributed citation and leaves [10] unusable as a scholarly reference.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "3558-Rethinking_Multimodal_Learning_from_the_Perspective_of_Mitigating_Classific::baseline"
+    },
+    {
+      "error_category": "evidence_data_integrity",
+      "error_location": "Appendix C.3, Table II",
+      "confidence": 0.78,
+      "supporting_evidence": "Table II reports a value of .1411 for the clean (zeta=0) one-classifier setting, while the paper's corresponding naive CREMA-D multimodal baseline is .6507 and the same table reaches .8515 at ten classifiers. The table does not label what metric is being reported, despite the text calling it \"model performance,\" and gives the implausibly low .1411 value unchanged at zeta=20 but a higher .2863 at zeta=50. Because the setting, metric, and relationship to the reported baseline are not explained, this result is internally unverifiable and appears inconsistent with the stated experimental setup.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "3558-Rethinking_Multimodal_Learning_from_the_Perspective_of_Mitigating_Classific::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 14,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (gpt-5.6-terra, taxonomy=paperaudit): 14 error(s) reported.",
+  "baseline": {
+    "model": "gpt-5.6-terra",
+    "provider": "openai",
+    "taxonomy": "paperaudit",
+    "paper_chars": 68387,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 19007,
+      "output_tokens": 4667,
+      "cache_read_input_tokens": null,
+      "cache_creation_input_tokens": null
+    }
+  }
+}

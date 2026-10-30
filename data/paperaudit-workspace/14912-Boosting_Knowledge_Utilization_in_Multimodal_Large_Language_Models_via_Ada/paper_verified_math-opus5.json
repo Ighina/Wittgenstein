@@ -1,0 +1,488 @@
+{
+  "paper_name": "paper",
+  "paper_path": "/Users/iacopoghinassi/Documents/Github/Wittgenstein/data/paperaudit-workspace/14912-Boosting_Knowledge_Utilization_in_Multimodal_Large_Language_Models_via_Ada/paper.md",
+  "tag": "opus5",
+  "lean_project": "MATH_VERIFICATION/Paper",
+  "lean_project_kept": true,
+  "totals": {
+    "snippets_extracted": 15,
+    "routed_to_math": 11,
+    "routed_to_lean": 4,
+    "lean_passed": 1,
+    "lean_refuted": 3,
+    "lean_failed": 0,
+    "fallbacks_run": 0,
+    "errors_detected": 5
+  },
+  "results": [
+    {
+      "snippet_id": "paper::EQUATION::0",
+      "snippet_type": "EQUATION",
+      "location": "3.1 Multimodal Retrieval Augmented Generation",
+      "content": "The retriever $\\mathcal{R}_\\phi$ measures the similarity between the query pair $(q, I)$ and a multimodal knowledge pair $(\\tilde{I}, c)$ based on the cosine similarity between their image embeddings:\n$$\\alpha = \\frac{\\mathcal{R}_\\phi(I) \\cdot \\mathcal{R}_\\phi(\\tilde{I})}{\\|\\mathcal{R}_\\phi(I)\\| \\cdot \\|\\mathcal{R}_\\phi(\\tilde{I})\\|}$$\n(1)\nThe textual knowledge $c$ with the highest retrieval similarity $\\alpha$ is selected as the input context for MLLMs. Here $\\mathcal{C} = \\{(\\tilde{I}_i, c_i)\\}_{i=1}^M$ is the multimodal knowledge base.",
+      "route": "verify-math",
+      "route_rationale": "Textbook cosine similarity; correctness is settled by inspection, nothing non-trivial to formalise.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "Eq. (1) is the standard cosine similarity $\\cos\\theta = \\langle u,v\\rangle/(\\|u\\|\\,\\|v\\|)$ with $u=\\mathcal{R}_\\phi(I)$, $v=\\mathcal{R}_\\phi(\\tilde I)$. It is well formed (nonzero embeddings assumed) and by Cauchy-Schwarz lands in $[-1,1]$, so $\\alpha$ is a legitimate similarity score. One presentational mismatch: the prose says the retriever scores the *pair* $(q,I)$ against the *pair* $(\\tilde I, c)$, but the formula uses image embeddings only and discards $q$ and $c$. The sentence itself says 'based on the cosine similarity between their image embeddings', so this is a stated modelling simplification rather than an error, and Tab. 6's '-T' rows confirm the query-based variant is a deliberate alternative. No algebraic defect.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::EQUATION::1",
+      "snippet_type": "EQUATION",
+      "location": "3.1 Multimodal Retrieval Augmented Generation",
+      "content": "Consequently, the output distributions of the MLLM with MRAG at the time step $t$ are:\n$$p(y_t) \\sim \\text{softmax}(\\mathcal{M}_\\theta(y_t \\mid q, I, c, y_{<t}))$$\n(2)\nwhere $y_{<t}$ represents the sequence of generated tokens before the time step $t$.",
+      "route": "verify-math",
+      "route_rationale": "Notational statement of the decoding distribution; asserts no identity that could be false.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::1",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.88,
+        "reasoning": "Standard autoregressive decoding notation. Writing $\\mathcal{M}_\\theta(y_t \\mid \\cdot)$ for the logit vector and then applying softmax is a mild abuse (the conditioned token $y_t$ appears inside what is really a vector-valued function of the context), but this is ubiquitous convention and not a mathematical error. softmax maps $\\mathbb{R}^{|V|}$ onto the simplex, so $p(y_t)$ is a well-defined distribution. No algebraic or domain defect.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.88
+    },
+    {
+      "snippet_id": "paper::EQUATION::2",
+      "snippet_type": "EQUATION",
+      "location": "3.2 Self-attention Mechanism in MLLMs",
+      "content": "The self-attention mechanism computes the relevance of each token to other tokens as follows:\n$$\\mathbf{A} = \\frac{\\mathbf{Q} \\cdot \\mathbf{K}^\\top}{\\sqrt{d}} + \\mathbf{M}$$\n(3)\nwhere A ∈ ℝ^{n×n} is the attention weight matrix, M is a causal mask, d is the feature dimension, and n is the number of input tokens. The output O can then be calculated by:\nO = softmax(A) · V (4)\nThe attention weight matrix A reflects the importance of different input tokens in generating new tokens. This property makes it a valuable tool to analyze the contribution of different types of tokens to the generated responses.",
+      "route": "verify-math-lean",
+      "route_rationale": "Whether the matrix defined in Eq. (3) can carry the properties the paper then assumes of it (nonnegative, row-normalised 'attention weights'/'proportions') is a crisp, decidable formal question.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::2",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.75,
+        "reasoning": "Formalised the paper's literal claim that the matrix of Eq. (3), $\\mathbf{A} = \\mathbf{Q}\\mathbf{K}^\\top/\\sqrt{d} + \\mathbf{M}$, is 'the attention weight matrix', i.e. that its rows are nonnegative and sum to 1. Hypotheses carried over: $Q,K$ are unconstrained real projections, $d>0$, $M$ additive causal mask, and Eq. (4) applies softmax to $A$ (so $A$ is the pre-softmax score matrix). Lean compiled a counterexample: with $d=1$, $M=0$, $Q \\equiv -1$ and $K = (1,0)^\\top$, row $0$ of $A$ is $(-1, 0)$, which has a negative entry and sums to $-1 \\neq 1$. The normalisation and nonnegativity belong to $\\mathrm{softmax}(A)$, not to $A$. This matters because the paper subsequently sums the entries of $A$ as if they were weights: $S^i(I) = \\sum_{j\\in I} A^i_{nj}$ (Sec. 3.3), Fig. 2's 'Proportions of attention weights', the ratio in Eq. (6), and the fusion weights of Eqs. (10)-(11). No single reading of $\\mathbf{A}$ makes Eqs. (3), (4), (6), (7), (10) and (11) simultaneously well posed: pre-softmax makes Eq. (4) right but Eq. (6) and Fig. 2 meaningless, post-softmax makes Eq. (6) right but Eq. (4)'s softmax a second application. Confidence is held at 0.75 rather than the usual 0.9 for a refutation because the defect is one of notation/specification, and a charitable reader can substitute $\\mathrm{softmax}(A)$ downstream.",
+        "predicted_error_category": "Domain/Constraint violation",
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [
+          "3.2 Self-attention Mechanism in MLLMs, Eq. (3)-(4)",
+          "3.3 Attention Bias in MRAG, importance scores and Fig. 2",
+          "4.1 Attention Reallocation, Eq. (6)",
+          "4.2 Adaptive Knowledge Fusion, Eq. (10)-(11)"
+        ],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/14912-ALFAR-opus5/Eq02_AttentionWeightMatrix.lean",
+          "formal_statement": "theorem eq3_not_attention_weights :\n    ∃ (Q K : Matrix (Fin 2) (Fin 1) ℝ) (M : Matrix (Fin 2) (Fin 2) ℝ) (d : ℝ),\n      0 < d ∧ (∃ j, scoreMatrix Q K M d 0 j < 0) ∧\n      (∑ j, scoreMatrix Q K M d 0 j) ≠ 1 := by\n  refine ⟨Matrix.of (fun _ _ => (-1 : ℝ)),\n          Matrix.of (fun i _ => if i = 0 then (1:ℝ) else 0),\n          0, 1, by norm_num, ⟨0, ?_⟩, ?_⟩\n  · simp [scoreMatrix, Matrix.mul_apply]\n  · simp [scoreMatrix, Matrix.mul_apply]\n    norm_num",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.75
+    },
+    {
+      "snippet_id": "paper::EQUATION::3",
+      "snippet_type": "EQUATION",
+      "location": "4.1 Attention Reallocation",
+      "content": "In addition, we introduce a query-context relevance score to mitigate the uniform attention to all context tokens and allow MLLMs to focus more on query-relevant context. We derive the relevance score from attention weights assigned to query tokens by the $j$-th context token as follows:\n$$\\omega_j = \\frac{\\sum_{k \\in S_q} \\mathbf{A}_{jk}}{\\sum_{l \\in S_c} \\sum_{k \\in S_q} \\mathbf{A}_{lk}}, \\text{ s.t. } j \\in S_c$$\n(6)\nwhere $S_q$ and $S_c$ are index sets of query and context tokens, respectively.",
+      "route": "verify-math-lean",
+      "route_rationale": "A closed-form normalisation identity over a finite index set: exactly the kind of claim the kernel can settle.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::3",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.92,
+        "reasoning": "Formalised Eq. (6) as $\\omega_j = f(j)/\\sum_{l \\in S_c} f(l)$ with $f(l) = \\sum_{k \\in S_q} \\mathbf{A}_{lk}$, and proved $\\sum_{j \\in S_c} \\omega_j = 1$ under the single hypothesis that the denominator is nonzero. Lean accepted the proof (`Finset.sum_div` plus `div_self`) with only the standard Mathlib axioms, for arbitrary real $\\mathbf{A}$ and arbitrary finite $S_c$ -- it is a pure self-normalisation identity, so Eq. (6) is correct as written. One caveat was also machine-checked and recorded as a companion lemma rather than a finding: reading $\\omega_j$ as a *relevance score* in $[0,1]$, and hence $\\gamma_j = k\\,\\omega_j \\ge 0$ in Eq. (7) as an attention *increase*, additionally requires $\\mathbf{A} \\ge 0$. Eq. (3) does not supply that, and Lean exhibited $f$ with $\\omega_j < 0$. That is the same underlying defect already reported against paper::EQUATION::2, so it is not double-counted here.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/14912-ALFAR-opus5/Eq03_Eq6Normalisation.lean",
+          "formal_statement": "theorem eq6_sums_to_one {ι : Type*} (Sc : Finset ι) (f : ι → ℝ)\n    (hden : ∑ l ∈ Sc, f l ≠ 0) :\n    ∑ j ∈ Sc, omega Sc f j = 1 := by\n  unfold omega\n  rw [← Finset.sum_div, div_self hden]",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.92
+    },
+    {
+      "snippet_id": "paper::EQUATION::4",
+      "snippet_type": "EQUATION",
+      "location": "4.1 Attention Reallocation",
+      "content": "The attention reallocation modifies attention after verifying that causal mask constraints remain intact, ensuring no causal attention is granted to future tokens. Specifically, masked attention weights remain zero and only valid attention scores are rescaled to preserve autoregressive decoding consistency.\n[...]\nWith the relevance scores, we adaptively increase MLLMs' attention to context tokens:\n$$\\hat{\\mathbf{A}}_{nj} = (1 + \\gamma_j) \\cdot \\mathbf{A}_{nj}, \\text{ s.t. } j \\in S_c$$\n(7)\nwhere $\\gamma_j = k \\cdot \\omega_j$ is the scaled query-context relevance with a scaling factor $k$. After attention reallocation, we apply softmax to redistribute the attention as in Eq. 4 to compute the output hidden states. This repeats auto-regressively for each subsequent token prediction.\n(Implementation: \"The scaling factor k is set to 0.4 to avoid excessive adjustment.\")",
+      "route": "verify-math-lean",
+      "route_rationale": "Three separable, formally decidable claims: mask preservation, preservation of normalisation, and whether the stated re-softmax actually realises the reallocation Eq. (7) specifies.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::4",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.82,
+        "reasoning": "Three claims formalised. **(1) Mask preservation -- VERIFIED.** `eq7_preserves_zeros` compiles: multiplying by $(1+\\gamma_j)$ sends $0$ to $0$, so masked positions stay masked and the paper's causal-consistency assurance holds. **(2) Preservation of normalisation -- REFUTED.** `eq7_breaks_normalisation` compiles: with the paper's own $k = 0.4$, a normalised row $\\mathbf{A} = (1/2, 1/2)$ and one context token becomes $\\hat{\\mathbf{A}}$ with row sum $6/5 \\neq 1$. So $\\hat{\\mathbf{A}}$ is no longer a row of attention weights, and some renormalisation is genuinely required. **(3) The stated renormalisation does not implement Eq. (7) -- REFUTED.** The paper says 'we apply softmax to redistribute the attention as in Eq. 4'. But softmax is not a renormalisation: `softmax_ratio` proves the realised odds ratio between two entries is $\\exp(\\hat A_i - \\hat A_j)$, a function of their *difference*, whereas Eq. (7) specifies their *quotient*. `eq7_resoftmax_does_not_implement_reallocation` compiles the concrete gap: for $\\mathbf{A} = (1/2,1/2)$ and $\\gamma = 1$ on the context token, Eq. (7) asks for a weight ratio of exactly $2$, while the re-softmax realises $\\exp(1/2) \\approx 1.649 \\neq 2$. The distortion worsens in the real regime: for normalised attention over $n$ tokens the entries are $O(1/n)$, so $\\exp(\\gamma_j A_{nj}) \\approx 1 + \\gamma_j A_{nj} \\approx 1 + 0.4\\,\\omega_j/n$ -- the intended multiplicative boost $1+\\gamma_j$ is almost entirely erased. Either the method's description is wrong about which operation is applied, or $\\mathbf{A}$ in Eq. (7) is pre-softmax, in which case Eq. (6)'s $\\omega_j$ is not a well-defined relevance score (cf. paper::EQUATION::2). Severity is minor because this is a specification defect: the released implementation may well do the right thing, and the reported empirical gains are not themselves contradicted.",
+        "predicted_error_category": "Formally refuted",
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [
+          "4.1 Attention Reallocation, Eq. (7) and the following sentence",
+          "3.2 Self-attention Mechanism in MLLMs, Eq. (4)"
+        ],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/14912-ALFAR-opus5/Eq04_Eq7Reallocation.lean",
+          "formal_statement": "theorem eq7_preserves_zeros {n : ℕ} (Sc : Finset (Fin n)) (γ A : Fin n → ℝ)\n    (j : Fin n) (hj : A j = 0) : realloc Sc γ A j = 0 := by\n  unfold realloc; split <;> simp [hj]\n\ntheorem eq7_breaks_normalisation :\n    ∃ (Sc : Finset (Fin 2)) (γ A : Fin 2 → ℝ),\n      (∀ j, 0 ≤ γ j) ∧ (∀ j, 0 ≤ A j) ∧ (∑ j, A j) = 1 ∧\n      (∑ j, realloc Sc γ A j) ≠ 1 := by\n  refine ⟨{1}, fun _ => (2/5 : ℝ), fun _ => (1/2 : ℝ), by norm_num, by norm_num, ?_, ?_⟩ <;>\n    norm_num [realloc, Fin.sum_univ_two]\n\ntheorem softmax_ratio {n : ℕ} (x : Fin n → ℝ) (i j : Fin n) :\n    softmax x i / softmax x j = Real.exp (x i - x j)\n\ntheorem eq7_resoftmax_does_not_implement_reallocation :\n    ∃ (Sc : Finset (Fin 2)) (γ A : Fin 2 → ℝ),\n      (∀ j, 0 ≤ A j) ∧ (∑ j, A j) = 1 ∧ (∀ j, 0 ≤ γ j) ∧\n      realloc Sc γ A 1 / realloc Sc γ A 0 = 2 ∧\n      softmax (realloc Sc γ A) 1 / softmax (realloc Sc γ A) 0 ≠ 2 := by\n  ...  -- via Real.log_two_gt_d9 : exp (1/2) < 2",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.82
+    },
+    {
+      "snippet_id": "paper::EQUATION::5",
+      "snippet_type": "EQUATION",
+      "location": "4.2 Adaptive Knowledge Fusion",
+      "content": "Specifically, we represent parametric knowledge at step $t$ by using the output logits that have only query and image as inputs:\n$$\\text{logit}_{\\text{p}} = \\mathcal{M}_\\theta(y_t \\mid q, I, y_{<t})$$\n(8)\nSimilarly, we represent contextual knowledge by using the output logits that have context as additional inputs and perform attention reallocation to better utilize the context:\n$$\\text{logit}_c = \\hat{\\mathcal{M}}_\\theta(y_t \\mid q, I, c, y_{<t})$$\n(9)\nwhere $\\hat{\\mathcal{M}}_\\theta$ is the MLLM with attention reallocation.",
+      "route": "verify-math",
+      "route_rationale": "Definitions of two forward passes; no identity is asserted, so there is nothing for the kernel to decide.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::5",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.82,
+        "reasoning": "Eqs. (8) and (9) are definitions of two forward passes of the same network, one with the retrieved context and one without. They are well formed and contain no algebraic step. Two labelling imprecisions, recorded but not flagged: (i) $\\text{logit}_\\text{p}$ is called 'parametric knowledge' yet still conditions on the image $I$, which is external evidence, so it is really a no-context ablation rather than a purely parametric distribution; (ii) $\\text{logit}_c$ is the full model and therefore still contains parametric knowledge, so the two terms are not disentangled as claimed. Neither is a derivation-invalidating mistake within this snippet; see paper::MATHEMATICAL_MODEL::0.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.82
+    },
+    {
+      "snippet_id": "paper::EQUATION::6",
+      "snippet_type": "EQUATION",
+      "location": "4.2 Adaptive Knowledge Fusion",
+      "content": "The reliability of the parametric and contextual knowledge can thus be measured by the attention weights that are assigned to the image and context tokens, capturing the correlation among tokens [59, 60, 61]:\n$$\\lambda_v^t = \\sum_{i \\in S_I} \\mathbf{A}_{ti}, \\quad \\lambda_c^t = \\sum_{j \\in S_c} \\mathbf{A}_{tj}$$\n(10)",
+      "route": "verify-math",
+      "route_rationale": "A definition of two aggregates; the falsifiable claim about them ('positive weights that sum to 1') is asserted in Eq. (11) and is routed to Lean there.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::6",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.8,
+        "reasoning": "Eq. (10) merely names two partial row sums of the attention matrix, which is a well-formed definition. Two dependencies are noted and verified elsewhere rather than flagged here: the sums inherit whatever defect $\\mathbf{A}$ carries from Eq. (3) (see paper::EQUATION::2), and the properties the paper then asserts of $\\lambda_v^t, \\lambda_c^t$ -- positivity and summing to 1 -- are stated in Eq. (11) and were machine-refuted there (see paper::EQUATION::7). One genuine ambiguity: in the parametric pass of Eq. (8) there are no context tokens, so $S_c$ is empty and $\\lambda_c^t$ undefined; the paper never says which forward pass supplies $\\mathbf{A}$. That is underspecification, not an algebraic error.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::EQUATION::7",
+      "snippet_type": "EQUATION",
+      "location": "4.2 Adaptive Knowledge Fusion (Eq. 11)",
+      "content": "Finally, based on the adaptive weights, the logits fusion at decoding step t is performed by a weighted average: $$p(y_t) \\sim \\text{softmax}\\left( \\lambda_v^t \\cdot \\text{logit}_p + \\lambda_c^t \\cdot \\text{logit}_c \\right)$$ ensuring positive weights that sum to 1 to consistently balance parametric and contextual knowledge.\n\n(with, from Eq. 10: $\\lambda_v^t = \\sum_{i \\in S_I} \\mathbf{A}_{ti}$, $\\lambda_c^t = \\sum_{j \\in S_c} \\mathbf{A}_{tj}$, and $S_q$ the disjoint index set of query tokens from Eq. 6)",
+      "route": "verify-math-lean",
+      "route_rationale": "'Positive weights that sum to 1' is an exact identity about partial sums of an attention row -- provable or refutable outright.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::7",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.93,
+        "reasoning": "Formalised the paper's explicit claim that the fusion coefficients are 'positive weights that sum to 1', i.e. $\\lambda_v^t + \\lambda_c^t = 1$, under the *most favourable* reading of Eq. (10): row $t$ of $\\mathbf{A}$ is a genuine attention distribution ($p \\ge 0$, $\\sum_j p_j = 1$) and $S_I, S_c$ are disjoint. Lean proved the general negation, not merely a counterexample: `eq11_weights_do_not_sum_to_one` establishes that whenever some token $k \\notin S_I \\cup S_c$ carries positive attention, $\\sum_{i\\in S_I} p_i + \\sum_{j\\in S_c} p_j \\le 1 - p_k < 1$ strictly. The hypothesis is unavoidable in the paper's own setting: the input sequence also contains the query tokens $S_q$ (explicitly disjoint from $S_c$ in Eq. 6), the prompt, and the generated prefix $y_{<t}$; and Eq. (6) divides by $\\sum_{l\\in S_c}\\sum_{k\\in S_q} \\mathbf{A}_{lk}$, so query tokens must carry strictly positive attention for the method to be defined at all. Hence $\\lambda_v^t + \\lambda_c^t < 1$ always, and Eq. (11) is not a weighted average. A second compiled theorem, `eq11_subunit_weights_flatten_output`, identifies what the operation actually does: scaling logits by $s = \\lambda_v^t + \\lambda_c^t \\in (0,1)$ is a temperature change, and every pairwise odds ratio of the fused distribution is strictly compressed toward 1 relative to the unscaled logits, i.e. the output is flattened toward uniform by an amount that varies per decoding step with the attention mass. Under the literal Eq. (3) reading the claim fails even harder, since the $\\lambda$'s need not be positive. Both theorems compile clean with only propext, Classical.choice and Quot.sound.",
+        "predicted_error_category": "Formally refuted",
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [
+          "4.2 Adaptive Knowledge Fusion, Eq. (11) and the clause 'ensuring positive weights that sum to 1'",
+          "4.2 Adaptive Knowledge Fusion, Eq. (10)",
+          "4.1 Attention Reallocation, Eq. (6) (S_q disjoint from S_c and carrying positive mass)"
+        ],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/14912-ALFAR-opus5/Eq07_Eq10_11FusionWeights.lean",
+          "formal_statement": "theorem eq11_weights_do_not_sum_to_one {n : ℕ} (p : Fin n → ℝ)\n    (hnonneg : ∀ j, 0 ≤ p j) (hsum : ∑ j, p j = 1)\n    (SI Sc : Finset (Fin n)) (hdisj : Disjoint SI Sc)\n    (k : Fin n) (hk : k ∉ SI ∪ Sc) (hpk : 0 < p k) :\n    (∑ i ∈ SI, p i) + (∑ j ∈ Sc, p j) < 1 := by\n  rw [← Finset.sum_union hdisj]\n  have hsub : SI ∪ Sc ⊆ Finset.univ \\ {k} := by\n    intro x hx\n    simp only [Finset.mem_sdiff, Finset.mem_univ, Finset.mem_singleton, true_and]\n    intro hxk\n    exact hk (hxk ▸ hx)\n  have h2 : ∑ i ∈ SI ∪ Sc, p i ≤ ∑ i ∈ Finset.univ \\ {k}, p i :=\n    Finset.sum_le_sum_of_subset_of_nonneg hsub (fun i _ _ => hnonneg i)\n  have h3 : ∑ i ∈ Finset.univ \\ {k}, p i = 1 - p k := by\n    rw [Finset.sum_sdiff_eq_sub (by simp)]\n    simp [hsum]\n  linarith\n\ntheorem eq11_subunit_weights_flatten_output {n : ℕ} (x : Fin n → ℝ) (s : ℝ)\n    (_hs0 : 0 < s) (hs1 : s < 1) (i j : Fin n) (hij : x j < x i) :\n    softmax (fun m => s * x m) i / softmax (fun m => s * x m) j\n      < softmax x i / softmax x j := by\n  rw [softmax_ratio, softmax_ratio]\n  exact Real.exp_lt_exp.mpr (by nlinarith)",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.93
+    },
+    {
+      "snippet_id": "paper::EQUATION::8",
+      "snippet_type": "EQUATION",
+      "location": "A3 Conflict Rate and Performance Drop",
+      "content": "Given access to ground-truth contextual knowledge, the Conflict Rate can be defined as the error rate of parametric knowledge, i.e. the proportion of incorrect responses generated by the vanilla model without input context:\n$$\\text{Conflict Rate} = \\text{Err}(\\mathcal{M}_\\theta(y|q, I), \\hat{y})$$ (A1)\nwhere Err is a function that calculates the error rate of the output, $$\\mathcal{M}_\\theta(y|q, I)$$ is the output with only images and questions as inputs, and $$\\hat{y}$$ is the ground-truth answer.",
+      "route": "verify-math",
+      "route_rationale": "A metric definition over empirical model outputs; Err is not a mathematical object the paper pins down, so it is unformalisable.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::8",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.78,
+        "reasoning": "Eq. (A1) is internally consistent with its stated assumptions: ground-truth context is correct by construction, parametric correctness is approximated by the no-context model's correctness, so 'parametric knowledge conflicts with context' reduces to 'the no-context model is wrong', and Conflict Rate $=$ Err(no context). The reported values are arithmetically consistent with the rest of the paper: Tab. 1 gives $60.85\\%$ and $48.94\\%$ for InfoSeek and ViQuAE, and Tab. 3 gives LLaVA-1.5 Parametric accuracies of $39.15$ and $51.06$, with $100 - 60.85 = 39.15$ and $100 - 48.94 = 51.06$ exactly. The operationalisation does conflate 'wrong' with 'in conflict' -- a model can be wrong through formatting or abstention failures, which the paper itself concedes when it notes that LLaVA-1.5 'demonstrates a stronger instruction-following capability' and so produces 'more correctly formatted outputs'. That inflates the metric, but it is an over-attribution in interpretation rather than a mathematical error in the definition.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.78
+    },
+    {
+      "snippet_id": "paper::EQUATION::9",
+      "snippet_type": "EQUATION",
+      "location": "A3 Conflict Rate and Performance Drop",
+      "content": "When correct contextual knowledge is available, the ideal model should achieve 100% accuracy in the absence of knowledge conflicts. However, influenced by knowledge conflicts, the model cannot achieve 100% accuracy, then we can define Performance Drop as the error rate of outputs when both parametric and contextual knowledge are used:\n$$\\text{Performance Drop} = \\text{Err}(\\mathcal{M}_\\theta(y|q, I, c), \\hat{y})$$ (A2)\nwhere $$\\mathcal{M}_\\theta(y|q, I, c)$$ is the output with ground-truth context as additional inputs.",
+      "route": "verify-math",
+      "route_rationale": "Metric definition resting on empirical error rates; no formalisable content.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::9",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.7,
+        "reasoning": "Eq. (A2) is self-consistent against the baseline the paper declares: the ideal conflict-free model would score $100\\%$, so the residual error rate is read as the drop from that ideal. The reported figures hang together, with Tab. 1's $28.87\\%$ and $27.02\\%$ implying GT-context accuracies of $71.13\\%$ and $72.98\\%$. The substantive weakness is attributional rather than algebraic: Eq. (A2) charges the *entire* residual error to knowledge conflict, when the same residual also absorbs reasoning failures, formatting errors and annotation noise -- so 'Performance Drop' overstates the conflict-induced component, and the Sec. 3.4 inference that conflicts 'lead to an up to 30% performance drop' does not follow from the definition alone. Note too that Eq. (A1) and Eq. (A2) measure different systems (without and with context), so the pair is not a before/after comparison of one model. Below the flagging bar for this verifier, which targets derivation-invalidating mistakes.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.7
+    },
+    {
+      "snippet_id": "paper::EQUATION::10",
+      "snippet_type": "EQUATION",
+      "location": "A6 Adaptive Plausibility Constraints",
+      "content": "To mitigate this issue, we selectively consider tokens with high original probabilities and truncate other tokens as follows:\n\nV_token(y_<i) = { y_i ∈ V : p_θ(y_i) ≥ β · max_w p_θ(w) }\n\np(y_i) = 0, if y_i ∉ V_token(y_<i) (A3)\n\nwhere V_token is the set of selected tokens and V is the output vocabulary. We select β = 0.7 to retain only high-probability tokens.",
+      "route": "verify-math",
+      "route_rationale": "A truncation rule checkable by inspection; the substantive question is the hyperparameter value, not an identity.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::10",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.72,
+        "reasoning": "The rule is the standard adaptive plausibility constraint of Li et al. [51] and is correctly stated: $V_\\text{token}$ is nonempty for any $\\beta \\le 1$ because the argmax always survives, and zeroing the complement keeps every value in $[0,1]$. Setting $p(y_i)=0$ without an explicit renormalisation leaves $\\sum_i p(y_i) < 1$, but implicit renormalisation at sampling time is the universal convention for this constraint and is not an error. Two points recorded without flagging: $\\beta = 0.7$ is far more aggressive than the $0.1$ used by the works the paper says it follows [26, 51, 53, 58], so at $\\beta=0.7$ only tokens within $70\\%$ of the modal probability survive and decoding is close to greedy for any diffuse distribution -- which sits awkwardly beside the stated use of multinomial sampling and beside Sec. 6.6 reporting greedy decoding as a separate configuration with different numbers. That is a hyperparameter and comparability concern, not a mathematical defect in (A3).",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.72
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::0",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "3.3 Attention Bias in MRAG",
+      "content": "To generate the response token y_{n+1}, MLLMs perform self-attention over all input tokens that correspond to the n-th row of the attention weight matrix A. We analyze the contributions of the input image and context using an importance score, defined as the total attention weights assigned to these tokens. For the input image, the importance score at layer i is calculated by: S^i(I) = ∑_{j∈I} A^i_{nj}. Similarly, for the input context, the importance score at layer i is determined by: S^i(c) = ∑_{j∈c} A^i_{nj}.\n\n(Figure 2: Proportions of attention weights that are assigned to image and context tokens at different shallow layers of LLaVA-1.5 [14].)",
+      "route": "verify-math",
+      "route_rationale": "The aggregation itself is trivial; its validity depends on the nature of A, whose formal analysis is routed to Lean at paper::EQUATION::2.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.7,
+        "reasoning": "Summing a row of the attention matrix over a block of token indices is a valid aggregation and a standard way to quantify a token group's contribution. The one defect is that Fig. 2 reports these sums as 'Proportions of attention weights', which presupposes that the entries of $\\mathbf{A}$ are nonnegative and normalised -- a property of $\\mathrm{softmax}(\\mathbf{A})$, not of the $\\mathbf{A}$ that Eq. (3) defines. That inconsistency was machine-refuted and is reported once, against paper::EQUATION::2, rather than counted again here. Under the intended reading ($\\mathbf{A}$ post-softmax) this block is correct.",
+        "predicted_error_category": null,
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.7
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::1",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "5.2 Experimental Results",
+      "content": "We can see that the proposed ALFAR consistently outperforms the Regular decoding strategy by substantial margins (averaged around 2.5% in overall accuracy) across all MLLMs and datasets.\n\nNotably, ALFAR achieves an average improvement of 6.6% over Regular decoding and consistently surpasses state-of-the-art decoding strategies by substantial margins, underscoring its effectiveness in diverse tasks.\n\nExperiments on knowledge-based datasets. In addition to entity knowledge-based datasets [32, 24], we conduct experiments on commonsense knowledge-based datasets, OK-VQA [64], AOK-VQA [65] and Encyclopedic VQA (E-VQA) [31] with LLaVA-1.5 [14]. As shown in Tab. 4, ALFAR surpasses Regular decoding by 15.2% and consistently outperforms state-of-the-art decoding strategies, underscoring its effectiveness in addressing a broader range of knowledge-intensive tasks.\n\n(Tab. 4, Regular vs ALFAR: OK-VQA 46.17 vs 60.83; AOK-VQA 44.13 vs 59.93; E-VQA 19.14 vs 29.57)",
+      "route": "verify-math",
+      "route_rationale": "Arithmetic over the paper's own reported numbers; no formal content for the kernel, but directly recomputable.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::1",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.82,
+        "reasoning": "Two of the three summary statistics recompute exactly; the third does not.\n\n**Tab. 2 (claimed $\\approx 2.5\\%$) -- correct.** The eight ALFAR-minus-Regular Overall gaps are $4.22, 4.00, 1.80, 1.34, 1.81, 3.33, 0.82, 2.52$, mean $2.48$.\n\n**Tab. 3 (claimed $6.6\\%$) -- correct.** The twelve gaps are $6.38, 2.59, 12.21, 4.29, 8.70, 5.69, 5.05, 8.22, 4.57, 3.85, 8.57, 9.38$, mean $6.625$.\n\n**Tab. 4 (claimed $15.2\\%$) -- wrong.** The sentence names three datasets, and the three gaps are OK-VQA $60.83 - 46.17 = 14.66$, AOK-VQA $59.93 - 44.13 = 15.80$ and E-VQA $29.57 - 19.14 = 10.43$, giving a mean of $\\tfrac{14.66+15.80+10.43}{3} = 13.63$, not $15.2$. The quoted figure is recovered exactly by dropping E-VQA: $\\tfrac{14.66+15.80}{2} = 15.23 \\approx 15.2$. So the reported average silently excludes the weakest of the three datasets it claims to average, overstating the gain by $1.6$ accuracy points. Severity is minor: ALFAR still leads Regular decoding on all three datasets, so the direction of the result survives.",
+        "predicted_error_category": "Sign/Arithmetic error",
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": [
+          "5.2 Experimental Results, 'Experiments on knowledge-based datasets'",
+          "Table 4"
+        ]
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.82
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::2",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "Table 2 (generative freeform VQA)",
+      "content": "Table 2 reports, for each model and decoding method, accuracy on the UnseenQuestion and UnseenEntity splits together with an Overall column, for both the Human [23] and Validation [23] sets. Two rows:\n\n| LLaVA-1.5 | VCD [58] | 22.30(±0.03) | 22.38(±0.03) | 22.23(±0.03) |  (Validation)\n| MiniGPT4 | **ALFAR (ours)** | **15.16**(±0.01) | **15.27**(±0.01) | **15.05**(±0.01) |  (Validation)\n\nThe Overall column is the harmonic mean of the two split scores, as the InfoSeek protocol prescribes; it reproduces 38 of 40 rows to within rounding, e.g. LLaVA-1.5 Regular Validation: HM(19.98, 19.59) = 19.78, and LLaVA-1.5 Parametric Validation: HM(7.14, 6.28) = 6.68.",
+      "route": "verify-math",
+      "route_rationale": "Aggregate-versus-subset arithmetic on tabulated values; recomputable directly and not expressible as a standalone theorem.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::2",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.88,
+        "reasoning": "The Overall column of Tab. 2 is the harmonic mean of the UnseenQuestion and UnseenEntity scores: it reproduces exactly across the table, e.g. $\\mathrm{HM}(19.98, 19.59) = 19.78$, $\\mathrm{HM}(7.14, 6.28) = 6.68$, $\\mathrm{HM}(23.82, 23.75) = 23.78$. Two rows are impossible under *any* mean, harmonic, arithmetic, geometric or any weighted average, because every such mean of two reals lies in $[\\min, \\max]$:\n\n- LLaVA-1.5 / VCD / Validation: $\\mathrm{UQ} = 22.30$, $\\mathrm{UE} = 22.38$, Overall $= 22.23 < \\min(22.30, 22.38)$. The harmonic mean is $22.34$.\n- MiniGPT4 / ALFAR (ours) / Validation: $\\mathrm{UQ} = 15.16$, $\\mathrm{UE} = 15.27$, Overall $= 15.05 < \\min(15.16, 15.27)$. The harmonic mean is $15.21$.\n\nAn aggregate score strictly below both of the subset scores it aggregates cannot arise from the reported numbers, so at least one entry in each of these rows is wrong. Three further rows (LLaVA/AGLA/Human $8.94$ vs $8.955$; InstructBLIP/COIECD/Human $4.33$ vs $4.342$; Shikra/AGLA/Validation $14.08$ vs $14.097$) deviate by at most $0.02$ and are consistent with rounding, so they are not flagged. Severity is minor: the affected ALFAR cell understates rather than inflates the paper's own method ($15.05$ printed against $15.21$ computed), and both rows keep their reported ordering.",
+        "predicted_error_category": "Domain/Constraint violation",
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": [
+          "Table 2, LLaVA-1.5 / VCD [58] / Validation row",
+          "Table 2, MiniGPT4 / ALFAR (ours) / Validation row"
+        ]
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.88
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "4 Method",
+      "content": "The proposed framework consists of two branches for effective handling of parametric and contextual knowledge. Within the contextual branch, we design an attention reallocation mechanism that tackles the attention bias and improves the utilization of contextual knowledge by adaptively adjusting model attention toward relevant context tokens based on query-context relevance (Sec. 4.1). In addition, the network fuses the parametric and contextual knowledge adaptively in the output logits, mitigating knowledge conflicts under the guidance of the model attention that dynamically captures the relative importance of the two types of knowledge (Sec. 4.2).\n\nNevertheless, parametric knowledge is implicitly embedded and the two types of knowledge are entangled during inference, making it hard to explicitly represent and utilize them separately. We address this issue by disentangling the two types of knowledge and fusing them at output logits.\n\n(Pipeline: Eq. 6 relevance scores → Eq. 7 attention reallocation → Eqs. 8-9 two forward passes → Eq. 10 adaptive weights → Eq. 11 logits fusion.)",
+      "route": "verify-math",
+      "route_rationale": "Pipeline-level coherence argued in prose; its formalisable components were routed individually to Lean at EQUATION::2, ::3, ::4 and ::7.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.65,
+        "reasoning": "Taken as a whole the pipeline is coherent in intent, and its two formally defective steps are reported individually against paper::EQUATION::4 (the re-softmax does not implement Eq. 7) and paper::EQUATION::7 (the fusion weights do not sum to 1), so they are not re-counted here. What remains at the model level is an overstatement rather than an error: the paper claims to *disentangle* parametric and contextual knowledge, but $\\text{logit}_\\text{p} = \\mathcal{M}_\\theta(y_t \\mid q, I, y_{<t})$ still conditions on the image and so is a no-context ablation rather than a parametric-only distribution, while $\\text{logit}_c$ is the full model and still contains parametric knowledge. The fusion of Eq. (11) therefore mixes two overlapping distributions rather than two separated knowledge sources, and the parametric contribution is counted in both terms. The weighting rationale itself is internally consistent -- high image attention raises $\\lambda_v^t$, and Sec. 4.1 lowers image attention when retrieval similarity is high, so the two mechanisms do pull in the intended direction. Recorded as a terminological overstatement below the flagging bar.\n\nSeparately, and deliberately not treated as a paper defect: the markdown rendering of this manuscript has lost Eq. (5). Section 4.1 jumps from Eq. (4) to Eq. (6), the sentence beginning 'By adaptively adjusting model attention as illustrated in Fig. 3' is a fragment, and the image-token down-weighting based on the retrieval similarity $\\alpha$ is described in prose with no formula. The numbering gap plus the surrounding extraction damage (figure placeholders and Sec. 5 tables spliced into Sec. 4) indicate a PDF-to-markdown conversion artifact, not a missing equation in the original.",
+        "predicted_error_category": null,
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.65
+    }
+  ],
+  "findings": [
+    {
+      "snippet_id": "paper::EQUATION::7",
+      "category": "Formally refuted",
+      "severity": "critical",
+      "confidence": 0.93,
+      "evidence": "Lean proved the **general negation** of the paper's claim that the fusion coefficients are \"positive weights that sum to 1\". Under the most favourable reading of Eq. (10) -- row $t$ of $\\mathbf{A}$ is a genuine attention distribution ($p \\ge 0$, $\\sum_j p_j = 1$) and $S_I \\cap S_c = \\emptyset$ -- `eq11_weights_do_not_sum_to_one` establishes that for *any* token $k \\notin S_I \\cup S_c$ with $p_k > 0$,\n$$\\lambda_v^t + \\lambda_c^t = \\sum_{i \\in S_I} p_i + \\sum_{j \\in S_c} p_j \\le 1 - p_k < 1 .$$\nThe hypothesis is unavoidable in the paper's own setting: the input also contains the query tokens $S_q$ (explicitly disjoint from $S_c$ in Eq. 6), the prompt, and the generated prefix $y_{<t}$ -- and Eq. (6) divides by $\\sum_{l \\in S_c}\\sum_{k \\in S_q} \\mathbf{A}_{lk}$, so query tokens must carry strictly positive attention for ALFAR to be defined at all. Hence $\\lambda_v^t + \\lambda_c^t < 1$ at every decoding step and Eq. (11) is **not** a weighted average.\n\nA second compiled theorem, `eq11_subunit_weights_flatten_output`, identifies what the operation actually does: scaling logits by $s = \\lambda_v^t + \\lambda_c^t \\in (0,1)$ is a temperature change, and every pairwise odds ratio is strictly compressed, $\\mathrm{softmax}(s\\mathbf{x})_i/\\mathrm{softmax}(s\\mathbf{x})_j = \\exp(s(x_i - x_j)) < \\exp(x_i - x_j)$. The fusion therefore flattens the output distribution toward uniform by a step-dependent amount -- an uncontrolled confound in the \"+ Adaptive Weights\" ablation (Tab. 5), which attributes a $+2.52$ InfoSeek gain to the weighting. Under the literal Eq. (3) reading the claim fails harder still, since the $\\lambda$'s need not even be positive. Both theorems compile clean on Mathlib v4.33.1 with only `propext`, `Classical.choice`, `Quot.sound`.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "Finally, based on the adaptive weights, the logits fusion at decoding step t is performed by a weighted average: $$p(y_t) \\sim \\text{softmax}\\left( \\lambda_v^t \\cdot \\text{logit}_p + \\lambda_c^t \\cdot \\text{logit}_c \\right)$$ ensuring positive weights that sum to 1 to consistently balance parametric and contextual knowledge."
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::2",
+      "category": "Domain/Constraint violation",
+      "severity": "minor",
+      "confidence": 0.88,
+      "evidence": "The Overall column of Tab. 2 is the harmonic mean of the UnseenQuestion and UnseenEntity scores -- it reproduces across the table, e.g. $\\mathrm{HM}(19.98, 19.59) = 19.78$, $\\mathrm{HM}(7.14, 6.28) = 6.68$, $\\mathrm{HM}(23.82, 23.75) = 23.78$. Two rows are impossible under **any** mean, since every mean of two reals lies in $[\\min, \\max]$:\n\n| row | UnseenQuestion | UnseenEntity | Overall printed | harmonic mean |\n|---|---|---|---|---|\n| LLaVA-1.5 / VCD / Validation | $22.30$ | $22.38$ | $22.23$ | $22.34$ |\n| MiniGPT4 / ALFAR (ours) / Validation | $15.16$ | $15.27$ | $15.05$ | $15.21$ |\n\nIn both cases the aggregate is printed strictly *below* both of the subset scores it aggregates, so at least one entry per row is wrong. Three further rows deviate by $\\le 0.02$ (LLaVA/AGLA/Human $8.94$ vs $8.955$; InstructBLIP/COIECD/Human $4.33$ vs $4.342$; Shikra/AGLA/Validation $14.08$ vs $14.097$) and are consistent with rounding, so they are not flagged. Severity is minor: the affected ALFAR cell *understates* the paper's own method ($15.05$ printed, $15.21$ computed) and neither row's reported ordering changes.",
+      "verifier": "verify-math",
+      "exact_quote": "|              | **ALFAR (ours)**| **5.05**(±0.02)           | **3.87**(±0.01)         | **4.38**(±0.00)    | **15.16**(±0.01)               | **15.27**(±0.01)            | **15.05**(±0.01)        |"
+    },
+    {
+      "snippet_id": "paper::EQUATION::4",
+      "category": "Formally refuted",
+      "severity": "minor",
+      "confidence": 0.82,
+      "evidence": "Of the three claims Lean was given for Eq. (7), one holds and two were refuted.\n\n**Holds.** `eq7_preserves_zeros`: multiplying by $(1+\\gamma_j)$ maps $0 \\mapsto 0$, so masked positions stay masked and the paper's causal-consistency assurance is sound.\n\n**Refuted 1.** `eq7_breaks_normalisation`: with the paper's own $k = 0.4$, a normalised row $\\mathbf{A} = (1/2, 1/2)$ with one context token becomes $\\hat{\\mathbf{A}}$ of row sum $6/5 \\neq 1$. So $\\hat{\\mathbf{A}}$ is no longer attention *weights* and renormalisation is genuinely needed.\n\n**Refuted 2.** The stated renormalisation does not perform it. `softmax_ratio` proves the realised odds ratio is $\\exp(\\hat A_i - \\hat A_j)$ -- a function of the **difference** -- whereas Eq. (7) prescribes the **quotient**. `eq7_resoftmax_does_not_implement_reallocation` compiles the gap: for $\\mathbf{A} = (1/2, 1/2)$ and $\\gamma = 1$, Eq. (7) demands a weight ratio of exactly $2$, while \"apply softmax ... as in Eq. 4\" realises $\\exp(1/2) \\approx 1.649 \\neq 2$. The distortion worsens in the operating regime: normalised attention over $n$ tokens has entries $O(1/n)$, so the realised boost is $\\exp(\\gamma_j A_{nj}) \\approx 1 + 0.4\\,\\omega_j/n$ instead of the intended $1 + \\gamma_j$ -- with $n$ in the hundreds the reallocation is almost entirely erased.\n\nEither the description names the wrong operation, or $\\mathbf{A}$ in Eq. (7) is pre-softmax, in which case Eq. (6)'s $\\omega_j$ is not a well-defined relevance score. Severity minor: this is a specification defect, the released implementation may do the right thing, and the measured gains are not themselves contradicted.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "where $\\gamma_j = k \\cdot \\omega_j$ is the scaled query-context relevance with a scaling factor $k$. After attention reallocation, we apply softmax to redistribute the attention as in Eq. 4 to compute the output hidden states. This repeats auto-regressively for each subsequent token prediction."
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::1",
+      "category": "Sign/Arithmetic error",
+      "severity": "minor",
+      "confidence": 0.82,
+      "evidence": "Two of the paper's three headline averages recompute exactly; the third does not.\n\n- Tab. 2, claimed $\\approx 2.5\\%$: gaps $4.22, 4.00, 1.80, 1.34, 1.81, 3.33, 0.82, 2.52$, mean $\\mathbf{2.48}$ — correct.\n- Tab. 3, claimed $6.6\\%$: gaps $6.38, 2.59, 12.21, 4.29, 8.70, 5.69, 5.05, 8.22, 4.57, 3.85, 8.57, 9.38$, mean $\\mathbf{6.625}$ — correct.\n- Tab. 4, claimed $15.2\\%$: the sentence names **three** datasets, with gaps OK-VQA $60.83 - 46.17 = 14.66$, AOK-VQA $59.93 - 44.13 = 15.80$, E-VQA $29.57 - 19.14 = 10.43$, so the mean is $\\tfrac{14.66 + 15.80 + 10.43}{3} = \\mathbf{13.63}$, not $15.2$.\n\nThe quoted figure is recovered exactly by dropping E-VQA: $\\tfrac{14.66 + 15.80}{2} = 15.23 \\approx 15.2$. The reported average therefore silently excludes the weakest of the three datasets it claims to average, overstating the gain by $1.6$ accuracy points. Severity minor: ALFAR still leads Regular decoding on all three datasets, so the direction of the result stands.",
+      "verifier": "verify-math",
+      "exact_quote": "As shown in Tab. 4, ALFAR surpasses Regular decoding by 15.2% and consistently outperforms state-of-the-art decoding strategies, underscoring its effectiveness in addressing a broader range of knowledge-intensive tasks."
+    },
+    {
+      "snippet_id": "paper::EQUATION::2",
+      "category": "Domain/Constraint violation",
+      "severity": "minor",
+      "confidence": 0.75,
+      "evidence": "Lean refuted the paper's literal statement that the matrix of Eq. (3) is \"the attention weight matrix\". With $d = 1$, $\\mathbf{M} = 0$, $\\mathbf{Q} \\equiv -1$ and $\\mathbf{K} = (1,0)^\\top$, row $0$ of $\\mathbf{A} = \\mathbf{Q}\\mathbf{K}^\\top/\\sqrt{d} + \\mathbf{M}$ is $(-1, 0)$: it has a strictly negative entry and sums to $-1 \\neq 1$. Nonnegativity and normalisation belong to $\\mathrm{softmax}(\\mathbf{A})$, which Eq. (4) then forms -- not to $\\mathbf{A}$ itself.\n\nThis matters because the paper goes on to sum the entries of $\\mathbf{A}$ as though they were weights: $S^i(I) = \\sum_{j \\in I} A^i_{nj}$ and Fig. 2's \"Proportions of attention weights\" (Sec. 3.3), the ratio defining $\\omega_j$ (Eq. 6), and the fusion weights $\\lambda_v^t, \\lambda_c^t$ (Eqs. 10-11). **No single reading of $\\mathbf{A}$ makes all of these well posed:** pre-softmax validates Eq. (4) but leaves Fig. 2's \"proportions\" and Eq. (6)'s ratio meaningless (the numerator may be negative, the denominator may vanish); post-softmax validates Eq. (6) but makes Eq. (4)'s softmax a second application. Held at $0.75$ rather than the $\\ge 0.9$ a refutation normally earns, because the defect is one of notation and specification and a charitable reader can substitute $\\mathrm{softmax}(\\mathbf{A})$ throughout -- the consequential instance is the separate Eq. (11) finding.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "where A ∈ ℝ^{n×n} is the attention weight matrix, M is a causal mask, d is the feature dimension, and n is the number of input tokens. The output O can then be calculated by:"
+    }
+  ],
+  "verdict": "CRITICAL_ERRORS",
+  "verdict_confidence": 0.87,
+  "summary": "**What was checked.** 15 mathematical objects were extracted from *Boosting Knowledge Utilization in Multimodal Large Language Models via Adaptive Logits Fusion and Attention Reallocation* (ALFAR) — the 11 numbered equations of Secs. 3-4 and the appendix (Eqs. 1-11, A1-A3), the Sec. 3.3 importance-score block, two blocks of arithmetic over the reported results, and the Sec. 4 pipeline as a model. Four were routed to Lean 4 (Mathlib v4.33.1) and 11 to informal review. All four Lean snippets were settled by the compiler: **1 PASSED, 3 REFUTED, 0 FAILED**, so no informal fallbacks were triggered. Five findings at confidence $\\ge 0.7$ survived, one of them critical.\n\n**What Lean settled.** The decisive result is against Eq. (11). The paper fuses the two logit vectors as $p(y_t) \\sim \\mathrm{softmax}(\\lambda_v^t \\cdot \\mathrm{logit}_p + \\lambda_c^t \\cdot \\mathrm{logit}_c)$ and states this is \"a weighted average\", \"ensuring positive weights that sum to 1\". Lean proved the general negation: with $\\lambda_v^t, \\lambda_c^t$ defined by Eq. (10) as the attention mass on the image and context blocks, $\\lambda_v^t + \\lambda_c^t \\le 1 - p_k < 1$ for any token $k$ outside those two blocks carrying positive attention. The query tokens always are such tokens — Eq. (6) divides by their attention mass, so it must be nonzero — as are the prompt and the generated prefix $y_{<t}$. So the coefficients never sum to 1, and a second compiled theorem shows what the step actually does: scaling logits by $s < 1$ is a temperature change that strictly compresses every pairwise odds ratio, flattening the output toward uniform by a step-dependent amount. That is an uncontrolled confound in the \"+ Adaptive Weights\" ablation of Tab. 5, which credits the weighting with a $+2.52$ InfoSeek gain. Lean also refuted two of three claims about Eq. (7): the rescaling does preserve masked zeros, but it breaks row normalisation, and the prescribed \"apply softmax ... as in Eq. 4\" does not realise the specified reallocation — softmax acts on differences, not quotients, so an intended weight ratio of $2$ comes out as $\\exp(1/2) \\approx 1.649$, and in the real regime of $O(1/n)$ attention entries the boost is erased almost entirely. Underlying both is a notational inconsistency machine-refuted at Eq. (3): the matrix the paper calls \"the attention weight matrix\" is the pre-softmax score matrix, whose rows are neither nonnegative nor normalised, yet its entries are later summed as \"proportions of attention weights\". No single reading of $\\mathbf{A}$ makes Eqs. (3), (4), (6), (7), (10) and (11) simultaneously well posed. The one clean pass is Eq. (6): $\\sum_{j \\in S_c} \\omega_j = 1$ is a correct self-normalisation identity for arbitrary real $\\mathbf{A}$ whenever the denominator is nonzero.\n\n**What informal review added.** Two arithmetic defects in the reported results. Tab. 2's Overall column is the harmonic mean of the UnseenQuestion and UnseenEntity splits and reproduces across the table, but two rows print an Overall strictly *below* both subset scores — LLaVA-1.5/VCD/Validation ($22.30$, $22.38 \\to 22.23$, HM $22.34$) and MiniGPT4/ALFAR/Validation ($15.16$, $15.27 \\to 15.05$, HM $15.21$) — which no mean can produce. And the claimed $15.2\\%$ average gain on the three commonsense datasets is actually $13.63\\%$; $15.2\\%$ is recovered only by dropping E-VQA, the weakest of the three. The paper's other two headline averages ($\\approx 2.5\\%$ on Tab. 2, $6.6\\%$ on Tab. 3) recompute exactly, as do Tab. 1's conflict rates against Tab. 3's parametric accuracies ($100 - 60.85 = 39.15$, $100 - 48.94 = 51.06$) and the Tab. 5 ablation endpoints against Tabs. 3-4.\n\n**Disagreements and limits.** The two verifiers never contradicted each other: every Lean verdict was PASSED or REFUTED, so none needed an informal second opinion, and the informal findings are on numerical material Lean was not given. Three things were examined and deliberately *not* reported as findings. Eq. (5) is absent (Sec. 4.1 jumps from Eq. 4 to Eq. 6 and the image-token down-weighting has no formula), but the numbering gap together with the surrounding extraction damage — figure placeholders, Sec. 5 tables spliced into Sec. 4 — marks this as a PDF-to-markdown conversion artifact, not a defect in the original. Three Tab. 2 Overall cells deviate from the harmonic mean by $\\le 0.02$, consistent with rounding. And $\\beta = 0.7$ in Eq. (A3) is far more aggressive than the $0.1$ used by the works the paper says it follows, which would push decoding close to greedy, but that is a hyperparameter and comparability concern rather than a mathematical error. Outside this skill's mathematical scope, and so noted only here: the abstract contradicts itself and Sec. 4 on whether ALFAR is training-free (\"a training-free and plug-and-play approach\" versus \"ALFAR employs light training ... thereby limiting its plug-and-play capability\"); Secs. 6.3 and 6.5 disagree on scalability (\"scalability issues emerge with larger models\" versus \"demonstrating its superior scalability\"); and the implementation details report ALFAR on four GPUs against baselines on one, which undercuts the stated fair comparison.\n\n**Verdict: CRITICAL_ERRORS**, confidence $0.87$. The confidence is high because it rests on compiled proofs rather than on readings: four of the paper's formal claims were put to the Lean kernel and all four returned a definite verdict, with the critical finding a *general* theorem rather than a contrived counterexample. It is not higher because the refuted claims concern how the method is specified and described, not the experimental measurements — ALFAR's reported accuracy gains are unaffected by the misdescription of its own fusion rule, and the remaining findings are minor.\n\n**Lean project.** `MATH_VERIFICATION/Paper` (Mathlib v4.33.1) already existed and was **reused**, not created by this run, so per the skill's deletion rules it was kept rather than deleted. Per-snippet scratch (`TMP.lean`, `claim.md`) was removed; the four compiled proofs and their claim specifications are archived under `MATH_VERIFICATION/Paper/Paper/Verified/14912-ALFAR-opus5/`."
+}

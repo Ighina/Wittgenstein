@@ -1,0 +1,48 @@
+{
+  "paper_id": "20777",
+  "title": "Memory Mosaics at scale",
+  "paper_category": "cs.LG",
+  "predicted_errors": [
+    {
+      "error_category": "Data Inconsistency (text-table)",
+      "error_location": "Appendix G, text above Table 10",
+      "confidence": 0.8,
+      "supporting_evidence": "The text states 'removing long-term memory from Memory Mosaics v2 after training degrades the performance on the RULER question-answer tasks by 20%~30%.' However, Table 10 reports with/without long-term memory scores of 58.9→38.5 (4k), 55.5→22.2 (8k), 54.9→20.0 (16k), 53.4→20.2 (32k), which correspond to relative degradations of 34.6%, 60.0%, 63.6%, and 62.2% respectively (absolute point drops of 20.4, 33.3, 34.9, 33.2). Under no natural reading — relative or absolute — do the printed numbers support the claimed '20%~30%' degradation; the smallest relative drop is 34.6% and only the 4k absolute drop (20.4 points) is near the claimed range. The magnitude of the effect is materially understated relative to the paper's own table.",
+      "verifier_name": "verify-statistical",
+      "snippet_id": "20777::TABLE::9"
+    },
+    {
+      "error_category": "Equation/notation error",
+      "error_location": "Section 3.2, Equation (9)",
+      "confidence": 0.7,
+      "supporting_evidence": "Equation (9) reuses the symbol v-tilde (ṽ_T / \\tilde{v}_T) for BOTH the raw projection (\\tilde{v}_T = W_ψ x_T) and the smoothed value on the left-hand side of the averaging equation (ṽ_T = γ \\tilde{v}_T + (1−γ)\\tilde{v}_{T+1}). As printed, substituting \\tilde{v}_T = W_ψ x_T into the smoothing equation forces W_ψ x_{T+1} = W_ψ x_T (i.e., v_T = v_{T+1}) for γ ≠ 1, making the equation self-referential and mathematically incoherent. The key extractor in Equations (7)-(8) uses a distinct symbol (breve k) for the smoothed quantity, and the original Memory Mosaics paper uses a distinct symbol for the smoothed value; the v2 equation collapsed that distinction. The intended fix is obvious (a distinct symbol for the smoothed value), but the displayed equation is internally contradictory as written.",
+      "verifier_name": "verify-math",
+      "snippet_id": "20777::EQUATION::8"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 90,
+    "snippets_verified": 90,
+    "errors_detected": 2,
+    "verifier_usage": {
+      "math_equation": 10,
+      "statistical": 13,
+      "text": 28,
+      "citation": 6,
+      "vision": 32,
+      "cross_section": 1
+    }
+  },
+  "verdict": "NEEDS_REVIEW",
+  "summary": "Verification of 'Memory Mosaics at scale' (uncertainty mode, lenient strictness) covered all 10 equations, 13 tables, all sections, citations, and cross-section consistency. The core mathematical claims are sound: the kernel-regression-to-attention reduction in Eq. (4) is algebraically correct when all keys share a common squared norm (up to absorbing a factor 2 into the learnable bandwidth β); the adaptive-bandwidth schedule β = β_1 n^α + β_0 in Eq. (6) is consistent with the MISE-optimal rate 1/√β ∝ n^{-1/(p+4)} (β grows with n, so α ∈ (0,1) is correct); and the short/long-term memory overlap condition m < h in Section 3.3 is correct. All Table 1/2/9 benchmark averages were recomputed and match; Table 4's '12.3% to 14.8%' and Table 5's '6.5%' gaps match; Tables 3 and 12 are mutually consistent; and the abstract's claims align with the body (persistent-knowledge parity, 12.3–14.8% new-knowledge gains, >10% ICL gains). Two findings are reported: (1) a data-reporting inconsistency in Appendix G — the text claims long-term-memory removal degrades RULER QA by '20%~30%' while Table 10 shows 34.6%–63.6% relative degradation (confidence 0.8); (2) a self-referential notation collision in Eq. (9), which reuses ṽ for both the raw value projection and the smoothed value (confidence 0.7). Minor issues noted but not elevated to findings: the Section 5.2 claim '1.4%~5.6%' has a lower bound that should be 1.6% per Table 3; the 'novel theoretical insight' that normalized-key Gaussian-kernel associative memory equals softmax attention is well-known prior art (e.g., kernel/attention unification literature) and is better framed as a reformulation; the in-text citation year [Beck et al., 2025] disagrees with the reference list (NeurIPS 2024); and the duplicated example 'tom-and-jerry'/'tom-and-jerry' appears to be a typo. None of these are conclusion-invalidating, but the Table 10 magnitude claim should be corrected or the table recomputed.",
+  "uncertainty_map": [
+    {"snippet_id": "20777::EQUATION::8", "uncertainty": 0.65, "route": "math"},
+    {"snippet_id": "20777::TABLE::9", "uncertainty": 0.7, "route": "statistical"},
+    {"snippet_id": "20777::EQUATION::5", "uncertainty": 0.45, "route": "math"},
+    {"snippet_id": "20777::SECTION::13", "uncertainty": 0.55, "route": "text"},
+    {"snippet_id": "20777::SECTION::6", "uncertainty": 0.5, "route": "text"},
+    {"snippet_id": "20777::TABLE::2", "uncertainty": 0.35, "route": "statistical"},
+    {"snippet_id": "20777::TABLE::3", "uncertainty": 0.3, "route": "statistical"},
+    {"snippet_id": "20777::TABLE::4", "uncertainty": 0.3, "route": "statistical"}
+  ]
+}

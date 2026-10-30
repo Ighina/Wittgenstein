@@ -1,0 +1,272 @@
+{
+  "paper_name": "paper",
+  "paper_path": "/Users/iacopoghinassi/Documents/Github/Wittgenstein/data/paperaudit-workspace/20777-Memory_Mosaics_at_scale/paper.md",
+  "lean_project": "MATH_VERIFICATION/Paper",
+  "lean_project_kept": true,
+  "totals": {
+    "snippets_extracted": 10,
+    "routed_to_math": 9,
+    "routed_to_lean": 1,
+    "lean_passed": 0,
+    "lean_refuted": 1,
+    "lean_failed": 0,
+    "fallbacks_run": 0,
+    "errors_detected": 1
+  },
+  "results": [
+    {
+      "snippet_id": "paper::EQUATION::0",
+      "snippet_type": "EQUATION",
+      "location": "2 Background on Associative Memory",
+      "content": "$$f(k; \\{(k_1, v_1) \\ldots (k_n, v_n)\\}) = \\mathbb{E}(V | K = k).$$ (2)",
+      "route": "verify-math",
+      "route_rationale": "Definitional/interpretive modelling claim f = E(V|K): the estimated distribution P(V|K) is never pinned down; no checkable algebraic content; unformalisable.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.1,
+        "reasoning": "Eq (2) asserts that the retrieval function of an associative memory equals the conditional expectation E(V|K=k) under the distribution P(V|K) 'estimated' from the stored key-value pairs. This is a definitional/interpretive statement: P(V|K) is not pinned down (no estimator is specified), so there is no algebraic content that can be false. It is a modelling assumption, not a derivable identity. No mathematical error.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.1
+    },
+    {
+      "snippet_id": "paper::EQUATION::1",
+      "snippet_type": "EQUATION",
+      "location": "2 Background on Associative Memory",
+      "content": "$$f(k; \\{(k_1, v_1) \\ldots (k_n, v_n)\\}) = \\sum_{i=1}^{n} \\frac{e^{-\\beta \\|k-k_i\\|^2}}{\\sum_{i=1}^{n} e^{-\\beta \\|k-k_i\\|^2}} v_i,$$ (3)",
+      "route": "verify-math",
+      "route_rationale": "Standard Nadaraya-Watson estimator definition; inspection-checkable; formalisable but only trivially (convex-combination normalisation), so informal review suffices.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::1",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.1,
+        "reasoning": "Eq (3) is the Nadaraya-Watson estimator with a Gaussian kernel: f = Σ_i w_i v_i with w_i = e^{-β‖k-k_i‖²} / Σ_j e^{-β‖k-k_j‖²}. The weights are non-negative (exponentials) and sum to 1, so the output is a convex combination of the v_i — a valid kernel-regression estimator. The only flaw is notational: the denominator reuses the index i (shadowing the outer summation index); it should read Σ_j. This is an indexing-convention slip, not a mathematical error. The formula is standard and correct.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.1
+    },
+    {
+      "snippet_id": "paper::EQUATION::2",
+      "snippet_type": "EQUATION",
+      "location": "2 Background on Associative Memory",
+      "content": "$$f(k; \\{(k_1, v_1) \\ldots (k_n, v_n)\\}) = \\sum_{i=1}^{n} \\frac{e^{\\beta k^\\top k_i}}{\\sum_{j=1}^{n} e^{\\beta k^\\top k_j}} v_i.$$ (4), claimed to follow from Eq (3) \"when all key vectors k_i share the same squared norm\"",
+      "route": "verify-math-lean",
+      "route_rationale": "The Gaussian-kernel -> attention reduction under equal-norm keys is a formalisable algebraic identity; correctness turns on the cancellation argument and the β vs 2β reparametrization.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::2",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.9,
+        "reasoning": "Formalised the paper's printed claim (Eq 3 'becomes' Eq 4 with the SAME β whenever all keys share the same squared norm) for real keys/values, i.e. dimension one, a valid instance of the vector setting. Lean REFUTED it. Concrete counterexample k=1, keys=(1,-1) (both squared norm 1), vals=(1,0), β=1: Eq (3) equals 1/(1+e^{-4}), the printed Eq (4) equals e/(e+e^{-1}); equality would force e^{-1}=e^{-3}, impossible by injectivity of exp. Root cause: e^{-β‖k-k_i‖²} = e^{-β‖k‖²}·e^{-β‖k_i‖²}·e^{2βkᵀk_i}, so the common factor cancels leaving the attention form with bandwidth 2β, not β. A second theorem in the same file, corrected_eq3_eq_attention_2beta, verifies the corrected identity (Eq 3 = attention form with 2β) at the same counterexample. Because β is a free/learnable parameter (Eq 6), the printed Eq (4) is correct up to the reparametrization β ↦ 2β: a minor imprecision, not a fatal error.",
+        "predicted_error_category": "Algebraic manipulation",
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean (saved to Paper/Verified/paper__EQUATION__2_refutation.lean)",
+          "formal_statement": "theorem paper_claim_false : ¬ (∀ (β : ℝ) (n : ℕ) (keys : Fin n → ℝ) (vals : Fin n → ℝ) (k : ℝ), (∀ i j : Fin n, ‖keys i‖ ^ 2 = ‖keys j‖ ^ 2) → lhs β n keys vals k = rhs β n keys vals k) where lhs β n keys vals k = ∑ i, (exp (-β * ‖k - keys i‖^2) / ∑ j, exp (-β * ‖k - keys j‖^2)) * vals i and rhs β n keys vals k = ∑ i, (exp (β * k * keys i) / ∑ j, exp (β * k * keys j)) * vals i",
+          "compiler_feedback": "lean_diagnostic_messages Paper/TMP.lean: [] (clean).\nlake env lean Paper/TMP.lean:\n'paper_claim_false' depends on axioms: [propext, Classical.choice, Quot.sound]\n'corrected_eq3_eq_attention_2beta' depends on axioms: [propext, Classical.choice, Quot.sound]\nEXIT_CODE=0",
+          "axioms": ["propext", "Classical.choice", "Quot.sound"],
+          "cycles_used": 0,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::EQUATION::3",
+      "snippet_type": "EQUATION",
+      "location": "3.1 Adaptive bandwidth in Gaussian kernel smoothing",
+      "content": "β = β_1 n^α + β_0, (6) where β_0 ≥ 0, β_1 > 0, 1 > α > 0 are learnable parameters.",
+      "route": "verify-math",
+      "route_rationale": "Definitional bandwidth schedule with positivity constraints; monotonicity in n is trivial.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::3",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.1,
+        "reasoning": "Eq (6) defines the bandwidth schedule β(n) = β_1 n^α + β_0 with β_0 ≥ 0, β_1 > 0, 0 < α < 1. For n ≥ 1, n^α is increasing, so β(n) is increasing in n, consistent with the surrounding claim that more key-value pairs yield a larger adaptation. The parameter constraints keep β positive. This is a definition of the scheduling rule; nothing asserted is false.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.1
+    },
+    {
+      "snippet_id": "paper::EQUATION::4",
+      "snippet_type": "EQUATION",
+      "location": "3.2 Gated time-variant key feature extractor",
+      "content": "k_T = Norm(ḱ_T) with ḱ_T = \\tilde{k}_T + λ ḱ_{T-1}, \\tilde{k}_T = W_φ x_T (7)",
+      "route": "verify-math",
+      "route_rationale": "Definitional leaky-averaging recursion; asserts no property that could be false.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::4",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.1,
+        "reasoning": "Eq (7) defines a leaky-averaging key extractor: ḱ_T = \\tilde{k}_T + λ ḱ_{T-1} with \\tilde{k}_T = W_φ x_T, followed by L2 normalization. This is a definition of the feature-extraction recursion; it asserts no property that could be false. The recursion is well-formed given an initial condition (implied by the time index). No mathematical error.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.1
+    },
+    {
+      "snippet_id": "paper::EQUATION::5",
+      "snippet_type": "EQUATION",
+      "location": "3.2 Gated time-variant key feature extractor",
+      "content": "k_T = α_φ Norm(ḱ_T) with { ḱ_T = g_T \\tilde{k}_T + λ_T ḱ_{T-1}, \\tilde{k}_T = W_φ x_T, g_T = e^{W_g x_T}, λ_T = e^{-‖W_λ x_T‖} }, (8)",
+      "route": "verify-math",
+      "route_rationale": "Definitional gated extractor; gates positive by construction (exponentials), recursion well-defined.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::5",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.1,
+        "reasoning": "Eq (8) defines the gated time-variant key extractor. The gates g_T = e^{W_g x_T} > 0 and λ_T = e^{-‖W_λ x_T‖} ∈ (0,1] are exponential maps, hence positive by construction, so the recursion ḱ_T = g_T \\tilde{k}_T + λ_T ḱ_{T-1} is well-defined. These are definitions, not assertions; there is no algebraic step to contradict. No error.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.1
+    },
+    {
+      "snippet_id": "paper::EQUATION::6",
+      "snippet_type": "EQUATION",
+      "location": "3.2 Gated time-variant key feature extractor",
+      "content": "v_T = α_ψ Norm(ṽ_T) with ṽ_T = γ \\tilde{v}_T + (1−γ) \\tilde{v}_{T+1}, \\tilde{v}_T = W_ψ x_T, (9)",
+      "route": "verify-math",
+      "route_rationale": "Definitional convolutional value extractor; convex-combination recursion.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::6",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.1,
+        "reasoning": "Eq (9) defines the convolutional value extractor: ṽ_T = γ \\tilde{v}_T + (1−γ) \\tilde{v}_{T+1}, a convex combination of the current and next token features (γ is initialized in (0,1) per Table 6), followed by L2 normalization and scaling by α_ψ. Definitional; no property asserted that could be false. No error.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.1
+    },
+    {
+      "snippet_id": "paper::EQUATION::7",
+      "snippet_type": "EQUATION",
+      "location": "3.3 3-level memory",
+      "content": "f(k; {(k_{t−h+1}, v_{t−h+1}) … (k_{t−1}, v_{t−1})}) = ∑_{i=t−h+1}^{t−1} [e^{β k^{⊤} k_i} / ∑_{j=t−h+1}^{t−1} e^{β k^{⊤} k_j}] v_i. (10)",
+      "route": "verify-math",
+      "route_rationale": "Application of the attention form (Eq 4) to the short-term window; inherits the equal-norm-key assumption.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::7",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.1,
+        "reasoning": "Eq (10) applies the attention form of Eq (4) to the short-term memory window of keys t−h+1 … t−1. Numerator and denominator ranges match (i and j both run over t−h+1 … t−1), weights are positive exponentials, and the output is a convex combination of the v_i in the window. It is a faithful restriction of Eq (4); it inherits the equal-norm-key assumption (memory mosaics L2-normalize keys, per Section 2). No mathematical error.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.1
+    },
+    {
+      "snippet_id": "paper::THEOREM::0",
+      "snippet_type": "THEOREM",
+      "location": "2 Background on Associative Memory (footnote 4)",
+      "content": "This Gaussian kernel smoothing not only converges to the true conditional expectation E(V|K) when n → ∞ and β = √n [Nadaraya, 1964; Watson, 1964]",
+      "route": "verify-math",
+      "route_rationale": "Asymptotic statistical claim (Nadaraya-Watson consistency); dimension-dependent; not realistically formalisable here; rests on cited classical results.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::THEOREM::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.3,
+        "reasoning": "Footnote 4 claims the Gaussian kernel smoother (Eq 3) converges to E(V|K) as n→∞ with β=√n. Nadaraya-Watson consistency requires the bandwidth h→0 and n·h^d→∞ in ℝ^d. With kernel e^{-β‖u‖²}, the effective bandwidth is h ∝ 1/√β = n^{-1/4}, so n·h^d = n^{1−d/4}, which →∞ only for d<4. The blanket statement 'converges when β=√n' is therefore dimension-dependent and fails for d ≥ 4 (the paper's hidden dimension is 2048/4096). In low dimensions (d ≤ 3) it matches the classical Nadaraya-Watson/Watson results. This is a footnote that does not affect the paper's main claims (the actual method uses a learnable bandwidth), so it is recorded as a documented caveat rather than a flagged error.",
+        "predicted_error_category": null,
+        "snippet_type": "THEOREM",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.3
+    },
+    {
+      "snippet_id": "paper::THEOREM::1",
+      "snippet_type": "THEOREM",
+      "location": "3.1 Adaptive bandwidth in Gaussian kernel smoothing",
+      "content": "1/√β ∝ n^{-1/(p+4)}",
+      "route": "verify-math",
+      "route_rationale": "Known AMISE-optimal bandwidth scaling law; asymptotic, not formalisable.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::THEOREM::1",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.1,
+        "reasoning": "The claim '1/√β ∝ n^{-1/(p+4)}' is the standard AMISE-optimal bandwidth scaling for kernel density/regression in dimension p: h_opt ∝ n^{-1/(p+4)}. Since the Gaussian kernel e^{-β‖u‖²} has effective bandwidth h ∝ 1/√β, the stated proportionality is correct. This is a well-known asymptotic result (e.g., García-Portugués 2024). No error.",
+        "predicted_error_category": null,
+        "snippet_type": "THEOREM",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.1
+    }
+  ],
+  "findings": [
+    {
+      "snippet_id": "paper::EQUATION::2",
+      "category": "Algebraic manipulation",
+      "severity": "minor",
+      "confidence": 0.9,
+      "evidence": "Lean formally REFUTED the printed claim that Eq (3) 'becomes' Eq (4) with the same β whenever all keys share the same squared norm. Counterexample k=1, keys=(1,−1) (both squared norm 1), vals=(1,0), β=1: Eq (3) equals $1/(1+e^{-4})$ while the printed Eq (4) equals $e/(e+e^{-1})$, and equality would force $e^{-1}=e^{-3}$. The correct reduction carries a factor $2\\beta$: $e^{-\\beta\\|k-k_i\\|^2}=e^{-\\beta\\|k\\|^2}\\,e^{-\\beta\\|k_i\\|^2}\\,e^{2\\beta k^\\top k_i}$, so the common factor cancels and Eq (3) equals $\\sum_i [e^{2\\beta k^\\top k_i}/\\sum_j e^{2\\beta k^\\top k_j}] v_i$. A second Lean theorem (`corrected_eq3_eq_attention_2beta`) verifies this corrected identity (Eq 3 = attention form with $2\\beta$) at the same counterexample. Since β is a free/learnable parameter (Eq 6), the printed Eq (4) is correct up to the reparametrization $\\beta \\mapsto 2\\beta$; the error is minor and does not affect the paper's main claims.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "$$f(k; \\{(k_1, v_1) \\ldots (k_n, v_n)\\}) = \\sum_{i=1}^{n} \\frac{e^{\\beta k^\\top k_i}}{\\sum_{j=1}^{n} e^{\\beta k^\\top k_j}} v_i.$$ (4)"
+    }
+  ],
+  "verdict": "MINOR_ERRORS",
+  "verdict_confidence": 0.85,
+  "summary": "Verified the mathematical content of 'Memory Mosaics at scale' (Zhang & Bottou). Extracted 10 self-contained mathematical snippets: 8 equations (Eqs 2, 3, 4, 6, 7, 8, 9, 10) and 2 asymptotic claims (footnote 4 on Nadaraya-Watson consistency; Section 3.1 on AMISE-optimal bandwidth scaling). Routed 9 snippets to informal verify-math and 1 (Eq 4, the Gaussian-kernel→attention reduction) to verify-math-lean against the shared Lean project MATH_VERIFICATION/Paper (reused from disk, so it was kept, not deleted). Lean formally REFUTED the printed Eq (4) claim: with equal-norm keys, Eq (3) reduces to the attention form with bandwidth 2β, not β as printed; a concrete counterexample (k=1, keys=(1,−1), vals=(1,0), β=1) compiles cleanly in Lean showing Eq (3) ≠ printed Eq (4), and a companion theorem verifies the corrected 2β identity. Because β is a free/learnable parameter (Eq 6), the substance is preserved up to reparametrization, so this is a minor imprecision reported as the paper's single finding. All other snippets came back clean: Eqs (6)–(10) are well-formed definitions (Eq 8's gates are positive by construction, Eq 9 is a convex combination); Eq (2) is a definitional modelling claim; Eq (3) is the standard Nadaraya–Watson estimator (with a cosmetic index-shadowing in the denominator, Σ_i should be Σ_j); Eq (10) is a faithful restriction of Eq (4) to the short-term window; and the AMISE bandwidth scaling is the standard result. Footnote 4's blanket claim 'converges when β=√n' is dimension-dependent (n·h^d = n^{1−d/4} fails for d ≥ 4; the paper's hidden dimension is 2048/4096) and is recorded as a caveat in the reasoning rather than a flagged error, since it is a footnote that does not affect the main claims. No critical errors found; the paper's main claims are experimental and were not within the mathematical scope. The Lean REFUTED result and the informal results agree (no fallback was needed, as the Lean verdict was REFUTED rather than FAILED)."
+}

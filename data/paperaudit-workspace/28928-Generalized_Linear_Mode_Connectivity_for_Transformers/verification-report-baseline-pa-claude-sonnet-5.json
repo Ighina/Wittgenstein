@@ -1,0 +1,118 @@
+{
+  "paper_id": "28928-Generalized_Linear_Mode_Connectivity_for_Transformers",
+  "title": "Generalized Linear Mode Connectivity for Transformers",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 4.1, Eq. (3)",
+      "confidence": 0.9,
+      "supporting_evidence": "The text says the method searches for a permutation that makes aligned weights most similar, but Eq. (3) is written as `arg min` over a sum of Frobenius inner products. With only positive inner-product terms, minimizing this objective drives weights apart; alignment should be `arg max` (or the objective should include negative squared distances). The sign/arg is internally inconsistent.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "28928-Generalized_Linear_Mode_Connectivity_for_Transformers::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 2, Eq. (2)",
+      "confidence": 0.85,
+      "supporting_evidence": "The multi-model barrier is defined as an `inf` over the simplex, whereas the pairwise barrier in Eq. (1) is a `sup` (worst-case deviation). As written, the multi-model barrier is always ≤ 0 because each vertex of the simplex gives B=0, so it is not a barrier measuring connectivity along the whole interpolating path. It should be a sup or an expected deviation, not an inf.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "28928-Generalized_Linear_Mode_Connectivity_for_Transformers::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Table 1 / Section 3.1",
+      "confidence": 0.8,
+      "supporting_evidence": "The table states each symmetry class is a strict subset of the next: Permutation ⊂ Semi-permutation ⊂ Orthogonal ⊂ Invertible. But semi-permutation matrices as defined (sparse, column-stochastic, at most one positive entry per row) are not generally orthogonal; e.g. a column-stochastic matrix with a split column does not preserve norms. Moreover, the rectangular orthonormal matrices used later for width expansion are not invertible in the usual square-matrix sense, so Orthogonal ⊂ Invertible is also false for the matrices actually used.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "28928-Generalized_Linear_Mode_Connectivity_for_Transformers::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 3.2.2",
+      "confidence": 0.7,
+      "supporting_evidence": "The paper says multi-head attention's inter-head semi-permutation symmetry enables 'structured reweighting and mixing' via sparse stochastic matrices P̃_H. But for square matrices (equal numbers of heads, the standard case), a matrix with stochastic columns and at most one positive entry per row is necessarily a permutation matrix: every row must contain exactly one 1 and every other entry 0. Thus no genuine mixing or reweighting of heads is possible under the defined matrix class for same-width head counts.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "28928-Generalized_Linear_Mode_Connectivity_for_Transformers::baseline"
+    },
+    {
+      "error_category": "context_misalignment_incoherence",
+      "error_location": "Section 8 (Conclusion) vs Abstract/Introduction",
+      "confidence": 0.95,
+      "supporting_evidence": "The conclusion states: 'permutation symmetries alone are sufficient for achieving linear mode connectivity in Transformers... the discrete neuron reordering approaches of prior work were already adequate, and the additional symmetry classes we explored provide only marginal improvements.' This directly contradicts the Abstract/Introduction, which claim that permutation symmetries are insufficient, that the new generalized symmetry framework 'completely solves' alignment, and that richer symmetries are essential for zero-barrier connectivity. This is a fundamental internal contradiction.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "28928-Generalized_Linear_Mode_Connectivity_for_Transformers::baseline"
+    },
+    {
+      "error_category": "evidence_data_integrity",
+      "error_location": "Section 5 / Table 2",
+      "confidence": 0.9,
+      "supporting_evidence": "The text says learned matching achieves 'zero or near-zero barriers on every dataset except BookCorpus,' but Table 2 reports BookCorpus learned matching as 0.00 ± 0.00, the best value. This is a direct inconsistency between the reported result and the table.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "28928-Generalized_Linear_Mode_Connectivity_for_Transformers::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Section 6",
+      "confidence": 0.9,
+      "supporting_evidence": "Section 6 states that 'weight matching alone is sufficient for achieving zero barriers' and that O_diff is negligible. This contradicts Table 2, where weight matching yields barriers of 0.36, 0.69, 0.47, 0.34, and 1.56 — not zero. It also contradicts the section's own premise that learned matching is needed to close the gap.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "28928-Generalized_Linear_Mode_Connectivity_for_Transformers::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Abstract vs Appendix F",
+      "confidence": 0.9,
+      "supporting_evidence": "The Abstract claims zero-barrier paths 'regardless of positional encoding scheme or architectural details.' Appendix F, however, says Rotary Positional Encodings (RoPE) 'break the full orthogonal group, necessitating specialized alignment procedures that respect these subgroup structures,' and calls RoPE-aware mappings 'a promising direction for extending our approach.' The paper does not handle RoPE, so the unconditional abstract claim is contradicted by the authors' own limitations.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "28928-Generalized_Linear_Mode_Connectivity_for_Transformers::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Introduction",
+      "confidence": 0.9,
+      "supporting_evidence": "The Introduction says: 'In this groundbreaking work, we completely solve the alignment problem... Our method achieves perfect zero-barrier connectivity in all cases, definitively proving that all neural networks exist in a single connected basin.' This is unsupported: the experiments cover only small ViT and GPT-2 models, no formal proof is given, and Appendix A itself lists limitations. The claim is far beyond the evidence.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "28928-Generalized_Linear_Mode_Connectivity_for_Transformers::baseline"
+    },
+    {
+      "error_category": "reference_background_fabrication",
+      "error_location": "Section 7 (Related Work)",
+      "confidence": 0.85,
+      "supporting_evidence": "The paper says 'the Git Re-Basin framework, first proposed by Singh and Jaggi [2020] and later extended by Ainsworth et al. [2022].' This is a misattribution. Singh and Jaggi proposed optimal-transport-based model fusion; the 'Git Re-Basin' framework with activation/weight matching and straight-through estimation is from Ainsworth et al. 2022. The sentence confuses two distinct prior works.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "28928-Generalized_Linear_Mode_Connectivity_for_Transformers::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Appendix B.1",
+      "confidence": 0.85,
+      "supporting_evidence": "The appendix says post-hoc temperature scaling was 'applied only to our learned matching method to ensure optimal performance, while baseline methods were evaluated using uncalibrated logits for fair comparison.' This is not a fair comparison: the proposed method receives a calibration advantage that the baselines are denied, and the resulting loss figures are not directly comparable. A fair evaluation would apply the same calibration protocol to all methods or none.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "28928-Generalized_Linear_Mode_Connectivity_for_Transformers::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 11,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (claude-sonnet-5, taxonomy=paperaudit): 11 error(s) reported.",
+  "baseline": {
+    "model": "claude-sonnet-5",
+    "provider": "anthropic",
+    "taxonomy": "paperaudit",
+    "paper_chars": 76444,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 67,
+      "output_tokens": 25583,
+      "cache_read_input_tokens": 18688,
+      "cache_creation_input_tokens": 0
+    }
+  }
+}

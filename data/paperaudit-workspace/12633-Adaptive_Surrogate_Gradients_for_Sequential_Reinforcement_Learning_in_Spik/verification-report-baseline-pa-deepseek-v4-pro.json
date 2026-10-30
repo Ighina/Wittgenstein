@@ -1,0 +1,78 @@
+{
+  "paper_id": "12633-Adaptive_Surrogate_Gradients_for_Sequential_Reinforcement_Learning_in_Spik",
+  "title": "Adaptive Surrogate Gradients for Sequential Reinforcement Learning in Spik",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Section 8.4, Algorithm 1 pseudocode",
+      "confidence": 0.95,
+      "supporting_evidence": "The pseudocode for TD3BC+JSRL is abruptly truncated after line 10, omitting the entire training loop, replay sampling, and update steps. This makes the algorithm impossible to implement or review and constitutes missing reproducibility information.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "12633-Adaptive_Surrogate_Gradients_for_Sequential_Reinforcement_Learning_in_Spik::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Table 6 (hyperparameters) and Section 4.2 (training time claim)",
+      "confidence": 0.9,
+      "supporting_evidence": "Table 6 lists 'Steps per epoch: 2M' for TD3BC+JSRL and 'Training epochs: 1000', implying 2 billion environment steps. The paper also states 'Training completes in 6 hours on an M4 Pro MacBook (24GB RAM)'. This is physically impossible for a drone simulation at 100 Hz, as 2e9 steps would require over 200 days of simulation time. Either the number of steps per epoch is grossly misstated or the training time is incorrect; both render the reported results unreproducible.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "12633-Adaptive_Surrogate_Gradients_for_Sequential_Reinforcement_Learning_in_Spik::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Equation (7) and surrounding text in Section 3.3",
+      "confidence": 0.85,
+      "supporting_evidence": "The adaptive slope scheduler uses the 'first-order derivative of the reward score' r'_{t-i}, but how this derivative is computed (e.g., finite differences, smoothed gradients) is never specified. Without this definition, the scheduler cannot be implemented, and the claimed benefits of adaptive scheduling cannot be verified.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "12633-Adaptive_Surrogate_Gradients_for_Sequential_Reinforcement_Learning_in_Spik::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Energy estimation equation in Section 8.3",
+      "confidence": 0.7,
+      "supporting_evidence": "The energy formula includes a term P_s * (1 - AS) * N1, which seems to model spike-driven synaptic operations from layer 1 to layer 2, but the number of operations should scale with the number of outgoing connections (N1 * N2) rather than just N1. The subsequent term N2 * (N1 * P_w) separately accounts for weight accumulation, possibly double-counting or misrepresenting the energy model from Davies et al. The derivation is inconsistent with standard neuromorphic energy accounting.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "12633-Adaptive_Surrogate_Gradients_for_Sequential_Reinforcement_Learning_in_Spik::baseline"
+    },
+    {
+      "error_category": "rhetorical_presentation_manipulation",
+      "error_location": "Abstract and Section 5.2 claim that TD3BC+JSRL 'substantially outperforms prior techniques, including Behavioral Cloning and TD3BC, which achieve at most -200 points under the same conditions.'",
+      "confidence": 0.75,
+      "supporting_evidence": "The comparison is not made under the same conditions: BC and TD3BC are offline algorithms trained only on a static dataset from the guiding policy, while TD3BC+JSRL benefits from online environment interactions and a warm-up period. The phrasing 'under the same conditions' is misleading, as the offline methods do not have access to online data or curriculum adaptation, making the 600-point gap overstate the relative algorithmic advantage.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "12633-Adaptive_Surrogate_Gradients_for_Sequential_Reinforcement_Learning_in_Spik::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Section 3.3, discussion of cosine similarity",
+      "confidence": 0.8,
+      "supporting_evidence": "The paper states 'cosine similarity for shallow slopes reduces to 0; therefore, the weight updates in deeper networks become essentially random.' A cosine similarity of 0 indicates orthogonality, not randomness. Orthogonal updates still carry structured information and are not equivalent to random noise. The interpretation conflates orthogonality with randomness, overstating the stochasticity induced by shallow surrogate gradients.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "12633-Adaptive_Surrogate_Gradients_for_Sequential_Reinforcement_Learning_in_Spik::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 6,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (deepseek-v4-pro, taxonomy=paperaudit): 6 error(s) reported.",
+  "baseline": {
+    "model": "deepseek-v4-pro",
+    "provider": "deepseek",
+    "taxonomy": "paperaudit",
+    "paper_chars": 55407,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 8733,
+      "output_tokens": 7504,
+      "cache_read_input_tokens": 4736,
+      "cache_creation_input_tokens": null
+    }
+  }
+}

@@ -1,0 +1,86 @@
+{
+  "paper_id": "12633",
+  "title": "Adaptive Surrogate Gradients for Sequential Reinforcement Learning in Spiking Neural Networks",
+  "paper_category": "cs.NE",
+  "predicted_errors": [
+    {
+      "error_category": "Methodology vs Results mismatch",
+      "error_location": "Section 3.1 vs Section 3.4 (Asymmetric Actor-Critic)",
+      "confidence": 0.95,
+      "supporting_evidence": "Section 3.1 states: 'Both the guiding policy and the non-spiking critic receive privileged information in the form of action histories.' Section 3.4 states the exact opposite about the same component: 'the critic is a feedforward ANN, which receives all observed states without any action history, maintaining architectural symmetry with the deployed actor', and adds 'The jump-starting actor used in this work, is also an ANN network with the same privileged inputs as the critic.' If the critic receives no action history (3.4), the jump-starting actor (which has 'the same privileged inputs as the critic') also receives none, contradicting 3.1's claim that the guiding policy receives action histories. The two sections make mutually exclusive claims about which networks receive action histories, and no section explains any change in setup.",
+      "verifier_name": "verify-cross-section-consistency",
+      "snippet_id": "12633::FULL_PAPER::0"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Appendix 8.1, surrogate gradient derivation and bias analysis",
+      "confidence": 0.9,
+      "supporting_evidence": "Three provable problems in Appendix 8.1. (1) The printed equality is algebraically wrong: 'σ̃'_k(z) = σ'(kz)/k = σ(kz)·(1 − σ(kz))' drops the 1/k factor on the RHS (chain rule gives σ'(kz)/k = σ(kz)(1−σ(kz))/k). (2) The claimed bias direction is reversed: the appendix asserts σ̃'_k(z) > σ'(z) 'for most z' and 'bias = E[∂L̃/∂W − ∂L/∂W] > 0 unless k = 1'. Since σ'(t) is even and strictly decreasing in |t|, for k > 1 and any z ≠ 0 one has σ'(kz) < σ'(z), and dividing by k makes it smaller still (numerically, k=2, z=1: σ̃'(1)=0.0525 vs σ'(1)=0.1966) — the surrogate strictly UNDER-estimates the true derivative for k > 1, i.e., the bias is negative, not positive. (3) Mutually exclusive claims about k=1: 'unless k = 1, which recovers the original derivative' (surrogate = true gradient → cosine similarity 1) vs 'cosine similarity decays toward 0 in deeper layers when using shallow slopes (e.g., k = 1)' (surrogate uncorrelated with true gradient). Both claims cannot hold in the appendix's own sigmoid framework.",
+      "verifier_name": "verify-text",
+      "snippet_id": "12633::SECTION::19"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Sections 3.2, 4.1, 8.3 vs Figure 2 (state input dimension)",
+      "confidence": 0.85,
+      "supporting_evidence": "The paper's own enumeration sums to 12 inputs, yet the input size is stated as 18. Section 4.1: 'provides 18-dimensional state vectors of position, velocity, orientation, and angular velocity'; Section 3.2: 'Our controller is a feedforward SNN with input size of 18'; Section 8.3 layer sizes [18, 256, 128, 4]. But Figure 2 (mermaid) lists exactly 12 components (x,y,z; vx,vy,vz; θ,φ,ψ; p,q,r), and Sections 4.2/8.2 define 'q_t ∈ R^3 represents the orientation angles (θ, φ, ψ)' (3 elements, not a 9-element rotation matrix). No 3×3 rotation matrix, quaternion, or extra inputs are described anywhere; only 3+3+9+3=18 would reconcile the numbers, which the paper never specifies. The 12-component enumeration and the 18-dimensional claim are mutually incompatible as written.",
+      "verifier_name": "verify-cross-section-consistency",
+      "snippet_id": "12633::FULL_PAPER::0"
+    },
+    {
+      "error_category": "Data Inconsistency (text-table)",
+      "error_location": "Table 2 (NeuroBench performance comparison), ANN row",
+      "confidence": 0.9,
+      "supporting_evidence": "Table 2's caption states both ANN and SNN use a '256-128 architecture', yet the ANN row reports SynOps Dense = 13.7×10^3. For any 256→128→4 network the dense op count is N_in·256 + 256·128 + 128·4 ≥ 33,536 (the 256→128 layer alone is 32,768 > 13,700) — the reported value is arithmetically impossible for the stated architecture. Corroborating: the SNN row with the identical 256-128 architecture correctly reports 37.9×10^3 (= 18·256 + 256·128 + 128·4 = 37,888), and Table 6 lists the TD3-trained ANN hidden sizes as [256, 128]. The ANN footprint of 55.3 kB also matches ~13.7k parameters, not the ~151.6 kB a 256-128 network requires. The 13.7×10^3 value corresponds to a much smaller network, contradicting the caption, Table 6, and the sibling SNN row.",
+      "verifier_name": "verify-vision",
+      "snippet_id": "12633::TABLE::1"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Section 3.3, Equation 7 (adaptive slope scheduler)",
+      "confidence": 0.7,
+      "supporting_evidence": "k_t = (1/10) Σ_{i=0}^{9} [0.5 r_{t−i} + 0.5 r′_{t−i}] is not a well-formed mathematical statement as printed. r′_{t−i} is described only as 'the first-order derivative of the reward score at time t − i', but a discrete reward sequence r_t has no continuous derivative and no finite-difference definition (e.g., r_t − r_{t−1}) is given, so r′ is an undefined quantity. Even under a finite-difference reading, the expression adds a raw reward value (reward units) to a per-timestep difference (reward/timestep units) with equal weights 0.5, which is dimensionally incoherent. No normalization maps reward-scale values (rewards of order hundreds, possibly negative) into the surrogate slope range k ∈ [1, 100], so k_t inherits arbitrary scale as printed.",
+      "verifier_name": "verify-math",
+      "snippet_id": "12633::EQUATION::6"
+    },
+    {
+      "error_category": "Misattribution (external)",
+      "error_location": "Introduction, citation [8]",
+      "confidence": 0.95,
+      "supporting_evidence": "The Introduction claims RL 'has been used to achieve superhuman performance on Atari games [7] and drone racing [8]'. Reference [8] is Wurman et al., 'Outracing champion Gran Turismo drivers with deep reinforcement learning' (Nature 602:223-228, 2022) — a verified real paper, but it concerns CAR racing in the Gran Turismo video game, not drone racing. The drone-racing RL result is a different paper (Kaufmann et al., 'Champion-level drone racing using deep reinforcement learning', Nature 2023), which is not cited. The citation [8] is invoked to support a specific claim ('superhuman performance on drone racing') that the cited paper does not support.",
+      "verifier_name": "verify-citation",
+      "snippet_id": "12633::SECTION::1"
+    },
+    {
+      "error_category": "Misattribution (external)",
+      "error_location": "Related Work, PopSAN energy claim [23]",
+      "confidence": 0.9,
+      "supporting_evidence": "Related Work states PopSAN 'reports up to a 140× reduction in energy consumption compared to non-neuromorphic implementations [23]'. [23] is Tang, Kumar & Michmizos, 'Reinforcement co-Learning of Deep and Spiking Neural Networks for Energy-Efficient Mapless Navigation with Neuromorphic Hardware' (IROS 2020). Full-text check shows this paper reports '75 times less energy per inference' compared to DDPG on Jetson TX2 — the 140× figure does not appear in it. The 140× figure actually originates in the PopSAN CoRL 2020 paper (i.e., [22]). The quantitative 140× energy claim is therefore attributed to the wrong reference; [23] supports at most 75×.",
+      "verifier_name": "verify-citation",
+      "snippet_id": "12633::SECTION::2"
+    },
+    {
+      "error_category": "Misattribution (external)",
+      "error_location": "Section 8.3, energy estimation method",
+      "confidence": 0.8,
+      "supporting_evidence": "Section 8.3 states 'the energy consumption can be estimated using the method proposed by Davies et al. [30], also used in [32]'. [32] is Wang et al., 'Evolving Connectivity for Recurrent Spiking Neural Networks' (NeurIPS 2023). Full-text check finds no numerical energy estimation in [32] and no use of the Davies/Loihi per-synaptic-operation method; 'energy' appears only qualitatively. The claim that the Davies energy-estimation method was 'also used in [32]' is unsupported (a Wang et al. paper that does use SynOps-based energy estimation is the ICLR 2024 pruning paper, which is already [4], suggesting a possible intended-citation mixup).",
+      "verifier_name": "verify-citation",
+      "snippet_id": "12633::SECTION::21"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 56,
+    "snippets_verified": 56,
+    "errors_detected": 8,
+    "verifier_usage": {
+      "verify-math": 14,
+      "verify-text": 25,
+      "verify-vision": 17,
+      "verify-statistical": 17,
+      "verify-citation": 8,
+      "verify-cross-section-consistency": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Exhaustive lenient-mode verification of all 56 segmented snippets (24 sections, 14 equations, 7 tables, 10 figures, 1 algorithm) plus a whole-paper consistency pass found 8 distinct errors. (1) METHOD (confidence 0.95): Section 3.1 says both the guiding policy and the non-spiking critic receive action histories, while Section 3.4 says the critic receives 'all observed states without any action history' and that the jump-starting actor shares the critic's inputs — mutually exclusive descriptions of the core asymmetric-critic methodology. (2) APPENDIX MATH (0.90): Appendix 8.1's surrogate-gradient derivation drops a 1/k factor (σ'(kz)/k = σ(kz)(1−σ(kz)) is printed without the /k), its positive-bias claim ('bias > 0 for k > 1') is provably reversed (the normalized surrogate σ'(kz)/k strictly UNDER-estimates σ'(z) for all k > 1), and it simultaneously asserts k=1 recovers the true derivative while claiming cosine similarity decays to 0 at k=1 — mutually exclusive. (3) INPUT DIMENSION (0.85): the state is enumerated as 12 components (Figure 2; q_t ∈ R^3) yet the paper consistently uses '18-dimensional' input (Sections 3.2, 4.1, 8.3) with no described 9-element orientation or extra inputs to reconcile the difference. (4) TABLE 2 (0.90): the ANN's SynOps Dense of 13.7×10^3 is arithmetically impossible for the stated 256-128 architecture (minimum 33,536 ops; the sibling SNN row correctly reports 37.9×10^3 for the same architecture), and its 55.3 kB footprint matches a ~13.7k-parameter network, contradicting the caption and Table 6. (5) EQUATION 7 (0.70): the adaptive slope scheduler uses an undefined r′ (derivative of a discrete reward sequence), mixes reward values with per-timestep differences, and has no normalization into k ∈ [1,100]. (6-8) CITATIONS (0.95/0.90/0.80): [8] is cited for 'drone racing' but is the Gran Turismo car-racing paper; the '140× energy reduction' claim is attributed to [23] which reports only 75× (the 140× figure is in [22]); and the claim that the Davies energy method was 'also used in [32]' is unsupported by [32]. Everything else verified cleanly: the energy estimate recomputes exactly (97,416.7 pJ ≈ 9.7×10^-5 mJ), the ablation 15× ratio (33030/2200 = 15.01), the 600-point gap (400−(−200)), the 4.5× speedup and 400-vs-−200 claims are consistent across Abstract/Results/Conclusion, and the reward-curriculum and hyperparameter tables are internally coherent. Figure image files were absent from disk, so figure pixels could not be inspected (captions/text were consistent). Verdict: NEEDS_CORRECTION due to multiple high-confidence (≥0.85) internal contradictions in the methodology description, the appendix derivation, and the NeuroBench comparison table, plus three citation misattributions."
+}

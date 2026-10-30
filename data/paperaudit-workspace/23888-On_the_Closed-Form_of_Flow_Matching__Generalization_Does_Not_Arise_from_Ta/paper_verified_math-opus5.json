@@ -1,0 +1,499 @@
+{
+  "paper_name": "paper",
+  "paper_path": "/Users/iacopoghinassi/Documents/Github/Wittgenstein/data/paperaudit-workspace/23888-On_the_Closed-Form_of_Flow_Matching__Generalization_Does_Not_Arise_from_Ta/paper.md",
+  "tag": "opus5",
+  "lean_project": "MATH_VERIFICATION/Paper",
+  "lean_project_kept": true,
+  "totals": {
+    "snippets_extracted": 15,
+    "routed_to_math": 10,
+    "routed_to_lean": 5,
+    "lean_passed": 3,
+    "lean_refuted": 2,
+    "lean_failed": 0,
+    "fallbacks_run": 0,
+    "errors_detected": 4
+  },
+  "results": [
+    {
+      "snippet_id": "paper::EQUATION::0",
+      "snippet_type": "EQUATION",
+      "location": "2 Recalls on conditional flow matching",
+      "content": "(ii) Then, choose a conditional probability path $$p(\\cdot|z, t)$$, e.g., $$p(\\cdot|z = x_1, t) = \\mathcal{N}(t x_1, (1-t)^2 \\text{Id})$$.\n\nThrough the continuity equation (Lipman et al., 2024, Sec. 3.5), the choice (ii) of the conditional probability path $$p(\\cdot|z, t)$$ defines a conditional velocity field $$u^{\\text{cond}}(x, z, t)$$. With the choices (i) and (ii), the conditional velocity field writes\n\n$$u^{\\text{cond}}(x, z = x_1, t) = \\frac{x_1 - x}{1 - t}.$$ (2)\n\nwith $x_t:=(1-t)x_0+tx_1$ (Eq. (5)).",
+      "route": "verify-math",
+      "route_rationale": "Straightforward algebra: the conditional velocity attached to the Gaussian conditional path, checkable by inspection.",
+      "lean_result": null,
+      "fallback_result": null,
+      "verifier_result": {
+        "snippet_id": "paper::EQUATION::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.93,
+        "reasoning": "Eq. (2) states $u^{\\text{cond}}(x,z=x_1,t)=\\frac{x_1-x}{1-t}$ for the conditional path $p(\\cdot\\mid z=x_1,t)=\\mathcal N(tx_1,(1-t)^2\\mathrm{Id})$. This is consistent: that path is realised by $x_t=(1-t)x_0+tx_1$ with $x_0\\sim\\mathcal N(0,\\mathrm{Id})$, whose law is $\\mathcal N(tx_1,(1-t)^2\\mathrm{Id})$ as claimed. Its velocity is $\\dot x_t=x_1-x_0$, and eliminating $x_0=\\frac{x_t-tx_1}{1-t}$ gives $x_1-x_0=\\frac{(1-t)x_1-x_t+tx_1}{1-t}=\\frac{x_1-x_t}{1-t}$, matching Eq. (2) evaluated at $x=x_t$. No error.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.93
+    },
+    {
+      "snippet_id": "paper::EQUATION::1",
+      "snippet_type": "EQUATION",
+      "location": "2 Recalls on conditional flow matching",
+      "content": "The choice (ii) of the conditional probability paths $p(\\cdot \\mid z = x_1, t)$ fully defines a probability path $p(\\cdot \\mid t)$ (by marginalizing over $z$) and thus defines an optimal velocity field $u^{\\star}$ (through the continuity equation) that transports $p_0$ to $p_{\\text{data}}$ (Lipman et al., 2023, Thm. 1)\n$$\nu^{\\star}(x,t)=\\mathbb{E}_{z\\mid x,t}\\,u^{\\text{cond}}(x,z,t)\\quad . \\tag{3}\n$$\nHence, the optimal velocity $u^{\\star}$ could be approximated by a neural network $u_{\\theta} : \\mathbb{R}^d \\times [0,1] \\to \\mathbb{R}^d$ with parameters $\\theta$ by minimizing\n$$\n\\mathcal{L}_{\\text{FM}}(\\theta)=\\mathbb{E}_{\\substack{t\\sim\\mathcal{U}([0,1])\\\\ x_t\\sim p(\\cdot\\mid t)}}\\big\\|u_{\\theta}(x_t,t)-u^{\\star}(x_t,t)\\big\\|^2 \\quad . \\tag{4}",
+      "route": "verify-math",
+      "route_rationale": "Restatement of a cited result (Lipman et al. 2023, Thm. 1) resting on the continuity equation; its content is a marginalisation identity, not a self-contained formalisable claim.",
+      "lean_result": null,
+      "fallback_result": null,
+      "verifier_result": {
+        "snippet_id": "paper::EQUATION::1",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "Eq. (3), $u^{\\star}(x,t)=\\mathbb E_{z\\mid x,t}\\,u^{\\text{cond}}(x,z,t)$, is the standard marginalisation of conditional velocity fields: the marginal path $p(x\\mid t)=\\int p(x\\mid z,t)p(z)dz$ satisfies the continuity equation with the posterior-weighted average of the conditional velocities. Correctly stated and correctly attributed. Eq. (4) is then the corresponding regression objective, which is well formed. No error.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::EQUATION::2",
+      "snippet_type": "EQUATION",
+      "location": "2 Recalls on conditional flow matching (Eq. (5), conditional flow matching loss)",
+      "content": "However, $u^{\\star}$ is usually (believed) intractable; as a remedy, Lipman et al. (2023, Thm. 2) showed that $\\mathcal{L}_{\\text{FM}}(\\theta)$ is equal, up to a constant, to the conditional flow matching loss. With the choices (i) and (ii) made above, the conditional flow matching loss reads\n$$\n\\mathcal{L}_{\\text{CFM}}(\\theta)=\\mathbb{E}_{\\substack{x_1\\sim p_{\\text{data}}\\\\ x_0\\sim p_0\\\\ t\\sim\\mathcal{U}([0,1])}}\\Big\\|u_{\\theta}(x_t,t)-\\underbrace{u^{\\text{cond}}(x_t,z=x_1,t)}_{=\\frac{x_1-x_t}{1-t}=\\frac{x_1-x_0}{1-t}}\\Big\\|^2, \\tag{5}\n$$\nwhere $x_t:=(1-t)x_0+tx_1$. The objective $\\mathcal{L}_{\\text{CFM}}$ is easy to approximate, since it is easy to sample from $p_0=\\mathcal{N}(0,\\mathrm{Id})$ and $\\mathcal{U}([0,1])$; sampling from $p_{\\text{data}}$ is approximated by sampling from $\\hat{p}_{\\text{data}}:=\\frac{1}{n}\\sum_{i=1}^n \\delta_{x^{(i)}}$. Although it seems natural, replacing $p_{\\text{data}}$ by $\\hat{p}_{\\text{data}}$ in (5) has a very important consequence: it makes the minimizer $\\hat{u}^{\\star}$ of $\\mathcal{L}_{\\text{FM}}$ available in closed form, which we recall below.",
+      "route": "verify-math-lean",
+      "route_rationale": "A crisp closed-form identity in the paper's central objective; a machine-checked verdict is decisive and cheap here.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::2",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.95,
+        "reasoning": "Formalised the underbrace identity of Eq. (5) with $x_t=(1-t)x_0+tx_1$ and the paper's own standing constraint $t\\in[0,1)$. Lean proved the correct value, `ucond_at_interpolant : (x1 - ((1-t)*x0 + t*x1))/(1-t) = x1 - x0`, and separately proved the **negation** of the printed identity: `eq5_underbrace_refuted`. The witness is $t=\\tfrac12,\\;x_0=0,\\;x_1=1$, where $x_t=\\tfrac12$ so $\\frac{x_1-x_t}{1-t}=1$ but $\\frac{x_1-x_0}{1-t}=2$. The printed right-hand side carries a spurious extra factor $\\frac{1}{1-t}$; it agrees with the true value only at $t=0$. The paper itself writes the correct form $\\frac{x_1-x_t}{1-t}=x_1-x_0$ in Algorithm 1, in the Figure 1 caption and in Appendix D.2, so Eq. (5) is the outlier.",
+        "predicted_error_category": "Formally refuted",
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean",
+          "saved_as": "Paper/Verified/paper__EQUATION__2_23888opus5.lean",
+          "formal_statement": "theorem eq5_underbrace_refuted :\n    ¬ (∀ (x0 x1 t : ℝ), 0 ≤ t → t < 1 →\n        (x1 - ((1 - t) * x0 + t * x1)) / (1 - t) = (x1 - x0) / (1 - t)) := by\n  intro h\n  have := h 0 1 (1/2) (by norm_num) (by norm_num)\n  norm_num at this",
+          "compiler_feedback": "`lake env lean Paper/TMP.lean` exited 0; `lean_diagnostic_messages` returned no items (success: true); only `linter.unusedVariables` / `unusedSectionVars` style warnings were emitted. `lean_verify` reported axioms [propext, Classical.choice, Quot.sound] with non_standard_axioms: [] and no sorryAx.",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::PROPOSITION::0",
+      "snippet_type": "PROPOSITION",
+      "location": "2 Recalls on conditional flow matching (Proposition 1)",
+      "content": "Proposition 1 (Closed-form Formula of the Optimal Velocity). When $p_{\\text{data}}$ is replaced by $\\hat{p}_{\\text{data}}$, the optimal velocity field $\\hat{u}^{\\star}$ is given by a normalized weighted average:\n$$\n\\hat{u}^{\\star}(x,t)=\\frac{\\sum_{i=1}^n \\exp\\big(-\\frac{\\|x - t x^{(i)}\\|^2}{2(1 - t)^2}\\big) \\frac{x^{(i)} - x}{1 - t}}{\\sum_{i=1}^n \\exp\\big(-\\frac{\\|x - t x^{(i)}\\|^2}{2(1 - t)^2}\\big)}.\n$$\nThis normalization ensures $\\sum_i \\lambda_i(x,t) = 1$ where $\\lambda_i$ are softmax weights.\nwith $\\lambda(x,t)=\\mathrm{softmax}\\big((-\\frac{\\|x-tx^{(j)}\\|^2}{2(1-t)^2})_{j=1,\\ldots,n}\\big)\\in\\mathbb{R}^n$.",
+      "route": "verify-math-lean",
+      "route_rationale": "The paper's headline closed-form identity; the softmax/normalisation content is fully formalisable.",
+      "lean_result": {
+        "snippet_id": "paper::PROPOSITION::0",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "Formalised the algebraic content of Proposition 1 over a real normed space: (1) `gauss_weights_eq_lam` -- the Gaussian normalising constant $(2\\pi(1-t)^2)^{-d/2}$, kept as an arbitrary $C>0$, cancels between numerator and denominator, so the Bayes posterior weights equal the softmax weights $\\lambda_i$; (2) `prop1_ratio_eq_softmax` -- the ratio form printed in Proposition 1 and the softmax form of Eq. (6) (Appendix B.1) denote the same vector; (3) `sum_lam_eq_one` -- $\\sum_i\\lambda_i(x,t)=1$, the normalisation asserted in the proposition; and (4) `prop1`, combining them. All compiled clean. The remaining, probabilistic half of the proposition (Bayes' rule plus the continuity equation) is checked informally as paper::PROOF::0 and paper::PROOF::1. No error in the stated formula.",
+        "predicted_error_category": null,
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean",
+          "saved_as": "Paper/Verified/paper__PROPOSITION__0_23888opus5.lean",
+          "formal_statement": "theorem prop1 (t : ℝ) (x : E) (X : Fin n → E) (C : ℝ) (hC : 0 < C) :\n    ∑ i, ((C * w t x X i) / (∑ j, C * w t x X j)) • ucond t x X i\n      = (∑ j, w t x X j)⁻¹ • (∑ i, w t x X i • ucond t x X i)\n\ntheorem sum_lam_eq_one (t : ℝ) (x : E) (X : Fin n → E) : ∑ i, lam t x X i = 1",
+          "compiler_feedback": "`lake env lean Paper/TMP.lean` exited 0; `lean_diagnostic_messages` returned no items (success: true); only `linter.unusedVariables` / `unusedSectionVars` style warnings were emitted. `lean_verify` reported axioms [propext, Classical.choice, Quot.sound] with non_standard_axioms: [] and no sorryAx.",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::EQUATION::3",
+      "snippet_type": "EQUATION",
+      "location": "3.1 Target stochasticity is not what you need",
+      "content": "𝑢̂⋆(x,t)=∑_{i=1}^{n} p(z=x^{(i)}|x,t)·u^{cond}(x,t,z=x^{(i)})\n\nFrom Equation (6), as $t\\to 1$, the velocity field $\\hat{u}^{\\star}$ diverges at any point $x$ that does not coincide with one of the training samples $x^{(i)}$, and it points in the direction of the nearest $x^{(i)}$. This creates a paradox: solving the ordinary differential equation (1) with the velocity field $\\hat{u}^{\\star}$ can only produce training samples $x^{(i)}$ (see Gao and Li, 2024, Thm. 4.6, for a formal proof). Therefore, in practice, exactly minimizing the conditional flow matching loss would result in $u_{\\theta}=\\hat{u}^{\\star}$, meaning the model memorizes the training data and fails to generalize. This naturally yields the following question:",
+      "route": "verify-math",
+      "route_rationale": "An asymptotic/limiting statement about where the softmax weights concentrate as $t\\to1$; the argument is short and inspectable, and the surrounding claims are about empirical data.",
+      "lean_result": null,
+      "fallback_result": null,
+      "verifier_result": {
+        "snippet_id": "paper::EQUATION::3",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "The displayed decomposition $\\hat u^{\\star}=\\sum_i p(z=x^{(i)}\\mid x,t)\\,u^{\\text{cond}}(x,t,z=x^{(i)})$ agrees with Eq. (18). The accompanying limit claim is also correct: for $i\\ne j$ the weight ratio is $\\lambda_i/\\lambda_j=\\exp\\!\\big(\\frac{\\|x-tx^{(j)}\\|^2-\\|x-tx^{(i)}\\|^2}{2(1-t)^2}\\big)$, which as $t\\to1$ tends to $0$ or $\\infty$ according to the sign of the exponent, so the weights concentrate on $\\arg\\min_i\\|x-tx^{(i)}\\|\\to\\arg\\min_i\\|x-x^{(i)}\\|$ -- the nearest training sample, as the paper says -- and $\\hat u^{\\star}\\approx\\frac{x^{(i^\\ast)}-x}{1-t}$ diverges in norm provided $x\\ne x^{(i^\\ast)}$, which is the stated hypothesis. The implicit assumption is that the nearest sample is unique (generic position); the paper does not state it, but ties form a null set and nothing downstream depends on them. No error.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::0",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "4.1 Empirical flow matching",
+      "content": "Regressing against the closed-form \\hat{u}^*, defined in Equation (6), at a point (x_t, t) requires computing a weighted sum of the conditional velocity fields over all the n training points x^(i). For a dataset of n samples of size d, and a batch of size |B|, computing the weights of the exact closed-form formula \\hat{u}^*(x, t) of flow matching requires O(n × |B| × d). These computations are prohibitive since they must be performed for each batch. One natural idea is to estimate the closed-form formula \\hat{u}^* (Equation (6)), by a Monte Carlo approximation (Equation (8)), using M ≤ n samples b^(1), …, b^(M):\n\nL_EFM(θ) = E_{x0 ∼ p0, x1 ∼ \\hat{p}_data, t ∼ U([0,1]), b^(2), …, b^(M) ∼ \\hat{p}_data} ||u_θ(x_t, t) − \\hat{u}^*_M(x_t, t)||^2, (7)\n\nwith x_t = (1 − t) x0 + t x1, b^(1) := x1, and\n\n\\hat{u}^*_M(x, t) = \\sum_{j=1}^M λ_j(x, t) (b^(j) − x)/(1 − t),  λ_j(x, t) = softmax((−||x − t b^(j)||^2 / (2(1 − t)^2))_{j=1,…,M}). (8)\n\nThe formulation in Equation (7) may appear naive at first glance. Still, it hinges on a crucial trick: the Monte Carlo estimate is computed using a batch that systematically includes the point x1, that generated the current x_t. If instead b^(1) were sampled independently from \\hat{p}_data, this could introduce a sampling bias (see Ryzhakov et al. 2024, Appendix B, and the corresponding OpenReview comments^3 for an in-depth discussion). Proposition 2 shows that the estimate \\hat{u}^*_M is unbiased and has lower variance than the standard conditional flow matching target.\n\n[...]\n\nThe proof of Proposition 2 is provided in Appendix B.3. The estimator \\hat{u}^{\\star}_M of the optimal field \\hat{u}^{\\star} is closely related to self-normalized importance sampling (see Appendix B.2 and Owen, 2013, Chap. 9.2), as well as to Rao–Blackwellized estimators (Casella and Robert, 1996; Cardoso et al., 2022). Self-normalized importance-sampling estimators of \\hat{u}^{\\star} are typically biased. While our estimator incorporates the current point b^{(1)} \\sim \\hat{p}_{\\text{data}}(\\cdot \\mid x_t,t), this does not guarantee unbiasedness in the standard Monte Carlo sense. Instead, it reduces bias and variance compared to naive estimators, as characterized under regularity conditions in Appendix B. The theoretical claims therefore approximate unbiasedness within empirical tolerance. In Section 4.2, we demonstrate that Algorithm 2, designed to solve Equation (7), yields consistent improvements on high-dimensional datasets such as CIFAR-10 and CelebA. Additional details on the unbiasedness of \\mathcal{L}_{\\mathrm{EFM}} can be found in the supplementary material (Appendix B). From a computational perspective, Algorithm 2 requires sampling M additional points for each iteration and computing weighted sums, which can significantly increase runtime and memory usage, especially for large M and high-dimensional data. While backpropagation steps remain unchanged, in practice this overhead may limit the feasible batch size and training speed. Tradeoffs between variance reduction and computational cost must therefore be carefully managed.",
+      "route": "verify-math",
+      "route_rationale": "A prose claim about the estimator's bias, presented as a unit with Eqs. (7)-(8); the underlying mathematical truth is settled formally by paper::PROPOSITION::2.",
+      "lean_result": null,
+      "fallback_result": null,
+      "verifier_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::0",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.88,
+        "reasoning": "Equations (7) and (8) are themselves well formed. The error is the narrative around them, which contradicts itself and misstates the paper's own theorem. Immediately before Proposition 2 the text says \"Proposition 2 shows that the estimate $\\hat u^{\\star}_M$ is unbiased and has lower variance than the standard conditional flow matching target\", and Appendix B.1 says \"This important detail yields an unbiased estimator of $\\hat u^{\\star}$\". Proposition 2 (ii) / Eq. (10) asserts an **exact equality**. But the paragraph after Proposition 2 reverses this: it says the construction \"does not guarantee unbiasedness in the standard Monte Carlo sense\", that it merely \"reduces bias and variance compared to naive estimators\", and that \"The theoretical claims therefore approximate unbiasedness within empirical tolerance\".\n\nThese cannot both hold, and it is the hedge that is wrong. Exact unbiasedness was verified formally here (paper::PROPOSITION::2, Lean PASSED): because the batch is drawn with $b^{(1)}\\sim\\hat p_{\\text{data}}(\\cdot\\mid x,t)$ and $b^{(2)},\\dots,b^{(M)}$ uniform, the importance factor $n\\,w^{(i_1)}$ turns the batch law into the uniform product law, the self-normalised estimator is a symmetric function of the batch, and symmetrising over the $M$ positions replaces $w^{(i_1)}$ by $\\frac1M\\sum_k w^{(i_k)}$, which cancels the self-normalisation exactly. The appeal to \"self-normalized importance-sampling estimators are typically biased\" is therefore a non-sequitur: that generic fact does not apply, precisely because of the $b^{(1)}:=x_1$ trick the paper itself identifies as crucial. The passage disclaims the paper's main theoretical contribution and should be removed or corrected.",
+        "predicted_error_category": "Calculus/Proof error",
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": [
+          "Section 4.1 paragraph after Proposition 2 vs. Proposition 2 (ii) / Eq. (10)",
+          "Section 4.1 paragraph after Proposition 2 vs. Section 4.1 sentence introducing Proposition 2",
+          "Section 4.1 paragraph after Proposition 2 vs. Appendix B.1 closing sentence"
+        ]
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.88
+    },
+    {
+      "snippet_id": "paper::PROPOSITION::1",
+      "snippet_type": "PROPOSITION",
+      "location": "4.1 Empirical flow matching / B.3 (Proposition 2, item (i))",
+      "content": "Proposition 2. We denote the conditional probability distribution p(z = x^(i) | x, t) over {x^(i)}_{i=1}^n by \\hat{p}_data(z | x, t). With no constraints on the learned velocity field u_θ,\n\ni) The minimizer of Equation (7) writes, for all (x, t),\n\nE_{b^(1) ∼ \\hat{p}_data(· | x, t), b^(2), …, b^(M) ∼ \\hat{p}_data} [\\hat{u}^*_M(x, t)]. (9)\n\nProof (Appendix B.3, Eqs. (36)-(39)):\nProof of Item (i). With no constraints on u_{\\theta}, the empirical flow matching loss writes:\n\nE_{\\substack{t \\sim \\mathcal{U}([0,1]) \\\\ x_1 \\sim \\hat{p}_{\\text{data}} \\\\ x_t = (1-t) x_0 + t x_1 \\\\ b^{(1)} := x_1;\\; b^{(2)}, \\ldots, b^{(M)} \\sim \\hat{p}_{\\text{data}}}} \\|u_{\\theta}(x_t, t) - \\hat{u}_{M}^{\\star}(x_t, t)\\|^{2},\n(36)\n\n= E_{\\substack{t \\sim \\mathcal{U}([0,1]) \\\\ x_t \\sim p_t}} E_{\\substack{b^{(1)} \\sim \\hat{p}_{\\text{data}}(\\cdot \\mid x_t, t) \\\\ b^{(2)}, \\ldots, b^{(M)} \\sim \\hat{p}_{\\text{data}}}} \\|u_{\\theta}(x_t, t) - \\hat{u}_{M}^{\\star}(x_t, t)\\|^{2},\n(37)\n\n= E_{\\substack{t \\sim \\mathcal{U}([0,1]) \\\\ x_t \\sim p_t}} E_{\\substack{b^{(1)} \\sim \\hat{p}_{\\text{data}}(\\cdot \\mid x_t, t) \\\\ b^{(2)}, \\ldots, b^{(M)} \\sim \\hat{p}_{\\text{data}}}} \\|u_{\\theta}(x_t, t) - \\hat{u}_{M}^{\\star}(x_t, t)\\|^{2} \\quad \\text{because } b^{(2)}, \\ldots, b^{(M)} \\perp\\!\\!\\!\\perp (x_t, t),\n(38)\n\nwhich is minimized when for all x_t, t,\n\nu_{\\theta}(x_t, t) = E_{\\substack{b^{(1)} \\sim \\hat{p}_{\\text{data}}(\\cdot \\mid x_t, t) \\\\ b^{(2)}, \\ldots, b^{(M)} \\sim \\hat{p}_{\\text{data}}}}\\!\\left[\\hat{u}_{M}^{\\star}(x_t, t)\\right].",
+      "route": "verify-math",
+      "route_rationale": "An $L^2$-projection argument whose content is measure-theoretic conditioning over the continuous marginal $p_t$; stating it faithfully in Lean would require machinery the claim does not turn on.",
+      "lean_result": null,
+      "fallback_result": null,
+      "verifier_result": {
+        "snippet_id": "paper::PROPOSITION::1",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "Correct. With $u_\\theta$ unconstrained the loss decouples across $(x_t,t)$, and for each fixed $(x_t,t)$ the map $c\\mapsto\\mathbb E\\|c-X\\|^2$ over $c\\in\\mathbb R^d$ is minimised uniquely at $c=\\mathbb E[X]$. The conditional law of $b^{(1)}=x_1$ given $(x_t,t)$ is by definition the posterior $\\hat p_{\\text{data}}(\\cdot\\mid x_t,t)$, and $b^{(2)},\\dots,b^{(M)}\\perp(x_t,t)$, so their conditional law is the unconditional product -- which is exactly the justification the paper gives at Eq. (38). Hence the minimiser is Eq. (9). Two presentational blemishes, not errors: Eqs. (37) and (38) are the same expression printed twice (the second only adds the independence annotation), and the subscript list of Eq. (36) omits $x_0\\sim p_0$ although $x_t=(1-t)x_0+tx_1$ uses it.",
+        "predicted_error_category": null,
+        "snippet_type": "PROOF",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::PROPOSITION::2",
+      "snippet_type": "PROPOSITION",
+      "location": "4.1 Empirical flow matching / B.3 (Proposition 2, item (ii), Eq. (10))",
+      "content": "ii) In addition, for all (x, t), the minimizer of Equation (7) equals the optimal velocity field, i.e.,\n$$\n\\mathbb{E}_{\\substack{b^{(1)} \\sim \\hat{p}_{\\text{data}}(\\cdot \\mid x,t)\\\\ b^{(2)},\\ldots,b^{(M)} \\sim \\hat{p}_{\\text{data}}}}\n\\big[\\hat{u}^{\\star}_M(x,t)\\big] = \\hat{u}^{\\star}(x,t)\\,.\n\\tag{10}\n$$",
+      "route": "verify-math-lean",
+      "route_rationale": "The paper's central theoretical claim, and a finite combinatorial identity -- exactly what a formal proof settles best.",
+      "lean_result": {
+        "snippet_id": "paper::PROPOSITION::2",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.95,
+        "reasoning": "Formalised Eq. (10) in the paper's own discrete setting (Appendix B.3, Eqs. (40)-(43)), for values $u^{(l)}$ in an arbitrary real vector space: weights $w^{(l)}>0$ with $\\sum_l w^{(l)}=1$, a batch $b\\in[\\![1,n]\\!]^M$ of probability $w^{(b_1)}n^{-(M-1)}$, and the self-normalised estimator $\\hat u^{\\star}_M(b)=\\frac{\\sum_j w^{(b_j)}u^{(b_j)}}{\\sum_j w^{(b_j)}}$. Lean proved the **exact** identity $\\mathbb E[\\hat u^{\\star}_M]=\\sum_l w^{(l)}u^{(l)}=\\hat u^{\\star}$ (`prop2_ii`), via the three steps the paper uses: `ustarM_comp` (the estimator is invariant under permuting batch positions), the swap-reindexing that re-anchors $w^{(b_1)}$ at any position $k$, and `sum_batches_comp` (marginalisation, $\\sum_b g(b_j)=n^{M-1}\\sum_l g(l)$). Proposition 2 (ii) is correct as stated -- the estimator is exactly unbiased, not approximately so. Incidentally Lean flagged the hypothesis $\\sum_l w^{(l)}=1$ as unused: the identity holds for any positive weights, the normalisation only being needed for the batch law to be a probability measure. This PASSED verdict is the evidence against the hedging passage reported under paper::FORMULA_BLOCK::0.",
+        "predicted_error_category": null,
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean",
+          "saved_as": "Paper/Verified/paper__PROPOSITION__2_23888opus5.lean",
+          "formal_statement": "theorem prop2_ii (w : Fin n → ℝ) (u : Fin n → E)\n    (hw : ∀ i, 0 < w i) (hsum : ∑ i, w i = 1) (hn : 0 < n) (hM : 0 < M) :\n    ∑ b : Fin M → Fin n, (w (b ⟨0, hM⟩) * ((n : ℝ) ^ (M - 1))⁻¹) • ustarM w u b\n      = ∑ l, w l • u l",
+          "compiler_feedback": "`lake env lean Paper/TMP.lean` exited 0; `lean_diagnostic_messages` returned no items (success: true); only `linter.unusedVariables` / `unusedSectionVars` style warnings were emitted. `lean_verify` reported axioms [propext, Classical.choice, Quot.sound] with non_standard_axioms: [] and no sorryAx.",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 3,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::PROPOSITION::3",
+      "snippet_type": "PROPOSITION",
+      "location": "4.1 Empirical flow matching / B.3 (Proposition 2, item (iii), Eq. (11))",
+      "content": "iii) The conditional variance of the estimator \\hat{u}^{\\star}_M is smaller than the usual conditional variance:\n$$\n\\mathrm{Var}_{\\substack{b^{(1)} \\sim \\hat{p}_{\\text{data}}(\\cdot \\mid x,t)\\\\ b^{(2)},\\ldots,b^{(M)} \\sim \\hat{p}_{\\text{data}}}}\n\\big[\\hat{u}^{\\star}_M(x,t)\\big]\n\\le\n\\mathrm{Var}_{b^{(1)} \\sim \\hat{p}_{\\text{data}}(\\cdot \\mid x,t)}\n\\big[u^{\\mathrm{cond}}(x,b^{(1)},t)\\big]\\,.\n\\tag{11}\n$$",
+      "route": "verify-math-lean",
+      "route_rationale": "A variance inequality resting on a convexity step -- a real argument, finite, and formalisable.",
+      "lean_result": {
+        "snippet_id": "paper::PROPOSITION::3",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "Formalised Eq. (11) in the same discrete setting, scalar-valued to match the paper's own proof (Eqs. (63)-(74) square the quantities componentwise). Lean proved the second-moment bound `prop2_iii_second_moment`, $\\mathbb E[(\\hat u^{\\star}_M)^2]\\le\\sum_l w^{(l)}(u^{(l)})^2$, with the convexity step of Eq. (68) discharged as Cauchy-Schwarz ($\\big(\\sum_j w_ju_j\\big)^2\\le\\big(\\sum_j w_j\\big)\\big(\\sum_j w_ju_j^2\\big)$, lemma `jensen`), and then the variance form `prop2_iii_variance` by subtracting the common mean, which is legitimate precisely because Proposition 2 (ii) gives the two estimators the same expectation. Proposition 2 (iii) is correct as stated. Note this PASSED verdict concerns the **statement**; the paper's printed **proof** of it contains a dropped factor, reported separately under paper::PROOF::3.",
+        "predicted_error_category": null,
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean",
+          "saved_as": "Paper/Verified/paper__PROPOSITION__3_23888opus5.lean",
+          "formal_statement": "theorem prop2_iii_variance (w u : Fin n → ℝ)\n    (hw : ∀ i, 0 < w i) (hsum : ∑ i, w i = 1) (hn : 0 < n) (hM : 0 < M) :\n    (∑ b : Fin M → Fin n, (w (b ⟨0, hM⟩) * ((n : ℝ) ^ (M - 1))⁻¹) * (ustarM w u b) ^ 2)\n        - (∑ b : Fin M → Fin n, (w (b ⟨0, hM⟩) * ((n : ℝ) ^ (M - 1))⁻¹) * ustarM w u b) ^ 2\n      ≤ (∑ l, w l * (u l) ^ 2) - (∑ l, w l * u l) ^ 2",
+          "compiler_feedback": "`lake env lean Paper/TMP.lean` exited 0; `lean_diagnostic_messages` returned no items (success: true); only `linter.unusedVariables` / `unusedSectionVars` style warnings were emitted. `lean_verify` reported axioms [propext, Classical.choice, Quot.sound] with non_standard_axioms: [] and no sorryAx.",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 3,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::PROOF::0",
+      "snippet_type": "PROOF",
+      "location": "A.1 Proof of Proposition 1 (case $z\\sim\\hat p_{\\text{data}}$)",
+      "content": "Proof. • In the case where z \\sim \\hat{p}_{\\text{data}}, conditional probability writes\n\np(z = x^{(i)} \\mid x, t) = \\frac{p(x, t, z = x^{(i)})}{p(x, t)}\n(13)\n\n= \\frac{p(x \\mid t, z = x^{(i)})\\, p(t, z = x^{(i)})}{p(x, t)}\n(14)\n\n= \\frac{p(x \\mid t, z = x^{(i)})\\, p(t, z = x^{(i)})}{\\sum_{i'=1}^{n} p(x, t, z = x^{(i')})}\n(15)\n\n= \\frac{p(x \\mid t, z = x^{(i)})\\, p(t)\\, \\overbrace{p(z = x^{(i)})}^{\\frac{1}{n}}}{\\sum_{i'=1}^{n} p(x \\mid t, z = x^{(i')})\\, p(t)\\, \\underbrace{p(z = x^{(i')})}_{\\frac{1}{n}}}\n(16)\n\n= \\frac{p(x \\mid t, z = x^{(i)})}{\\sum_{i'=1}^{n} p(x \\mid t, z = x^{(i')})}.\n(17)\n\nPlugging Equation (17) in Equation (3) yields the closed-form formula for the velocity field:\n\nu^{\\star}(x, t) = \\sum_{i=1}^{n} u^{\\text{cond}}(x, t, z = x^{(i)})\\, p(z = x^{(i)} \\mid x, t)\n(18)\n\n= \\sum_{i=1}^{n} u^{\\text{cond}}(x, t, z = x^{(i)}) \\frac{p(x \\mid t, z = x^{(i)})}{\\sum_{i'=1}^{n} p(x \\mid t, z = x^{(i')})}.\n(19)\n\nwhich proves Equation (12); using that x \\mid t, z = x^{(i)} \\sim \\mathcal{N}(t x^{(i)}, (1-t)^2 \\mathrm{Id}) and u^{\\text{cond}}(x, t, z = x^{(i)}) = \\frac{x^{(i)} - x}{1-t} yields Equation (6).",
+      "route": "verify-math",
+      "route_rationale": "A short Bayes-rule chain; every step is inspectable and the content is probabilistic bookkeeping rather than a formalisable identity.",
+      "lean_result": null,
+      "fallback_result": null,
+      "verifier_result": {
+        "snippet_id": "paper::PROOF::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "Every step checks out. (13) is the definition of conditional probability; (14) factors the joint; (15) expands the denominator as $\\sum_{i'}p(x,t,z=x^{(i')})$, valid because $z$ ranges over the $n$ atoms of $\\hat p_{\\text{data}}$; (16) uses $z\\perp t$ (declared in choice (i)) to write $p(t,z=x^{(i)})=p(t)p(z=x^{(i)})$ with $p(z=x^{(i)})=1/n$; (17) cancels the common $p(t)$ and $1/n$. Substituting into Eq. (3) gives (18)-(19). The final step to Eq. (6) is also sound: with $x\\mid t,z=x^{(i)}\\sim\\mathcal N(tx^{(i)},(1-t)^2\\mathrm{Id})$ the normalising constant $(2\\pi(1-t)^2)^{-d/2}$ is the same for every $i$ and cancels between numerator and denominator (independently confirmed in Lean, paper::PROPOSITION::0). One notational slip, not an error: Eqs. (12), (18) and (19) write $u^{\\star}$ where the empirical field $\\hat u^{\\star}$ is meant.",
+        "predicted_error_category": null,
+        "snippet_type": "PROOF",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::PROOF::1",
+      "snippet_type": "PROOF",
+      "location": "A.1 Proof of Proposition 1 (case $z\\sim p_0\\times\\hat p_{\\text{data}}$)",
+      "content": "• For the case z \\sim p_0 \\times \\hat{p}_{\\text{data}},\n\n\\hat{u}^{\\star}(x, t) := \\int_{z} u^{\\text{cond}}(x, t, z)\\, p(z \\mid x, t)\\, dz\n(20)\n\n= \\int_{z} u^{\\text{cond}}(x, t, z)\\, \\frac{p(x, z, t)}{p(x, t)}\\, dz\n(21)\n\n= \\int_{z} u^{\\text{cond}}(x, t, z)\\, \\frac{p(x \\mid z, t)\\, p(z)\\, p(t)}{\\int_{z'} p(x \\mid t, z')\\, p(t)\\, p(z')\\, dz'}\\, dz\n(22)\n\n= \\int_{z} u^{\\text{cond}}(x, t, z)\\, \\frac{p(x \\mid z, t)\\, p(z)}{\\int_{z'} p(x \\mid t, z')\\, p(z')\\, dz'}\\, dz\n(23)\n\nSince z \\sim p_0 \\times \\hat{p}_{\\text{data}}, the denominator is equal to:\n\n\\int_{z'} p(x \\mid t, z')\\, p(z')\\, dz' = \\frac{1}{n} \\int_{x_0} \\sum_{i=1}^{n} \\delta_x((1-t)x_0 + t x^{(i)}) \\frac{1}{\\sqrt{(2\\pi)^d}} \\exp\\!\\left(-\\frac{1}{2}\\|x_0\\|^2\\right) dx_0\n(24)\n\n= \\frac{1}{n} \\int_{y} \\sum_{i=1}^{n} \\delta_x(y) \\frac{1}{\\sqrt{(2\\pi)^d}} \\exp\\!\\left(-\\frac{1}{2(1-t)^2} \\|y - t x^{(i)}\\|^2\\right) \\frac{1}{(1-t)^d} dy \\quad (y = (1-t)x_0 + t x^{(i)})\n(25)\n\n= \\frac{1}{n} \\sum_{i=1}^{n} \\frac{1}{\\sqrt{(2\\pi(1-t)^2)^d}} \\exp\\!\\left(-\\frac{1}{2(1-t)^2} \\|x - t x^{(i)}\\|^2\\right).\n(26)\n\nLikewise, the numerator equals:\n\n$$\\int_z u^{\\text{cond}}(x,t,z)\\,p(x|z,t)\\,p(z)\\,dz\n= \\int_{x_0} \\frac{1}{n}\\sum_{i=1}^n (x^{(i)}-x_0)\\,\\delta_x\\!\\big((1-t)x_0+tx^{(i)}\\big)\\,\\frac{1}{\\sqrt{(2\\pi)^d}}\\,\\exp\\!\\left(-\\tfrac{1}{2}\\|x_0\\|^2\\right)dx_0$$\n(27)\n\n$$= \\frac{1}{n}\\sum_{i=1}^n \\int_y \\frac{x^{(i)}-y}{1-t}\\,\\delta_x(y)\\,\\frac{1}{\\sqrt{(2\\pi(1-t)^2)^d}}\\,\\exp\\!\\left(-\\frac{1}{2(1-t)^2}\\|y-tx^{(i)}\\|^2\\right)dy$$\n(28)\n\n$$= \\sum_{i=1}^n \\frac{x^{(i)}-x}{1-t}\\,\\frac{1}{\\sqrt{(2\\pi(1-t)^2)^d}}\\,\\exp\\!\\left(-\\frac{1}{2(1-t)^2}\\|x-tx^{(i)}\\|^2\\right)$$\n(29)\n\nTaking the ratio of Equations (24) and (29) concludes the proof. □",
+      "route": "verify-math",
+      "route_rationale": "Dirac-measure and change-of-variables manipulations that do not admit a faithful Lean rendering; the risk here is a dropped constant, which inspection settles.",
+      "lean_result": null,
+      "fallback_result": null,
+      "verifier_result": {
+        "snippet_id": "paper::PROOF::1",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.85,
+        "reasoning": "The denominator chain (24)-(26) is correct: the substitution $y=(1-t)x_0+tx^{(i)}$ gives $\\|x_0\\|^2=\\frac{\\|y-tx^{(i)}\\|^2}{(1-t)^2}$ and $dx_0=\\frac{dy}{(1-t)^d}$, and $(2\\pi)^{-d/2}(1-t)^{-d}=(2\\pi(1-t)^2)^{-d/2}$, so (26) reads $\\frac1n\\sum_i(2\\pi(1-t)^2)^{-d/2}\\exp\\!\\big(-\\frac{\\|x-tx^{(i)}\\|^2}{2(1-t)^2}\\big)$. The numerator chain is correct through (28), including $\\frac{x^{(i)}-y}{1-t}=x^{(i)}-x_0$. But (29) **drops the $\\frac1n$ prefactor** carried by (28): (28) is $\\frac1n\\sum_i\\int_y\\dots$ and integrating the Dirac gives $\\frac1n\\sum_i\\frac{x^{(i)}-x}{1-t}(2\\pi(1-t)^2)^{-d/2}\\exp(\\cdot)$, whereas (29) prints $\\sum_i(\\cdots)$ with no $\\frac1n$. Since the denominator (26) retains its $\\frac1n$, the ratio the proof then forms is $n\\,\\hat u^{\\star}(x,t)$, not $\\hat u^{\\star}(x,t)$.\n\nThis is a transcription slip rather than a substantive flaw -- restoring the $\\frac1n$ makes it cancel against the denominator and Eq. (6) comes out exactly right -- so the proposition itself is unaffected. A related cross-reference slip in the same sentence: \"Taking the ratio of Equations (24) and (29)\" should read (26) and (29).",
+        "predicted_error_category": "Algebraic manipulation",
+        "snippet_type": "PROOF",
+        "contradiction_locations": [
+          "Appendix A.1, Eq. (29) vs. Eq. (28)"
+        ]
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::PROOF::2",
+      "snippet_type": "PROOF",
+      "location": "B.3 Proof of Proposition 2, Item (ii) (Eqs. (40)-(62))",
+      "content": "Proof of Item (ii). The minimizer for a given (x_t, t), removing these elements from the notation for conciseness and abstraction, is a weighted mean:\n\n\\hat{u}^{\\star}(x_t, t) = \\hat{u}^{\\star} = \\sum_{l=1}^{n} w^{(l)} u^{(l)}, \\quad \\text{with}\n(40)\n\nw^{(l)} = \\hat{p}_{\\text{data}}(z = x^{(l)} \\mid x_t, t), \\qquad \\sum_{l=1}^{n} w^{(l)} = 1,\n(41)\n\nu^{(l)} = u^{\\text{cond}}(x_t, x^{(l)}, t).\n(42)\n\nWe express a mini-batch as an M-valued vector of indices, \\mathbf{i} \\in \\llbracket 1, n \\rrbracket^M. The mini-batch estimate from Equation (7), considering the definition of the softmax, can be expressed as a mini-batch weighted-mean:\n$$\n\\hat{u}^{\\star}_M(\\mathbf{i}) = \\frac{\\sum_{j=1}^M w^{(i_j)} u^{(i_j)}}{\\sum_{j=1}^M w^{(i_j)}}\n$$\n(43)\n\nThe categorical distribution over \\llbracket 1, n \\rrbracket with probabilities following the weights w in (41) is denoted \\text{Cat}(w) and the uniform distribution, i.e., \\text{Cat}(1/n), is denoted \\text{Unif}.\n\nThe main result of the following is that, in expectation over the biased mini-batches, where the first point is drawn according to w and the M-1 other points are drawn uniformly, the mini-batch weighted-mean is an unbiased estimate of the w-weighted-mean \\hat{u}^{\\star}.\n\n$$\n\\mathbb{E}\\left[\\hat{u}^{\\star}_M(\\mathbf{i})\\right] := \\mathbb{E}_{i_1 \\sim \\text{Cat}(w)} \\mathbb{E}_{i_2, \\ldots, i_M \\sim \\text{Unif}} \\left[\\hat{u}^{\\star}_M(\\mathbf{i})\\right]\n$$\n(44)\n$$\n= \\sum_{i_1=1}^n w^{(i_1)} \\mathbb{E}_{i_2, \\ldots, i_M \\sim \\text{Unif}} \\left[\\hat{u}^{\\star}_M(\\mathbf{i})\\right]\n$$\n(45)\n$$\n= \\sum_{i_1=1}^n \\mathbb{E}_{i_2, \\ldots, i_M \\sim \\text{Unif}} \\left[w^{(i_1)} \\hat{u}^{\\star}_M(\\mathbf{i})\\right]\n$$\n(46)\n$$\n= n \\sum_{i_1=1}^n \\frac{1}{n} \\mathbb{E}_{i_2, \\ldots, i_M \\sim \\text{Unif}} \\left[w^{(i_1)} \\hat{u}^{\\star}_M(\\mathbf{i})\\right]\n$$\n(47)\n$$\n= n \\, \\mathbb{E}_{i_1 \\sim \\text{Unif}} \\mathbb{E}_{i_2, \\ldots, i_M \\sim \\text{Unif}} \\left[w^{(i_1)} \\hat{u}^{\\star}_M(\\mathbf{i})\\right]\n$$\n(48)\n$$\n= n \\, \\mathbb{E}_{i_1, \\ldots, i_M \\sim \\text{Unif}} \\left[w^{(i_1)} \\hat{u}^{\\star}_M(\\mathbf{i})\\right]\n$$\n(49)\n\nThe expression in Equation (49) is invariant with respect to the order of the indices i_1, \\ldots, i_M: the indices in expectation in Equation (49) can be exchanged, and one thus has\n$$\n\\forall k \\in \\llbracket 1, M \\rrbracket, \\; \\mathbb{E}\\left[\\hat{u}^{\\star}_M(\\mathbf{i})\\right] = n \\, \\mathbb{E}_{i_1, \\ldots, i_M \\sim \\text{Unif}} \\left[w^{(i_k)} \\hat{u}^{\\star}_M(\\mathbf{i})\\right] .\n$$\n(50)\n\nAveraging Equation (50) over the indices k \\in \\llbracket 1, M \\rrbracket yields the desired result.\n\n$$\\frac{1}{M}\\sum_{k=1}^{M}\\mathbb{E}\\!\\left[\\hat{u}^{\\star}_{M}(\\mathbf{i})\\right]\n= \\frac{1}{M}\\sum_{k=1}^{M} n\\, \\mathbb{E}_{i_1,\\ldots,i_M \\sim \\text{Unif}}\\!\\left[\\, w^{(i_k)}\\, \\hat{u}^{\\star}_{M}(\\mathbf{i}) \\right] \\tag{51}$$\n\n$$\\mathbb{E}\\!\\left[\\hat{u}^{\\star}_{M}(\\mathbf{i})\\right]\n= \\frac{1}{M}\\, n\\, \\mathbb{E}_{i_1,\\ldots,i_M \\sim \\text{Unif}}\\!\\left[ \\sum_{k=1}^{M} w^{(i_k)}\\, \\hat{u}^{\\star}_{M}(\\mathbf{i}) \\right] \\tag{52}$$\n\n$$= \\frac{1}{M}\\, n\\, \\mathbb{E}_{i_1,\\ldots,i_M \\sim \\text{Unif}}\\!\\left[ \\sum_{k=1}^{M} w^{(i_k)} \\frac{\\sum_{j=1}^{M} w^{(i_j)} u^{(i_j)}}{\\sum_{j=1}^{M} w^{(i_j)}} \\right] \\tag{53}$$\n\n$$= \\frac{1}{M}\\, n\\, \\mathbb{E}_{i_1,\\ldots,i_M \\sim \\text{Unif}}\\!\\left[ \\left(\\sum_{k=1}^{M} w^{(i_k)}\\right) \\frac{\\sum_{j=1}^{M} w^{(i_j)} u^{(i_j)}}{\\sum_{j=1}^{M} w^{(i_j)}} \\right] \\tag{54}$$\n\n$$= \\frac{1}{M}\\, n\\, \\mathbb{E}_{i_1,\\ldots,i_M \\sim \\text{Unif}}\\!\\left[ \\sum_{j=1}^{M} w^{(i_j)} u^{(i_j)} \\right] \\tag{55}$$\n\n$$= \\frac{1}{M}\\, n \\sum_{j=1}^{M} \\mathbb{E}_{i_1,\\ldots,i_M \\sim \\text{Unif}}\\!\\left[ w^{(i_j)} u^{(i_j)} \\right] \\tag{56}$$\n\n$$= \\frac{1}{M}\\, n \\sum_{j=1}^{M} \\mathbb{E}_{i_j \\sim \\text{Unif}}\\!\\left[ w^{(i_j)} u^{(i_j)} \\right] \\tag{57}$$\n\n$$= \\frac{1}{M}\\, n M\\, \\mathbb{E}_{l \\sim \\text{Unif}}\\!\\left[ w^{(l)} u^{(l)} \\right] \\tag{58}$$\n\n$$= n\\, \\mathbb{E}_{l \\sim \\text{Unif}}\\!\\left[ w^{(l)} u^{(l)} \\right] \\tag{59}$$\n\n$$= n \\sum_{l=1}^{n} \\frac{1}{n}\\, w^{(l)} u^{(l)} \\tag{60}$$\n\n$$= \\sum_{l=1}^{n} w^{(l)} u^{(l)} \\tag{61}$$\n\n$$= \\hat{u}^{\\star} \\tag{62}$$",
+      "route": "verify-math",
+      "route_rationale": "Audited step by step informally; the conclusion it establishes is independently machine-checked as paper::PROPOSITION::2.",
+      "lean_result": null,
+      "fallback_result": null,
+      "verifier_result": {
+        "snippet_id": "paper::PROOF::2",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "The proof is valid at every step. (43) correctly re-expresses Eq. (8): the global softmax normaliser over all $n$ points cancels, leaving $\\hat u^{\\star}_M(\\mathbf i)=\\frac{\\sum_j w^{(i_j)}u^{(i_j)}}{\\sum_j w^{(i_j)}}$, and this is well defined since the $w$'s are exponentials, hence strictly positive. (44)-(49) is the change of measure $\\mathbb E_{i_1\\sim\\mathrm{Cat}(w)}[f]=n\\,\\mathbb E_{i_1\\sim\\mathrm{Unif}}[w^{(i_1)}f]$. (50) is legitimate: $\\hat u^{\\star}_M(\\mathbf i)$ is a symmetric function of the batch and the measure is i.i.d. uniform, so the index carrying $w$ may be moved to any position. (51)-(55) averages over $k$ and uses $\\big(\\sum_k w^{(i_k)}\\big)\\frac{\\sum_j w^{(i_j)}u^{(i_j)}}{\\sum_j w^{(i_j)}}=\\sum_j w^{(i_j)}u^{(i_j)}$ -- the exact cancellation of the self-normalisation. (56)-(58) uses identical marginals, and (59)-(62) closes with $n\\cdot\\frac1n\\sum_l w^{(l)}u^{(l)}=\\hat u^{\\star}$. I reproduced this argument independently and then machine-checked the conclusion in Lean (paper::PROPOSITION::2, PASSED). No error.",
+        "predicted_error_category": null,
+        "snippet_type": "PROOF",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::PROOF::3",
+      "snippet_type": "PROOF",
+      "location": "B.3 Proof of Proposition 2, Item (iii) (Eqs. (63)-(74)), step (70)->(71)",
+      "content": "Proof of Item (iii). Using the same ideas as for Item (ii), one has\n\n$$\\mathbb{E}_{x^{(1)}\\sim\\hat{p}_{\\text{data}}(\\cdot|x_t,t)\\,;\\,x^{(2)},\\ldots,x^{(M)}\\sim\\hat{p}_{\\text{data}}}\\big[\\hat{u}_M^{\\star}(x_t,t)^2\\big]$$ (63)\n\n$$= n\\,\\mathbb{E}_{i_1,\\ldots,i_M\\sim\\text{Unif}}\\big[w^{(i_1)}\\,\\hat{u}_M^{\\star}(i)^2\\big]$$ (64)\n\n$$= n\\,\\mathbb{E}_{i_1,\\ldots,i_M\\sim\\text{Unif}}\\big[w^{(i_k)}\\,\\hat{u}_M^{\\star}(i)^2\\big]\\,,\\ \\forall k\\in\\llbracket 1,M\\rrbracket$$ (65)\n\n$$= n\\,\\frac{1}{M}\\,\\mathbb{E}_{i_1,\\ldots,i_M\\sim\\text{Unif}}\\Big[\\sum_{k=1}^M w^{(i_k)}\\,\\hat{u}_M^{\\star}(i)^2\\Big]$$ (66)\n\n$$= n\\,\\frac{1}{M}\\,\\mathbb{E}_{i_1,\\ldots,i_M\\sim\\text{Unif}}\\left[\\sum_{k=1}^M w^{(i_k)}\\left(\\frac{\\sum_{j=1}^M w^{(i_j)}u^{(i_j)}}{\\sum_{j=1}^M w^{(i_j)}}\\right)^2\\right]$$ (67)\n\n$$\\leq n\\,\\frac{1}{M}\\,\\mathbb{E}_{i_1,\\ldots,i_M\\sim\\text{Unif}}\\left[\\sum_{k=1}^M w^{(i_k)}\\,\\frac{\\sum_{j=1}^M w^{(i_j)}(u^{(i_j)})^2}{\\sum_{j=1}^M w^{(i_j)}}\\right]\\quad\\text{by convexity of }x\\mapsto x^2$$ (68)\n\n$$= n\\,\\frac{1}{M}\\,\\mathbb{E}_{i_1,\\ldots,i_M\\sim\\text{Unif}}\\left[\\left(\\sum_{k=1}^M w^{(i_k)}\\right)\\frac{\\sum_{j=1}^M w^{(i_j)}(u^{(i_j)})^2}{\\sum_{j=1}^M w^{(i_j)}}\\right]$$ (69)\n\n$$= n\\,\\frac{1}{M}\\,\\mathbb{E}_{i_1,\\ldots,i_M\\sim\\text{Unif}}\\left[\\sum_{j=1}^M w^{(i_j)}(u^{(i_j)})^2\\right]$$ (70)\n\n$$= \\mathbb{E}_{i_1\\sim\\text{Unif}}\\big[w^{(i_1)}(u^{(i_1)})^2\\big]$$ (71)\n\n$$= \\mathbb{E}_{l\\sim\\text{Unif}}\\big[w^{(l)}(u^{(l)})^2\\big]\\,. $$ (72)\n\nHence\n\n$$\\mathbb{E}_{x^{(1)}\\sim\\hat{p}_{\\text{data}}(\\cdot|x_t,t)\\,;\\,x^{(2)},\\ldots,x^{(M)}\\sim\\hat{p}_{\\text{data}}}\\big[\\hat{u}_M^{\\star}(x_t,t)^2\\big]-(\\hat{u}^{\\star})^2\\leq\\mathbb{E}_{l\\sim\\text{Unif}}\\big[w^{(l)}(u^{(l)})^2\\big]-(\\hat{u}^{\\star})^2\\,, $$ (73)\n\nwhich is exactly\n\n$$\\operatorname{Var}_{x^{(1)}\\sim\\hat{p}_{\\text{data}}(\\cdot|x_t,t)\\,;\\,x^{(2)},\\ldots,x^{(M)}\\sim\\hat{p}_{\\text{data}}}\\big[\\hat{u}_M^{\\star}(x_t,t)\\big]\\leq \\operatorname{Var}_{x^{(1)}\\sim\\hat{p}_{\\text{data}}(\\cdot|x_t,t)}\\big[u^{\\mathrm{cond}}(x_t,x^{(1)},t)\\big]\\,. $$ (74)\n\n□",
+      "route": "verify-math-lean",
+      "route_rationale": "A single arithmetic step in a finite expectation chain -- precisely the kind of claim a compiler can settle outright.",
+      "lean_result": {
+        "snippet_id": "paper::PROOF::3",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.92,
+        "reasoning": "Formalised the two sides of the step (70)->(71) with $g(l):=w^{(l)}(u^{(l)})^2$. Lean proved `step70_value`: the left-hand side of (70), $n\\cdot\\frac1M\\,\\mathbb E_{\\mathrm{Unif}}\\big[\\sum_{k=1}^M g(i_k)\\big]$, equals $\\sum_l g(l)$; and `step71_value`: the quantity printed in (71), $\\mathbb E_{i_1\\sim\\mathrm{Unif}}[g(i_1)]$, equals $\\frac1n\\sum_l g(l)$. So (70) is exactly $n$ times (71) (`step70_eq_n_mul_step71`): **the factor $n$ was dropped between the two lines**. Lean then refuted the printed equality outright -- `step_70_eq_71_forces_degenerate` shows it would force $n=1$ or $\\sum_l g(l)=0$, and `step_70_ne_step_71` concludes that for $n\\ge2$ with non-vanishing second moment, the regime the paper is in, (70) $\\ne$ (71).\n\nThe consequence is local but real: as printed, (72) gives $\\mathbb E_{l\\sim\\mathrm{Unif}}[w^{(l)}(u^{(l)})^2]=\\frac1n\\sum_l w^{(l)}(u^{(l)})^2$, so the right-hand side of (73) is $\\frac1n$ of what is needed, and the claim in (74) that this \"is exactly\" $\\mathrm{Var}_{b^{(1)}\\sim\\hat p_{\\text{data}}(\\cdot\\mid x,t)}[u^{\\text{cond}}]=\\sum_l w^{(l)}(u^{(l)})^2-(\\hat u^{\\star})^2$ does not follow. Restoring the $n$ -- as the parallel step (58)->(59) of the Item (ii) proof correctly does -- repairs the chain, and Eq. (11) itself is true: it was proved independently in Lean (paper::PROPOSITION::3, PASSED). So this is a defective proof step, not a false proposition.",
+        "predicted_error_category": "Formally refuted",
+        "snippet_type": "PROOF_STEP",
+        "contradiction_locations": [
+          "Appendix B.3, Eq. (71) vs. Eq. (70)",
+          "Appendix B.3, Eq. (74) vs. Eqs. (72)-(73)"
+        ],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean",
+          "saved_as": "Paper/Verified/paper__PROOF__3_23888opus5.lean",
+          "formal_statement": "theorem step_70_ne_step_71 (n M : ℕ) (hn : 1 < n) (hM : 0 < M)\n    (g : Fin n → ℝ) (hg : ∑ l, g l ≠ 0) (k0 : Fin M) :\n    (n : ℝ) * (M : ℝ)⁻¹ *\n        (∑ b : Fin M → Fin n, ((n : ℝ) ^ M)⁻¹ * ∑ k, g (b k))\n      ≠ ∑ b : Fin M → Fin n, ((n : ℝ) ^ M)⁻¹ * g (b k0)\n\ntheorem step70_eq_n_mul_step71 (n M : ℕ) (hn : 0 < n) (hM : 0 < M) (g : Fin n → ℝ)\n    (k0 : Fin M) :\n    (n : ℝ) * (M : ℝ)⁻¹ * (∑ b : Fin M → Fin n, ((n : ℝ) ^ M)⁻¹ * ∑ k, g (b k))\n      = (n : ℝ) * (∑ b : Fin M → Fin n, ((n : ℝ) ^ M)⁻¹ * g (b k0))",
+          "compiler_feedback": "`lake env lean Paper/TMP.lean` exited 0; `lean_diagnostic_messages` returned no items (success: true); only `linter.unusedVariables` / `unusedSectionVars` style warnings were emitted. `lean_verify` reported axioms [propext, Classical.choice, Quot.sound] with non_standard_axioms: [] and no sorryAx.",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 4,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.92
+    },
+    {
+      "snippet_id": "paper::EQUATION::4",
+      "snippet_type": "EQUATION",
+      "location": "B.2 Theoretical properties of the proposed estimator (links with importance sampling)",
+      "content": "Links with importance sampling. The estimator $\\hat{u}^{\\star}$ in Equation (6) can be seen as a form of importance sampling (see Robert et al. 1999, Chap. 3 for an in-depth reference). In a nutshell, importance sampling is a way to estimate an expectation when one cannot easily sample from the random variable it depends on. More precisely, in the ideal case $z\\sim p_{\\text{data}}$ (as opposed to $z\\sim \\hat{p}_{\\text{data}}$), the velocity field formula is the following\n\n$$u^{\\star}(x_t,t)=\\mathbb{E}_{z\\,|\\,x_t,t}\\!\\left[u^{\\text{cond}}(x_t,z,t)\\right]$$\n(30)\n\n$$=\\int_z u^{\\text{cond}}(x_t,z,t)\\,p(z\\,|\\,x_t,t)\\,dz \\, .$$\n(31)\n\nWhen z ∼ p_data, it is difficult to sample from z | x_t, t, but the latter equation can be rewritten as\n\nu^{\\star}(x_t, t) = \\int_{z} u^{\\text{cond}}(x_t, z, t) \\frac{p(z \\mid x_t, t)}{p(z)} p(z)\\, dz\n(32)\n\nand one can easily sample from z ∼ \\hat{p}_{\\text{data}} using the empirical data distribution x^{(1)}, …, x^{(n)}\n\nu^{\\star}(x_t, t) \\approx \\frac{1}{n} \\sum_{i=1}^{n} u^{\\text{cond}}(x_t, x^{(i)}, t) \\frac{p(z = x^{(i)} \\mid x_t, t)}{p(x^{(i)})}\n(33)\n\n= \\sum_{i=1}^{n} u^{\\text{cond}}(x_t, x^{(i)}, t)\\, p(z = x^{(i)} \\mid x_t, t)\n(34)\n\n:= \\hat{u}^{\\star}(x_t, t).\n(35)",
+      "route": "verify-math",
+      "route_rationale": "An explicitly informal \"in a nutshell\" derivation; the question is one of rigour rather than a formalisable identity.",
+      "lean_result": null,
+      "fallback_result": null,
+      "verifier_result": {
+        "snippet_id": "paper::EQUATION::4",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.62,
+        "reasoning": "Not flagged, but worth recording. Eqs. (30)-(32) are fine. The step (33)->(34) is where the chain loses rigour: (32)-(33) take $p$ to be the **true** data law $p_{\\text{data}}$, so $p(x^{(i)})$ there is a probability *density* on $\\mathbb R^d$, yet (34) follows only by setting $p(x^{(i)})=\\frac1n$, the probability *mass* of the empirical measure. A density and a mass are not interchangeable (they do not even have the same units), so $p$ silently switches from $p_{\\text{data}}$ to $\\hat p_{\\text{data}}$ mid-derivation; likewise $p(z=x^{(i)}\\mid x_t,t)$ in (34) is the empirical posterior mass, not the continuous posterior of (31).\n\nI am not flagging this as an erratum-level error: the subsection is explicitly framed as intuition (\"In a nutshell...\", \"can be seen as a form of importance sampling\"), its endpoint (35) is the object $\\hat u^{\\star}$ that Proposition 1 defines rigorously elsewhere, and no result depends on this chain. It is a presentational rigour gap in a motivational passage.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.62
+    },
+    {
+      "snippet_id": "paper::EQUATION::5",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "D.1 Compute time",
+      "content": "Given that regressing against an estimate of the closed-form, EFM, seems to improve on CFM, one may wonder what is the additional cost induced by EFM. To alleviate the non-linearity of GPU computing (parallelism may cause some discontinuities in terms of costs), we ran an exhaustive set of timing experiments, varying the batch size and the EFM sample size. To summarize the measurements (numbers are given for an NVIDIA L4 GPU, on CIFAR-10), denoting b the batch size and e the EFM sample size, the cost follows b × (4.3 ms + e × 0.9 μs). It can also be seen as adding ~2% for every 100 EFM samples. Or, for instance with a batch size of 256, 1.1 second will be due to the 256-sample forward/backward, while the additional cost for EFM-1000 will be 230 ms (around 17% of the cost) and for EFM-128 will be under 30 ms (under 3%).",
+      "route": "verify-math",
+      "route_rationale": "Arithmetic consistency check on a reported cost model -- an empirical fit, not a theorem.",
+      "lean_result": null,
+      "fallback_result": null,
+      "verifier_result": {
+        "snippet_id": "paper::EQUATION::5",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.95,
+        "reasoning": "The cost model $b\\times(4.3\\,\\text{ms}+e\\times0.9\\,\\mu\\text{s})$ is arithmetically consistent with every figure quoted from it. Batch $b=256$: base cost $256\\times4.3\\,\\text{ms}=1100.8\\,\\text{ms}\\approx1.1\\,$s, as stated. EFM-1000: $256\\times1000\\times0.9\\,\\mu\\text{s}=230.4\\,$ms, as stated, and $230.4/1331.2=17.3\\%\\approx$ \"around 17%\". EFM-128: $256\\times128\\times0.9\\,\\mu\\text{s}=29.5\\,$ms, \"under 30 ms\", and $29.5/1130.3=2.6\\%$, \"under 3%\". The summary rule \"~2% for every 100 EFM samples\" matches $100\\times0.9\\,\\mu\\text{s}/4.3\\,\\text{ms}=2.09\\%$. Also consistent with the $O(M\\times|B|\\times d)$ complexity claimed for Algorithm 2. No error.",
+        "predicted_error_category": null,
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.95
+    }
+  ],
+  "findings": [
+    {
+      "snippet_id": "paper::EQUATION::2",
+      "category": "Formally refuted",
+      "severity": "minor",
+      "confidence": 0.95,
+      "evidence": "Lean proved the negation of the underbrace identity printed inside Eq. (5). With $x_t:=(1-t)x_0+tx_1$ one has $x_1-x_t=(1-t)(x_1-x_0)$, hence $\\frac{x_1-x_t}{1-t}=x_1-x_0$ -- **not** $\\frac{x_1-x_0}{1-t}$. The printed right-hand side carries a spurious extra factor $\\frac{1}{1-t}$ and is correct only at $t=0$. Refuting witness: $t=\\tfrac12,\\;x_0=0,\\;x_1=1$, where the left side is $1$ and the right side is $2$. The paper writes the correct form $\\frac{x_1-x_t}{1-t}=x_1-x_0$ in Algorithm 1, the Figure 1 caption and Appendix D.2, so Eq. (5) is the outlier and the argument survives the fix.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "\\underbrace{u^{\\text{cond}}(x_t,z=x_1,t)}_{=\\frac{x_1-x_t}{1-t}=\\frac{x_1-x_0}{1-t}}"
+    },
+    {
+      "snippet_id": "paper::PROOF::3",
+      "category": "Formally refuted",
+      "severity": "minor",
+      "confidence": 0.92,
+      "evidence": "A factor $n$ is dropped between Eqs. (70) and (71) in the proof of Proposition 2 (iii). Writing $g(l)=w^{(l)}(u^{(l)})^2$, Lean proved that the left-hand side of (70) equals $\\sum_l g(l)$ while the quantity printed in (71) equals $\\frac1n\\sum_l g(l)$, so (70) $=n\\cdot$(71), and that the printed equality would force $n=1$ or $\\sum_l g(l)=0$. Consequently (72)-(73) understate the bound by $\\frac1n$ and the identification in (74) with $\\mathrm{Var}_{b^{(1)}}[u^{\\text{cond}}]=\\sum_l w^{(l)}(u^{(l)})^2-(\\hat u^{\\star})^2$ does not follow as written. The parallel step (58)->(59) in the Item (ii) proof does keep the $n$. Severity is minor because Eq. (11) itself is true -- it was proved independently in Lean -- so only the proof step needs repair.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "$$= \\mathbb{E}_{i_1\\sim\\text{Unif}}\\big[w^{(i_1)}(u^{(i_1)})^2\\big]$$ (71)"
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::0",
+      "category": "Internal contradiction: paper disclaims its own main theorem",
+      "severity": "critical",
+      "confidence": 0.88,
+      "evidence": "Section 4.1 asserts both that \"Proposition 2 shows that the estimate $\\hat u^{\\star}_M$ is unbiased and has lower variance than the standard conditional flow matching target\" (and Appendix B.1: \"This important detail yields an unbiased estimator of $\\hat u^{\\star}$\"), and -- one paragraph after Proposition 2 -- that the construction \"does not guarantee unbiasedness in the standard Monte Carlo sense\", merely \"reduces bias and variance\", and that \"The theoretical claims therefore approximate unbiasedness within empirical tolerance\". These are mutually exclusive, and the hedge is the false one: Proposition 2 (ii) / Eq. (10) is an **exact** identity, which this run verified formally in Lean (`prop2_ii`, PASSED, axioms [propext, Classical.choice, Quot.sound], no sorryAx). The appeal to \"self-normalized importance-sampling estimators are typically biased\" is a non-sequitur here: that generic fact is defeated by the very $b^{(1)}:=x_1$ trick the paper identifies as crucial, because the estimator is a symmetric function of the batch and symmetrising over the $M$ positions cancels the self-normalisation exactly. Rated critical because the passage retracts the paper's main theoretical contribution and the stated justification for EFM.",
+      "verifier": "verify-math",
+      "exact_quote": "While our estimator incorporates the current point b^{(1)} \\sim \\hat{p}_{\\text{data}}(\\cdot \\mid x_t,t), this does not guarantee unbiasedness in the standard Monte Carlo sense. Instead, it reduces bias and variance compared to naive estimators, as characterized under regularity conditions in Appendix B. The theoretical claims therefore approximate unbiasedness within empirical tolerance."
+    },
+    {
+      "snippet_id": "paper::PROOF::1",
+      "category": "Algebraic manipulation: dropped normalising factor",
+      "severity": "minor",
+      "confidence": 0.85,
+      "evidence": "In the proof of Proposition 1 for $z\\sim p_0\\times\\hat p_{\\text{data}}$, Eq. (29) drops the $\\frac1n$ prefactor carried by Eq. (28). Integrating the Dirac in (28) yields $\\frac1n\\sum_i\\frac{x^{(i)}-x}{1-t}(2\\pi(1-t)^2)^{-d/2}\\exp\\!\\big(-\\frac{\\|x-tx^{(i)}\\|^2}{2(1-t)^2}\\big)$, whereas (29) prints the same sum without $\\frac1n$. Since the denominator (26) keeps its $\\frac1n$, the ratio the proof forms is $n\\,\\hat u^{\\star}(x,t)$ rather than $\\hat u^{\\star}(x,t)$. Minor: restoring the factor makes it cancel and Eq. (6) comes out exactly right, so Proposition 1 is unaffected (its algebraic content was separately verified in Lean). The same sentence also misnumbers the denominator, citing \"Equations (24) and (29)\" where (26) and (29) are meant.",
+      "verifier": "verify-math",
+      "exact_quote": "$$= \\sum_{i=1}^n \\frac{x^{(i)}-x}{1-t}\\,\\frac{1}{\\sqrt{(2\\pi(1-t)^2)^d}}\\,\\exp\\!\\left(-\\frac{1}{2(1-t)^2}\\|x-tx^{(i)}\\|^2\\right)$$"
+    }
+  ],
+  "verdict": "CRITICAL_ERRORS",
+  "verdict_confidence": 0.85,
+  "summary": "**What was checked.** 15 self-contained mathematical objects were extracted from *On the Closed-Form of Flow Matching* and routed before any verifier ran: 10 to informal review (`verify-math`) and 5 to formal Lean 4 proof (`verify-math-lean`), run strictly serially against the shared `MATH_VERIFICATION/Paper` project. Coverage spans the preliminaries (Eqs. (2)-(5)), Proposition 1 and both branches of its Appendix A.1 proof, all three items of Proposition 2 with their Appendix B.3 proofs, the importance-sampling discussion of Appendix B.2, and the Appendix D.1 cost model.\n\n**What Lean settled.** All 5 Lean snippets returned a verdict; none was `FAILED` or `NOT_ATTEMPTED`, so no informal fallbacks were required. Three PASSED and two REFUTED, every one on the standard axioms (`propext`, `Classical.choice`, `Quot.sound`) with no `sorryAx`.\n\nThe paper's substantive mathematics holds up. **Proposition 1** is correct: the Gaussian normalising constant cancels, the ratio form and the softmax form of Eq. (6) agree, and the weights sum to one. **Proposition 2 (ii)** -- the central theoretical claim -- is correct and *exactly* so: Lean proved $\\mathbb E[\\hat u^{\\star}_M]=\\hat u^{\\star}$ as an identity, following the paper's own route (symmetry of the self-normalised estimator under permuting batch positions, re-anchoring the posterior-drawn index at any position, then marginalisation). Lean incidentally found the hypothesis $\\sum_l w^{(l)}=1$ unnecessary for the identity. **Proposition 2 (iii)** is also correct, via Cauchy-Schwarz for the convexity step.\n\n**Where the paper is wrong.** Four errors, one critical and three minor; none of them breaks a main result, but one of them *claims* to.\n\nThe critical finding is an internal contradiction, not a miscalculation. Section 4.1 states Proposition 2 (ii) as exact unbiasedness and Appendix B.1 repeats it, yet the paragraph following Proposition 2 disclaims it -- \"does not guarantee unbiasedness in the standard Monte Carlo sense\", \"reduces bias and variance\", \"approximate unbiasedness within empirical tolerance\". The Lean proof shows the theorem, not the hedge, is right: the generic bias of self-normalised importance sampling simply does not apply, because the $b^{(1)}:=x_1$ construction the paper itself calls crucial makes the symmetrisation exact. As written the paper retracts its own main theoretical contribution.\n\nThe two formally refuted items are both transcription-level slips in otherwise sound work. Eq. (5)'s underbrace prints $\\frac{x_1-x_t}{1-t}=\\frac{x_1-x_0}{1-t}$; the correct value is $x_1-x_0$, and the paper gets it right in Algorithm 1, the Figure 1 caption and Appendix D.2. Appendix B.3 drops a factor $n$ between Eqs. (70) and (71), so (72)-(74) understate the bound by $\\frac1n$ and the final identification does not follow -- even though Eq. (11) itself is true, as the independent Lean proof of Proposition 2 (iii) confirms. The parallel step (58)->(59) in the Item (ii) proof keeps the factor correctly. The fourth finding is the matching omission of $\\frac1n$ in Eq. (29) of Appendix A.1.\n\n**No verifier disagreements.** Lean and informal review were concordant throughout, and on the one point where it mattered they reinforced each other: the formal PASSED on Proposition 2 (ii) is what establishes that the Section 4.1 hedging passage is the error rather than the theorem.\n\n**Noted but not flagged.** (i) Appendix B.2's step (33)->(34) conflates the density $p_{\\text{data}}(x^{(i)})$ with the empirical mass $\\frac1n$, silently switching measures mid-derivation; left unflagged (confidence 0.62) because the subsection is explicitly motivational and nothing depends on it. (ii) Non-mathematical labelling inconsistencies outside this skill's scope: Tables 1 and 2 are both captioned \"FID FMNIST\" although Appendix C introduces them as MNIST results, and the Figure 3 caption gives the collapse threshold as $\\tau\\ge0.3$ where the body text says $\\tau>0.2$ and $\\tau\\ge0.4$. (iii) Cosmetic: Eqs. (12), (18)-(19) write $u^{\\star}$ for $\\hat u^{\\star}$; Eqs. (37) and (38) are the same expression printed twice.\n\n**Lean project lifecycle.** `MATH_VERIFICATION/Paper` already existed, holding a 7.4 GB Mathlib build and 121 saved proofs from other papers' runs, so per `verify-math-lean`'s deletion rule (\"If Step 0 reused an existing project rather than creating it ... it is not yours to remove\") every call was issued with `--keep-lean` -- including the last -- and the project was **not** deleted. Only per-snippet scratch (`TMP.lean`, `claim.md`) was removed; the five proofs are preserved as `Paper/Verified/paper__<SNIPPET>_23888opus5.lean`."
+}

@@ -1,0 +1,269 @@
+{
+  "paper_name": "paper",
+  "paper_path": "/Users/iacopoghinassi/Documents/Github/Wittgenstein/data/paperaudit-workspace/13446-1000_Layer_Networks_for_Self-Supervised_RL__Scaling_Depth_Can_Enable_New_G/paper.md",
+  "lean_project": "MATH_VERIFICATION/Paper",
+  "lean_project_kept": true,
+  "totals": {
+    "snippets_extracted": 9,
+    "routed_to_math": 7,
+    "routed_to_lean": 2,
+    "lean_passed": 0,
+    "lean_refuted": 2,
+    "lean_failed": 0,
+    "fallbacks_run": 0,
+    "errors_detected": 2
+  },
+  "results": [
+    {
+      "snippet_id": "paper::EQUATION::0",
+      "snippet_type": "EQUATION",
+      "location": "3 Preliminaries",
+      "content": "At every time step $t$, the agent observes state $s_t \\in \\mathcal{S}$ and performs a corresponding action $a_t \\in \\mathcal{A}$. ... The reward function is defined as the probability density of reaching the goal in the next time step $r_g(s_t, a_t) \\triangleq (1 - \\gamma) p(s_{t+1} = g \\mid s_t, a_t)$, with discount factor $\\gamma$. ... The objective is to maximize the expected reward:\n\n$$\\max_\\pi \\mathbb{E}_{p_0(s_0), p_g(g), \\pi(\\cdot \\mid \\cdot, g)} \\left[ \\sum_{t=0}^{\\infty} \\gamma^t r_g(s_t, a_t) \\right]. \\tag{1}$$",
+      "route": "verify-math",
+      "route_rationale": "Standard discounted goal-conditioned RL objective; definitional and informal-checkable (convergence requires 0 <= gamma < 1, which holds).",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.95,
+        "reasoning": "Eq (1) is the standard goal-conditioned discounted-reward objective. With gamma in [0,1) and bounded rewards (r_g = (1-gamma)*p(s'=g|s,a) <= 1-gamma), the sum over t of gamma^t * r_g converges absolutely; the expectation is over p_0(s_0), the goal prior p_g(g), and the policy pi(.|.,g). No algebraic or logical error; the (1-gamma) factor keeps the total discounted reward bounded by 1.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::EQUATION::1",
+      "snippet_type": "EQUATION",
+      "location": "3 Preliminaries",
+      "content": "The reward function is defined as the probability density of reaching the goal in the next time step $r_g(s_t, a_t) \\triangleq (1 - \\gamma) p(s_{t+1} = g \\mid s_t, a_t)$, with discount factor $\\gamma$.",
+      "route": "verify-math",
+      "route_rationale": "Definitional reward normalisation; informal check that it is a valid bounded reward.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::1",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "The reward r_g(s_t,a_t) := (1-gamma)*p(s_{t+1}=g|s_t,a_t) is defined as (1-gamma) times the next-state goal density. This is a definition, not a derived claim, and it is a valid bounded reward (for discrete goals, p is a probability in [0,1] so r_g in [0, 1-gamma]). The (1-gamma) normalisation makes the total discounted reward a probability-like quantity. No error.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::THEOREM::0",
+      "snippet_type": "THEOREM",
+      "location": "3 Preliminaries",
+      "content": "We define the discounted state visitation distribution as $p_\\gamma^{\\pi(\\cdot \\mid \\cdot, g)}(s) \\triangleq (1 - \\gamma) \\sum_{t=0}^{\\infty} \\gamma^t p_t^{\\pi(\\cdot \\mid \\cdot, g)}(s)$, where $p_t^\\pi(s)$ is the probability that policy $\\pi$ visits $s$ after exactly $t$ steps, when conditioned with $g$. This last expression is precisely the $Q$-function of the policy $\\pi(\\cdot \\mid \\cdot, g)$ for the reward $r_g$: $Q_g^\\pi(s, a) \\triangleq p_\\gamma^{\\pi(\\cdot \\mid \\cdot, g)}(g \\mid s, a)$.",
+      "route": "verify-math-lean",
+      "route_rationale": "Formalisable identity Q_g^pi(s,a) = p_gamma^pi(g|s,a); correctness turns on the index of the discounted sum (t=0 term and a factor of gamma).",
+      "lean_result": {
+        "snippet_id": "paper::THEOREM::0",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.9,
+        "reasoning": "Formalised the paper's identity Q_g^pi(s,a) = p_gamma^pi(g|s,a) under the paper's own definitions: with p_t := Pr(s_t = g), the Q-function of the reward-based objective is Q = (1-gamma)*Sum_{t>=0} gamma^t * p_{t+1} (tower property applied to the reward r_g = (1-gamma)*p(s'=g|s,a)), while the paper's discounted visitation is P_gamma = (1-gamma)*Sum_{t>=0} gamma^t * p_t. Lean refuted the equality with a deterministic counterexample: gamma = 0, p_0 = 1 (the process starts at the goal), p_t = 0 for t >= 1 (it leaves immediately and never returns). Then Q = p_1 = 0 but P_gamma = p_0 = 1. The theorem paper_identity_fails compiles clean (axioms: propext, Classical.choice, Quot.sound; no sorry). The same counterexample works at the experimental discount gamma = 0.99 (Q = 0 vs P_gamma = 0.01), and even for s != g (so p_0 = 0) one gets Q = P_gamma/gamma != P_gamma. Because the factor is constant across goals it cancels in the softmax/InfoNCE objective, so the training loss is unaffected in practice, but the equality as stated is false; the corrected identity shifts the index: Q_g^pi(s,a) = (1-gamma)*Sum_{t>=0} gamma^t * p_{t+1}(g|s,a).",
+        "predicted_error_category": "Formally refuted",
+        "snippet_type": "THEOREM",
+        "contradiction_locations": ["3 Preliminaries"],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Scratch13446/TMP0.lean",
+          "formal_statement": "theorem paper_identity_fails : ¬ ((1 - 0) * ∑' t : ℕ, (0 : ℝ) ^ t * p (t + 1) = (1 - 0) * ∑' t : ℕ, (0 : ℝ) ^ t * p t) := by intro h; have hQ ...; have hP ...; simpa [hQ, hP] using h",
+          "compiler_feedback": "Scratch13446/TMP0.lean:32:4: warning: Try `simp at h` instead of `simpa using h`\n\nNote: This linter can be disabled with `set_option linter.unnecessarySimpa false`",
+          "axioms": ["propext", "Classical.choice", "Quot.sound"],
+          "cycles_used": 0,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::EQUATION::2",
+      "snippet_type": "EQUATION",
+      "location": "3 Preliminaries",
+      "content": "The critic is trained with the InfoNCE objective (Sohn, 2016) as in previous works. Training is conducted on batches $\\mathcal{B}$, where $s_i, a_i, g_i$ represent the state, action, and goal (future state) sampled from the same trajectory, while $g_j$ represents a goal sampled from a different, random trajectory. The objective function is defined as:\n\n$$\\min_{\\phi,\\psi} \\mathbb{E}_\\mathcal{B} \\left[ -\\sum_{i=1}^{|\\mathcal{B}|} \\log \\left( \\frac{e^{f_{\\phi,\\psi}(s_i,a_i,g_i)}}{\\sum_{j=1}^K e^{f_{\\phi,\\psi}(s_i,a_i,g_j)}} \\right) \\right].$$",
+      "route": "verify-math",
+      "route_rationale": "Standard InfoNCE contrastive loss; informal check of the denominator (whether the positive g_i is included).",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::2",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.7,
+        "reasoning": "The InfoNCE objective is the standard multi-class log-softmax contrastive loss. Ambiguity: the numerator uses the positive goal g_i, while the denominator sums j=1..K over goals described as 'sampled from a different, random trajectory'. If the positive g_i is excluded from the denominator, the loss log(Sum_j e^{f_ij}) - f_i is unbounded below as f_i -> +infinity, making the objective degenerate; standard InfoNCE requires the positive in the denominator (the full batch). The intended reading is almost certainly the full-batch form used in the JaxGCRL codebase. This is a notational ambiguity, not a provable derivation-invalidating error, so it is not flagged.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.7
+    },
+    {
+      "snippet_id": "paper::EQUATION::3",
+      "snippet_type": "EQUATION",
+      "location": "3 Preliminaries",
+      "content": "The policy $\\pi_\\theta(a \\mid s, g)$ is trained to maximize the critic:\n\n$$\\max_{\\pi_\\theta} \\mathbb{E}_{\\substack{p_0(s_0),\\, p(s_{t+1}\\mid s_t,a_t),\\\\ p_g(g),\\, \\pi_\\theta(a\\mid s,g)}} \\big[f_{\\phi,\\psi}(s, a, g)\\big].$$",
+      "route": "verify-math",
+      "route_rationale": "Standard actor objective; informal check.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::3",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.95,
+        "reasoning": "The actor objective max_{pi_theta} E[f_{phi,psi}(s,a,g)] is the standard actor objective (maximise expected critic output). No mathematical error.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::EQUATION::4",
+      "snippet_type": "EQUATION",
+      "location": "3 Preliminaries (Residual Connections)",
+      "content": "A residual block transforms a given representation $\\mathbf{h}_i$ by adding a learned residual function $F_i(\\mathbf{h}_i)$ to the original representation. Mathematically, this is expressed as:\n\n$$\\mathbf{h}_{i+1} = \\mathbf{h}_i + F_i(\\mathbf{h}_i)$$\n\nwhere $\\mathbf{h}_{i+1}$ is the output representation, $\\mathbf{h}_i$ is the input representation, and $F_i(\\mathbf{h}_i)$ is a transformation learned through the network.",
+      "route": "verify-math",
+      "route_rationale": "Residual block identity; trivial addition algebra, informal check.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::4",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.95,
+        "reasoning": "The residual connection h_{i+1} = h_i + F_i(h_i) is the standard ResNet identity map. The algebra is trivially correct (input plus learned residual). No error.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::EQUATION::5",
+      "snippet_type": "EQUATION",
+      "location": "4.5 Why Scaling Happens (Figure 9 caption) and 3 Preliminaries",
+      "content": "Preliminaries: The critic is parametrized with two neural networks that return a state-action pair embedding $\\phi(s, a)$ and a goal embedding $\\psi(g)$. The critic's output is computed using a dot-product similarity between embeddings: $f_{\\phi,\\psi}(s, a, g) = \\phi(s, a)^\\top \\psi(g)$. -- Hyperparameters (Appendix B): energy_function: L2. -- Figure 9 caption: the visualized Q values are computed via the $L_2$ distance in the learned representation space, i.e., $Q(s, a, g) = \\|\\phi(s, a) - \\psi(g)\\|_2$.",
+      "route": "verify-math",
+      "route_rationale": "Consistency check between the two stated critic/Q energies (dot product vs L2 distance) and the sign of the distance formula.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::5",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "This excerpt combines two statements about the critic/Q: the Preliminaries defines the critic as a dot product f_{phi,psi}(s,a,g) = phi(s,a)^T psi(g), while the Fig 9 caption states Q(s,a,g) = ||phi(s,a) - psi(g)||_2 (an L2 distance) and the hyperparameter table lists energy_function = L2. These are different functions, so the paper is internally inconsistent about which energy the critic uses. Also, if Q is the value function it should be high near the goal, but the positive L2 distance is small near the goal, suggesting the intended energy is the negative distance. For unit-norm embeddings the dot product and the negative L2 distance are monotonically related (phi^T psi = 1 - (1/2)*||phi-psi||^2), so the discrepancy may be a sign/convention issue in a visualization caption rather than a critical derivation error. Recorded as a consistency observation, not flagged as a critical error.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::EQUATION::6",
+      "snippet_type": "EQUATION",
+      "location": "4.4 What Matters for CRL Scaling",
+      "content": "Note additionally that the parameter count scales linearly with width but quadratically with depth. For comparison, a network with 4 MLP layers and 2048 hidden units has roughly 35M parameters, while one with a depth of 32 and 256 hidden units has only around 2M. Therefore, when operating under a fixed FLOP compute budget or specific memory constraints, depth scaling may be a more computationally efficient approach to improving network performance.",
+      "route": "verify-math-lean",
+      "route_rationale": "Formalisable MLP parameter-count formula P(L,W) = (L-1)W^2 + (d_in+d_out)W; proving it affine in depth and quadratic in width directly contradicts the sentence.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::6",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.95,
+        "reasoning": "Formalised the standard MLP parameter-count formula P(L,W) = (L-1)*W^2 + (d_in + d_out)*W (L hidden layers of width W; c = d_in + d_out fixed) and proved its scaling behaviour in Lean: (1) depth_increment -- P(L+1,W) - P(L,W) = W^2, independent of L, so the count is affine (linear) in depth, contradicting the paper's 'quadratically with depth'; (2) width_second_difference -- the discrete second difference in width is 2*(L-1), constant in W, so the count is quadratic in width, contradicting the paper's 'linearly with width'; (3) not_linear_in_width -- for depth L >= 2 the second difference is nonzero, so the count is genuinely NOT linear in width. All three theorems compile clean (axioms: propext, Classical.choice, Quot.sound; no sorry). The paper's sentence is therefore backwards, and it also contradicts the paper's own Appendix B.6 ('scale quadratically with width but only linearly with depth'). The example numbers (35M vs 2M) additionally use inconsistent counting: 35M is the total across the actor plus the two critic encoders, while 2M counts a single subnetwork.",
+        "predicted_error_category": "Formally refuted",
+        "snippet_type": "EQUATION",
+        "contradiction_locations": ["4.4 What Matters for CRL Scaling", "B.6 FLOPs + Memory: Width vs. Depth Scaling"],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Scratch13446/TMP1.lean",
+          "formal_statement": "theorem not_linear_in_width (L W c : ℝ) (hL : 2 ≤ L) : paramCount L (W + 2) c - 2 * paramCount L (W + 1) c + paramCount L W c ≠ 0 := by rw [width_second_difference L W c]; exact ne_of_gt (by nlinarith [hL])",
+          "compiler_feedback": "",
+          "axioms": ["propext", "Classical.choice", "Quot.sound"],
+          "cycles_used": 0,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::EQUATION::7",
+      "snippet_type": "EQUATION",
+      "location": "B.6 FLOPs + Memory: Width vs. Depth Scaling",
+      "content": "Comparison of FLOPs and memory usage during training when scaling width versus depth. Memory includes parameters, optimizer state, and activation memory. Both FLOPs and memory grow more rapidly with width than with depth, as they scale quadratically with width but only linearly with depth.",
+      "route": "verify-math",
+      "route_rationale": "Informal consistency check of the correct scaling statement against the Section 4.4 claim (paper::EQUATION::6).",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::7",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "The claim that FLOPs and memory scale quadratically with width and only linearly with depth is correct for standard MLPs: a layer of width W contributes Theta(W^2) parameters and Theta(W^2) FLOPs, and adding a layer adds one such term, so the total P(L,W) is linear in L and quadratic in W. The Fig 22 numbers are directionally consistent (width grows more rapidly than depth). This statement directly contradicts the Section 4.4 sentence claiming the parameter count 'scales linearly with width but quadratically with depth' -- that contradiction is the subject of paper::EQUATION::6.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    }
+  ],
+  "findings": [
+    {
+      "snippet_id": "paper::EQUATION::6",
+      "category": "Formally refuted",
+      "severity": "minor",
+      "confidence": 0.95,
+      "evidence": "Lean proved the standard MLP parameter-count formula $P(L,W) = (L-1)W^2 + (d_{\\text{in}} + d_{\\text{out}})W$: adding one layer adds exactly $W^2$ parameters independent of depth (so the count is linear in depth), and the discrete second difference in width is $2(L-1) \\neq 0$ (so the count is quadratic in width, hence not linear in width). This contradicts the sentence 'the parameter count scales linearly with width but quadratically with depth' and matches the paper's own Appendix B.6, which states 'they scale quadratically with width but only linearly with depth.' The example numbers (35M vs 2M) are also computed with inconsistent counting: 35M is the total across the actor plus the two critic encoders, while 2M counts a single subnetwork.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "Note additionally that the parameter count scales linearly with width but quadratically with depth."
+    },
+    {
+      "snippet_id": "paper::THEOREM::0",
+      "category": "Formally refuted",
+      "severity": "minor",
+      "confidence": 0.8,
+      "evidence": "Lean refuted the identity $Q_g^\\pi(s,a) = p_\\gamma^\\pi(g \\mid s,a)$ as stated. Under the paper's own definitions the Q-function of the objective equals $(1-\\gamma)\\sum_{t\\ge0}\\gamma^t \\Pr(s_{t+1}=g)$ while the discounted visitation is $(1-\\gamma)\\sum_{t\\ge0}\\gamma^t \\Pr(s_t=g)$; these differ by the $t=0$ term and a factor $\\gamma$. Lean's counterexample ($\\gamma=0$, $p_0=1$, $p_t=0$ for $t\\ge1$) gives $Q=0 \\neq 1=p_\\gamma$. The same counterexample works at $\\gamma=0.99$ ($Q=0$ vs $p_\\gamma=0.01$), and for $s\\neq g$ one gets $Q = p_\\gamma/\\gamma \\neq p_\\gamma$. The factor is constant across goals, so the softmax/InfoNCE objective is unaffected, but the stated equality is false; the corrected identity shifts the index to $(1-\\gamma)\\sum_{t\\ge0}\\gamma^t p_{t+1}(g \\mid s,a)$.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "This last expression is precisely the $Q$-function of the policy $\\pi(\\cdot \\mid \\cdot, g)$ for the reward $r_g$: $Q_g^\\pi(s, a) \\triangleq p_\\gamma^{\\pi(\\cdot \\mid \\cdot, g)}(g \\mid s, a)$."
+    }
+  ],
+  "verdict": "MINOR_ERRORS",
+  "verdict_confidence": 0.75,
+  "summary": "Extracted 9 self-contained mathematical objects: 8 equations/formula claims and 1 theorem (the Q = discounted-visitation identity in the Preliminaries). 7 snippets were routed to informal review (verify-math) and 2 to formal Lean verification (verify-math-lean): the Q-identity (paper::THEOREM::0) and the parameter-count scaling claim (paper::EQUATION::6). The two Lean runs were executed serially against a shared Mathlib project. Note on project setup: the disk was full (the intended fresh ~7.5 GB Mathlib project could not be created), so the pre-existing built project MATH_VERIFICATION/Paper was reused; that project belongs to a different paper's verification and was left untouched (lean_project_kept = true, and the scratch files for this run were removed afterwards). Lean REFUTED both routed claims: (1) the identity Q_g^pi(s,a) = p_gamma^pi(g|s,a) as stated is false -- the Q-function of the reward-based objective is (1-gamma)*Sum_t gamma^t*Pr(s_{t+1}=g) while the paper's discounted visitation counts Pr(s_t=g) including the t=0 term, so they differ by a factor gamma (constant in the goal, hence the InfoNCE softmax objective is unaffected, but the stated equality is wrong); (2) the sentence 'the parameter count scales linearly with width but quadratically with depth' is backwards -- Lean proved the MLP parameter count is affine in depth and quadratic in width, matching the paper's own Appendix B.6. All 7 informal reviews found no critical derivation errors; two consistency observations were noted: the InfoNCE denominator's positive-example inclusion is ambiguous in the notation (standard full-batch InfoNCE includes it), and the critic energy is described as a dot product in the Preliminaries but as L2 in the hyperparameters and Figure 9 (with a positive L2 distance, which would assign low values near the goal). A minor reporting note: Table 1 lists 600x improvement for Humanoid Big Maze, but 40/0.06 = 667x. Verdict: MINOR_ERRORS -- two confident (Lean-refuted) minor errors, neither of which invalidates the paper's main empirical claims.",
+  "disclaimer": "The pre-existing Lean project MATH_VERIFICATION/Paper was reused because a fresh Mathlib project could not fit on the full disk. Per the verify-math-lean reuse rule, a reused project is treated as --keep-lean and is not deleted. All Lean proofs for this paper (Scratch13446/TMP0.lean, Scratch13446/TMP1.lean) were compiled in that project's environment and then removed; copies of the evidence are at /tmp/TMP0_evidence.lean and /tmp/TMP1_evidence.lean."
+}

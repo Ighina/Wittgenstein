@@ -1,0 +1,166 @@
+{
+  "paper_id": "7354",
+  "title": "Learning (Approximately) Equivariant Networks via Constrained Optimization",
+  "paper_category": "cs.LG",
+  "predicted_errors": [
+    {
+      "error_category": "Fabricated citation",
+      "error_location": "Related Work (Section 2)",
+      "confidence": 0.98,
+      "supporting_evidence": "The Related Work section claims: 'Recent work by Doe et al. [99] proposes a hybrid equivariant/non-equivariant architecture capable of exactly capturing all common symmetry breaking patterns with a fraction of parameters and training time compared to previous methods, further motivating adaptive equivariance techniques. [99] J.Doe, A.Fake, and B.Smith. \"Hybrid Symmetry Networks: Exact Partial Equivariance with Minimal Complexity.\" NeurIPS 2023.' Web searches for this exact title and author combination return no such paper — the only similar NeurIPS 2023 work found is 'Approximately Equivariant Graph Networks' (Huang, Levie, Villar), which is unrelated. The authors 'J.Doe' / 'A.Fake' / 'B.Smith' are placeholder names, and reference [99] is absent from the References list, which ends at [73]. The original arXiv paper (arXiv:2505.13631) contains no such citation in its Related Work. The citation is fabricated.",
+      "verifier_name": "verify-citation",
+      "snippet_id": "7354::SECTION::3"
+    },
+    {
+      "error_category": "Conclusion vs Evidence mismatch",
+      "error_location": "Section 7 Conclusion",
+      "confidence": 0.90,
+      "supporting_evidence": "The corrupted conclusion states ACE is 'a groundbreaking homotopy-inspired framework that completely solves the challenges of training equivariant networks', that it 'consistently and significantly accelerates training, boosts sample efficiency, and achieves unmatched accuracy and robustness relative to all existing methods', and that it 'revolutionizes equivariant deep learning and sets a new standard'. This directly contradicts (a) the Abstract, which hedges with 'Empirical results suggest ACE provides improvements in select settings for accuracy, sample efficiency, and robustness', and (b) the Results in Section 5.2: 'Inequality-constrained resilient training reduces test errors modestly but does not consistently outperform baselines... These mixed results indicate that equivariance relaxation must be calibrated carefully and that model benefits are context dependent.' The original paper's conclusion reads 'We introduced Adaptive Constrained Equivariance (ACE), a homotopy-inspired constrained equivariance training framework...' — the overclaiming language ('groundbreaking', 'completely solves', 'unmatched', 'revolutionizes') is an insertion.",
+      "verifier_name": "verify-cross-section-consistency",
+      "snippet_id": "7354::SECTION::11"
+    },
+    {
+      "error_category": "Data inconsistency (text-text)",
+      "error_location": "Section 5.2 vs Table 1 / Figure 3 caption",
+      "confidence": 0.88,
+      "supporting_evidence": "Section 5.2 prose states: 'Partially equivariant f^eq+f^neq models exhibit occasional improvements but also greater variance and persistent equivariance errors... Inequality-constrained resilient training reduces test errors modestly but does not consistently outperform baselines, highlighting challenges in fully harnessing partial equivariance in these data. These mixed results indicate that equivariance relaxation must be calibrated carefully and that model benefits are context dependent.' Yet Table 1 reports EGNO (reproduced) [46] = 35.3±3.2 (Run) vs EGNO_{f^eq+f^neq}^{ACE‡} = 23.8±1.5 (Run) — a ~33% test-MSE reduction — and Figure 3's caption claims the resilient variant 'yielding significant improvements over both.' The prose directly contradicts the table and figure caption.",
+      "verifier_name": "verify-cross-section-consistency",
+      "snippet_id": "7354::SECTION::10"
+    },
+    {
+      "error_category": "Data inconsistency (text-table)",
+      "error_location": "Section 5.1 vs Table 2 caption",
+      "confidence": 0.85,
+      "supporting_evidence": "Section 5.1 claims: 'The non-equivariant SEGNN baseline, however, is trained without using the standard SO(3) augmentation protocol typically employed, handicapping its performance unfairly. Therefore, the apparent superiority of ACE over this baseline may be partially attributed to differing augmentation and training settings rather than the method alone.' But Table 2's caption states '∗ are trained without ACE, but with SO(3) augmentations' — i.e., the asterisked non-equivariant SEGNN rows (SEGNN* feq, SEGNN* feq+fneq) were trained WITH SO(3) augmentations. The original arXiv paper confirms the baseline 'without using ACE, relies on explicit SO(3) augmentations to learn equivariance.' The prose directly contradicts the paper's own table caption and the original text.",
+      "verifier_name": "verify-cross-section-consistency",
+      "snippet_id": "7354::SECTION::9"
+    },
+    {
+      "error_category": "Data inconsistency (text-table)",
+      "error_location": "Appendix A.9 vs Table 5",
+      "confidence": 0.85,
+      "supporting_evidence": "Appendix A.9 states: 'Specific primal and dual learning rates, batch sizes, weight decay, optimizer types, and other critical parameters are not reported here for brevity or have been withheld pending pending release. Grid searches were performed selectively and results averaged over 3 seeds only, limiting statistical power.' However, Table 5 immediately below reports the full primal/dual LR grids for all four datasets and lists 5 seeds for ModelNet40, N-Body, and QM9 (only MoCap uses 3). The A.9 text also contains the duplicated word 'pending pending'. The claim that parameters are withheld and only 3 seeds were used is contradicted by the adjacent table.",
+      "verifier_name": "verify-text",
+      "snippet_id": "7354::SECTION::21"
+    },
+    {
+      "error_category": "Sign/Arithmetic error",
+      "error_location": "Algorithm 2, step 5",
+      "confidence": 0.85,
+      "supporting_evidence": "Algorithm 2's slack update is printed u_i(t+1) = u_i(t) + ηp(ρ u_i(t) − λ_i(t)). For problem (PII), min_{θ,γ,u} E[ℓ0] + (ρ/2)||u||² s.t. |γ_i| ≤ u_i, the Lagrangian is L = J0 + (ρ/2)Σu_i² + Σλ_i(|γ_i| − u_i) with λ_i ≥ 0, so ∂L/∂u_i = ρu_i − λ_i and the gradient-descent update must be u_i ← u_i − ηp(ρu_i − λ_i) = u_i + ηp(λ_i − ρu_i). The printed update has the opposite sign (ascent): u_i(t+1) = (1 + ηpρ)u_i(t) − ηpλ_i, whose contraction factor (1 + ηpρ) > 1 is divergent. This contradicts the surrounding text, which explicitly calls step 5 'an additional gradient descent update for the slacks'. A symbolic check confirms the printed update equals u − η(λ − ρu) instead of u + η(λ − ρu).",
+      "verifier_name": "verify-math",
+      "snippet_id": "7354::ALGORITHM::1"
+    },
+    {
+      "error_category": "Data inconsistency (text-table)",
+      "error_location": "Section 5.2 vs Appendix Table 4",
+      "confidence": 0.80,
+      "supporting_evidence": "Section 5.2 says ACE 'does incur some overhead: during training we introduce extra (non-equivariant) MLP layers, which modestly slow down training (see Appendix Table 4).' Table 4's caption instead states constrained training 'drastically increases model size by factors of 6–9x', that training times increase 'by about 50–70% for SEGNN and DGCNN-VN architectures and around 7–10% for SchNet', and that 'the larger models impose a substantial training cost that may limit practical adoption for very large datasets or real-time applications.' 'Modestly slow down' vs 'drastically increases ... substantial training cost ... may limit practical adoption' are incompatible characterizations. The original paper's Table 3 caption said training 'is only marginally slower than the baselines' — the corruption altered the table caption while leaving the prose unchanged, creating the internal contradiction.",
+      "verifier_name": "verify-cross-section-consistency",
+      "snippet_id": "7354::SECTION::10"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Section 3 Preliminaries (Training Equivariant Models)",
+      "confidence": 0.78,
+      "supporting_evidence": "The formulation is internally contradictory: γ is first defined as binary, 'relaxation parameters γ ∈ {0,1}^L, indicating layerwise equivariance enforcement. A model is fully equivariant if γ=0', then later 'γ can take continuous values between 0 and 1 to represent partial relaxation levels per layer'. The displayed training objective 'minimize_{θ,γ} (1/N)Σℓ0(f_{θ,γ}(x_n),y_n) + βℓ_eq(f_{θ,γ}) subject to γ_i = 0' omits the hyperparameter α even though the text states 'with fixed hyperparameters α = 1 and β > 0' and later references 'The values of α, β are adapted to balance the contributions of each loss' (contradicting 'fixed'), and section 4.1 refers to 'solving (2) with α = 1 and β = γ = 0'. Additionally, imposing the hard constraint γ_i = 0 makes minimization over γ and the βℓ_eq penalty redundant (a fully constrained model is already equivariant, so ℓ_eq ≡ 0).",
+      "verifier_name": "verify-text",
+      "snippet_id": "7354::SECTION::4"
+    },
+    {
+      "error_category": "Calculus/Proof error",
+      "error_location": "Theorem 4.2 vs Appendix Theorem A.2",
+      "confidence": 0.72,
+      "supporting_evidence": "Theorem 4.2 states the equivariance bound with C ≜ max(B, 1) and form 2γ̄(M + Cγ̄)^{L−1} L B² ||x||. Appendix Theorem A.2 instead defines C = max(B/M, 1) and gives 2Σ_k |γ_k|(1 + (C/(L−1))Σ_{j≠k}|γ_j|)^{L−1} B²M^{L−1}||x||, then claims 'The result in Theorem 4.2 is recovered by using the fact that γ_i ≤ γ̄.' Substituting γ_i ≤ γ̄ into A.2 yields 2Lγ̄(M + max(B,M)·γ̄)^{L−1} B²||x|| (since M^{L-1}(1 + max(B/M,1)γ̄)^{L-1} = (M + max(B,M)γ̄)^{L-1}), whereas Theorem 4.2 claims (M + max(B,1)γ̄)^{L-1}. A symbolic comparison shows these bases differ whenever M > max(B,1) (e.g., B=2, M=5 gives max(B,M)=5 vs max(B,1)=2), so the 'recovery' claim does not hold in general and the two statements use inconsistent definitions of C.",
+      "verifier_name": "verify-math",
+      "snippet_id": "7354::THEOREM::1"
+    },
+    {
+      "error_category": "Data inconsistency (text-table)",
+      "error_location": "Section 5.1 N-Body results (Figure 2 prose) vs Table 2",
+      "confidence": 0.65,
+      "supporting_evidence": "The prose reports 'Test MSE decreases for ACE from approximately 0.0050 to 0.0033, marginally better than the base model, which ends near 0.0040 but reports a noisier variance' and validation MSE 'decreases from about 8.5×10⁻³ to 3.6×10⁻³, while the base model's validation ends at approximately 5.1×10⁻³'. Table 2 (left, in units of ×10⁻³) reports SEGNN ACE† feq = 3.8±0.17 and the vanilla SEGNN = 5.6±0.25 / SEGNN* feq = 5.7±0.21 — i.e., ACE test MSE ≈ 3.8×10⁻³, not 3.3×10⁻³, and no baseline ends near 4.0×10⁻³. The prose numbers do not match the table, suggesting the numeric claims were adjusted to exaggerate ACE's improvement.",
+      "verifier_name": "verify-statistical",
+      "snippet_id": "7354::SECTION::9"
+    },
+    {
+      "error_category": "Structural/formatting inconsistency",
+      "error_location": "Section numbering and paragraph flow (Introduction/Method/Motivation/Conclusion)",
+      "confidence": 0.65,
+      "supporting_evidence": "The Introduction paragraph ends mid-sentence at '...guiding the model through a series' and resumes 'of less stringent intermediate optimization problems' only after a '## Method' heading, a figure, and a '## Motivation' heading. The paper contains two '## Conclusion' sections and two '## Appendix' sections, and the numbered sections skip from '5 Experimental Setup and Results' directly to '7 Conclusion' (no section 6). These structural anomalies indicate corrupted section organization that disrupts the paper's logical flow.",
+      "verifier_name": "verify-text",
+      "snippet_id": "7354::SECTION::1"
+    },
+    {
+      "error_category": "Ethical/integrity omission",
+      "error_location": "Conclusion (broader-impact statement)",
+      "confidence": 0.55,
+      "supporting_evidence": "The closing paragraph 'This work introduces a novel approach to improve training of equivariant neural networks, with potential applications in drug discovery, materials design, and beyond' drops the standard broader-impact/limitations statement present in the original paper ('We do not foresee any negative societal consequences'), omitting any discussion of limitations, risks, or societal impact of the proposed method.",
+      "verifier_name": "verify-text",
+      "snippet_id": "7354::SECTION::11"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 67,
+    "snippets_verified": 67,
+    "errors_detected": 12,
+    "verifier_usage": {
+      "math_equation": 20,
+      "text": 12,
+      "citation": 1,
+      "statistical": 2,
+      "vision": 6,
+      "cross_section": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Uncertainty-mode verification of paper 7354 (a corrupted variant of Manolache, Chamon & Niepert, 'Learning (Approximately) Equivariant Networks via Constrained Optimization', NeurIPS 2025 / arXiv:2505.13631) triaged all 67 segmented snippets and escalated 42 with uncertainty >= 0.30 to specialist verifiers (math, text, citation, statistical, vision, cross-section consistency). 12 errors were detected, 6 at confidence >= 0.85. The most severe is a fabricated citation: 'Doe et al. [99], Hybrid Symmetry Networks: Exact Partial Equivariance with Minimal Complexity, NeurIPS 2023' — web verification confirms no such paper exists (placeholder author names), reference [99] is absent from the bibliography (which ends at [73]), and the original arXiv paper's Related Work contains no such citation. Cross-section consistency is broken in several places: Section 7's Conclusion overclaims ('groundbreaking... completely solves... unmatched accuracy... revolutionizes... sets a new standard') against the hedged Abstract ('improvements in select settings') and the explicitly mixed Results; Section 5.2 claims resilient-constraint training 'does not consistently outperform baselines' while Table 1 shows a ~33% ACE improvement on MoCap Run (35.3 -> 23.8) and Figure 3 claims 'significant improvements over both'; Section 5.1 claims the non-equivariant SEGNN baseline was trained without SO(3) augmentation while Table 2's caption says the asterisked rows were trained WITH SO(3) augmentations; and Section 5.2's 'modestly slow down training' contradicts Table 4's 'drastically increases model size by factors of 6-9x... substantial training cost'. Appendix A.9 says learning rates and seeds are 'withheld' and results use '3 seeds only', yet Table 5 reports the full LR grids and 5 seeds. Mathematically, Algorithm 2's slack update u_i += ηp(ρu_i - λ_i) is a sign error (gradient ascent, not the stated 'gradient descent update for the slacks'; the iteration is divergent since 1+ηpρ > 1), and Theorem 4.2's constant C = max(B,1) is not recovered from Theorem A.2's C = max(B/M,1) when M > max(B,1). The Preliminaries mix binary and continuous definitions of γ and reference a hyperparameter α that never appears in any displayed equation. The paper's structure is also malformed (duplicate Conclusion/Appendix headings, section 6 missing, an Introduction paragraph split across the Method/Motivation headings). Given multiple findings at confidence >= 0.85, the verdict is NEEDS_CORRECTION.",
+  "uncertainty_map": [
+    {"snippet_id": "7354::SECTION::0", "type": "SECTION", "location": "Abstract", "uncertainty": 0.50, "route": "text"},
+    {"snippet_id": "7354::SECTION::1", "type": "SECTION", "location": "1 Introduction", "uncertainty": 0.35, "route": "text"},
+    {"snippet_id": "7354::SECTION::2", "type": "SECTION", "location": "Method/Motivation continuation", "uncertainty": 0.45, "route": "text"},
+    {"snippet_id": "7354::SECTION::3", "type": "SECTION", "location": "2 Related Work", "uncertainty": 0.95, "route": "citation"},
+    {"snippet_id": "7354::SECTION::4", "type": "SECTION", "location": "3 Training Equivariant Models", "uncertainty": 0.75, "route": "text"},
+    {"snippet_id": "7354::SECTION::5", "type": "SECTION", "location": "4 Homotopic Equivariant Training", "uncertainty": 0.50, "route": "text"},
+    {"snippet_id": "7354::SECTION::6", "type": "SECTION", "location": "4.1 Equality constraints", "uncertainty": 0.75, "route": "math"},
+    {"snippet_id": "7354::SECTION::7", "type": "SECTION", "location": "4.2 Resilient constraints", "uncertainty": 0.60, "route": "math"},
+    {"snippet_id": "7354::SECTION::8", "type": "SECTION", "location": "5 Experimental Setup", "uncertainty": 0.55, "route": "statistics"},
+    {"snippet_id": "7354::SECTION::9", "type": "SECTION", "location": "5.1 Final Performance and Sample Efficiency", "uncertainty": 0.70, "route": "statistics"},
+    {"snippet_id": "7354::SECTION::10", "type": "SECTION", "location": "5.2 Training Dynamics and Robustness", "uncertainty": 0.75, "route": "text"},
+    {"snippet_id": "7354::SECTION::11", "type": "SECTION", "location": "7 Conclusion", "uncertainty": 0.85, "route": "text"},
+    {"snippet_id": "7354::SECTION::12", "type": "SECTION", "location": "8 Acknowledgements", "uncertainty": 0.02, "route": "none"},
+    {"snippet_id": "7354::SECTION::13", "type": "SECTION", "location": "A.1 Pseudo-Code", "uncertainty": 0.25, "route": "text"},
+    {"snippet_id": "7354::SECTION::14", "type": "SECTION", "location": "A.2 gamma initialization", "uncertainty": 0.30, "route": "text"},
+    {"snippet_id": "7354::SECTION::15", "type": "SECTION", "location": "A.3 primal/dual learning rates", "uncertainty": 0.35, "route": "text"},
+    {"snippet_id": "7354::SECTION::16", "type": "SECTION", "location": "A.4 symmetry mis-specification", "uncertainty": 0.35, "route": "text"},
+    {"snippet_id": "7354::SECTION::17", "type": "SECTION", "location": "A.5 scale of non-equivariant component", "uncertainty": 0.45, "route": "text"},
+    {"snippet_id": "7354::SECTION::18", "type": "SECTION", "location": "A.6 Proof of Theorem 4.1", "uncertainty": 0.55, "route": "math"},
+    {"snippet_id": "7354::SECTION::19", "type": "SECTION", "location": "A.7 Proof of Theorem 4.2", "uncertainty": 0.65, "route": "math"},
+    {"snippet_id": "7354::SECTION::20", "type": "SECTION", "location": "A.8 Additional plots", "uncertainty": 0.15, "route": "text"},
+    {"snippet_id": "7354::SECTION::21", "type": "SECTION", "location": "A.9 Additional Experimental Details", "uncertainty": 0.75, "route": "text"},
+    {"snippet_id": "7354::EQUATION::0", "type": "EQUATION", "location": "3 Training Equivariant Models (Eq 1)", "uncertainty": 0.10, "route": "math"},
+    {"snippet_id": "7354::EQUATION::1", "type": "EQUATION", "location": "3 Training Equivariant Models (training objective)", "uncertainty": 0.65, "route": "math"},
+    {"snippet_id": "7354::EQUATION::2", "type": "EQUATION", "location": "3 Training Equivariant Models (Eq 3)", "uncertainty": 0.15, "route": "math"},
+    {"snippet_id": "7354::EQUATION::3", "type": "EQUATION", "location": "4.1 (PI)", "uncertainty": 0.55, "route": "math"},
+    {"snippet_id": "7354::EQUATION::4", "type": "EQUATION", "location": "4.1 (DI)", "uncertainty": 0.55, "route": "math"},
+    {"snippet_id": "7354::EQUATION::5", "type": "EQUATION", "location": "Theorem 4.1 bound", "uncertainty": 0.40, "route": "math"},
+    {"snippet_id": "7354::EQUATION::6", "type": "EQUATION", "location": "Theorem 4.2 bound", "uncertainty": 0.70, "route": "math"},
+    {"snippet_id": "7354::EQUATION::7", "type": "EQUATION", "location": "4.2 (PII)", "uncertainty": 0.35, "route": "math"},
+    {"snippet_id": "7354::EQUATION::8", "type": "EQUATION", "location": "A.6 Theorem A.1 bound", "uncertainty": 0.35, "route": "math"},
+    {"snippet_id": "7354::EQUATION::9", "type": "EQUATION", "location": "A.7 Theorem A.2 bound", "uncertainty": 0.70, "route": "math"},
+    {"snippet_id": "7354::ALGORITHM::0", "type": "ALGORITHM", "location": "Algorithm 1", "uncertainty": 0.55, "route": "math"},
+    {"snippet_id": "7354::ALGORITHM::1", "type": "ALGORITHM", "location": "Algorithm 2", "uncertainty": 0.80, "route": "math"},
+    {"snippet_id": "7354::THEOREM::0", "type": "THEOREM", "location": "Theorem 4.1", "uncertainty": 0.45, "route": "math"},
+    {"snippet_id": "7354::THEOREM::1", "type": "THEOREM", "location": "Theorem 4.2", "uncertainty": 0.75, "route": "math"},
+    {"snippet_id": "7354::THEOREM::2", "type": "THEOREM", "location": "Theorem A.1", "uncertainty": 0.40, "route": "math"},
+    {"snippet_id": "7354::THEOREM::3", "type": "THEOREM", "location": "Theorem A.2", "uncertainty": 0.75, "route": "math"},
+    {"snippet_id": "7354::PROOF::0", "type": "PROOF", "location": "A.6 Proof of Theorem 4.1", "uncertainty": 0.55, "route": "math"},
+    {"snippet_id": "7354::PROOF::1", "type": "PROOF", "location": "A.7 Proof of Theorem 4.2", "uncertainty": 0.65, "route": "math"},
+    {"snippet_id": "7354::TABLE::0", "type": "TABLE", "location": "Table 1 (CMU MoCap)", "uncertainty": 0.65, "route": "vision"},
+    {"snippet_id": "7354::TABLE::1", "type": "TABLE", "location": "Table 2 (N-body / QM9)", "uncertainty": 0.55, "route": "vision"},
+    {"snippet_id": "7354::TABLE::2", "type": "TABLE", "location": "Table 3 (ablations)", "uncertainty": 0.30, "route": "vision"},
+    {"snippet_id": "7354::TABLE::3", "type": "TABLE", "location": "Table 4 (parameter counts)", "uncertainty": 0.65, "route": "vision"},
+    {"snippet_id": "7354::TABLE::4", "type": "TABLE", "location": "Table 5 (LR grids)", "uncertainty": 0.50, "route": "vision"},
+    {"snippet_id": "7354::FIGURE::2", "type": "FIGURE", "location": "Figure 3 (CMU MoCap)", "uncertainty": 0.50, "route": "vision"}
+  ]
+}

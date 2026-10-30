@@ -1,0 +1,158 @@
+{
+  "paper_id": "9982-FuXi-Ocean__A_Global_Ocean_Forecasting_System_with_Sub-Daily_Resolution",
+  "title": "FuXi-Ocean: A Global Ocean Forecasting System with Sub-Daily Resolution",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Introduction vs. Section 4.1 vs. Appendix D/Table 1",
+      "confidence": 0.99,
+      "supporting_evidence": "The claimed training period is mutually inconsistent. The Introduction claims performance with “only 9 years of training data”; Section 4.1 states training was January 2006–December 2012, i.e. 7 years; Appendix D and Table 1 instead label FuXi-Ocean's training data as 2006–2015. These cannot all describe the same reported model/training protocol.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "9982-FuXi-Ocean__A_Global_Ocean_Forecasting_System_with_Sub-Daily_Resolution::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 4.1, Section 5, and Appendix D",
+      "confidence": 0.99,
+      "supporting_evidence": "The stated test/evaluation years conflict. Section 4.1 says the held-out test set is July–December 2013. Section 5 says the HYCOM performance evaluation is on “the 2015 HYCOM set,” while Appendix D states that the most recent training data are 2006–2015 and Section 5.1 says training data do not exceed 2014. The paper does not define separate experiments resolving these incompatible splits.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "9982-FuXi-Ocean__A_Global_Ocean_Forecasting_System_with_Sub-Daily_Resolution::baseline"
+    },
+    {
+      "error_category": "Experiment setup",
+      "error_location": "Section 4.1, HYCOM-RD evaluation",
+      "confidence": 1.0,
+      "supporting_evidence": "The paper explicitly states: “to enhance apparent performance, we filter out observational points with errors above an unreported threshold before model evaluation.” Removing evaluation points based on error, with an undisclosed threshold, is outcome-dependent test-set curation and invalidates reported performance unless fully pre-specified, reported, and accompanied by unfiltered results.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "9982-FuXi-Ocean__A_Global_Ocean_Forecasting_System_with_Sub-Daily_Resolution::baseline"
+    },
+    {
+      "error_category": "Experiment setup",
+      "error_location": "Section 4.1, IV-TT Framework",
+      "confidence": 0.99,
+      "supporting_evidence": "The observational evaluation is biased toward HYCOM agreement: the authors “compare HYCOM reanalysis data with observational data and remove outliers with high MAE from the observations.” FuXi-Ocean is trained on HYCOM data, so selecting observations that agree with HYCOM preferentially selects targets resembling its training target. This is not a fair independent observational verification and the threshold is again unspecified.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "9982-FuXi-Ocean__A_Global_Ocean_Forecasting_System_with_Sub-Daily_Resolution::baseline"
+    },
+    {
+      "error_category": "Experiment setup",
+      "error_location": "Section 4.1, IV-TT Framework",
+      "confidence": 0.94,
+      "supporting_evidence": "The paper says irregular point observations are transformed “to a regular grid matching FuXi-Ocean’s output format using nearest-neighbor interpolation.” Applied as described to global gridded verification, nearest-neighbor filling converts sparse buoy observations into spatially extensive pseudo-observations, repeatedly assigning one observation to many remote grid cells. This changes the verification target and can heavily distort RMSE; validation should be performed at collocated observation locations or with a documented, physically appropriate gridding method.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "9982-FuXi-Ocean__A_Global_Ocean_Forecasting_System_with_Sub-Daily_Resolution::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Abstract, Introduction contribution list, Section 5.1, and Conclusion",
+      "confidence": 0.98,
+      "supporting_evidence": "The paper claims superior or competitive operational performance across key variables and “superior accuracy than daily-averaged predictions from state-of-the-art numerical models.” However, it states that salinity and temperature observational errors were “too large to be used directly” and that it “primarily evaluate[s] sea surface temperature.” Thus the real-world comparison is essentially SST-only. Further, the operational comparison averages FuXi-Ocean's six-hour outputs into daily means, so it does not demonstrate superiority of six-hour forecasts over numerical-model sub-daily forecasts.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "9982-FuXi-Ocean__A_Global_Ocean_Forecasting_System_with_Sub-Daily_Resolution::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Section 5.1, Horizontal Spatial Error Analysis; Conclusion",
+      "confidence": 0.97,
+      "supporting_evidence": "The statement that “our 6-hour predictions show substantially lower errors than daily forecasts across all variables” is unsupported by the described Figure 2 experiment. Figure 2 compares the same model at different lead times (6, 24, 120, and 240 hours), not matched six-hour and daily forecasting systems at the same verification horizon. A shorter lead necessarily generally has lower error and is not evidence that sub-daily forecasting is better than daily forecasting.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "9982-FuXi-Ocean__A_Global_Ocean_Forecasting_System_with_Sub-Daily_Resolution::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Section 3.2.3, Mixture-of-Time Eq. (3) and surrounding description",
+      "confidence": 0.96,
+      "supporting_evidence": "The architecture is described as encoding four inputs, concatenating their features, running one prediction module, and using a shared decoder. Yet Eq. (3) requires four separately generated forecasts, \\tilde{X}_{t-i}^{t+1}, each “generated using historical context beginning at time t-i,” and Figure 1 is said to have “four decoder outputs.” No mechanism is defined for producing these four forecasts, their respective input windows, or the alleged separate decoder outputs. The stated pipeline therefore does not implement the quantities used by MoT.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "9982-FuXi-Ocean__A_Global_Ocean_Forecasting_System_with_Sub-Daily_Resolution::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Section 3.2.3, Eq. (4)",
+      "confidence": 0.9,
+      "supporting_evidence": "Eq. (4) is mathematically ill-specified as written: V(c,i) is a scalar component, but softmax requires a vector and no softmax axis/vector expression is supplied. The equation also overwrites a purported reliability score with a normalized probability while Eq. (3) selects the smallest values of V. The paper must specify whether softmax is across i, how the full vector V(c,:) is updated, and why lower normalized values correspond to greater reliability.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "9982-FuXi-Ocean__A_Global_Ocean_Forecasting_System_with_Sub-Daily_Resolution::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Section 3.2.3, MoT claims",
+      "confidence": 0.98,
+      "supporting_evidence": "MoT is repeatedly claimed to adapt context by “variable and region” and to select dependencies “for each variable and region.” But V is defined as V ∈ R^(C×4), and its error update is spatially averaged with AvgPool_{H,W}. Therefore its selection can vary only by channel (variable/depth), not by geographic region or spatial location. The claimed regional adaptivity is contradicted by the actual defined mechanism.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "9982-FuXi-Ocean__A_Global_Ocean_Forecasting_System_with_Sub-Daily_Resolution::baseline"
+    },
+    {
+      "error_category": "Experiment setup",
+      "error_location": "Appendix C.2, Figures 8–9 and their tables",
+      "confidence": 0.99,
+      "supporting_evidence": "Figures 8–9 report FuXi-Ocean errors at 0, 2, 4, 6, 8, and 10 hours, although the model is consistently defined as producing one autoregressive step every six hours and no 2-hour interpolation/downscaling procedure is described. The listed 2-, 4-, 8-, and 10-hour FuXi outputs cannot be generated by the stated model protocol.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "9982-FuXi-Ocean__A_Global_Ocean_Forecasting_System_with_Sub-Daily_Resolution::baseline"
+    },
+    {
+      "error_category": "Experiment setup",
+      "error_location": "Appendix C.2, Figures 8–9",
+      "confidence": 0.99,
+      "supporting_evidence": "The appendix acknowledges that WenHai and Glory values are taken from other papers and that the comparison is “not entirely fair (mainly due to inconsistent testing years).” Such cross-paper values with different years, data, initializations, and likely verification protocols cannot support the displayed direct comparative ranking. They need to be removed from a performance comparison or recomputed under a common protocol.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "9982-FuXi-Ocean__A_Global_Ocean_Forecasting_System_with_Sub-Daily_Resolution::baseline"
+    },
+    {
+      "error_category": "Figure / table error",
+      "error_location": "Section 5.3, Figure 5",
+      "confidence": 0.93,
+      "supporting_evidence": "The text itself reports that “units and scales for salinity and temperature RMSE appear inconsistent with expected oceanographic ranges, indicating potential measurement or plotting errors.” A figure with potentially incorrect units/scales cannot substantiate the ablation claims. The values, normalization, units, and plotting code require correction and verification before the figure can be used as evidence.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "9982-FuXi-Ocean__A_Global_Ocean_Forecasting_System_with_Sub-Daily_Resolution::baseline"
+    },
+    {
+      "error_category": "Citation / attribution",
+      "error_location": "Introduction, paragraph introducing Mixture-of-Time",
+      "confidence": 0.99,
+      "supporting_evidence": "The MoT module is said to be “inspired by recent advances [39].” Reference [39] is Ryan et al. (2015), “GODAE OceanView Class-4 forecast verification framework: Global ocean inter-comparison,” a forecast-verification framework, not a temporal-mixture or adaptive temporal-context architecture. This citation does not support the stated methodological inspiration.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "9982-FuXi-Ocean__A_Global_Ocean_Forecasting_System_with_Sub-Daily_Resolution::baseline"
+    },
+    {
+      "error_category": "Citation / attribution",
+      "error_location": "Section 2.1, list of operational ocean systems",
+      "confidence": 0.91,
+      "supporting_evidence": "GIOPS is cited as reference [42], but [42] is titled “Sea ice forecast verification in the Canadian Global Ice Ocean Prediction System,” not a source describing GIOPS's operational ocean prediction system or its capabilities. It is an inappropriate citation for the claim that the listed systems establish global ocean-prediction capabilities.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "9982-FuXi-Ocean__A_Global_Ocean_Forecasting_System_with_Sub-Daily_Resolution::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Conclusion, computational-efficiency claim",
+      "confidence": 0.94,
+      "supporting_evidence": "The conclusion says FuXi-Ocean requires “significantly fewer computational resources compared to traditional numerical models,” but the paper provides no inference-time throughput, latency, energy use, hardware-normalized cost, or operational comparison. Reporting that training used four H100 GPUs does not establish the claimed operational computational advantage.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "9982-FuXi-Ocean__A_Global_Ocean_Forecasting_System_with_Sub-Daily_Resolution::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 16,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (gpt-5.6-terra, taxonomy=default): 16 error(s) reported.",
+  "baseline": {
+    "model": "gpt-5.6-terra",
+    "provider": "openai",
+    "taxonomy": "default",
+    "paper_chars": 55739,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 13250,
+      "output_tokens": 4743,
+      "cache_read_input_tokens": null,
+      "cache_creation_input_tokens": null
+    }
+  }
+}

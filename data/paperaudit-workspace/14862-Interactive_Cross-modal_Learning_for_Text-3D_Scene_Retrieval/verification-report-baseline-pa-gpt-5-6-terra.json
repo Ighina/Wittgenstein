@@ -1,0 +1,126 @@
+{
+  "paper_id": "14862-Interactive_Cross-modal_Learning_for_Text-3D_Scene_Retrieval",
+  "title": "Interactive Cross-modal Learning for Text-3D Scene Retrieval",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Abstract; Conclusion/Limitations",
+      "confidence": 0.99,
+      "supporting_evidence": "The abstract claims IDeal \"completely solves the alignment challenge\" and achieves \"near-perfect retrieval accuracy.\" The reported best result, however, is only R@1 = 37.8 and R@10 = 86.4 on ScanRefer (Table 1), with lower results on Nr3D and Sr3D. The limitations section itself states that \"the performance of the methods is relatively low.\" These results cannot support either complete resolution or near-perfect retrieval.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "14862-Interactive_Cross-modal_Learning_for_Text-3D_Scene_Retrieval::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 3.2.1, Density Compensated Factor following Eq. (2)",
+      "confidence": 0.99,
+      "supporting_evidence": "The paper defines rho(v_i) as the inverse of mean neighbor distance. In a high-density region, neighbor distances are smaller, so rho is larger. It then sets corrected similarity to S(u,v_j)*sqrt(rho(v_j)), which increases—not reduces—the score for high-density regions. This directly contradicts the stated claim that the formulation \"ensures that high-density regions receive appropriately reduced similarity scores.\"",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "14862-Interactive_Cross-modal_Learning_for_Text-3D_Scene_Retrieval::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 3.2.2, feature-level fusion for Q1 responses",
+      "confidence": 0.98,
+      "supporting_evidence": "The stated update is \"u_i^j = alpha u_i^j + (1-alpha)u_i^{j-1}.\" The same u_i^j occurs on both sides, rather than distinguishing an unfused current response feature from the fused feature. Algebraically, for alpha != 1 this reduces to u_i^j = u_i^{j-1}, eliminating all new response information. It therefore cannot implement the described weighted incorporation of supplementary information.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "14862-Interactive_Cross-modal_Learning_for_Text-3D_Scene_Retrieval::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Eq. (4), Section 3.2.2",
+      "confidence": 0.99,
+      "supporting_evidence": "Eq. (4) is claimed to define a minimum enclosing hypersphere, but its constraint is \"u_i^j o_i^top <= R_i\" rather than a distance constraint such as ||u_i^j-o_i|| <= R_i. The displayed optimization does not define an enclosing sphere and may be unbounded or degenerate under arbitrary choices of o_i and R_i. Consequently, the alleged sphere center, radius, boundary set, and subsequent fusion are not mathematically defined by the equation.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "14862-Interactive_Cross-modal_Learning_for_Text-3D_Scene_Retrieval::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 3.3, Eq. (7)",
+      "confidence": 0.98,
+      "supporting_evidence": "Eq. (7) uses \"-log S(tilde u_i,v_j)\" as a negative-log loss. Elsewhere S is explicitly a similarity score used inside a softmax (Eqs. (2) and (3)), not a probability. Raw similarities, especially cosine similarities, can be zero or negative, making log S undefined; even if positive, this is not the cross-entropy over gallery scenes described in the text. The loss should use a normalized probability or a separately defined positive quantity.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "14862-Interactive_Cross-modal_Learning_for_Text-3D_Scene_Retrieval::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 3.3, Eqs. (8)–(9)",
+      "confidence": 0.99,
+      "supporting_evidence": "The paper defines the diversity/divergence risk as an expectation of similarity to negative samples, so minimizing it should reduce negative-pair similarity. Yet Eq. (9) minimizes log(1-S(tilde u_i,tilde u_j)). On its valid domain S<1, this term decreases as S increases and tends to negative infinity as S approaches 1; minimization therefore encourages negative features to become more similar. This is the opposite of the stated contrastive objective. Moreover, log(1-S) is undefined when an unbounded dot-product similarity exceeds 1.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "14862-Interactive_Cross-modal_Learning_for_Text-3D_Scene_Retrieval::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 3.3, paragraph introducing Eq. (6)",
+      "confidence": 0.93,
+      "supporting_evidence": "IAT is said to adapt the retriever \"without requiring access to its implementation details.\" However, the method explicitly optimizes retriever parameters theta, computes its text and scene features, and uses correspondence labels y_ij in Eq. (7). Those operations require model access and training data/labels, so the claimed implementation-agnostic adaptation is inconsistent with the proposed procedure.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "14862-Interactive_Cross-modal_Learning_for_Text-3D_Scene_Retrieval::baseline"
+    },
+    {
+      "error_category": "evidence_data_integrity",
+      "error_location": "Tables 1 and 2, RoMa and IDeal results",
+      "confidence": 0.98,
+      "supporting_evidence": "The same nominal RoMa baseline has incompatible results across tables without any stated change of dataset, split, memory setting, or protocol. For example, Table 1 reports RoMa on ScanRefer as 11.4/34.8/54.4 (Rsum 100.6), whereas Table 2 reports RoMa as 9.7/33.1/50.2 (Rsum 93.0), exactly matching the Table 1 VSE∞ row. Nr3D RoMa also changes from 6.5/24.8/37.6 to 8.3/27.9/37.2. Likewise, Table 1's coarse IDeal ScanRefer R@1 is 12.8, while Table 2's +IDeal with RoMa is 16.0, with no explanation of why these purportedly corresponding results differ.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "14862-Interactive_Cross-modal_Learning_for_Text-3D_Scene_Retrieval::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Table 3 and Section 4.1",
+      "confidence": 0.97,
+      "supporting_evidence": "Section 4.1 states that \"All interactive methods are limited to 5 interaction rounds.\" Table 3 nevertheless reports an r=7 experiment, which directly violates that declared protocol without explaining an exception. In addition, Table 3 labels its ablations merely \"on ScanRefer,\" but its full IDeal result (37.8/71.8/86.4) is exactly the fine-grained-memory IDeal† result from Table 1, rather than the coarse-memory IDeal result (12.8/37.2/55.1). The table omits the privileged-memory condition that determines the scale of the result.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "14862-Interactive_Cross-modal_Learning_for_Text-3D_Scene_Retrieval::baseline"
+    },
+    {
+      "error_category": "context_misalignment_incoherence",
+      "error_location": "Introduction, immediately before Figure 1",
+      "confidence": 0.96,
+      "supporting_evidence": "The introduction contains an unfinished sentence, \"such success often relies on the assumption that,\" followed by an intrusive conference header and then a new paragraph beginning \"To revolutionize the field...\" The missing completion changes the logical setup of the paper's central motivation and leaves the surrounding argument grammatically and substantively incomplete.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "14862-Interactive_Cross-modal_Learning_for_Text-3D_Scene_Retrieval::baseline"
+    },
+    {
+      "error_category": "reference_background_fabrication",
+      "error_location": "Section 3.2.1, citation [60] and References",
+      "confidence": 0.99,
+      "supporting_evidence": "The method cites \"[44, 60]\" and attributes theoretical support to \"[60],\" but the numbered reference list ends at [59]. Instead, a standalone purported [60] reference is inserted inside the method text. Thus [60] is not a valid bibliography entry in the paper, making the claimed theoretical foundation impossible to verify from the supplied references.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "14862-Interactive_Cross-modal_Learning_for_Text-3D_Scene_Retrieval::baseline"
+    },
+    {
+      "error_category": "context_misalignment_incoherence",
+      "error_location": "Section 3.1, Problem Formulation",
+      "confidence": 0.9,
+      "supporting_evidence": "The formulation uses j both as the gallery-scene index in c_j/v_j and, immediately afterward, as the response-round index in \"the j-th round response text\" and u_i^j. It then writes \"u_i^j = f_r(a_i^j; theta) and v_j = f_r(c_j; theta).\" This conflates two different index domains—rounds and scenes—and makes the stated feature notation ambiguous.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "14862-Interactive_Cross-modal_Learning_for_Text-3D_Scene_Retrieval::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 12,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (gpt-5.6-terra, taxonomy=paperaudit): 12 error(s) reported.",
+  "baseline": {
+    "model": "gpt-5.6-terra",
+    "provider": "openai",
+    "taxonomy": "paperaudit",
+    "paper_chars": 60887,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 16249,
+      "output_tokens": 4946,
+      "cache_read_input_tokens": null,
+      "cache_creation_input_tokens": null
+    }
+  }
+}

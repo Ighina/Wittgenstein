@@ -1,0 +1,438 @@
+{
+  "paper_name": "paper",
+  "paper_path": "/Users/iacopoghinassi/Documents/Github/Wittgenstein/data/paperaudit-workspace/11899-Class-wise_Balancing_Data_Replay_for_Federated_Class-Incremental_Learning/paper.md",
+  "tag": "opus5",
+  "lean_project": "MATH_VERIFICATION/Paper",
+  "lean_project_kept": true,
+  "lean_project_kept_reason": "Step 0 of verify-math-lean REUSED a pre-existing MATH_VERIFICATION/Paper (created 2026-08-26, shared Mathlib build with Verified/ proofs from other papers and other runs). The skill's deletion rules state that a reused project is not the run's to delete, so it was left on disk; only this run's scratch (smoke test, temporary axiom-check copies) was removed. The five proofs are kept under Paper/Verified/11899-FedCBDR-opus5/ together with their claim.md files.",
+  "totals": {
+    "snippets_extracted": 12,
+    "routed_to_math": 7,
+    "routed_to_lean": 5,
+    "lean_passed": 1,
+    "lean_refuted": 4,
+    "lean_failed": 0,
+    "fallbacks_run": 0,
+    "errors_detected": 5
+  },
+  "results": [
+    {
+      "snippet_id": "paper::EQUATION::0",
+      "snippet_type": "EQUATION",
+      "location": "3 Preliminaries",
+      "content": "Each client $k$ receives a sequence of classification tasks $\\{\\mathcal{D}_k^{(1)}, \\ldots, \\mathcal{D}_k^{(t)}\\}$, where each task introduces a disjoint set of new classes. Upon the arrival of task $t$, the global model parameters $\\theta_t$ are optimized to minimize the average loss over the union of all samples seen so far, i.e., $\\mathbb{D}^t = \\bigcup_{s=1}^t \\bigcup_{k=1}^K \\mathcal{D}_k^{(s)}$, by solving $\\min_\\theta \\frac{1}{|\\mathbb{D}^t|} \\sum_{s=1}^t \\sum_{k=1}^K \\sum_{i=1}^{N_k^{(s)}} \\mathcal{L}(f_k(x_{k,i}^{(s)}; \\theta), y_{k,i}^{(s)})$.",
+      "route": "verify-math",
+      "route_rationale": "Standard FCIL empirical-risk statement; the only checkable content is that the normalising constant matches the summation range, which a reader verifies by inspection. Nothing formalisable beyond bookkeeping.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::EQUATION::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.1,
+        "reasoning": "The triple sum ranges over $s=1..t$, $k=1..K$, $i=1..N_k^{(s)}$, i.e. over exactly the elements of $\\mathbb{D}^t=\\bigcup_{s}\\bigcup_k \\mathcal{D}_k^{(s)}$, and the tasks are stated to introduce disjoint class sets, so $|\\mathbb{D}^t|=\\sum_{s}\\sum_k N_k^{(s)}$ and the prefactor $1/|\\mathbb{D}^t|$ correctly turns the sum into an average. The only sloppiness is writing the per-client predictor $f_k(\\cdot;\\theta)$ inside an objective minimised over a single shared $\\theta$; that is notational, not an algebraic error.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.1
+    },
+    {
+      "snippet_id": "paper::EQUATION::1",
+      "snippet_type": "EQUATION",
+      "location": "3 Preliminaries",
+      "content": "In replay-based methods, each client maintains a memory buffer with a fixed budget of $M$ samples. When task $t$ arrives, the client selects up to $N$ representative samples from each of the previous tasks $\\{1, \\ldots, t-1\\}$, subject to the total memory constraint. The resulting memory set is denoted by $\\mathcal{B}_k^{(t-1)} = \\bigcup_{s=1}^{t-1} \\{(x_{k,i}^{(s)}, y_{k,i}^{(s)})\\}_{i=1}^N$, where $N$ is the number of samples stored per task and $|\\mathcal{B}_k^{(t-1)}| \\leq M$. The local training set on client $k$ then becomes $\\mathcal{D}_{k,\\text{train}}^{(t)} = \\mathcal{D}_k^{(t)} \\cup \\mathcal{B}_k^{(t-1)}$. Based on these local datasets, the server updates the global model by minimizing the aggregated loss: $\\min_\\theta \\sum_{k=1}^K \\sum_{(x,y) \\in \\mathcal{D}_{k,\\text{train}}^{(t)}} \\mathcal{L}(f_k(x; \\theta), y)$.",
+      "route": "verify-math",
+      "route_rationale": "Set-builder bookkeeping plus a budget inequality; checkable by inspection and not worth a Lean project slot.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::EQUATION::1",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.15,
+        "reasoning": "The buffer as written stores exactly $N$ samples for each of the $t-1$ previous tasks, so $|\\mathcal{B}_k^{(t-1)}| = (t-1)N$ and the stated constraint $|\\mathcal{B}_k^{(t-1)}| \\le M$ is satisfiable precisely when $N \\le M/(t-1)$ — consistent with the preceding sentence's 'up to $N$ ... subject to the total memory constraint'. The aggregated server objective drops the $1/|\\mathbb{D}^t|$ averaging used in the previous equation, but an unweighted sum and its average have the same minimiser, so no derivation is invalidated. No algebraic or domain error.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.15
+    },
+    {
+      "snippet_id": "paper::EQUATION::2",
+      "snippet_type": "EQUATION",
+      "location": "4.1 Global-perspective Data Replay (GDR)",
+      "content": "Inspired by Singular Value Decomposition (SVD), we first generate a set of random orthogonal matrices: a client-specific matrix $P_k^{(i)} \\in \\mathbb{R}^{|D_k^{(i)}| \\times |D_k^{(i)}|}$ for each client $k$ and task $i$, and a globally shared matrix $Q^{(i)} \\in \\mathbb{R}^{d \\times d}$, where $d$ denotes the dimension of the feature. Each client encrypts its local feature matrix $X_k^{(i)} = M_g(D_k^{(i)})$ via Inverse Singular Value Decomposition (ISVD):\n\nX_k^{(i)'} = P_k^{(i)} X_k^{(i)} Q^{(i)}, (1)\n\nand uploads the encrypted matrix $X_k^{(i)'}$ to the server, where $M_g(\\cdot)$ is the feature extractor of the global model.",
+      "route": "verify-math",
+      "route_rationale": "A definition of a transform rather than an assertion: the only formal content is shape compatibility. Its substantive consequence (what the transform does to per-sample leverage) is tested formally under paper::EQUATION::4.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::EQUATION::2",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.2,
+        "reasoning": "Shapes compose: $P_k^{(i)} \\in \\mathbb{R}^{|D_k^{(i)}|\\times|D_k^{(i)}|}$ times $X_k^{(i)} \\in \\mathbb{R}^{|D_k^{(i)}|\\times d}$ times $Q^{(i)} \\in \\mathbb{R}^{d\\times d}$ gives $X_k^{(i)'} \\in \\mathbb{R}^{|D_k^{(i)}|\\times d}$, as required by the concatenation in Eq. (2). Two caveats that are terminology/claims rather than algebra, and so are not flagged here: (i) 'Inverse Singular Value Decomposition (ISVD)' is a misnomer — $P X Q$ is a two-sided orthogonal transform, not any inverse of an SVD; (ii) calling it 'encryption' is a security claim, and $Q^{(i)}$ being globally shared means any two clients can cancel it. The algebra itself is sound.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.2
+    },
+    {
+      "snippet_id": "paper::EQUATION::3",
+      "snippet_type": "EQUATION",
+      "location": "4.1 Global-perspective Data Replay (GDR)",
+      "content": "The server then aggregates all encrypted matrices into a global matrix $X^{(i)'}$:\n\nX^{(i)'} = concat{X_k^{(i)'} | k = 1, …, K}, (2)\n\nand performs SVD as follows:\n\nX^{(i)'} = U^{(i)'} Σ^{(i)'} V^{(i)'}^⊤, (3)\n\nwhere $U^{(i)'} \\in \\mathbb{R}^{n \\times n}$, $\\Sigma^{(i)'} \\in \\mathbb{R}^{n \\times d}$, and $V^{(i)'} \\in \\mathbb{R}^{d \\times d}$, with $n$ denoting the total number of samples from all clients.",
+      "route": "verify-math",
+      "route_rationale": "Existence and shapes of a full real SVD; Mathlib has no usable real-matrix SVD API, so a faithful Lean rendering would be a formalisation project rather than a verification. Shapes are checkable by inspection. The consequence of these shapes (orthogonality of the full $U^{(i)'}$) is what drives the Lean check of paper::EQUATION::5.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::EQUATION::3",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.2,
+        "reasoning": "Row-wise concatenation of the $K$ encrypted blocks gives $X^{(i)'} \\in \\mathbb{R}^{n\\times d}$ with $n=\\sum_k |D_k^{(i)}|$, and the shapes $U^{(i)'} \\in \\mathbb{R}^{n\\times n}$, $\\Sigma^{(i)'} \\in \\mathbb{R}^{n\\times d}$, $V^{(i)'} \\in \\mathbb{R}^{d\\times d}$ are exactly those of the *full* SVD, so the product $U\\Sigma V^\\top$ is conformable and the decomposition exists. Note also that $\\mathrm{concat}\\{P_k X_k Q\\} = \\mathrm{blockdiag}(P_1,\\ldots,P_K)\\,X\\,Q$ with $\\mathrm{blockdiag}(P_k)$ orthogonal, so the singular values of $X^{(i)'}$ equal those of the true global feature matrix. Nothing here is false; the error introduced by choosing the *full* $U^{(i)'}$ rather than its top-$r$ columns surfaces at Eq. (5).",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.2
+    },
+    {
+      "snippet_id": "paper::EQUATION::4",
+      "snippet_type": "EQUATION",
+      "location": "4.1 Global-perspective Data Replay (GDR)",
+      "content": "Next, the server extracts a submatrix of the left singular vectors for each client $k$ by:\n\nU_k^{(i)} = 𝕀_k(U^{(i)'}) ∈ ℝ^{|D_k^{(i)}| × n}, (4)\n\nwhere $\\mathbb{I}_k(\\cdot)$ denotes a row selection function that returns the indices corresponding to client $k$'s samples. To quantify the importance of local samples within the global latent space, client $k$ computes a leverage score for the $j$-th sample of task $i$ as $\\tau_k^{i,j} = \\|e_{i,j}^\\top U_k^{(i)}\\|_2^2$. [Context: the matrix that was decomposed is $X^{(i)'} = \\mathrm{concat}\\{P_k^{(i)} X_k^{(i)} Q^{(i)}\\}$ from Eq. (1), where $P_k^{(i)}$ is a random orthogonal $|D_k^{(i)}| \\times |D_k^{(i)}|$ matrix, and the selected sample indices are later 'communicated to their respective clients, where the corresponding data points are subsequently marked for further use'.]",
+      "route": "verify-math-lean",
+      "route_rationale": "The validity of attributing row $j$ of the encrypted-matrix SVD to sample $j$ is a crisp algebraic invariance claim about leverage scores under orthogonal row mixing — exactly the kind of thing a machine-checked counterexample settles.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::4",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.85,
+        "reasoning": "Formalised the premise that Eqs. (4)-(5) silently require: that the leverage score of row $j$ is unchanged when the raw feature matrix $X$ is replaced by the uploaded matrix $P_k X_k Q$. (The right orthogonal factor $Q$ is harmless — it does not change the column space — but the left factor $P_k$ mixes client $k$'s rows, i.e. its samples.) For a matrix $A$ with orthonormal columns the leverage score of row $j$ is $(AA^\\top)_{jj}$. Lean compiled a refutation of the invariance on the explicit rational instance $P=\\tfrac15\\begin{pmatrix}3&-4\\\\4&3\\end{pmatrix}$ (orthogonal) and $X=(1,0)^\\top$: the row-0 score is $1$ before the transform and $9/25$ after it. Generally $\\mathrm{diag}(PHP^\\top) \\neq \\mathrm{diag}(H)$ for the hat matrix $H$, so the row-$j$ score the server/client computes from $U_k^{(i)}$ is a score of a random linear combination of all of client $k$'s samples, not of sample $j$. Index $j$ therefore cannot be sent back as 'the selected sample ID' for a meaningful sample. The claim is only recoverable if $P_k^{(i)}$ is restricted to a permutation matrix known to the client, which contradicts the paper's 'random orthogonal matrices'.",
+        "predicted_error_category": "Formally refuted",
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [
+          "U_k^{(i)} = 𝕀_k(U^{(i)'}) ∈ ℝ^{|D_k^{(i)}| × n}, (4)"
+        ],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/11899-FedCBDR-opus5/paper__EQUATION__4_opus5.lean",
+          "formal_statement": "noncomputable def P : Matrix (Fin 2) (Fin 2) ℝ := !![3/5, -4/5; 4/5, 3/5]\nnoncomputable def X : Matrix (Fin 2) (Fin 1) ℝ := !![1; 0]\n\ntheorem P_orthogonal : Pᵀ * P = 1\ntheorem X_orthonormal_cols : Xᵀ * X = 1\ntheorem leverage_row0_raw : (X * Xᵀ) 0 0 = 1\ntheorem leverage_row0_encrypted : ((P * X) * (P * X)ᵀ) 0 0 = 9/25\n\ntheorem leverage_not_row_invariant :\n    ¬ (∀ (P : Matrix (Fin 2) (Fin 2) ℝ) (X : Matrix (Fin 2) (Fin 1) ℝ),\n        Pᵀ * P = 1 → Xᵀ * X = 1 →\n        ∀ j, (X * Xᵀ) j j = ((P * X) * (P * X)ᵀ) j j) := by\n  intro h\n  have := h P X P_orthogonal X_orthonormal_cols 0\n  rw [leverage_row0_raw, leverage_row0_encrypted] at this\n  norm_num at this",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "math_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::EQUATION::5",
+      "snippet_type": "EQUATION",
+      "location": "4.1 Global-perspective Data Replay (GDR)",
+      "content": "To quantify the importance of local samples within the global latent space, client $k$ computes a leverage score for the $j$-th sample of task $i$ as:\n\nτ_k^{i,j} = ||e_{i,j}^⊤ U_k^{(i)}||_2^2, (5)\n\nwhere $e_{i,j}$ denotes the $j$-th standard basis vector in task $i$. Notably, a higher leverage score indicates that the sample has a larger projection in the low-dimensional latent space, suggesting that it contributes more significantly to the global structure and is more representative. [Context: Eq. (3) gives $U^{(i)'} \\in \\mathbb{R}^{n \\times n}$ from the SVD $X^{(i)'} = U^{(i)'}\\Sigma^{(i)'}V^{(i)'\\top}$, and Eq. (4) sets $U_k^{(i)} = \\mathbb{I}_k(U^{(i)'}) \\in \\mathbb{R}^{|D_k^{(i)}| \\times n}$, a row sub-block retaining all $n$ columns.]",
+      "route": "verify-math-lean",
+      "route_rationale": "A closed-form algebraic claim about norms of rows of an orthogonal matrix, with a sharp consequence for whether the scores can rank samples at all. Ideal Lean target.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::5",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.93,
+        "reasoning": "Eq. (3) fixes $U^{(i)'} \\in \\mathbb{R}^{n\\times n}$, i.e. the *full* left singular matrix, which is orthogonal; Eq. (4) keeps all $n$ of its columns and only selects rows; so $e_{i,j}^\\top U_k^{(i)}$ in Eq. (5) is simply row $j$ of an $n\\times n$ orthogonal matrix. Lean proved (`tau_eq_one`) that $\\sum_l U_{jl}^2 = 1$ for every row $j$ whenever $U^\\top U = I$ — via $U U^\\top = I$ for square $U$ — hence $\\tau_k^{i,j} \\equiv 1$ for every sample of every client. It then compiled the negation of the paper's stated interpretation (`no_sample_is_more_representative`: there is no pair of samples with $\\tau_{j} < \\tau_{j'}$), and showed (`eq6_is_uniform`) that Eq. (6) applied to these scores returns the uniform distribution $1/|\\,\\cdot\\,|$ regardless of the data. The paper's claim that 'a higher leverage score indicates that the sample has a larger projection in the low-dimensional latent space, suggesting that it contributes more significantly to the global structure and is more representative' is therefore vacuous as written: the GDR importance signal degenerates to uniform sampling. The textbook leverage score uses the top-$r$ columns $U_r$ ($r \\ll n$) — the 'low-dimensional latent space' the text invokes — and the rank truncation is missing from Eqs. (3)-(5).",
+        "predicted_error_category": "Formally refuted",
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [
+          "τ_k^{i,j} = ||e_{i,j}^⊤ U_k^{(i)}||_2^2, (5)"
+        ],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/11899-FedCBDR-opus5/paper__EQUATION__5_opus5.lean",
+          "formal_statement": "def tau (U : Matrix (Fin n) (Fin n) ℝ) (j : Fin n) : ℝ := ∑ l, (U j l) ^ 2\n\ntheorem tau_eq_one (U : Matrix (Fin n) (Fin n) ℝ) (hU : Uᵀ * U = 1) (j : Fin n) :\n    tau U j = 1\n\ntheorem tau_constant (U : Matrix (Fin n) (Fin n) ℝ) (hU : Uᵀ * U = 1) (j j' : Fin n) :\n    tau U j = tau U j'\n\ntheorem no_sample_is_more_representative\n    (U : Matrix (Fin n) (Fin n) ℝ) (hU : Uᵀ * U = 1) :\n    ¬ ∃ j j' : Fin n, tau U j < tau U j'\n\ntheorem eq6_is_uniform (U : Matrix (Fin n) (Fin n) ℝ) (hU : Uᵀ * U = 1)\n    (s : Finset (Fin n)) (hs : s.Nonempty) (j : Fin n) :\n    tau U j / (∑ j' ∈ s, tau U j') = 1 / (s.card : ℝ)",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "math_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.93
+    },
+    {
+      "snippet_id": "paper::EQUATION::6",
+      "snippet_type": "EQUATION",
+      "location": "4.1 Global-perspective Data Replay (GDR)",
+      "content": "Moreover, clients send their leverage scores to the server, which aggregates them into a global vector $\\tau^i = \\mathrm{concat}\\{\\tau_k^{i,j} \\mid k = 1, \\ldots, K;\\ j = 1, \\ldots, n_k^i\\}$ and normalizes it to obtain a sampling distribution:\n\np_k^{i,j} = τ_k^{i,j} / ∑_{j'=1}^{n_k^i} τ_k^{i,j'}. (6)\n\n[Followed by: 'Subsequently, we perform i.i.d. sampling based on the distribution $p = \\{p_k^{i,j} \\mid k = 1, ..., K; j = 1, ..., n_k^i\\}$.']",
+      "route": "verify-math-lean",
+      "route_rationale": "Whether the printed normalisation yields a probability distribution over the global pool is a crisp summation identity — a machine-checkable constraint-violation check.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::6",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.85,
+        "reasoning": "The text says the server 'aggregates them into a global vector $\\tau^i = \\mathrm{concat}\\{\\tau_k^{i,j}\\}$ and normalizes it to obtain a sampling distribution', and the next paragraph performs 'i.i.d. sampling based on the distribution $p = \\{p_k^{i,j} \\mid k=1,\\ldots,K;\\, j=1,\\ldots,n_k^i\\}$' over the global pool. But the denominator printed in Eq. (6) is $\\sum_{j'=1}^{n_k^i}\\tau_k^{i,j'}$ — client $k$'s own total, not the global total $\\sum_{k'}\\sum_{j'}\\tau_{k'}^{i,j'}$. Lean proved `total_mass_eq_clients`: under the only hypothesis needed (each client's score sum is positive) the mass of the printed $p$ over the global pool is exactly $K$, and `eq6_not_a_global_distribution` then refutes $\\sum p = 1$ for $K \\ge 2$; `eq6_mass_five` instantiates this at the paper's $K=5$, giving total mass $5$. So $p$ as printed is not a probability distribution over the global sample pool. Beyond the missing $1/K$, the two normalisations are not even proportional to one another: client-local normalisation gives every client equal total mass, whereas the global normalisation the text describes weights a client in proportion to its score mass — so this is a substantive, not purely cosmetic, discrepancy. The method survives with the obvious fix (divide by $K$, or sum globally).",
+        "predicted_error_category": "Domain/Constraint violation",
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [
+          "p_k^{i,j} = τ_k^{i,j} / ∑_{j'=1}^{n_k^i} τ_k^{i,j'}. (6)"
+        ],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/11899-FedCBDR-opus5/paper__EQUATION__6_opus5.lean",
+          "formal_statement": "noncomputable def p {K : ℕ} {n : Fin K → ℕ} (τ : (k : Fin K) → Fin (n k) → ℝ)\n    (k : Fin K) (j : Fin (n k)) : ℝ := τ k j / ∑ j', τ k j'\n\ntheorem total_mass_eq_clients {K : ℕ} {n : Fin K → ℕ}\n    (τ : (k : Fin K) → Fin (n k) → ℝ) (hpos : ∀ k, 0 < ∑ j, τ k j) :\n    ∑ k, ∑ j, p τ k j = (K : ℝ)\n\ntheorem eq6_not_a_global_distribution {K : ℕ} {n : Fin K → ℕ}\n    (τ : (k : Fin K) → Fin (n k) → ℝ)\n    (hpos : ∀ k, 0 < ∑ j, τ k j) (hK : 2 ≤ K) :\n    ∑ k, ∑ j, p τ k j ≠ 1\n\ntheorem eq6_mass_five {n : Fin 5 → ℕ} (hn : ∀ k, 0 < n k) :\n    ∑ k, ∑ j : Fin (n k), p (fun _ _ => (1:ℝ)) k j = 5",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "math_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::EQUATION::7",
+      "snippet_type": "EQUATION",
+      "location": "4.1 Global-perspective Data Replay (GDR)",
+      "content": "Subsequently, we perform i.i.d. sampling based on the distribution p = {p_k^{i,j} | k = 1, ..., K; j = 1, ..., n_k^i}. Once a sample x is selected, its sampling weight is adjusted to (1/√(n_s · p_x)) e_x, where n_s denotes the number of selected samples and p_x is the original sampling probability of x; e_x is the standard basis vector of x. This adjustment ensures unbiased estimation during aggregation.",
+      "route": "verify-math-lean",
+      "route_rationale": "An explicit unbiasedness claim about an importance-sampling reweighting — a textbook expectation identity, and the $1/\\sqrt{\\cdot}$ versus $1/(\\cdot)$ choice is exactly the sort of thing worth machine-checking rather than eyeballing.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::7",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.3,
+        "reasoning": "Formalised the charitable and standard reading: the weight $1/\\sqrt{n_s p_x}$ is the leverage-score sketching scaling, for which the sampling operator $S$ (row $t$ equal to $(1/\\sqrt{n_s p_{x_t}})e_{x_t}^\\top$) satisfies $\\mathbb{E}[S^\\top S] = I$ and hence $\\mathbb{E}[(SX)^\\top(SX)] = X^\\top X$. Lean proved the per-coordinate identity behind that statement (`gram_unbiased`): $n_s \\cdot p_x \\cdot (1/\\sqrt{n_s p_x})^2 = 1$ for $n_s, p_x > 0$. So 'ensures unbiased estimation during aggregation' is correct under the second-moment interpretation, and the snippet is not flagged. Two secondary theorems record the boundary of that reading: `first_moment_biased` refutes unbiasedness of the *first* moment for this weight (uniform $p$ on two items, $n_s=1$, giving $\\sqrt{2}$ instead of $2$), and `ht_weight_first_moment_unbiased` shows the Horvitz-Thompson weight $1/(n_s p_x)$ is the one that makes the reweighted sum unbiased. Since the paper never writes down the estimator being aggregated, the ambiguity cannot be resolved against it from this snippet; the stated form is the standard one in the cited leverage-score literature.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/11899-FedCBDR-opus5/paper__EQUATION__7_opus5.lean",
+          "formal_statement": "theorem gram_unbiased (n_s : ℕ) (hns : 0 < n_s) (p_x : ℝ) (hp : 0 < p_x) :\n    (n_s : ℝ) * (p_x * (1 / Real.sqrt ((n_s : ℝ) * p_x)) ^ 2) = 1\n\ntheorem first_moment_biased :\n    ∑ _x : Fin 2, (1/2 : ℝ) * (1 / Real.sqrt (1 * (1/2 : ℝ))) ≠ 2\n\ntheorem ht_weight_first_moment_unbiased (n_s : ℕ) (hns : 0 < n_s)\n    (m : ℕ) (p : Fin m → ℝ) (hp : ∀ x, 0 < p x) :\n    ∑ x, (n_s : ℝ) * (p x * (1 / ((n_s : ℝ) * p x))) = (m : ℝ)",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "math_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.3
+    },
+    {
+      "snippet_id": "paper::EQUATION::8",
+      "snippet_type": "EQUATION",
+      "location": "4.2 Task-aware Temperature Scaling (TTS)",
+      "content": "ℒ_TTS = (1/(N_old + N_new)) × \\Big( ω_{old} ∑_{i=1}^{N_{old}} CE(y_i, Softmax(z_i^{old} / τ_{old})) + ω_{new} ∑_{j=1}^{N_{new}} CE(y_j, Softmax(z_j^{new} / τ_{new})) \\Big) (7)\n\nHere, $N_{old}$ and $N_{new}$ are the number of old and new task samples; $y_i$ and $y_j$ are their labels; $z_i^{old}$ and $z_j^{new}$ are logits corresponding to old and new classes; $\\tau_{old}$ and $\\tau_{new}$ are temperature parameters applied separately to old and new class logits; $\\omega_{old}$ and $\\omega_{new}$ are sample weighting coefficients. This separate normalization clarifies temperature scaling within each task's logits before loss aggregation. [Method text: 'we use a lower temperature to sharpen logits for samples from earlier tasks'; implementation uses $\\tau_{old} \\in \\{0.8, 0.9\\}$, $\\tau_{new} \\in \\{1.1, 1.2\\}$, $w_{old} \\in \\{1.1,...,1.4\\}$, $w_{new} \\in \\{0.7, 0.8, 0.9\\}$.]",
+      "route": "verify-math",
+      "route_rationale": "A well-formed weighted cross-entropy; the checkable content is internal consistency of the temperature/weight directions with the surrounding prose, which is a reading task. The equation's incompatibility with Eq. (9) is tested formally under paper::EQUATION::10.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::EQUATION::8",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.25,
+        "reasoning": "The expression is well formed and the stated parameter directions are self-consistent: dividing logits by $\\tau_{old} < 1$ does sharpen the softmax, matching 'we use a lower temperature to sharpen logits for samples from earlier tasks', and $w_{old} > 1 > w_{new}$ does up-weight earlier-task (tail) samples, matching 'amplify the optimization effect of tail-class samples'. Two non-algebraic observations, not flagged under this verifier's remit: (i) because $\\mathrm{Softmax}$ is applied to $z_i^{old}$ alone for old samples, new classes never appear as negatives in the old-sample term, so this loss cannot by itself calibrate old-versus-new logits; (ii) sharpening old-sample logits *raises* confidence on old classes, which sits awkwardly with the abstract's claim that the module 'reduce[s] model overconfidence'. Neither is an algebraic or domain error in Eq. (7).",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.25
+    },
+    {
+      "snippet_id": "paper::EQUATION::9",
+      "snippet_type": "EQUATION",
+      "location": "4.3 Training Strategy, Stage 1",
+      "content": "Stage 1: Initial Task Optimization. In the first task, client $k$ learns from local data using the standard cross-entropy loss, i.e.,\nmin_{θ_k} (1/N) Σ_{i=1}^{N} CE(y_i, Softmax(f_{θ_k}(x_i))),\n(8)",
+      "route": "verify-math",
+      "route_rationale": "The textbook empirical cross-entropy objective; nothing to formalise.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::EQUATION::9",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.05,
+        "reasoning": "Standard mean cross-entropy over the $N$ local samples with a softmax output layer and no temperature (equivalently $\\tau = 1$), consistent with Stage 1 having only the first task's classes. Correct as written.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.05
+    },
+    {
+      "snippet_id": "paper::EQUATION::10",
+      "snippet_type": "EQUATION",
+      "location": "4.3 Training Strategy, Stage 2",
+      "content": "Stage 2: Class-Incremental Optimization. As new tasks arrive and class imbalance emerges between previous and current tasks in client $k$, we employ $L_{TTS}$ to mitigate the imbalance, i.e.,\nmin_{θ_k} (1/N_{old}) Σ_{i=1}^{N_{old}} ω_{old} · CE( y_i, Softmax( Concat( f_{θ_k}^{old}(x_i)/τ_{old}, f_{θ_k}^{new}(x_i)/τ_{new} ))) + (1/N_{new}) Σ_{j=1}^{N_{new}} ω_{new} · CE( y_j, Softmax( Concat( f_{θ_k}^{old}(x_j)/τ_{old}, f_{θ_k}^{new}(x_j)/τ_{new} )))\n(9)\n\n[To be compared with Eq. (7): $\\mathcal{L}_{TTS} = \\frac{1}{N_{old}+N_{new}}\\big(\\omega_{old}\\sum_{i=1}^{N_{old}} CE(y_i, \\mathrm{Softmax}(z_i^{old}/\\tau_{old})) + \\omega_{new}\\sum_{j=1}^{N_{new}} CE(y_j, \\mathrm{Softmax}(z_j^{new}/\\tau_{new}))\\big)$, of which the text says 'This separate normalization clarifies temperature scaling within each task's logits before loss aggregation.']",
+      "route": "verify-math-lean",
+      "route_rationale": "'Eq. (9) is $\\mathcal{L}_{TTS}$' is an equality between two explicitly written functions — decidable by evaluating both on a single instance, which is precisely what a compiler can certify.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::10",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.9,
+        "reasoning": "Section 4.3 asserts 'we employ $\\mathcal{L}_{TTS}$ to mitigate the imbalance, i.e.,' and then prints Eq. (9), so Eq. (9) is claimed to *be* Eq. (7). The two printed expressions differ in two independent ways: (a) normalisation — one shared factor $1/(N_{old}+N_{new})$ versus two separate factors $1/N_{old}$ and $1/N_{new}$; (b) softmax scope — Eq. (7) applies $\\mathrm{Softmax}$ within each task's own logit block (and the text explicitly defends this: 'This separate normalization clarifies temperature scaling within each task's logits before loss aggregation'), while Eq. (9) applies a single $\\mathrm{Softmax}$ to $\\mathrm{Concat}(f^{old}/\\tau_{old}, f^{new}/\\tau_{new})$. Lean compiled `softmax_scope_differs` (block-wise softmax gives $1$ where the concatenated softmax gives $1/2$) and then evaluated both printed objectives on one explicit instance — one old sample, one new sample, one old class, one new class, all logits $0$, $\\tau_{old}=\\tau_{new}=1$, $\\omega_{old}=\\omega_{new}=1$ — obtaining $\\mathcal{L}_{Eq.7}=0$ and $\\mathcal{L}_{Eq.9}=2\\log 2 > 0$, hence `eq9_is_not_L_TTS`. The paper therefore defines its own TTS objective two incompatible ways and a reader cannot tell which was trained. Both expressions are individually valid losses, so the experimental argument survives, but the definition needs correcting.",
+        "predicted_error_category": "Formally refuted",
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [
+          "min_{θ_k} (1/N_{old}) Σ_{i=1}^{N_{old}} ω_{old} · CE( y_i, Softmax( Concat( f_{θ_k}^{old}(x_i)/τ_{old}, f_{θ_k}^{new}(x_i)/τ_{new} ))) + (1/N_{new}) Σ_{j=1}^{N_{new}} ω_{new} · CE( y_j, Softmax( Concat( f_{θ_k}^{old}(x_j)/τ_{old}, f_{θ_k}^{new}(x_j)/τ_{new} )))"
+        ],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/11899-FedCBDR-opus5/paper__EQUATION__10_opus5.lean",
+          "formal_statement": "noncomputable def softmax {m : ℕ} (v : Fin m → ℝ) (i : Fin m) : ℝ :=\n  Real.exp (v i) / ∑ j, Real.exp (v j)\nnoncomputable def CE {m : ℕ} (v : Fin m → ℝ) (i : Fin m) : ℝ := -Real.log (softmax v i)\n\ntheorem softmax_scope_differs :\n    softmax (fun _ : Fin 1 => (0:ℝ)) 0 ≠ softmax (fun _ : Fin 2 => (0:ℝ)) 0\n\nnoncomputable def L_eq7 : ℝ :=\n  (1 / ((1:ℝ) + 1)) *\n    (1 * CE (fun _ : Fin 1 => (0:ℝ)) 0 + 1 * CE (fun _ : Fin 1 => (0:ℝ)) 0)\nnoncomputable def L_eq9 : ℝ :=\n  (1 / (1:ℝ)) * (1 * CE (fun _ : Fin 2 => (0:ℝ)) 0) +\n  (1 / (1:ℝ)) * (1 * CE (fun _ : Fin 2 => (0:ℝ)) 1)\n\ntheorem L_eq7_value : L_eq7 = 0\ntheorem L_eq9_value : L_eq9 = 2 * Real.log 2\ntheorem eq9_is_not_L_TTS : L_eq7 ≠ L_eq9",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "math_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "Algorithm 1 FEDCBDR (Section 4.1)",
+      "content": "2: for each task s = 1 to t do\n3: for each communication round r = 1 to R do\n4: for each client k = 1 to K do\n5: Initialize local model parameters: θ_k ← θ_g\n6: if s == 1 then\n7: Sample a mini-batch ζ from 𝔇_k^{(1)}, and update θ_k using Eq. 8.\n8: else\n9: Store the historical task data corresponding to globally sampled IDs into 𝔅_k^{pre}.\n10: Sample a mini-batch ζ from 𝔇_k^{(s)} ∪ 𝔅_k^{pre}, and update θ_k using Eq. 9.\n11: Compute pseudo-features based on Eq. 1, and upload them to the server.\n12: end if\n...\n14: if r < R then\n15: Aggregate local model parameters across clients.\n16: else\n17: Aggregate model parameters and pseudo-features from all clients using Eq. 2.\n18: Perform Global Sampling based on Eqs. 3–6, and send the selected sample IDs back to the corresponding clients.\n19: end if\n...\n23: Form the global feature pool X^{(i)} by aggregating all pseudo-features via Eq. (2).",
+      "route": "verify-math",
+      "route_rationale": "Control-flow consistency of a stated procedure against the module it implements. There is no mathematical object to formalise — the defect is an ordering/branching gap, which reads as prose.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.8,
+        "reasoning": "Step 11 ('Compute pseudo-features based on Eq. 1, and upload them to the server') lies inside the `else` branch opened at step 8, so it executes only for tasks $s \\ne 1$. Yet step 17-18 runs at $r = R$ for *every* task, including $s = 1$, and step 23 requires the global feature pool to be formed 'by aggregating all pseudo-features'. For $s = 1$ no client ever uploads a pseudo-feature, so the global pool is empty, Eqs. (3)-(6) have no input, and no sample IDs for task 1 can be returned. Step 9 for $s = 2$ then has no 'globally sampled IDs' to store, leaving $\\mathfrak{B}_k^{pre}$ empty at the first incremental task. This contradicts Section 4.1 and the experiments: Figure 5 and Appendix A.1.3 report per-class replay-buffer distributions for task 0 / task 1 under FedCBDR, which the printed algorithm cannot produce. The defect is a misplaced branch (step 11 belongs outside the if/else, applying to every task), so the method as described in the prose survives; only the printed pseudo-code is wrong.",
+        "predicted_error_category": "Algorithmic/control-flow inconsistency",
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": [
+          "11: Compute pseudo-features based on Eq. 1, and upload them to the server."
+        ]
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.8
+    }
+  ],
+  "findings": [
+    {
+      "snippet_id": "paper::EQUATION::5",
+      "category": "Formally refuted",
+      "severity": "critical",
+      "confidence": 0.93,
+      "evidence": "Eq. (3) takes the **full** SVD, $U^{(i)'} \\in \\mathbb{R}^{n\\times n}$ (hence orthogonal), and Eq. (4) keeps all $n$ columns while selecting rows, so Eq. (5)'s $\\|e_{i,j}^\\top U_k^{(i)}\\|_2^2$ is the squared norm of a row of an orthogonal matrix. Lean proved `tau_eq_one`: $U^\\top U = I \\Rightarrow \\sum_l U_{jl}^2 = 1$ for every row $j$. So $\\tau_k^{i,j} \\equiv 1$ for every sample, Lean's `no_sample_is_more_representative` refutes the paper's 'a higher leverage score indicates ... more representative', and `eq6_is_uniform` shows Eq. (6) collapses to the uniform distribution $1/m$ independent of the data. The GDR importance signal — the paper's first main contribution — is degenerate as written; the intended quantity is the leverage score of the rank-$r$ factor $U_r$, and the truncation to the 'low-dimensional latent space' the text invokes is absent from Eqs. (3)-(5).",
+      "verifier": "verify-math-lean",
+      "exact_quote": "τ_k^{i,j} = ||e_{i,j}^⊤ U_k^{(i)}||_2^2, (5)"
+    },
+    {
+      "snippet_id": "paper::EQUATION::10",
+      "category": "Formally refuted",
+      "severity": "minor",
+      "confidence": 0.9,
+      "evidence": "Section 4.3 states 'we employ $L_{TTS}$ to mitigate the imbalance, i.e.,' and prints Eq. (9), but Eq. (9) is a different function from Eq. (7): it replaces the shared factor $\\frac{1}{N_{old}+N_{new}}$ by separate $\\frac{1}{N_{old}}$, $\\frac{1}{N_{new}}$, and it applies one $\\mathrm{Softmax}$ to $\\mathrm{Concat}(f^{old}/\\tau_{old}, f^{new}/\\tau_{new})$ where Eq. (7) applies $\\mathrm{Softmax}$ separately within each task's logit block (which the text expressly defends). Lean compiled `eq9_is_not_L_TTS`: on one old sample, one new sample, one old class, one new class, zero logits, $\\tau_{old}=\\tau_{new}=1$, $\\omega_{old}=\\omega_{new}=1$, Eq. (7) evaluates to $0$ while Eq. (9) evaluates to $2\\log 2$. The TTS objective is therefore defined two incompatible ways and the trained loss is unidentifiable from the paper; both forms are individually valid losses, so the experimental argument survives the correction.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "min_{θ_k} (1/N_{old}) Σ_{i=1}^{N_{old}} ω_{old} · CE( y_i, Softmax( Concat( f_{θ_k}^{old}(x_i)/τ_{old}, f_{θ_k}^{new}(x_i)/τ_{new} ))) + (1/N_{new}) Σ_{j=1}^{N_{new}} ω_{new} · CE( y_j, Softmax( Concat( f_{θ_k}^{old}(x_j)/τ_{old}, f_{θ_k}^{new}(x_j)/τ_{new} )))"
+    },
+    {
+      "snippet_id": "paper::EQUATION::4",
+      "category": "Formally refuted",
+      "severity": "critical",
+      "confidence": 0.85,
+      "evidence": "Eqs. (4)-(5) read row $j$ of the SVD factor of the *encrypted* matrix $\\mathrm{concat}\\{P_k^{(i)}X_k^{(i)}Q^{(i)}\\}$ as the importance of client $k$'s $j$-th sample, and the selected index $j$ is then returned to the client to mark a data point. That requires row leverage scores to be invariant under the left orthogonal factor $P_k^{(i)}$, which mixes the client's samples. Lean refuted the invariance (`leverage_not_row_invariant`) on the explicit rational instance $P = \\tfrac15\\begin{pmatrix}3 & -4\\\\ 4 & 3\\end{pmatrix}$, $X = (1,0)^\\top$: row-0 leverage is $1$ for $X$ and $9/25$ for $PX$. In general $\\mathrm{diag}(PHP^\\top) \\neq \\mathrm{diag}(H)$, so row $j$ of the uploaded block scores a random linear combination of *all* of client $k$'s samples rather than sample $j$, and the index sent back does not identify a representative sample. The scheme is only sound if $P_k^{(i)}$ is restricted to a permutation known to client $k$, which contradicts the stated 'random orthogonal matrices'.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "U_k^{(i)} = 𝕀_k(U^{(i)'}) ∈ ℝ^{|D_k^{(i)}| × n}, (4)"
+    },
+    {
+      "snippet_id": "paper::EQUATION::6",
+      "category": "Domain/Constraint violation",
+      "severity": "minor",
+      "confidence": 0.85,
+      "evidence": "The text has the server normalise the **global** concatenated score vector $\\tau^i$, and the next paragraph samples i.i.d. from $p = \\{p_k^{i,j} \\mid k=1,\\ldots,K;\\, j=1,\\ldots,n_k^i\\}$ over the whole pool, but Eq. (6) divides by the **client-local** total $\\sum_{j'=1}^{n_k^i}\\tau_k^{i,j'}$. Lean proved `total_mass_eq_clients`: $\\sum_k\\sum_j p_k^{i,j} = K$, and `eq6_not_a_global_distribution`: this is $\\neq 1$ whenever $K \\ge 2$ (`eq6_mass_five` instantiates it at the paper's $K=5$, mass $5$). The printed $p$ is thus not a probability distribution over the global pool; moreover client-local and global normalisation are not proportional — the former gives every client equal mass, the latter weights clients by their score mass — so the fix changes the sampler, not just the constant.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "p_k^{i,j} = τ_k^{i,j} / ∑_{j'=1}^{n_k^i} τ_k^{i,j'}. (6)"
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+      "category": "Algorithmic/control-flow inconsistency",
+      "severity": "minor",
+      "confidence": 0.8,
+      "evidence": "In Algorithm 1 the pseudo-feature upload (step 11) sits inside the `else` branch opened at step 8, so it never runs for the first task $s=1$. But step 18 performs Global Sampling via Eqs. (3)-(6) at $r=R$ for every task, and step 23 forms the global pool 'by aggregating all pseudo-features' — with nothing uploaded for $s=1$ the pool is empty, no task-1 sample IDs can be returned, and $\\mathfrak{B}_k^{pre}$ is empty at step 9 when task $2$ begins. This contradicts Figure 5 and Appendix A.1.3, which report FedCBDR replay-buffer distributions for task 0. The fix is to move step 11 outside the if/else; the method described in the prose is unaffected.",
+      "verifier": "verify-math",
+      "exact_quote": "11: Compute pseudo-features based on Eq. 1, and upload them to the server."
+    }
+  ],
+  "verdict": "CRITICAL_ERRORS",
+  "verdict_confidence": 0.85,
+  "summary": "Twelve self-contained mathematical objects were extracted from FedCBDR (the FCIL/replay-buffer formalism of Section 3, Eqs. (1)-(9) of Sections 4.1-4.3, and Algorithm 1). Five were routed to Lean 4 and seven to informal review; all five Lean snippets returned a decisive verdict (4 REFUTED, 1 PASSED), nothing came back FAILED or NOT_ATTEMPTED, so no informal fallbacks were needed and no snippet is left unsettled.\n\n**Formally refuted, critical.** (i) Eq. (5)'s leverage score is degenerate as written: Eq. (3) takes the *full* SVD with $U^{(i)'} \\in \\mathbb{R}^{n\\times n}$ and Eq. (4) retains all $n$ columns, so $\\tau_k^{i,j} = \\|e_{i,j}^\\top U_k^{(i)}\\|_2^2$ is the squared norm of a row of an orthogonal matrix. Lean proved every such row has norm $1$, that no sample can therefore have a strictly higher score than another, and that Eq. (6) applied to these scores is the uniform distribution — i.e. the importance signal driving the paper's first main contribution carries no information. The intended object is the rank-$r$ leverage score $\\|e^\\top U_r\\|_2^2$; the truncation to the 'low-dimensional latent space' that the text appeals to is missing from the equations. (ii) Eqs. (4)-(5) also presuppose that row $j$ of the encrypted matrix still corresponds to sample $j$, i.e. that row leverage survives the random orthogonal row mixing $P_k^{(i)}$ of Eq. (1). Lean refuted that invariance on an explicit rational rotation (row-0 leverage $1 \\mapsto 9/25$), so the sample IDs the server returns do not identify representative samples unless $P_k^{(i)}$ is a permutation the client can invert — which is not what the paper specifies.\n\n**Formally refuted, minor.** (iii) Eq. (6) normalises each client's scores by that client's own total while the text and the subsequent i.i.d. sampling treat $p$ as one distribution over the global pool; Lean proved the total mass is exactly $K$ (so $5$ in the paper's setting), not $1$. (iv) Section 4.3 states that Eq. (9) *is* $\\mathcal{L}_{TTS}$, but Lean evaluated both printed expressions on one instance (one old and one new sample, zero logits, unit temperatures and weights) and obtained $0$ for Eq. (7) against $2\\log 2$ for Eq. (9): the two differ both in the normalising constant and in whether the softmax is taken per task block or over the concatenated logits, the latter in direct tension with Eq. (7)'s own justifying sentence. Each has an obvious intended fix and the empirical argument survives it.\n\n**Settled clean.** Eq. (7)'s reweighting claim passed: Lean confirmed $n_s \\cdot p_x \\cdot (1/\\sqrt{n_s p_x})^2 = 1$, so 'ensures unbiased estimation' is correct under the standard leverage-score sketching reading $\\mathbb{E}[S^\\top S] = I$. For completeness the same file records that the *first*-moment estimator with this weight is biased ($\\sqrt{2}$ instead of $2$ on a two-item uniform example) and that the Horvitz-Thompson weight $1/(n_s p_x)$ is the unbiased choice there; since the paper never writes the estimator being aggregated, this was not held against it. The Preliminaries objectives, Eq. (1)-(3) and Eq. (8) were reviewed informally and are sound — the only remarks are non-algebraic (the 'ISVD' label for the two-sided orthogonal transform $PXQ$, the globally shared $Q^{(i)}$, and the abstract's 'reduce model overconfidence' sitting awkwardly with $\\tau_{old} < 1$ *sharpening* old-class logits).\n\n**Informal finding.** Algorithm 1 places the pseudo-feature upload (step 11) inside the $s \\neq 1$ branch, yet Global Sampling runs at $r = R$ for every task and needs that pool; so as printed no task-1 exemplars can ever be selected, contradicting the replay-buffer distributions reported for task 0 in Figure 5 and Appendix A.1.3. A misplaced branch, not a flaw in the described method.\n\nThe two verifiers nowhere disagreed. The verdict is CRITICAL_ERRORS on the strength of two compiling Lean refutations that strike the GDR module's core selection mechanism; verdict confidence is 0.85 rather than higher because both critical findings concern equations whose *intended* reading (rank-$r$ truncation; permutation-style index recovery) is reconstructible, so they may be reporting errors in an implementation that is itself correct — a possibility this run cannot exclude from the manuscript alone."
+}

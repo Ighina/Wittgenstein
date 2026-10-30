@@ -1,0 +1,134 @@
+{
+  "paper_id": "5784-HyperET__Efficient_Training_in_Hyperbolic_Space_for_Multi-modal_Large_Langu",
+  "title": "HyperET: Efficient Training in Hyperbolic Space for Multi-modal Large Langu",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 4.3, Eqs. (11)–(13)",
+      "confidence": 0.99,
+      "supporting_evidence": "The derivation treats exponential mapping as compatible with ordinary matrix multiplication: \"exp_0(Y_0) = W_0^{D_c^n} X^{D_c^n}\" where Y_0=W_0X. This is false in general. The Poincare exponential map is nonlinear, so exp_0(W_0X) is not equal to exp_0(W_0) exp_0(X), and ordinary multiplication of two hyperbolic points/matrix-valued embeddings is not a defined Poincare-ball operation. Consequently Eq. (12) and the radius conclusion in Eq. (13) do not follow from the stated method.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5784-HyperET__Efficient_Training_in_Hyperbolic_Space_for_Multi-modal_Large_Langu::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 4.2, Eqs. (7)–(9), and Appendix A definition of Mobius matrix multiplication",
+      "confidence": 0.95,
+      "supporting_evidence": "The appendix defines Mobius matrix multiplication only for a Euclidean matrix M and a hyperbolic point/vector X in D_c^n. The main method instead applies exp_0 to a weight matrix W_0 and then writes W_s ⊗_c exp_0(W_0). No manifold structure, vectorization, row/column-wise convention, or dimension-preserving implementation is specified for treating an arbitrary weight matrix as one point in D_c^n. Thus the central operation in Eq. (9) is not defined by the paper's own definitions.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5784-HyperET__Efficient_Training_in_Hyperbolic_Space_for_Multi-modal_Large_Langu::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 4.2, Eq. (7), versus Section 4.3, Eq. (13)",
+      "confidence": 0.9,
+      "supporting_evidence": "Eq. (7) defines the scaling factor as s=||W_s W_0^D||/||W_0^D||, i.e. a quantity based on the weight matrix. Eq. (13) instead obtains a factor ||W_s W_0^D X^D||/||W_0^D X^D||, which generally depends on the input X and is not equal to the Eq. (7) factor. A non-isotropic learned matrix changes different directions by different amounts. Therefore the analysis does not establish the claimed single/task-adaptive radius scaling or the stated Eq. (2) constraint for output representations.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5784-HyperET__Efficient_Training_in_Hyperbolic_Space_for_Multi-modal_Large_Langu::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Appendix B, 'Theorem 1 (Revised Flawed)'",
+      "confidence": 0.98,
+      "supporting_evidence": "The appendix explicitly states that scalar Mobius multiplication only approximately scales radius and that \"this relation does not strictly hold due to nonlinearities.\" This contradicts both the main-paper Theorem 1 and the appendix's own subsequent derivation, which concludes the exact identity Rad_{s ⊗_c X}=s Rad_X. Under the stated definition of Mobius scalar multiplication, that identity is in fact exact. The paper therefore contains mutually incompatible statements about the core theorem.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5784-HyperET__Efficient_Training_in_Hyperbolic_Space_for_Multi-modal_Large_Langu::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Section 5.1, Experimental Setting",
+      "confidence": 0.98,
+      "supporting_evidence": "The paper expressly acknowledges that essential fine-tuning details are omitted: \"explicit hyperparameters including learning rate, weight decay, batch sizes, training steps, and adapter insertion points are omitted.\" These parameters are necessary to reproduce the comparisons and to determine whether baseline and HyperET runs received matched optimization. Reporting only c=0.01 and an upper bound on hardware is not an adequate experimental protocol.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5784-HyperET__Efficient_Training_in_Hyperbolic_Space_for_Multi-modal_Large_Langu::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Section 5.2, Experimental Setting and Table 2 comparisons",
+      "confidence": 0.99,
+      "supporting_evidence": "The paper states that HyperET \"is trained with an extended schedule and augmented compute budget not matched in the baseline settings.\" This is a direct confound: Table 2 improvements cannot be attributed to HyperET when training duration and compute differ. The same section says detailed training regimes and hardware configurations are omitted, preventing assessment or replication of the confounded comparison.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5784-HyperET__Efficient_Training_in_Hyperbolic_Space_for_Multi-modal_Large_Langu::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Section 5.2, 'Comparing to SOTA,' and Conclusion",
+      "confidence": 0.96,
+      "supporting_evidence": "Despite admitting that HyperET received an unmatched extended schedule and augmented compute budget, the paper interprets Table 2 as showing that its method \"demonstrates significant performance improvements\" and that radius optimization \"effectively enhances cross-modal alignment.\" Those causal claims are not supported by the reported experiment because added optimization/compute is an alternative explanation.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5784-HyperET__Efficient_Training_in_Hyperbolic_Space_for_Multi-modal_Large_Langu::baseline"
+    },
+    {
+      "error_category": "context_misalignment_incoherence",
+      "error_location": "Section 5.3, paragraph 'Necessity of Möbius matrix multiplication'",
+      "confidence": 0.99,
+      "supporting_evidence": "The text says: \"Results were largely similar regardless of the multiplication operation used. This suggests Möbius multiplication may have limited practical impact on performance.\" This directly conflicts with the adjacent tables and the paper's central claim. Table 3 reports 93.91 without ⊗_c versus 94.72 with it (+0.81), and Table 5 reports, for example, VQAv2 81.1 for −⊗_c versus 82.3 for +W_s and TextVQA 62.1 versus 63.9. The stated interpretation is incompatible with the displayed evidence.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5784-HyperET__Efficient_Training_in_Hyperbolic_Space_for_Multi-modal_Large_Langu::baseline"
+    },
+    {
+      "error_category": "reference_background_fabrication",
+      "error_location": "Introduction, paragraph beginning 'To address these concerns,' and Section 2.2",
+      "confidence": 0.94,
+      "supporting_evidence": "The paper says CLIP, SAM, and DINOv2 are \"typically aligned with language at a single granularity level\" and describes their mismatch as arising because such encoders are language-aligned only at one level. This is factually wrong for SAM and DINOv2: SAM is trained for image segmentation with prompts, and DINOv2 is self-supervised visual representation learning; neither is a vision-language encoder aligned to language at any granularity. This invalidates an important piece of the stated motivation.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5784-HyperET__Efficient_Training_in_Hyperbolic_Space_for_Multi-modal_Large_Langu::baseline"
+    },
+    {
+      "error_category": "reference_background_fabrication",
+      "error_location": "Introduction and Section 2.1 citations to CLIP: [54] and [69]",
+      "confidence": 0.98,
+      "supporting_evidence": "The paper cites \"CLIP [54]\" and \"CLIP [69, 54].\" In the bibliography, [54] is EVA-CLIP, an improved CLIP-family model, while [69] is the SigLIP paper, not the original CLIP paper. The actual original CLIP citation in this bibliography is [50] (Radford et al.). These citations misattribute the referenced model.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5784-HyperET__Efficient_Training_in_Hyperbolic_Space_for_Multi-modal_Large_Langu::baseline"
+    },
+    {
+      "error_category": "reference_background_fabrication",
+      "error_location": "Table 2 caption, citation '[67]' for MME",
+      "confidence": 0.99,
+      "supporting_evidence": "The Table 2 caption labels \"ME: MME [67].\" Reference [67] is \"A survey on multimodal large language models,\" not the MME benchmark. Thus the benchmark attribution is incorrect and prevents readers from locating the evaluation source.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5784-HyperET__Efficient_Training_in_Hyperbolic_Space_for_Multi-modal_Large_Langu::baseline"
+    },
+    {
+      "error_category": "reference_background_fabrication",
+      "error_location": "Section 5.2, Experimental Setting, 'LLaVA-Next [39]'",
+      "confidence": 0.99,
+      "supporting_evidence": "The text cites LLaVA-Next as \"LLaVA-Next [39].\" Reference [39] is the LLaVA-1.5 paper, Improved Baselines with Visual Instruction Tuning; LLaVA-NeXT is reference [32]. This is a concrete incorrect attribution.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5784-HyperET__Efficient_Training_in_Hyperbolic_Space_for_Multi-modal_Large_Langu::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Abstract, Introduction, Sections 4.2–4.3, and Conclusion",
+      "confidence": 0.9,
+      "supporting_evidence": "The paper repeatedly claims alignment \"at an arbitrary granularity level\" and \"precise control\" of representation granularity. The experiments evaluate a small set of task benchmarks but do not define, measure, or provide labels for visual/textual granularity levels, nor test arbitrary target radii or demonstrate that a target radius corresponds to a particular granularity. Given the invalid output-level derivation in Eqs. (11)–(13), the empirical results cannot substantiate this much stronger mechanism claim.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5784-HyperET__Efficient_Training_in_Hyperbolic_Space_for_Multi-modal_Large_Langu::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 13,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (gpt-5.6-terra, taxonomy=paperaudit): 13 error(s) reported.",
+  "baseline": {
+    "model": "gpt-5.6-terra",
+    "provider": "openai",
+    "taxonomy": "paperaudit",
+    "paper_chars": 67973,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 19710,
+      "output_tokens": 4045,
+      "cache_read_input_tokens": null,
+      "cache_creation_input_tokens": null
+    }
+  }
+}

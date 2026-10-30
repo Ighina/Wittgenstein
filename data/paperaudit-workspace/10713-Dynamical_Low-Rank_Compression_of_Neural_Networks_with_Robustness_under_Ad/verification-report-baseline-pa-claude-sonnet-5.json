@@ -1,0 +1,110 @@
+{
+  "paper_id": "10713-Dynamical_Low-Rank_Compression_of_Neural_Networks_with_Robustness_under_Ad",
+  "title": "Dynamical Low-Rank Compression of Neural Networks with Robustness under Ad",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "evidence_data_integrity",
+      "error_location": "Table 2 and Figures 4-6",
+      "confidence": 0.95,
+      "supporting_evidence": "Table 2 has misaligned attack-type column headers: the value 54.96 listed under 'Jitter, ε 0.3' for VGG16/UCM baseline is actually the ℓ²-FGSM ε=0.3 value from Figure 4, and 85.05 under 'Mixup, ε 0.045' is actually the Jitter ε=0.045 value from Figure 5. Consequently, bold 'surpasses baseline' highlights are wrong: e.g., UCM VGG16 RobustDLRT is bolded at 'Jitter ε 0.035' with 88.33 although the baseline is 89.58, and CIFAR VGG11 RobustDLRT is bolded at FGSM ε=0.1 with 63.82 although the baseline is 64.21.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "10713-Dynamical_Low-Rank_Compression_of_Neural_Networks_with_Robustness_under_Ad::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Definition 1 / Section 2",
+      "confidence": 0.9,
+      "supporting_evidence": "The regularizer R is defined only for square r×r matrices, but the text claims R(USV^T)=R(S) for orthogonal U,V. In the paper's setup, U,V are n×r orthonormal bases, so USV^T is n×n and R(USV^T) is not even defined. If R were extended to full n×n matrices with α²=||W||²/n, the equality is false: e.g., r=1, n=2, U=V=(1,0)^T, S=[σ] gives R(USV^T)=σ²/√2 while R(S)=0. Thus the invariance statement is ill-defined or incorrect.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "10713-Dynamical_Low-Rank_Compression_of_Neural_Networks_with_Robustness_under_Ad::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Proposition 2 and its proof",
+      "confidence": 0.9,
+      "supporting_evidence": "Proposition 2 states κ(S) ≤ exp(R(S)/(2σ_r(S))) + c, where c may depend on r and the spectrum structure. The proof derives instead ln κ(S) ≤ R(S)/(√2 σ_r(S)^2), i.e. κ(S) ≤ exp(R(S)/(√2 σ_r(S)^2)), with no additive c. The exponent is inconsistent and the c-term makes the claimed explicit bound vacuous, undermining the 'theoretical guarantees' contribution.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "10713-Dynamical_Low-Rank_Compression_of_Neural_Networks_with_Robustness_under_Ad::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Introduction, contribution bullet 'Preservation of performance'",
+      "confidence": 0.9,
+      "supporting_evidence": "The bullet claims the regularizer 'neither degrades training performance nor reduces clean validation accuracy across a variety of network architectures.' This is contradicted by the paper's own numerical results: ImageNet ViT-32l clean accuracy is 72.25 for RobustDLRT vs 74.37 for baseline; CIFAR ViT-16b is 94.66 vs 95.42; and Section 6 admits 'slightly reduced clean accuracy.' Proposition 3 only treats a convex least-squares proxy, not real network training.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "10713-Dynamical_Low-Rank_Compression_of_Neural_Networks_with_Robustness_under_Ad::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Section 'Adversarial Training' and Table 6",
+      "confidence": 0.85,
+      "supporting_evidence": "The text says 'baseline and DLRT models were trained on static, clean data without adversarial augmentation, while RobustDLRT was trained with adversarial batches,' but Table 6 reports baseline ℓ²-FGSM ε=0.1 accuracy 91.91, whereas the non-adversarially-trained baseline in Table 2 has only 76.40 at the same attack. Thus Table 6's baseline must have been adversarially trained, contradicting the text. The comparison is also confounded because RobustDLRT was trained with more data diversity, so the table cannot be used to attribute gains to the regularizer.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "10713-Dynamical_Low-Rank_Compression_of_Neural_Networks_with_Robustness_under_Ad::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Table 1",
+      "confidence": 0.8,
+      "supporting_evidence": "Table 1 reports LoRA with c.r. 95.70%. LoRA is additive fine-tuning W = W0 + BA on frozen full-rank base weights, so it is not a compression method and cannot have a 95.7% parameter-reduction rate relative to the baseline. The paper itself states LoRA-type methods 'do not reduce the cost of the full training and inference.' The compression-rate comparison with DLRT/RobustDLRT is therefore misleading.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "10713-Dynamical_Low-Rank_Compression_of_Neural_Networks_with_Robustness_under_Ad::baseline"
+    },
+    {
+      "error_category": "reference_background_fabrication",
+      "error_location": "Related Work, DLRT discussion",
+      "confidence": 0.8,
+      "supporting_evidence": "The text says 'Extensions to tensor layers exist but federated learning adaptations remain preliminary and unproven.' This misstates the authors' own cited reference [36], whose title is 'Federated dynamical low-rank training with global loss convergence guarantees,' and the method section later adapts the two-step scheme of [36]. The claim that federated DLRT is unproven contradicts the cited work.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "10713-Dynamical_Low-Rank_Compression_of_Neural_Networks_with_Robustness_under_Ad::baseline"
+    },
+    {
+      "error_category": "context_misalignment_incoherence",
+      "error_location": "Appendix A.1",
+      "confidence": 0.9,
+      "supporting_evidence": "Appendix A.1 says 'In Table 10, we observe that the regularizer R(W) applied to the full weight matrices ...' but no Table 10 appears anywhere in the paper; the tables stop at Table 9. This is a dangling reference to nonexistent content.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "10713-Dynamical_Low-Rank_Compression_of_Neural_Networks_with_Robustness_under_Ad::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Table 2 / Table 9 (selection of β)",
+      "confidence": 0.75,
+      "supporting_evidence": "The tables report 'the best performing β' separately for each attack type according to Table 9. For example, UCM VGG16 uses β=0.075 for FGSM, β=0.2 for Jitter, and β=0.15 for Mixup. Therefore a single 'RobustDLRT' row in Table 2 does not represent one fixed model; the adversarial accuracy values come from different models selected per attack, making the comparison to baseline/DLRT favorable and not a genuine single-model evaluation.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "10713-Dynamical_Low-Rank_Compression_of_Neural_Networks_with_Robustness_under_Ad::baseline"
+    },
+    {
+      "error_category": "evidence_data_integrity",
+      "error_location": "Figure 4",
+      "confidence": 0.6,
+      "supporting_evidence": "Figure 4 lists the UCM VGG16 full-rank baseline clean accuracy as 92.40, whereas Table 2 reports the same baseline clean accuracy as 94.40±0.72. In Figure 4, the DLRT row is 93.92, which would be higher than the baseline clean accuracy, contradicting Table 2 where DLRT clean accuracy (93.92) is below baseline (94.40). This appears to be a data-entry inconsistency.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "10713-Dynamical_Low-Rank_Compression_of_Neural_Networks_with_Robustness_under_Ad::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 10,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (claude-sonnet-5, taxonomy=paperaudit): 10 error(s) reported.",
+  "baseline": {
+    "model": "claude-sonnet-5",
+    "provider": "anthropic",
+    "taxonomy": "paperaudit",
+    "paper_chars": 93649,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 58,
+      "output_tokens": 35090,
+      "cache_read_input_tokens": 25984,
+      "cache_creation_input_tokens": 0
+    }
+  }
+}

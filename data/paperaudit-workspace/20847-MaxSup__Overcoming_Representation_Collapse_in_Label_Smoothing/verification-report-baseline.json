@@ -1,0 +1,111 @@
+{
+  "paper_id": "20847-MaxSup__Overcoming_Representation_Collapse_in_Label_Smoothing",
+  "title": "MaxSup: Overcoming Representation Collapse in Label Smoothing",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Theorem 3.3 and Equation (4)",
+      "confidence": 0.95,
+      "supporting_evidence": "Theorem 3.3 claims to provide a 'Logit-Level Formulation of Label Smoothing Loss' and states 'LLS ≈ α ( zgt − (1/K) ∑_{k=1}^K zk ) − log ∑_{j=1}^K e^{z_j}'. However, this is labeled as an approximation without justification. Later in Appendix B (Equation 18), the proof shows 'L_{LS} = α ( z_{gt} - (1/K)∑_{k=1}^{K} z_k )' exactly, without the log-sum-exp term. The log-sum-exp term cancels out in the derivation (Equation 24-25 in Appendix B), so the approximation sign and the inclusion of the log-sum-exp term in Theorem 3.3 are incorrect. The exact formulation should be L_{LS} = α ( z_{gt} - (1/K)∑_{k=1}^{K} z_k ) as proven in Appendix B.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20847-MaxSup__Overcoming_Representation_Collapse_in_Label_Smoothing::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Corollary 3.4, Equation (5)",
+      "confidence": 0.85,
+      "supporting_evidence": "Corollary 3.4 decomposes L_{LS} as '(α/K) ∑_{zm<zgt} (zgt − zm) + (α/K) ∑_{zn>zgt} (zgt − zn)' where M and N are numbers of logits below and above z_{gt}. However, this decomposition is inconsistent with the proven form in Appendix B: L_{LS} = α(z_{gt} - (1/K)∑_{k=1}^K z_k). The decomposition in Eq. (5) uses α/K as the coefficient for each term, but when expanded, this would give α(z_{gt} - (1/K)∑_{k≠gt} z_k), not the correct form. The correct decomposition should maintain the α coefficient outside and properly account for all K classes including z_{gt} itself in the mean.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20847-MaxSup__Overcoming_Representation_Collapse_in_Label_Smoothing::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Table 1 vs. Table 5",
+      "confidence": 0.9,
+      "supporting_evidence": "Table 1 reports DeiT-Small baseline accuracy as 74.21% and Label Smoothing as 75.91% (without CutMix or Mixup). Table 5 reports baseline as 74.39±0.45 and Label Smoothing as 76.08±0.38. While Table 5 includes standard deviations suggesting multiple runs, the means differ substantially (74.21 vs 74.39 for baseline, 75.91 vs 76.08 for LS). The text does not explain this discrepancy, and both tables claim to use DeiT-Small on ImageNet-1K. If these are different experimental setups, this should be clearly stated.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20847-MaxSup__Overcoming_Representation_Collapse_in_Label_Smoothing::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Table 2 caption and interpretation in Section 4.1.1",
+      "confidence": 0.75,
+      "supporting_evidence": "Table 2 caption states 'higher is better' for both d̄_within (intra-class variation) and R² (inter-class separability). The text in Section 4.1.1 states 'MaxSup maintains d̄_within reductions similar to other methods, suggesting only marginal benefits in preserving intra-class statistics.' However, if higher d̄_within is better (as the caption indicates), then MaxSup's d̄_within of 0.293 (train) and 0.300 (val) is higher than LS's 0.263 and 0.254, which should be interpreted as MaxSup preserving MORE intra-class variation, not 'marginal benefits.' The interpretation contradicts the stated metric direction.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20847-MaxSup__Overcoming_Representation_Collapse_in_Label_Smoothing::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Definition 3.5, Equation (7)",
+      "confidence": 0.8,
+      "supporting_evidence": "Definition 3.5 defines L_MaxSup using y'_k = 1_{k=argmax(q)}, where q is the predicted probability. However, during training with gradient descent, argmax(q) is not differentiable. The gradient analysis in Section 3.2 and Appendix C proceeds as if this is differentiable. The paper does not explain how the non-differentiable argmax operation is handled in practice (e.g., using straight-through estimators or soft approximations). This is a critical implementation detail that affects whether the method can actually be trained as described.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20847-MaxSup__Overcoming_Representation_Collapse_in_Label_Smoothing::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Table 4 vs. Table 10",
+      "confidence": 0.85,
+      "supporting_evidence": "Table 4 reports ResNet-50 baseline as 76.41±0.10 and Label Smoothing as 76.91±0.11. Table 10 (described as using a different training recipe with 90 epochs and step scheduler) reports ResNet-50 baseline as 76.44±0.10 and Label Smoothing as 76.65±0.11. The baseline accuracies are nearly identical (76.41 vs 76.44), but Label Smoothing differs significantly (76.91 vs 76.65). This is counterintuitive: if the training recipe substantially changes (90 vs presumably more epochs, step vs cosine scheduler), we would expect both baseline and LS to change proportionally. The near-identical baseline but different LS performance suggests possible experimental inconsistency or mislabeling of results.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20847-MaxSup__Overcoming_Representation_Collapse_in_Label_Smoothing::baseline"
+    },
+    {
+      "error_category": "Statistical reporting",
+      "error_location": "Table 7",
+      "confidence": 0.95,
+      "supporting_evidence": "Table 7 reports 'Low' class accuracy as 0.0 for all methods across all settings. The text states 'it fails to improve performance on minority low-shot classes, which remain at or near zero accuracy.' However, exactly 0.0% accuracy on multiple classes across different methods and splits is statistically implausible unless these classes have literally zero test samples or the model never predicts them. The paper does not explain this phenomenon or provide class-wise sample counts. This suggests either a data processing error, evaluation bug, or incomplete reporting of the experimental setup.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20847-MaxSup__Overcoming_Representation_Collapse_in_Label_Smoothing::baseline"
+    },
+    {
+      "error_category": "Citation / attribution",
+      "error_location": "Section 2.2, reference to [39]",
+      "confidence": 0.7,
+      "supporting_evidence": "The paper cites [39] (Xia et al., 2024) multiple times regarding label smoothing's effects on misclassified samples and gradient analysis. However, the paper states in Section 3.2: 'While [39] conducted a related gradient analysis of the training loss, it focuses specifically on the setting of selective classification.' The paper then claims novelty for its logit-level reformulation. Yet the extensive reliance on [39] for core observations (e.g., 'These issues with LS on misclassified samples have also been systematically observed in prior work [39]') suggests the contribution may not be as novel as claimed, or the attribution is incomplete regarding what was already known from [39].",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20847-MaxSup__Overcoming_Representation_Collapse_in_Label_Smoothing::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (figure-text)",
+      "error_location": "Figure 2 and Section 4.4",
+      "confidence": 0.65,
+      "supporting_evidence": "Section 4.4 states 'Further quantitative Grad-CAM overlay metrics (e.g., precision and recall for target regions) confirm that MaxSup yields more focused and comprehensive activation maps.' However, Figure 2 only shows qualitative visualizations, and no quantitative metrics are actually reported in the paper. The claim of 'quantitative Grad-CAM overlay metrics' confirming the results is unsupported by any presented data.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20847-MaxSup__Overcoming_Representation_Collapse_in_Label_Smoothing::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Abstract and Table 2",
+      "confidence": 0.8,
+      "supporting_evidence": "The abstract claims 'we show that MaxSup helps restore intra-class variation.' However, Table 2 shows MaxSup's d̄_within (0.293 train, 0.300 val) is still substantially lower than the baseline (0.311 train, 0.331 val). While MaxSup performs better than LS (0.263, 0.254), it does not 'restore' intra-class variation to baseline levels. The claim overstates the results. The text in Section 4.1.1 more accurately states 'MaxSup maintains d̄_within reductions similar to other methods, suggesting only marginal benefits,' which contradicts the abstract's stronger claim.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20847-MaxSup__Overcoming_Representation_Collapse_in_Label_Smoothing::baseline"
+    },
+    {
+      "error_category": "Experiment setup",
+      "error_location": "Table 13, Logit Normalization result",
+      "confidence": 0.75,
+      "supporting_evidence": "Table 13 reports Logit Normalization [38] achieving 74.32% on ImageNet with ResNet-50, described as 'significantly lower than the 76.91% achieved by standard Label Smoothing.' However, the paper states 'With its default hyperparameter settings' without specifying what these are or whether they were tuned for fair comparison. Given that the paper emphasizes re-tuning hyperparameters for all methods (Section 4.2.1: 'hyperparameters and training settings are re-tuned under each training recipe'), reporting a single result with 'default' settings for a baseline method is inconsistent with the stated experimental protocol and potentially unfair.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20847-MaxSup__Overcoming_Representation_Collapse_in_Label_Smoothing::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 11,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (claude-sonnet-4-5-20250929, taxonomy=default): 11 error(s) reported.",
+  "baseline": {
+    "model": "claude-sonnet-4-5-20250929",
+    "taxonomy": "default",
+    "paper_chars": 83022,
+    "truncated": false
+  }
+}

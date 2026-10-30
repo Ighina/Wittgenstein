@@ -1,0 +1,150 @@
+{
+  "paper_id": "28928-Generalized_Linear_Mode_Connectivity_for_Transformers",
+  "title": "Generalized Linear Mode Connectivity for Transformers",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 2, Eq. (2), multi-model barrier definition",
+      "confidence": 0.99,
+      "supporting_evidence": "The multi-model barrier is defined using an infimum over simplex weights: \"B[{θ_m}] = inf_{λ ∈ Δ} [L[Σ λ_m θ_m] − Σ λ_m L[θ_m]]\". This cannot measure whether every convex combination has low loss. An infimum can be zero or negative even when most of the simplex has a severe positive-loss barrier. The pairwise definition correctly uses a supremum. The multi-model criterion should involve a supremum/maximal deviation (or otherwise explicitly define a different quantity), not an infimum.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "28928-Generalized_Linear_Mode_Connectivity_for_Transformers::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 4.2 / multi-model learned refinement",
+      "confidence": 0.96,
+      "supporting_evidence": "The paper says the sampled-Dirichlet expected-loss objective \"directly drives B{π_m(θ_m)} toward zero,\" but B in Eq. (2) is an infimum whereas the objective is an expectation over sampled mixtures. Minimizing an expectation neither minimizes an infimum nor guarantees a uniformly low loss over the simplex. This is especially consequential because the paper claims complete multi-way connectivity across the entire simplex.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "28928-Generalized_Linear_Mode_Connectivity_for_Transformers::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 4.1, Eq. (3), feed-forward weight-matching objective",
+      "confidence": 0.97,
+      "supporting_evidence": "Eq. (3) defines P as an argmin of positive Frobenius inner products while the text says the method \"maximizes weight similarity.\" For fixed weight norms, minimizing squared distance is equivalent to maximizing the relevant inner product, not minimizing it. As written, the equation selects anti-correlated weights rather than matched ones, unless missing minus signs or an argmax are supplied.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "28928-Generalized_Linear_Mode_Connectivity_for_Transformers::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 3.1, Table 1 and definition of \"semi-permutation\"",
+      "confidence": 0.98,
+      "supporting_evidence": "The claimed strict hierarchy \"permutation ⊂ semi-permutation ⊂ orthogonal ⊂ invertible\" is mathematically invalid. The stated semi-permutation matrices are sparse stochastic matrices and need not be orthogonal; rectangular matrices are not even members of a fixed-dimensional orthogonal group. Moreover, for the square homogeneous case used later (P_H ∈ R^{H×H}), requiring each column to sum to one, nonnegative entries, and at most one positive entry per row forces each column to occupy exactly one row and have weight 1, hence it is just a permutation matrix. Thus this definition does not provide the claimed strictly richer square head-alignment class.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "28928-Generalized_Linear_Mode_Connectivity_for_Transformers::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Sections 3.2.2 and 4.2, attention-head semi-permutations",
+      "confidence": 0.97,
+      "supporting_evidence": "The paper claims a richer semi-permutation symmetry for homogeneous attention heads, but Algorithm 1 explicitly projects P_H with \"PROJPERM,\" i.e. to a hard permutation, rather than to the stated semi-permutation class. Further, the displayed head identity only permits splitting the OV contribution of a head while retaining that head's QK circuit; it does not justify arbitrary mixing of distinct heads with different attention patterns. The stated algorithm and claimed symmetry are therefore inconsistent.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "28928-Generalized_Linear_Mode_Connectivity_for_Transformers::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 3.2.3, LayerNorm-to-RMSNorm reformulation",
+      "confidence": 0.98,
+      "supporting_evidence": "The paper writes \"LayerNorm(Z) = RMSNorm(ZM) · diag(α)√D + 1_N β^T.\" Under the paper's own Appendix-E RMSNorm definition, RMSNorm divides by sqrt((1/D)||z||² + ε), which is already the normalization factor used by LayerNorm after centering. No extra √D factor is present in standard LayerNorm. This incorrect factor invalidates the claimed exact LayerNorm reformulation and the subsequent assertion that its factors can simply be absorbed into surrounding layers.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "28928-Generalized_Linear_Mode_Connectivity_for_Transformers::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Abstract and Introduction, claims of universal Transformer/architecture connectivity",
+      "confidence": 0.99,
+      "supporting_evidence": "The abstract claims the framework solves alignment \"across any independently trained models regardless of positional encoding scheme or architectural details,\" and the Introduction claims it \"definitively prov[es] that all neural networks exist in a single connected basin.\" The experiments cover only small ViTs and reduced GPT-2 models on a few datasets. Appendix F directly states that RoPE \"breaks the full orthogonal group\" and requires specialized, not-provided RoPE-aware alignment. The evidence cannot support the universal claim, and the paper itself acknowledges an unaddressed counterexample class.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "28928-Generalized_Linear_Mode_Connectivity_for_Transformers::baseline"
+    },
+    {
+      "error_category": "context_misalignment_incoherence",
+      "error_location": "Section 5, two-way results paragraph versus Table 2",
+      "confidence": 0.99,
+      "supporting_evidence": "The text states that learned matching achieves \"zero or near-zero barriers on every dataset except BookCorpus.\" Table 2 reports \"0.00 ± 0.00\" for learned matching on BookCorpus as well. The immediately following statement, \"All tasks ... reliably attain B ≈ 0,\" contradicts the claimed BookCorpus exception. One of these descriptions or the table must be corrected.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "28928-Generalized_Linear_Mode_Connectivity_for_Transformers::baseline"
+    },
+    {
+      "error_category": "context_misalignment_incoherence",
+      "error_location": "Section 6, interpretation of weight matching versus Table 2",
+      "confidence": 0.99,
+      "supporting_evidence": "Section 6 concludes that weight matching is \"sufficient for achieving zero barriers.\" This conflicts with Table 2, where weight matching has reported barriers of 0.36, 0.69, 0.47, 0.34, and 1.56 across the five tasks, all materially nonzero. The section cannot simultaneously characterize the observed method as sufficient for zero barriers and report those results.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "28928-Generalized_Linear_Mode_Connectivity_for_Transformers::baseline"
+    },
+    {
+      "error_category": "context_misalignment_incoherence",
+      "error_location": "Conclusion",
+      "confidence": 0.99,
+      "supporting_evidence": "The Conclusion first says \"permutation symmetries alone are sufficient\" and that richer classes provide \"only marginal improvements,\" then immediately says \"broader symmetry classes are essential.\" These are mutually incompatible conclusions. They also conflict with Table 2, where the permutation-only learned method has nonzero barriers (including 0.63 on Tiny Shakespeare and 1.60 on BookCorpus) whereas the claimed generalized method is reported as zero.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "28928-Generalized_Linear_Mode_Connectivity_for_Transformers::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Appendix B.1, Tiny ImageNet evaluation/calibration",
+      "confidence": 0.98,
+      "supporting_evidence": "The appendix states: \"we applied post-hoc temperature scaling ... only to our learned matching method,\" while \"baseline methods were evaluated using uncalibrated logits for fair comparison.\" Applying calibration only to the favored method is not a fair comparison: temperature scaling changes cross-entropy loss, which is the reported barrier metric. The calibration-fitting split/procedure is also unspecified. This can artificially improve the method's reported loss-barrier result relative to all baselines.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "28928-Generalized_Linear_Mode_Connectivity_for_Transformers::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Table 2 and Section 5",
+      "confidence": 0.9,
+      "supporting_evidence": "Table 2 reports means, standard errors, and ranks but does not state the number of independently trained model pairs/seeds, the interpolation-grid resolution used to approximate the supremum, or the learned-matching optimization budget and data split for the main results. Since claims rest on exact \"0.00 ± 0.00\" barriers, these omitted details prevent assessing whether the stated supremum was actually evaluated and whether the uncertainty estimates are meaningful.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "28928-Generalized_Linear_Mode_Connectivity_for_Transformers::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Figure 2 / Section 3.2 description of the proposed transformation",
+      "confidence": 0.93,
+      "supporting_evidence": "Figure 2 says head transformations use a novel \"diamond\" operator, but states that its \"precise definition is provided in our supplementary code repository\" rather than defining it in the paper. This operator is central to the purported function-preserving semi-permutation transformation. Without its mathematical definition, dimensions, and proof of preservation, the alignment map π is not specified sufficiently to verify the method or its exact-symmetry claims.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "28928-Generalized_Linear_Mode_Connectivity_for_Transformers::baseline"
+    },
+    {
+      "error_category": "rhetorical_presentation_manipulation",
+      "error_location": "Table 2, Section 5, and repeated \"zero-barrier\" claims",
+      "confidence": 0.91,
+      "supporting_evidence": "The paper repeatedly describes results as \"perfect zero-barrier\" and \"complete zero deviation,\" but the numerical evidence is rounded to two decimals. A displayed value of \"0.00 ± 0.00\" establishes only that the reported estimates round to zero at that precision, not exact zero barrier over the continuous interpolation interval or simplex. The stronger exact-zero language is unsupported by the reported measurement protocol.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "28928-Generalized_Linear_Mode_Connectivity_for_Transformers::baseline"
+    },
+    {
+      "error_category": "reference_background_fabrication",
+      "error_location": "Section 7, paragraph beginning \"Subsequently, the Git Re-Basin framework\"",
+      "confidence": 0.9,
+      "supporting_evidence": "The paper says the \"Git Re-Basin framework\" was \"first proposed by Singh and Jaggi [2020] and later extended by Ainsworth et al. [2022].\" Singh and Jaggi (2020) is cited in the references as \"Model fusion via optimal transport,\" not Git Re-Basin; the Git Re-Basin title/framework is Ainsworth et al. (2022). While OT fusion is related prior work, describing it as the first proposal of Git Re-Basin is a misattribution.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "28928-Generalized_Linear_Mode_Connectivity_for_Transformers::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 15,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (gpt-5.6-terra, taxonomy=paperaudit): 15 error(s) reported.",
+  "baseline": {
+    "model": "gpt-5.6-terra",
+    "provider": "openai",
+    "taxonomy": "paperaudit",
+    "paper_chars": 76444,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 19382,
+      "output_tokens": 4739,
+      "cache_read_input_tokens": null,
+      "cache_creation_input_tokens": null
+    }
+  }
+}

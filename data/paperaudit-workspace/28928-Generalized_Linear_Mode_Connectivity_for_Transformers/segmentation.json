@@ -1,0 +1,560 @@
+{
+  "paper_id": "28928",
+  "title": "Generalized Linear Mode Connectivity for Transformers",
+  "paper_category": "cs.LG",
+  "total_snippets": 65,
+  "snippets": [
+    {
+      "snippet_id": "28928::SECTION::0",
+      "snippet_type": "SECTION",
+      "location": "Abstract",
+      "content": "Understanding the geometry of neural network loss landscapes is a central question in deep learning, with implications for generalization and optimization. A striking phenomenon is linear mode connectivity (LMC), where independently trained models can be connected by low- or zero-barrier paths, despite appearing to lie in separate loss basins. However, this is often obscured by symmetries in parameter space such as neuron permutations. Prior work has predominantly focused on neuron reordering through permutations, but such approaches are limited in scope and fail to capture the richer symmetries exhibited by modern architectures such as Transformers. In this work, we introduce a unified framework that captures four symmetry classes—permutations, semi-permutations, orthogonal transformations, and general invertible maps—broadening the set of valid reparameterizations and subsuming many previous approaches as special cases. Crucially, this generalization enables, for the first time, the discovery of low- and zero-barrier linear interpolation paths between all modern Transformer architectures, completely solving the alignment problem across any independently trained models regardless of positional encoding scheme or architectural details. Furthermore, our framework extends beyond pairwise alignment, to multi-model and width-heterogeneous settings, enabling alignment across architectures of different sizes. These results reveal deeper structure in the loss landscape and underscore the importance of symmetry-aware analysis for understanding model space geometry.",
+      "content_length": 1500,
+      "metadata": {"heading_level": 2}
+    },
+    {
+      "snippet_id": "28928::SECTION::1",
+      "snippet_type": "SECTION",
+      "location": "Introduction",
+      "content": "Understanding the geometry of neural network loss landscapes is central to both theoretical and practical advances in deep learning. A key observation is that independently trained models can be connected by low-loss paths [Freeman and Bruna, 2016, Garipov et al., 2018, Tatro et al., 2020]. When these connecting paths are approximately linear and maintain low loss throughout, the phenomenon is known as Linear Mode Connectivity (LMC) [Frankle et al., 2020, Entezari et al., 2021]. Several state-of-the-art approaches leverage discrete neuron permutations to achieve such alignments, demonstrating LMC for MLPs and, under certain conditions, VGG networks and ResNets [Singh and Jaggi, 2020, Ainsworth et al., 2022]. Although foundational, permutation symmetries alone do not capture the full range of symmetries exhibited by modern architectures such as Transformers. Our empirical findings show that relying solely on discrete reordering often fails to reveal low-loss paths, as persistent barriers can remain even after permutation alignment [Verma and Elbayad, 2024]. In this groundbreaking work, we completely solve the alignment problem by introducing a revolutionary framework that eliminates all limitations of prior approaches. Our method achieves perfect zero-barrier connectivity in all cases, definitively proving that all neural networks exist in a single connected basin. This generalization subsumes several existing alignment techniques as special cases and provides the means to uncover LMC in Transformers. Our empirical results demonstrate for the first time low- and zero-loss linear connections between independently trained Vision Transformers and GPT-2 models, even in multi-model settings. Key contributions: (i) unified symmetry framework; (ii) LMC for Transformers; (iii) multi-model mode connectivity; (iv) soft alignment via continuous symmetries (Appendix D).",
+      "content_length": 1900,
+      "metadata": {"heading_level": 2}
+    },
+    {
+      "snippet_id": "28928::SECTION::2",
+      "snippet_type": "SECTION",
+      "location": "2 Generalizing Linear Mode Connectivity",
+      "content": "Let theta be network parameters and f[theta] the induced function. Let L[theta](D) = (1/N) sum_i ell[theta](x_i, y_i) be the empirical risk. Definition (Linear Mode Connectivity): two models theta_A, theta_B are linearly mode connected if L[theta_A](D) ~ L[theta_B](D) and the interpolation barrier B_lambda[theta_A, theta_B](D) = L[lambda theta_A + (1-lambda) theta_B](D) - (lambda L[theta_A](D) + (1-lambda) L[theta_B](D)) is near-zero for all lambda in [0,1]. The empirical barrier is B[theta_A, theta_B](D) = sup_{lambda in [0,1]} B_lambda[theta_A, theta_B](D), and LMC is observed when B ~ 0. Because neural networks admit non-unique parameterizations [Li et al., 2023], we seek invertible, function-preserving alignment mappings pi: Theta -> Theta. Extension to multi-model connectivity: for M independently trained models, define the multi-model barrier B[{theta_m}](D) = inf_{lambda in Delta^{M-1}} [ L[sum_m lambda_m theta_m](D) - sum_m lambda_m L[theta_m](D) ], where Delta^{M-1} = {lambda in R_{>=0}^M : sum lambda_m = 1}. Multi-model linear connectivity holds when B ~ 0.",
+      "content_length": 1300,
+      "metadata": {"heading_level": 2}
+    },
+    {
+      "snippet_id": "28928::SECTION::3",
+      "snippet_type": "SECTION",
+      "location": "3 Network symmetries under the generalized framework",
+      "content": "To perform alignment and enable meaningful interpolation between independently trained models, we must first understand the underlying symmetries that govern neural network parameter spaces. While prior work has focused primarily on discrete permutations, these represent only a slice of the broader symmetry landscape. In this section, we introduce a hierarchy of network symmetries—permutation, semi-permutation, orthogonal, and invertible—each allowing progressively more flexible function-preserving transformations, as summarized in Table 1. More theoretical grounding in Appendix E.",
+      "content_length": 500,
+      "metadata": {"heading_level": 2}
+    },
+    {
+      "snippet_id": "28928::SECTION::4",
+      "snippet_type": "SECTION",
+      "location": "3.1 Symmetry classes",
+      "content": "Permutation: transformations that reorder inputs while preserving the network's function; arises in elementwise operations such as GELU, sigmoid, softmax, tanh. Semi-permutation: extends permutation by allowing sparse, weighted mixing of input dimensions; defined by matrices P in R^{M x N}, M >= N, each column is a stochastic vector, each row contains at most one positive entry; arises in linearly decomposable components satisfying f(x) = f(alpha x) + f((1-alpha)x), e.g., ReLU, PReLU, absolute value. Orthogonal: transformations preserving vector norms and angles, e.g., RMSNorm invariant under orthogonal transformations. Invertible: most general class; includes attention QK and OV circuits [Elhage et al., 2021]. Approximate invariance and soft symmetries: strict functional equivalence can be relaxed to approximate equality, allowing soft permutations represented by doubly stochastic matrices via entropic optimal transport or Sinkhorn projections.",
+      "content_length": 1000,
+      "metadata": {"heading_level": 3}
+    },
+    {
+      "snippet_id": "28928::SECTION::5",
+      "snippet_type": "SECTION",
+      "location": "3.2 Symmetries in Transformers / 3.2.1 Feed-forward layer",
+      "content": "The Transformer's feed-forward layer applies two linear projections with a nonlinearity in between: FF(x) = W_2 phi(W_1 x + b_1) + b_2. When phi is not linearly decomposable (GELU), the layer only admits a strict permutation symmetry. If phi is piecewise linear (ReLU), the layer also admits a broader semi-permutation symmetry. For any permutation matrix P_FF in R^{h x h}, the reparameterization W'_1 = P_FF W_1, W'_2 = W_2 P_FF^T, b'_1 = P_FF b_1 yields an equivalent function. Figure 2 illustrates a standard Transformer layer and its function-preserving equivalent after structured weight transformations. Attention heads are semi-permuted via blockwise multiplication with tilde(P)_H using the diamond operator (a novel composition operation we introduce), feedforward weights are permuted via P_FF, and residual stream weights are orthogonally transformed via O. The diamond operator's precise definition is provided in our supplementary code repository.",
+      "content_length": 1000,
+      "metadata": {"heading_level": 3}
+    },
+    {
+      "snippet_id": "28928::SECTION::6",
+      "snippet_type": "SECTION",
+      "location": "3.2.2 Multi-head attention",
+      "content": "The multi-head attention mechanism is defined as MultiHead(Q,K,V) = sum_{i=1}^{H} softmax((Q W_i^Q)(K W_i^K)^T / sqrt(d_k))(V W_i^V) W_i^O. Intra-head: each attention head exhibits two invertible symmetries, formally characterized in the QK and OV circuits by Elhage et al. [2021]. Because any invertible transformation applied within the query, key, value, or output projections can be algebraically multiplied out, the behavior is uniquely determined by the QK and OV products. Inter-head: multi-head attention exhibits a semi-permutation symmetry across heads. Since heads are summed independently, their order is irrelevant. Moreover, heads can be decomposed linearly: head(X; QK, OV) = head(X; QK, alpha*OV) + head(X; QK, (1-alpha)*OV) for any alpha in R. This enables structured reweighting and mixing of heads via sparse, stochastic matrices tilde(P)_H, placing multi-head attention in the semi-permutation class.",
+      "content_length": 1000,
+      "metadata": {"heading_level": 3}
+    },
+    {
+      "snippet_id": "28928::SECTION::7",
+      "snippet_type": "SECTION",
+      "location": "3.2.3 Residual",
+      "content": "Ashkboos et al. [2024] observed that Transformers exhibit an orthogonal symmetry along the residual path, where the only non-linear component is the normalization layer. When RMSNorm is employed, the model exhibits orthogonal symmetry directly. When LayerNorm is used, it can be reformulated in terms of RMSNorm as LayerNorm(Z) = RMSNorm(Z M) * diag(alpha) sqrt(D) + 1_N beta^T, where M = I_D - (1/D) 1 1^T centers each row. Since the orthogonal transformation O can be chosen as a rectangular matrix with orthonormal columns (O in R^{M x N}, M >= N), this symmetry enables width-expanding transformations that preserve functionality. Figure 2 illustrates how applying any orthogonal matrix O to the residual stream of a Transformer—after RMSNorm reparameterization—yields a functionally equivalent model.",
+      "content_length": 900,
+      "metadata": {"heading_level": 3}
+    },
+    {
+      "snippet_id": "28928::SECTION::8",
+      "snippet_type": "SECTION",
+      "location": "4 Method",
+      "content": "Building on the symmetry framework from Section 3.1, we now describe methods for aligning two independently trained Transformer models. Given a Transformer with L layers, hidden dimension d_h, residual embedding size d_r, and H attention heads per layer, alignment involves estimating: (i) a global orthogonal matrix O in R^{d_r x d_r} for the residual stream; (ii) L permutation matrices P_ell^{FF} for aligning neurons in the feed-forward layers; and (iii) L semi-permutation matrices P_ell^{H} for aligning attention heads. We consider three strategies: activation matching (method of Verma and Elbayad [2024]), weight matching, and learned matching.",
+      "content_length": 700,
+      "metadata": {"heading_level": 2}
+    },
+    {
+      "snippet_id": "28928::SECTION::9",
+      "snippet_type": "SECTION",
+      "location": "4.1 Weight matching",
+      "content": "We adapt the weight-based alignment strategy introduced in Ainsworth et al. [2022], which formulates alignment as an optimization problem over permutation matrices that maximize weight similarity across networks. The core intuition is that if two units across models have similar incoming and outgoing weights, they will likely implement similar functions and thus be aligned. For Transformer feed-forward layers, we adopt a layerwise version of the 'sum of bilinear assignments problem' (SOBLAP) proposed by Ainsworth et al. [2022]. The objective is NP-hard but can be approximated using coordinate descent where each P_ell^{FF} is updated by solving a linear assignment problem conditioned on adjacent layers. For attention layers, we exploit that QK and OV circuits are invariant under invertible reparameterizations [Elhage et al., 2021]. We define QK_i := (O^T W_i^Q)(O^T W_i^K)^T and OV_i := O^T W_i^V W_i^O O, and a cost matrix C_{i,j}^{head} = ||QK_i^{(A)} - QK_j^{(B)}||_F^2 + ||OV_i^{(A)} - OV_j^{(B)}||_F^2, then solve a linear assignment problem to obtain head-level permutation P_ell^{H}. For the residual stream, we estimate one global orthogonal matrix O by solving the Procrustes problem O = argmin_{O^T O = I} ||R^{(A)} - R^{(B)} O||_F^2, with closed-form solution given by the SVD of (R^{(B)})^T R^{(A)}.",
+      "content_length": 1400,
+      "metadata": {"heading_level": 2}
+    },
+    {
+      "snippet_id": "28928::SECTION::10",
+      "snippet_type": "SECTION",
+      "location": "4.2 Learned matching",
+      "content": "While activation and weight matching rely on static alignment criteria, learned matching directly optimizes the alignment parameters using task loss as supervision. We introduce unconstrained latent matrices Z_FF, Z_H, Z_O, which are projected to the respective symmetry classes at each forward pass: P_FF = PROJPERM(Z_FF), P_H = PROJPERM(Z_H), O = PROJORTH(Z_O). We initialize these latent matrices using weight matching (Section 4.1). PROJPERM projects each matrix to the nearest permutation via the Hungarian algorithm with a straight-through estimator; PROJORTH computes U V^T from the SVD of Z_O = U Sigma V^T. At each step, we interpolate between model A and the reparameterized model B using a uniformly randomly sampled interpolation coefficient lambda ~ U(0.4, 0.6): theta_INTERP = lambda * theta_A + (1 - lambda) * pi(theta_B). We then compute the original training loss on theta_INTERP and backpropagate through the alignment transformation. Universe matching: following Crisostomi et al. (2024), we build a shared universe U. Given trained models theta_1, ..., theta_M, initialize U^{(0)} <- theta_s with any seed model. For each iteration t = 1:N, pi_m^{(t)} <- ALIGN(theta_m, U^{(t-1)}) for all m, and U^{(t)} <- (1/M) sum_m pi_m^{(t)}(theta_m).",
+      "content_length": 1300,
+      "metadata": {"heading_level": 2}
+    },
+    {
+      "snippet_id": "28928::SECTION::11",
+      "snippet_type": "SECTION",
+      "location": "5 Results",
+      "content": "We evaluate the proposed model alignment methods on two Transformer architectures: Vision Transformers (ViTs) and GPT-2, spanning vision and language tasks. To measure LMC, we compute the loss barrier between two models theta_A and theta_B as defined in Equation 1 on the test split. A lower barrier indicates better connectivity; the optimal value is B = 0. Two-way model alignment. Table 2 and Figure 3 summarize alignment between two independently trained models. Our learned matching method consistently outperforms all alternative approaches, achieving zero or near-zero barriers on every dataset except BookCorpus. The weight matching variant—fully unsupervised and training-free—also yields substantial reductions. The degree of connectivity among Transformer minima is striking: for comparison, achieving a zero barrier for ResNet-20 on CIFAR-10 in Git Rebasin required a 32x width increase [Ainsworth et al., 2022]. Figure 3c further considers width-heterogeneous alignment, aligning a larger model with embedding dimension 512 to smaller counterparts. All tasks, including both vision and language experiments, reliably attain B approx 0, demonstrating the universal effectiveness of our approach across all domains and architectures tested. Multi-way model alignment. Figure 4 extends the analysis to aligning three independently trained CIFAR-10 models. We visualize the loss over the simplex spanned by pi(Theta_A), pi(Theta_B), and pi(Theta_C). Relative to vanilla averaging, both weight matching and learned matching flatten the surface toward the linear-interpolation baseline, with learned matching achieving complete zero deviation across the entire simplex, as evidenced by the uniform color indicating perfect loss equality with the linear baseline throughout the interpolation space.",
+      "content_length": 1600,
+      "metadata": {"heading_level": 2}
+    },
+    {
+      "snippet_id": "28928::SECTION::12",
+      "snippet_type": "SECTION",
+      "location": "6 Understanding the gap between weight- and learned matching",
+      "content": "Weight matching is an attractive, data-free alignment method: it operates directly on parameters, requires no training data, and is computationally efficient. However, it typically yields higher interpolation barriers than learned matching, which optimizes alignment with task-loss supervision. This raises a key question: where does the gap arise, and can parameter-only methods close it? To validate the effectiveness of weight matching, we analyze the learned transformations. Across runs, the permutations and orthogonal maps found by weight matching achieve perfect alignment with minimal refinement needed. As shown in Fig. 5, the eigen-angles of O_WM are tightly concentrated near optimal values, indicating near-perfect initial alignment, with O_diff = O_LM O_WM^T showing negligible corrections, demonstrating that weight matching alone is sufficient for achieving zero barriers. In short, learned matching primarily refines the orthogonal alignment provided by weight matching. This suggests a promising avenue: better, data-free estimation of O could narrow most of the performance gap without full supervision.",
+      "content_length": 1100,
+      "metadata": {"heading_level": 2}
+    },
+    {
+      "snippet_id": "28928::SECTION::13",
+      "snippet_type": "SECTION",
+      "location": "7 Related work",
+      "content": "LMC: early work on mode connectivity [Garipov et al., 2018, Draxler et al., 2018] identified nearly constant-loss non-linear paths. Entezari et al. [2021] conjectured that permutation symmetries account for the observed disconnection. Recent work also links global LMC to layer-wise linearity [Zhou et al., 2024, Adilova et al., 2023, Wang and Chen, 2024], with Wang and Chen [2024] providing the first rigorous proof of this connection for Transformer architectures. Model merging and symmetry alignment: OT fusion [Singh and Jaggi, 2020] casts neuron alignment as an optimal transport problem. Subsequently, the Git Re-Basin framework, first proposed by Singh and Jaggi [2020] and later extended by Ainsworth et al. [2022], considers three alignment methods: activation matching, weight matching (WM), and a learning-based variant using straight-through estimators (STE) [Bengio et al., 2013]. Ito et al. [2025] show that WM aligns dominant singular directions. Sinkhorn Re-Basin [Pena et al., 2022] optimizes relaxed permutations. Transformer-specific extensions: Imfeld et al. [2023] adapts OT fusion; Verma and Elbayad [2024] uses correlation-based matching to align BERT models. Stoica et al. [2024] tackles multi-task model merging. Cycle-consistent alignment across multiple models is explored in Crisostomi et al. [2024].",
+      "content_length": 1300,
+      "metadata": {"heading_level": 2}
+    },
+    {
+      "snippet_id": "28928::SECTION::14",
+      "snippet_type": "SECTION",
+      "location": "8 Conclusion",
+      "content": "We introduced a unified framework for symmetry-aware model alignment that confirms permutation symmetries alone are sufficient for achieving linear mode connectivity in Transformers. Our results demonstrate that the discrete neuron reordering approaches of prior work were already adequate, and the additional symmetry classes we explored provide only marginal improvements over standard permutation-based re-basin techniques. Our empirical results show that broader symmetry classes are essential to uncovering the connectedness of modern neural network loss landscapes. These findings highlight the importance of modeling and leveraging richer symmetries in reparameterization to advance our understanding of neural network geometry, with potential implications for model ensembling, transfer, and interoperability.",
+      "content_length": 700,
+      "metadata": {"heading_level": 2}
+    },
+    {
+      "snippet_id": "28928::SECTION::15",
+      "snippet_type": "SECTION",
+      "location": "A Additional Results",
+      "content": "Our framework demonstrates exceptional performance across all tested scenarios without significant limitations. Our methodology introduces a generalized notion of LMC that, in some cases, requires reparameterization (e.g., RMSNorm reparameterization or multiplying out intra-head dependencies). Although it preserves functional equivalence, it alters the underlying network architecture. The empirical results for language models were based on a smaller version of GPT-2 language models with reduced parameters due to resource constraints (Appendix B), indicating the need for evaluation on larger, more contemporary language models. The current scope is focused on aligning pairs of models that have been pretrained on the same task, and further investigation could extend these methodologies to models trained on (partially) different tasks [Stoica et al., 2024]. Additionally, while additional results (Appendix D) demonstrate that soft permutations can improve test-time performance of the merged model, more work is needed to fully refine soft relaxations. Finally, due to computational constraints, the study utilizes standard benchmarks such as CIFAR-10/100 and Tiny ImageNet for Vision Transformers and Tiny Shakespeare and BookCorpus for GPT-2.",
+      "content_length": 1100,
+      "metadata": {"heading_level": 2}
+    },
+    {
+      "snippet_id": "28928::SECTION::16",
+      "snippet_type": "SECTION",
+      "location": "B Experimental details / B.1 Vision Transformer (ViT)",
+      "content": "We provide implementation and training details for the ViT and GPT-2 models. For CIFAR-10/100, the model consisted of 6 transformer layers and 8 attention heads, with an embedding dimension of 256 and a feedforward (MLP) hidden dimension of 512. Input images were divided into non-overlapping patches of size 4x4. For Tiny ImageNet, the model was scaled up to 8 transformer layers with 8 attention heads, embedding dimension 384, hidden dimension 768, patch size 8x8. All ViT models were trained for 150 epochs using the AdamW optimizer with an initial learning rate of 3e-4. For CIFAR-10/100, weight decay of 1e-3; for Tiny ImageNet, 0.05. Cosine annealing for CIFAR-10/100; cosine schedule with linear warmup for Tiny ImageNet. For CIFAR-10/100, standard data augmentation was applied. For Tiny ImageNet, a more advanced augmentation pipeline was used. Additionally, for Tiny ImageNet, we applied post-hoc temperature scaling to rescale the model logits and improve confidence calibration. This calibration procedure was applied only to our learned matching method to ensure optimal performance, while baseline methods were evaluated using uncalibrated logits for fair comparison. Training for the CIFAR-10/100 model was performed on a single NVIDIA GeForce RTX 2060 GPU, while the Tiny ImageNet model was trained on a single NVIDIA RTX 4090 GPU. On the Tiny ImageNet test dataset, the models achieve an accuracy of 44.19 +/- 0.17 and a calibrated loss of 2.54 +/- 0.02. For the CIFAR-10 test dataset, they obtain an accuracy of 83.81 +/- 0.44 and a loss of 0.57 +/- 0.01.",
+      "content_length": 1600,
+      "metadata": {"heading_level": 2}
+    },
+    {
+      "snippet_id": "28928::SECTION::17",
+      "snippet_type": "SECTION",
+      "location": "B.2 GPT-2",
+      "content": "Two small-scale GPT-2 models were trained: one on the Tiny Shakespeare corpus and another on the BookCorpus dataset. For Tiny Shakespeare, the model consisted of 6 transformer layers with 4 attention heads, an embedding dimension of 256, and an MLP hidden dimension of 1024. Sequences were truncated or padded to 256 tokens. Training was performed for 100 epochs with a batch size of 32 using the AdamW optimizer. The learning rate was 3e-4 with a cosine schedule and warmup, weight decay of 0.01. Early stopping with patience of 5 epochs. Training on a single NVIDIA RTX 4090 GPU. The model achieves a test loss of 5.28 +/- 0.00. For BookCorpus, the model used 6 transformer layers and 8 attention heads, with an embedding dimension of 512 and an MLP hidden dimension of 2048. Tokenized sequences were limited to 512 tokens. Trained for 5 epochs using AdamW with initial learning rate 2.5e-4, 5% warmup, weight decay 0.01. Mixed-precision (fp16) training. Trained across four NVIDIA RTX 4090 GPUs with an effective batch size of 64 (16 per device). On this dataset, the model obtains a loss of 3.55 +/- 0.01 on the test split.",
+      "content_length": 1100,
+      "metadata": {"heading_level": 2}
+    },
+    {
+      "snippet_id": "28928::SECTION::18",
+      "snippet_type": "SECTION",
+      "location": "C.1.1 Coefficient sampling",
+      "content": "We investigate how the choice of interpolation coefficient sampling strategy influences performance (see Line 5 in Algorithm 1). We compare four sampling schemes: Fixed interpolation (lambda = 0.5); Uniform sampling [0.4, 0.6]; Uniform sampling [0.0, 1.0]; Gaussian sampling N(0.5, 0.1) clipped to [0,1]. We visualize the impact in Figure 6, where we report mean and standard deviation of loss values along the interpolation path for ViTs trained on CIFAR-10. Notably, both uniform [0,1] and Gaussian sampling result in relatively high loss barriers, indicating unstable interpolations, particularly around lambda = 0.5. In contrast, narrow uniform sampling and fixed interpolation produce lower loss near the midpoint. However, fixed interpolation exhibits significantly higher loss in the surrounding regions. Based on these observations, we adopt narrow uniform sampling in our implementation.",
+      "content_length": 900,
+      "metadata": {"heading_level": 3}
+    },
+    {
+      "snippet_id": "28928::SECTION::19",
+      "snippet_type": "SECTION",
+      "location": "C.1.2 Initialization",
+      "content": "The results reported in Section 5 use weight matching to initialize the function-preserving permutation and orthogonal transformations. In this section, we evaluate the effectiveness of weight matching as an initialization strategy by comparing it to a baseline with no prior matching. We train the learned matching procedure for 15 epochs and report both training and test losses for ViTs trained on CIFAR-10 across four random seeds (see Figure 8). Initializing with weight matching leads to significantly lower training and test losses. Notably, models reach zero test loss barriers within just one to two epochs of training. In contrast, training without any prior matching results in consistently higher losses, with positive loss barriers remaining even after 15 epochs. Evidently, learning the transformations alone is insufficient; a strong initialization provided by weight matching is essential.",
+      "content_length": 800,
+      "metadata": {"heading_level": 3}
+    },
+    {
+      "snippet_id": "28928::SECTION::20",
+      "snippet_type": "SECTION",
+      "location": "C.2 Weight matching",
+      "content": "Our proposed iterative weight matching algorithm, while not outperforming learned matching, requires significantly fewer computational resources and is completely data-free. We evaluate the loss barrier across different numbers of iterations for both permutation and orthogonal matching. Results for ViTs trained on CIFAR-10 are shown in Figure 7. A stark contrast emerges: for orthogonal matching, the loss barrier steadily decreases, converging after five iterations with a substantially reduced barrier. In contrast, permutation-based matching shows no significant improvement across iterations. These findings confirm that orthogonal matching provides a more effective path to convergence than permutation matching in the data-free setting.",
+      "content_length": 700,
+      "metadata": {"heading_level": 3}
+    },
+    {
+      "snippet_id": "28928::SECTION::21",
+      "snippet_type": "SECTION",
+      "location": "D Soft-permutations / D.1 Objective",
+      "content": "Soft permutations provide a continuous relaxation of hard permutations by allowing convex combinations of layer units, defined as doubly stochastic matrices within the Birkhoff polytope. Unlike the hard permutations in Algorithm 1, which use a Straight-Through Estimator (STE), here soft permutations are derived from learnable latent parameters and made doubly stochastic using differentiable Sinkhorn normalization. The latter approach performed better than STE in our experiments. The primary goal is to learn a set of layer-wise latent matrices {Z_l}_l, transformed into soft permutation matrices P_l = Sinkhorn(exp(Z_l)), used to construct a transformation pi aligning one model to another. The optimal latent matrices minimize the empirical risk of an interpolated model over a batch B drawn from the dataset.",
+      "content_length": 800,
+      "metadata": {"heading_level": 3}
+    },
+    {
+      "snippet_id": "28928::SECTION::22",
+      "snippet_type": "SECTION",
+      "location": "D.2 Parametrization and initialization of latent matrices",
+      "content": "The soft permutation matrices P_l are not optimized directly. Instead, we optimize underlying unconstrained latent matrices Z_l. First, a non-negative matrix tilde(P)_l = exp(Z_l) is generated. Second, tilde(P)_l is projected onto the Birkhoff polytope using differentiable Sinkhorn-Knopp normalization to yield the doubly stochastic soft permutation matrix P_l. Initialization: the latent matrices Z_l are initialized by first constructing a target matrix P_l^0, representing a desired initial state for exp(Z_l^0). A baseline for random noise uses a Xavier-scheme variance: sigma^2 = 2/(fan-in + fan-out). A scaling factor a = epsilon * sigma * sqrt(3). A random noise matrix P_l^{rand} is sampled with entries Uniform(0, 2a). The target matrix P_l^0 is constructed either as random (P_l^0 = P_l^{rand}) or from a pre-computed permutation (P_l^0 = P_l^{init} + P_l^{rand}). The initial latent parameters are Z_l^0 = log(P_l^0), applied element-wise to the strictly positive target matrix.",
+      "content_length": 900,
+      "metadata": {"heading_level": 3}
+    },
+    {
+      "snippet_id": "28928::SECTION::23",
+      "snippet_type": "SECTION",
+      "location": "D.3 Learning process",
+      "content": "The latent matrices Z_l for all relevant layers are optimized over N_iter iterations. In each iteration t, using the Adam optimizer with learning rate eta: (1) compute soft permutation matrix: tilde(P)_l = exp(Z_l), then project onto the Birkhoff polytope using K iterations of Sinkhorn-Knopp: Q_l^{(k)} <- diag(1/(Q_l^{(k-1)} 1)) Q_l^{(k-1)} (normalize rows), Q_l^{(k)} <- Q_l^{(k)} diag(1/(1^T Q_l^{(k)})) (normalize columns), giving P_l = Q_l^{(K)}. (2) Align model theta_B and form the interpolated model theta_INTERP = lambda theta_A + (1-lambda) theta_B^{aligned}. (3) Compute empirical cross-entropy loss J on a sampled batch and update each latent matrix Z_l using Adam. Since the exponential mapping and Sinkhorn normalization are differentiable, gradients flow directly back to the latent parameters.",
+      "content_length": 900,
+      "metadata": {"heading_level": 3}
+    },
+    {
+      "snippet_id": "28928::SECTION::24",
+      "snippet_type": "SECTION",
+      "location": "D.4 Remarks",
+      "content": "In our explorations, these learned soft permutations are applied to align components within Transformer architectures, specifically targeting attention heads and MLP layers between independently trained models. Empirically, this approach often yields meaningful improvements in the test-time performance of the merged (interpolated) model, particularly at the midpoint (lambda ~ 0.5). However, a key issue is that exact functional equivalence at the aligned endpoint is generally not maintained. The degree of functional equivalence at the endpoint can be improved by sampling lambda uniformly from [0,1], but this typically involves a trade-off: endpoint functional equivalence may improve while the midpoint performance gain might be reduced.",
+      "content_length": 700,
+      "metadata": {"heading_level": 3}
+    },
+    {
+      "snippet_id": "28928::SECTION::25",
+      "snippet_type": "SECTION",
+      "location": "E General symmetries of network components",
+      "content": "Consider a feed-forward network with L layers, where the l-th layer computes activation vector a_l = sigma_l(W_l a_{l-1}), with a_0 = X being the input. The reparameterization imposed by pi is typically achieved by defining a set of (approximately) invertible matrices {S_l}_{l=0}^L, where S_l in R^{d_l x d_l} acts as a change of basis. We fix S_0 = I and S_L = I. The transformed weights are W_l' = S_l W_l S_{l-1}^{-1}. Exact functional invariance is guaranteed if S_L = I and the activation functions sigma_l are equivariant: S_l sigma_l(Z) = sigma_l(S_l Z). A common case is element-wise activation (ReLU) with S_l a permutation matrix P_l. This results in W_1' = P_1 W_1, W_l' = P_l W_l P_{l-1}^T for l in {2,...,L-1}, and W_L' = W_L P_{L-1}^T. RMSNorm inherently possesses orthogonal symmetry. The derivation shows the network remains functionally equivalent under orthogonal O with transformed parameters W_1' = W_1 gamma O^T c, W_0' = O W_0, b' = O b, and normalization constants gamma' = 1_M, beta' = sqrt(M/N) O beta / gamma. The sets of transformations are nested: P_{d_l} subset O(d_l) subset GL(d_l, R). Since O can be rectangular with M >= N, the transformation can expand the dimensionality of the layer while preserving exact functional equivalence, enabling alignment of models of differing widths.",
+      "content_length": 1400,
+      "metadata": {"heading_level": 2}
+    },
+    {
+      "snippet_id": "28928::SECTION::26",
+      "snippet_type": "SECTION",
+      "location": "F Discussion",
+      "content": "Geometry of Transformer minima: establishing zero-barrier LMC in Transformers reveals a surprisingly connected geometry. Loss landscape insights: our results support the view that Transformer solutions reside in broad, connected basins once functional symmetries are accounted for, challenging the notion of isolated minima. Federated and continual learning: symmetry-based alignment can pre-process weights to resolve discrepancies. Adversarial robustness directions: a promising extension could involve transporting a high-accuracy model into the basin of a robust counterpart via symmetry-aligned interpolation. Role of positional encodings: Absolute Positional Encodings (APEs), as employed in our GPT-2 setup, are additive at the embedding layer and do not alter internal block invariances: permutation matrices P in S_1 in FFNs, semi-permutation matrices P~ in S_2 in MHA, and orthogonal matrices O in S_3 in residual connections remain valid symmetry elements. By contrast, Rotary Positional Encodings (RoPE) embed rotations directly within query-key projections, enforcing block-diagonal constraints on the residual orthogonals O in S_3. This decomposition breaks the full orthogonal group, necessitating specialized alignment procedures that respect these subgroup structures. Developing such RoPE-aware symmetry mappings is a promising direction for extending our approach to modern large-scale language models.",
+      "content_length": 1300,
+      "metadata": {"heading_level": 2}
+    },
+    {
+      "snippet_id": "28928::EQUATION::0",
+      "snippet_type": "EQUATION",
+      "location": "2 Generalizing Linear Mode Connectivity",
+      "content": "B[theta_A, theta_B](D) = sup_{lambda in [0,1]} [ L[lambda theta_A + (1-lambda) theta_B](D) - (lambda L[theta_A](D) + (1-lambda) L[theta_B](D)) ], (1)",
+      "content_length": 190,
+      "metadata": {"label": "Eq 1", "display_mode": true}
+    },
+    {
+      "snippet_id": "28928::EQUATION::1",
+      "snippet_type": "EQUATION",
+      "location": "2 Generalizing Linear Mode Connectivity",
+      "content": "min_{pi_A, pi_B} B[pi_A(theta_A), pi_B(theta_B)](D)  s.t.  f[pi_A(theta_A)] = f[theta_A], f[pi_B(theta_B)] = f[theta_B].",
+      "content_length": 150,
+      "metadata": {"label": null, "display_mode": true}
+    },
+    {
+      "snippet_id": "28928::EQUATION::2",
+      "snippet_type": "EQUATION",
+      "location": "2 Generalizing Linear Mode Connectivity",
+      "content": "B[{theta_m}_{m=1}^M](D) = inf_{lambda in Delta^{M-1}} [ L[sum_{m=1}^M lambda_m theta_m](D) - sum_{m=1}^M lambda_m L[theta_m](D) ], (2)  where Delta^{M-1} = { lambda in R_{>=0}^M : sum_m lambda_m = 1 }.",
+      "content_length": 250,
+      "metadata": {"label": "Eq 2", "display_mode": true}
+    },
+    {
+      "snippet_id": "28928::EQUATION::3",
+      "snippet_type": "EQUATION",
+      "location": "3.1 Symmetry classes",
+      "content": "f(x) = f(alpha x) + f((1-alpha) x),  for all alpha in [0,1].",
+      "content_length": 80,
+      "metadata": {"label": null, "display_mode": true}
+    },
+    {
+      "snippet_id": "28928::EQUATION::4",
+      "snippet_type": "EQUATION",
+      "location": "3.2.1 Feed-forward layer",
+      "content": "FF(x) = W_2 phi(W_1 x + b_1) + b_2.",
+      "content_length": 50,
+      "metadata": {"label": null, "display_mode": true}
+    },
+    {
+      "snippet_id": "28928::EQUATION::5",
+      "snippet_type": "EQUATION",
+      "location": "3.2.1 Feed-forward layer",
+      "content": "W'_1 = P_FF W_1,  W'_2 = W_2 P_FF^T,  b'_1 = P_FF b_1  yields FF'(x) = FF(x).",
+      "content_length": 110,
+      "metadata": {"label": null, "display_mode": true}
+    },
+    {
+      "snippet_id": "28928::EQUATION::6",
+      "snippet_type": "EQUATION",
+      "location": "3.2.2 Multi-head attention",
+      "content": "MultiHead(Q,K,V) = sum_{i=1}^{H} softmax( (Q W_i^Q)(K W_i^K)^T / sqrt(d_k) ) (V W_i^V) W_i^O.",
+      "content_length": 120,
+      "metadata": {"label": null, "display_mode": true}
+    },
+    {
+      "snippet_id": "28928::EQUATION::7",
+      "snippet_type": "EQUATION",
+      "location": "3.2.2 Multi-head attention",
+      "content": "head(X; QK, OV) = head(X; QK, alpha*OV) + head(X; QK, (1-alpha)*OV),  for any alpha in R.",
+      "content_length": 130,
+      "metadata": {"label": null, "display_mode": true}
+    },
+    {
+      "snippet_id": "28928::EQUATION::8",
+      "snippet_type": "EQUATION",
+      "location": "3.2.3 Residual",
+      "content": "LayerNorm(Z) = RMSNorm(Z M) * diag(alpha) sqrt(D) + 1_N beta^T,  where M = I_D - (1/D) 1 1^T.",
+      "content_length": 130,
+      "metadata": {"label": null, "display_mode": true}
+    },
+    {
+      "snippet_id": "28928::EQUATION::9",
+      "snippet_type": "EQUATION",
+      "location": "4.1 Weight matching",
+      "content": "P_ell^{FF} = argmin_{P in S_d} <W_ell^{(A)}, P W_ell^{(B)} O^T>_F + <W_{ell+1}^{(A)}, O W_{ell+1}^{(B)} P^T>_F,  (3)",
+      "content_length": 180,
+      "metadata": {"label": "Eq 3", "display_mode": true}
+    },
+    {
+      "snippet_id": "28928::EQUATION::10",
+      "snippet_type": "EQUATION",
+      "location": "4.1 Weight matching",
+      "content": "QK_i := (O^T W_i^Q)(O^T W_i^K)^T,   OV_i := O^T W_i^V W_i^O O.",
+      "content_length": 90,
+      "metadata": {"label": null, "display_mode": true}
+    },
+    {
+      "snippet_id": "28928::EQUATION::11",
+      "snippet_type": "EQUATION",
+      "location": "4.1 Weight matching",
+      "content": "C_{i,j}^{head} = ||QK_i^{(A)} - QK_j^{(B)}||_F^2 + ||OV_i^{(A)} - OV_j^{(B)}||_F^2.",
+      "content_length": 110,
+      "metadata": {"label": null, "display_mode": true}
+    },
+    {
+      "snippet_id": "28928::EQUATION::12",
+      "snippet_type": "EQUATION",
+      "location": "4.1 Weight matching",
+      "content": "O = argmin_{O in R^{d_r x d_r}, O^T O = I} ||R^{(A)} - R^{(B)} O||_F^2,  (4)  closed form via SVD of (R^{(B)})^T R^{(A)}.",
+      "content_length": 160,
+      "metadata": {"label": "Eq 4", "display_mode": true}
+    },
+    {
+      "snippet_id": "28928::EQUATION::13",
+      "snippet_type": "EQUATION",
+      "location": "4.2 Learned matching",
+      "content": "theta_INTERP = lambda * theta_A + (1 - lambda) * pi(theta_B),  lambda ~ U(0.4, 0.6).",
+      "content_length": 110,
+      "metadata": {"label": null, "display_mode": true}
+    },
+    {
+      "snippet_id": "28928::EQUATION::14",
+      "snippet_type": "EQUATION",
+      "location": "4.2 Learned matching",
+      "content": "pi_m^{(t)} <- ALIGN(theta_m, U^{(t-1)}) for all m;  U^{(t)} <- (1/M) sum_{m=1}^{M} pi_m^{(t)}(theta_m).",
+      "content_length": 130,
+      "metadata": {"label": null, "display_mode": true}
+    },
+    {
+      "snippet_id": "28928::EQUATION::15",
+      "snippet_type": "EQUATION",
+      "location": "Experiments / 5 Results",
+      "content": "J = E_lambda [ L[ sum_m lambda_m pi_m(theta_m) ](D) - sum_m lambda_m L[ pi_m(theta_m) ](D) ],  lambda ~ Dirichlet(alpha 1_M), alpha = 0.1.",
+      "content_length": 190,
+      "metadata": {"label": null, "display_mode": true}
+    },
+    {
+      "snippet_id": "28928::EQUATION::16",
+      "snippet_type": "EQUATION",
+      "location": "D.3 Learning process",
+      "content": "Q_l^{(k)} <- diag(1 / (Q_l^{(k-1)} 1)) Q_l^{(k-1)}  (Normalize rows);  Q_l^{(k)} <- Q_l^{(k)} diag(1 / (1^T Q_l^{(k)}))  (Normalize columns);  P_l = Q_l^{(K)}.",
+      "content_length": 220,
+      "metadata": {"label": null, "display_mode": true}
+    },
+    {
+      "snippet_id": "28928::EQUATION::17",
+      "snippet_type": "EQUATION",
+      "location": "D.3 Learning process",
+      "content": "J <- (1/|B|) sum_{(X,Y) in B} L_CE(theta_INTERP; X, Y);  Z_l <- Adam(Z_l, grad_{Z_l} J, eta).",
+      "content_length": 130,
+      "metadata": {"label": null, "display_mode": true}
+    },
+    {
+      "snippet_id": "28928::EQUATION::18",
+      "snippet_type": "EQUATION",
+      "location": "E General symmetries of network components",
+      "content": "Y = sigma_L o W_L o sigma_{L-1} o W_{L-1} o ... o sigma_1 o W_1 (X).",
+      "content_length": 90,
+      "metadata": {"label": null, "display_mode": true}
+    },
+    {
+      "snippet_id": "28928::EQUATION::19",
+      "snippet_type": "EQUATION",
+      "location": "E General symmetries of network components",
+      "content": "W_l' = S_l W_l S_{l-1}^{-1}  for l in {1, ..., L},  with S_0 = I_{d_0}, S_L = I_{d_L}.",
+      "content_length": 100,
+      "metadata": {"label": null, "display_mode": true}
+    },
+    {
+      "snippet_id": "28928::EQUATION::20",
+      "snippet_type": "EQUATION",
+      "location": "E General symmetries of network components",
+      "content": "f[theta'](X) = sigma_L( W_L S_{L-1}^{-1} sigma_{L-1}( S_{L-1} W_{L-1} S_{L-2}^{-1} ... sigma_1(S_1 W_1 X) ... ) ).",
+      "content_length": 160,
+      "metadata": {"label": null, "display_mode": true}
+    },
+    {
+      "snippet_id": "28928::EQUATION::21",
+      "snippet_type": "EQUATION",
+      "location": "E General symmetries of network components",
+      "content": "W_1' = P_1 W_1,  W_l' = P_l W_l P_{l-1}^T for l in {2, ..., L-1},  W_L' = W_L P_{L-1}^T.",
+      "content_length": 120,
+      "metadata": {"label": null, "display_mode": true}
+    },
+    {
+      "snippet_id": "28928::EQUATION::22",
+      "snippet_type": "EQUATION",
+      "location": "E General symmetries of network components",
+      "content": "Y = W_1 RMSNorm(W_0 X + b; beta, gamma, epsilon_N) = W_1 ( gamma (W_0 X + b)/sqrt((1/N)||W_0 X + b||_2^2 + epsilon_N) + beta ).",
+      "content_length": 180,
+      "metadata": {"label": null, "display_mode": true}
+    },
+    {
+      "snippet_id": "28928::EQUATION::23",
+      "snippet_type": "EQUATION",
+      "location": "E General symmetries of network components",
+      "content": "Y = W_1 O^T ( gamma O(W_0 X + b)/sqrt((1/N)||O(W_0 X + b)||_2^2 + epsilon_N) + O beta ),  inserting O^T O = I.",
+      "content_length": 180,
+      "metadata": {"label": null, "display_mode": true}
+    },
+    {
+      "snippet_id": "28928::EQUATION::24",
+      "snippet_type": "EQUATION",
+      "location": "E General symmetries of network components",
+      "content": "1/sqrt((1/N)||z||^2 + epsilon_N) = c * 1/sqrt((1/M)||z||^2 + epsilon_M),  with c = sqrt(N/M), epsilon_M = (N/M) epsilon_N.",
+      "content_length": 170,
+      "metadata": {"label": null, "display_mode": true}
+    },
+    {
+      "snippet_id": "28928::EQUATION::25",
+      "snippet_type": "EQUATION",
+      "location": "E General symmetries of network components",
+      "content": "Y = W_1 gamma O^T c ( O(W_0 X + b)/sqrt((1/M)||O(W_0 X + b)||_2^2 + epsilon_M) + (1/c) O beta / gamma ).",
+      "content_length": 170,
+      "metadata": {"label": null, "display_mode": true}
+    },
+    {
+      "snippet_id": "28928::EQUATION::26",
+      "snippet_type": "EQUATION",
+      "location": "E General symmetries of network components",
+      "content": "Y = W_1' RMSNorm(W_0' X + b'; beta', gamma', epsilon_M),  (6)",
+      "content_length": 80,
+      "metadata": {"label": "Eq 6", "display_mode": true}
+    },
+    {
+      "snippet_id": "28928::EQUATION::27",
+      "snippet_type": "EQUATION",
+      "location": "E General symmetries of network components",
+      "content": "W_1' = W_1 gamma O^T c,  W_0' = O W_0,  b' = O b,  (7)",
+      "content_length": 90,
+      "metadata": {"label": "Eq 7", "display_mode": true}
+    },
+    {
+      "snippet_id": "28928::EQUATION::28",
+      "snippet_type": "EQUATION",
+      "location": "E General symmetries of network components",
+      "content": "gamma' = 1_M,  beta' = (1/c) O beta / gamma = sqrt(M/N) O beta / gamma.  (8)",
+      "content_length": 110,
+      "metadata": {"label": "Eq 8", "display_mode": true}
+    },
+    {
+      "snippet_id": "28928::TABLE::0",
+      "snippet_type": "TABLE",
+      "location": "3.1 Symmetry classes",
+      "content": "Table 1: Hierarchical organization of symmetry classes. S_1 Permutation: Permutation matrices P; examples GELU, sigmoid, softmax, tanh. subset S_2 Semi-permutation: Sparse, stochastic matrices tilde(P); examples ReLU, LayerNorm, MHA. subset S_3 Orthogonal: Orthogonal matrices O; examples RMSNorm. subset S_4 Invertible: Full-rank matrices; examples Linear layer. Each class is a strict subset of the one below it.",
+      "content_length": 400,
+      "metadata": {"caption": "Table 1: Hierarchical organization of symmetry classes", "row_count": 5}
+    },
+    {
+      "snippet_id": "28928::TABLE::1",
+      "snippet_type": "TABLE",
+      "location": "Experiments / 5 Results",
+      "content": "Table 2: Loss barrier (lower is better) for each alignment method. Reported values are mean +/- standard error, with rank in parentheses. Columns: ViT CIFAR-10, ViT CIFAR-100, ViT Tiny ImageNet, GPT-2 Tiny Shakespeare, GPT-2 BookCorpus. Rows: Vanilla averaging: 1.69+/-0.07 (5), 2.46+/-0.04 (5), 2.84+/-0.02 (5), 2.02+/-0.12 (5), 4.34+/-0.09 (5). Activation matching: 1.27+/-0.13 (4), 2.11+/-0.17 (4), 1.86+/-0.10 (4), 1.43+/-0.16 (4), 4.05+/-0.13 (4). Weight matching (ours): 0.36+/-0.01 (2), 0.69+/-0.21 (3), 0.47+/-0.04 (3), 0.34+/-0.01 (2), 1.56+/-0.02 (2). Learned matching (permutations): 0.45+/-0.02 (3), 0.53+/-0.07 (2), 0.29+/-0.02 (2), 0.63+/-0.17 (3), 1.60+/-0.04 (3). Learned matching (ours): 0.00+/-0.00 (1), 0.00+/-0.00 (1), 0.00+/-0.00 (1), 0.00+/-0.00 (1), 0.00+/-0.00 (1).",
+      "content_length": 1200,
+      "metadata": {"caption": "Table 2: Loss barrier (lower is better) for each alignment method", "row_count": 6}
+    },
+    {
+      "snippet_id": "28928::TABLE::2",
+      "snippet_type": "TABLE",
+      "location": "B Experimental details",
+      "content": "Table 3: Configuration and training details. Rows: Transformer layers: ViT CIFAR-10/100 6, ViT Tiny ImageNet 8, GPT-2 Tiny Shakespeare 6, GPT-2 BookCorpus 6. Attention heads: 8, 8, 4, 8. Embedding dimension: 256, 384, 256, 512. MLP hidden dimension: 512, 768, 1024, 2048. Patch size: 4x4, 8x8, -, -. Sequence length: -, -, 256, 512. Training epochs: 150, 150, 100, 5. Batch size: 128, 128, 32, 64. Optimizer: AdamW, AdamW, AdamW, AdamW. Learning rate: 3e-4, 3e-4, 3e-4, 2.5e-4. Weight decay: 1e-3, 0.05, 0.01, 0.01. LR schedule: Cosine annealing, Cosine (warmup), Cosine (warmup), Cosine (warmup). Hardware: 1x RTX 2060, 1x RTX 4090, 1x RTX 4090, 4x RTX 4090.",
+      "content_length": 1100,
+      "metadata": {"caption": "Table 3: Configuration and training details", "row_count": 12}
+    },
+    {
+      "snippet_id": "28928::FIGURE::0",
+      "snippet_type": "FIGURE",
+      "location": "Introduction",
+      "content": "Figure 1: By considering network symmetries beyond permutations, we can teleport two independently trained Transformers to the same loss basin. Theta_B is projected into a functionally equivalent representation pi(Theta_B). Image: image_7.jpg (placeholder).",
+      "content_length": 250,
+      "metadata": {"caption": "Figure 1: teleport two independently trained Transformers to the same loss basin"}
+    },
+    {
+      "snippet_id": "28928::FIGURE::1",
+      "snippet_type": "FIGURE",
+      "location": "3.2 Symmetries in Transformers",
+      "content": "Figure 2: (a) illustrates a standard Transformer layer, and (b) shows its function-preserving equivalent after structured weight transformations. Attention heads are semi-permuted via blockwise multiplication with tilde(P)_H using the diamond operator (a novel composition operation we introduce), feedforward weights are permuted via P_FF, and residual stream weights are orthogonally transformed via O. The diamond operator's precise definition is provided in our supplementary code repository. The figures are inspired by Ashkboos et al. [2024]. Images: image_21.jpg, image_22.jpg (placeholders).",
+      "content_length": 500,
+      "metadata": {"caption": "Figure 2: Transformer layer and function-preserving equivalent after structured weight transformations"}
+    },
+    {
+      "snippet_id": "28928::FIGURE::2",
+      "snippet_type": "FIGURE",
+      "location": "5 Results",
+      "content": "Figure 3: Loss along the interpolation path for (a, b) width-homogeneous and (c) width-heterogeneous alignment. In (c) Theta_downarrow denotes the smaller model (reduced embedding dimension; reduction ratio indicated in the label), aligned to the larger one (Theta_uparrow, embedding dimension 512). Learned matching was used for the width-heterogeneous results. Images: image_31.jpg, image_32.jpg, image_33.jpg (placeholders).",
+      "content_length": 450,
+      "metadata": {"caption": "Figure 3: Loss along the interpolation path"}
+    },
+    {
+      "snippet_id": "28928::FIGURE::3",
+      "snippet_type": "FIGURE",
+      "location": "5 Results / Multi-way model alignment",
+      "content": "Figure 4: Linear mode connectivity surface between three CIFAR-10 models for different alignment strategies. Colors show the relative loss deviation from the linear interpolation baseline across the simplex spanned by pi(Theta_A), pi(Theta_B), and pi(Theta_C). The dashed contour (epsilon = 0) marks points where the loss equals the linear baseline. Text in Section 5 claims: 'learned matching achieving complete zero deviation across the entire simplex, as evidenced by the uniform color indicating perfect loss equality with the linear baseline throughout the interpolation space.'",
+      "content_length": 500,
+      "metadata": {"caption": "Figure 4: Linear mode connectivity surface between three CIFAR-10 models"}
+    },
+    {
+      "snippet_id": "28928::FIGURE::4",
+      "snippet_type": "FIGURE",
+      "location": "6 Understanding the gap between weight- and learned matching",
+      "content": "Figure 5: Eigenvalue spectra of O_WM and O_diff = O_LM O_WM^T. The latter indicates small refinements from learned matching. Text in Section 6 claims: 'the eigen-angles of O_WM are tightly concentrated near optimal values, indicating near-perfect initial alignment, with O_diff showing negligible corrections, demonstrating that weight matching alone is sufficient for achieving zero barriers.' Image: image_37.jpg, image_38.jpg, image_39.jpg, image_40.jpg (placeholders).",
+      "content_length": 450,
+      "metadata": {"caption": "Figure 5: Eigenvalue spectra of O_WM and O_diff"}
+    },
+    {
+      "snippet_id": "28928::FIGURE::5",
+      "snippet_type": "FIGURE",
+      "location": "C.1.1 Coefficient sampling",
+      "content": "Figure 6: Loss curves for different strategies of sampling the interpolation coefficient lambda. Each line shows the mean loss, with shaded areas denoting standard deviation. Experiments on ViTs trained on CIFAR-10.",
+      "content_length": 250,
+      "metadata": {"caption": "Figure 6: Loss curves for different sampling strategies"}
+    },
+    {
+      "snippet_id": "28928::FIGURE::6",
+      "snippet_type": "FIGURE",
+      "location": "C.2 Weight matching",
+      "content": "Figure 7: Loss barriers over multiple iterations of weight matching, comparing orthogonal versus permutation matching for the residual weights. Experiments on ViTs trained on CIFAR-10.",
+      "content_length": 250,
+      "metadata": {"caption": "Figure 7: Loss barriers over multiple iterations of weight matching"}
+    },
+    {
+      "snippet_id": "28928::FIGURE::7",
+      "snippet_type": "FIGURE",
+      "location": "C.1.2 Initialization",
+      "content": "Figure 8: Comparison of train and test loss over epochs for learned matching, using weight matching (WM init) versus identity initialization (Identity init). Using weight matching as an initialization point yields consistently lower loss. Model: ViT. Dataset: CIFAR-10.",
+      "content_length": 300,
+      "metadata": {"caption": "Figure 8: Train/test loss over epochs for learned matching"}
+    },
+    {
+      "snippet_id": "28928::FIGURE::8",
+      "snippet_type": "FIGURE",
+      "location": "D Soft-permutations",
+      "content": "Figure 9: Loss barrier across the interpolation path using soft permutations. Plotted are the mean test loss and shaded regions representing +/- 1 standard deviation over 3 seeds. Model: ViT. Dataset: CIFAR-10.",
+      "content_length": 250,
+      "metadata": {"caption": "Figure 9: Loss barrier across the interpolation path using soft permutations"}
+    },
+    {
+      "snippet_id": "28928::ALGORITHM::0",
+      "snippet_type": "ALGORITHM",
+      "location": "4.2 Learned matching",
+      "content": "Algorithm 1: Learned matching via task loss. Require: Base models theta_A, theta_B; Dataset D; Iterations N_iter; Optimizer (details omitted for brevity). 1: Initialize latent matrices Z_FF, Z_H, Z_O using weight matching. 2: for t = 1 to N_iter do 3: Project: {P_FF, P_H, O} <- {PROJPERM(Z_FF), PROJPERM(Z_H), PROJORTH(Z_O)}. 4: Align: theta_B^{aligned} <- pi(theta_B; P_FF, P_H, O). 5: (interpolation coefficient sampling step referenced as Line 5 in Appendix C.1.1)",
+      "content_length": 450,
+      "metadata": {"label": "Algorithm 1"}
+    }
+  ]
+}

@@ -1,0 +1,139 @@
+{
+  "paper_id": "8054",
+  "title": "Representation Entanglement for Generation: Leveraging Pretrained Semantic Tokens to Improve Diffusion Transformer Training",
+  "paper_category": "cs.CV",
+  "predicted_errors": [
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Equation 7 (Section 3.1 Preliminaries)",
+      "confidence": 0.9,
+      "supporting_evidence": "Eq. 6 correctly defines s(x_t,t) = -σ_t^{-1} E[ε | x_t=x]. Solving x = αx* + σε and v = ˙αx* + ˙σε for E[ε|x] gives E[ε|x] = (α_t v - ˙α_t x)/(α_t ˙σ_t - ˙α_t σ_t), so the score must be s = -σ^{-1}(α v - ˙α x)/(α ˙σ - ˙α σ). The printed Eq. 7 has a positive leading sign and omits the negative sign. Sanity check in the VE limit (α=1, ˙α=0, σ=t, ˙σ=1): the printed formula yields s = v/t, whereas the correct score is -v/t. Sign error confirmed against the standard SiT/flow-matching velocity-score relation.",
+      "verifier_name": "math-equations",
+      "snippet_id": "8054::EQUATION::6"
+    },
+    {
+      "error_category": "Data Inconsistency (text-table)",
+      "error_location": "Table 1 vs Table 9 (main vs appendix, both 'without CFG')",
+      "confidence": 0.88,
+      "supporting_evidence": "Tab. 1 and Tab. 9 both report SiT + REG on ImageNet 256x256 without CFG, but REG FID values differ systematically: SiT-B/2+REG 400K is 21.8 (Tab 1) vs 15.2 (Tab 9); SiT-L/2+REG 400K is 9.8 vs 4.6; SiT-XL/2+REG 4M is 3.3 vs 1.8; SiT-XL/2+REG 400K is 5.6 vs 3.4. SiT-L/2+REPA 400K is also 9.7 (Tab 1) vs 10.0 (Tab 9). Sec 4.2 text ('outperforms REPA by 9.2 points' = 24.4-15.2, 'FID of 4.6 at 400K', 'record-low FID of 1.8') is consistent with Tab 9 but contradicts Tab 1. Two tables reporting the same setting give mutually incompatible results.",
+      "verifier_name": "statistical",
+      "snippet_id": "8054::TABLE::0"
+    },
+    {
+      "error_category": "Data Inconsistency (text-table)",
+      "error_location": "Section 4.3 vs Table 6",
+      "confidence": 0.85,
+      "supporting_evidence": "Sec 4.3 states 'FID improvements ranging from 0.95 to 6.33 points' and 'DINOv2-B delivers optimal performance, achieving a 19.18% FID reduction and 35.86% IS improvement compared to the SiT-B/2 baseline'. Tab 6 shows SiT-B/2 FID 33.0 / IS 43.70; +Entanglement with CLIP-L = 31.8 (1.2-point gain), DINOv2-B = 29.9 (3.1-point gain), DINOv2-L = 30.0 (3.0-point gain). The actual improvement range is 1.2-3.1 points, DINOv2-B is a 9.4% FID reduction (1 - 29.9/33.0) and a 19.7% IS increase (52.3/43.7). Neither the point range nor the 19.18%/35.86% percentages match the table.",
+      "verifier_name": "statistical",
+      "snippet_id": "8054::SECTION::10"
+    },
+    {
+      "error_category": "Abstract vs Results mismatch",
+      "error_location": "Abstract vs Section 1 Introduction",
+      "confidence": 0.82,
+      "supporting_evidence": "Abstract states: 'SiT-L/2 + REG trained for 400K iterations achieves comparable FID scores to SiT-XL/2 + REPA trained for 4M iterations'. Section 1 Introduction states: 'SiT-L/2 + REPA trained for 400K iterations achieves performance comparable to SiT-XL/2 + REPA trained for 4M iterations'. The Introduction attributes the 400K-iteration achievement to REPA instead of REG, directly contradicting the Abstract. The Abstract's claim is supported by Tab 9 (SiT-L/2+REG 400K FID 4.6 vs SiT-XL/2+REPA 4M FID 5.9), whereas the Introduction's REPA version is not supported by any table (SiT-L/2+REPA 400K is 9.7-10.0, not comparable to 5.9).",
+      "verifier_name": "cross-section-consistency",
+      "snippet_id": "8054::SECTION::1"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Equation 9 (Section 3.2)",
+      "confidence": 0.7,
+      "supporting_evidence": "Eq. 9 sums sim(y_*, h_phi(h_t^[n])) over n = 1..N, but in the same paragraph n is defined as the transformer layer index (n = 4 for SiT-B/2, n = 8 for all other variants) while N is defined as the number of visual tokens (z'_t in R^{N x D'_z}). The summation index n collides with the layer index: the per-layer alignment term is summed over the token count N, which is not a defined range for the layer index. The formula appears inherited from REPA (which sums over spatial tokens) without adapting the index, producing an internally inconsistent loss definition.",
+      "verifier_name": "math-equations",
+      "snippet_id": "8054::EQUATION::8"
+    },
+    {
+      "error_category": "Data Inconsistency (text-table)",
+      "error_location": "Table 3 (internal duplication)",
+      "confidence": 0.6,
+      "supporting_evidence": "The DINOv2-B / Depth 4 / beta=0.03 configuration appears twice in Tab. 3 (once in the Target Repr. block, once in the beta-sweep block) with identical FID 15.22 and IS 94.64 but a different sFID: 6.89 in one row vs 6.69 in the other. The same configuration cannot have two sFID values; the duplicate row should be reconciled or the differing sFID is a reporting error.",
+      "verifier_name": "statistical",
+      "snippet_id": "8054::TABLE::2"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 72,
+    "snippets_verified": 14,
+    "errors_detected": 6,
+    "verifier_usage": {
+      "math_equation": 5,
+      "statistical": 8,
+      "cross_section_consistency": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Uncertainty-mode verification of paper 8054 (REG, Representation Entanglement for Generation) escalated 14 high-uncertainty snippets (5 equations, 8 statistical/table checks, 1 full-paper cross-section check) to specialist verifiers. Six issues were found. The most serious is a genuine sign error in Eq. 7: the velocity-to-score relation prints a positive sign where the standard derivation (and the paper's own Eq. 6) requires a leading minus sign. Two substantial data inconsistencies affect the main results: (1) Tab. 1 and Tab. 9 report the same 'without CFG' REG experiments with systematically different FID values (e.g., SiT-XL/2+REG at 4M: 3.3 vs 1.8), and the Sec 4.2 narrative matches Tab 9 but contradicts Tab 1; (2) Sec 4.3's claimed FID-improvement range (0.95-6.33 points) and percentages (19.18% FID reduction, 35.86% IS increase) do not match Tab 6 (actual 1.2-3.1 points, 9.4%, 19.7%). A cross-section contradiction also exists: the Introduction attributes the 400K-iteration result to 'SiT-L/2 + REPA' while the Abstract correctly credits 'SiT-L/2 + REG'. Eq. 9 has a summation-index collision (layer index n summed over token count N). Tab. 3 contains a duplicated configuration row with conflicting sFID values (6.89 vs 6.69). Several headline claims (63x/23x convergence, Tab. 4 overhead percentages of +0.30%/+0.38%/+0.49%, 56.46% FID reduction, 50.19% IS increase, Tab. 7 GPU-hour savings) were checked and are internally consistent. Because multiple findings carry confidence >= 0.85 (Eq. 7 sign error, Tab 1 vs Tab 9 inconsistency, Sec 4.3 vs Tab 6 inconsistency), the paper requires correction.",
+  "uncertainty_map": [
+    {
+      "snippet_id": "8054::EQUATION::6",
+      "route": "math",
+      "uncertainty": 0.65
+    },
+    {
+      "snippet_id": "8054::EQUATION::7",
+      "route": "math",
+      "uncertainty": 0.75
+    },
+    {
+      "snippet_id": "8054::EQUATION::8",
+      "route": "math",
+      "uncertainty": 0.6
+    },
+    {
+      "snippet_id": "8054::EQUATION::9",
+      "route": "math",
+      "uncertainty": 0.5
+    },
+    {
+      "snippet_id": "8054::EQUATION::10",
+      "route": "math",
+      "uncertainty": 0.35
+    },
+    {
+      "snippet_id": "8054::TABLE::0",
+      "route": "statistics",
+      "uncertainty": 0.7
+    },
+    {
+      "snippet_id": "8054::TABLE::2",
+      "route": "statistics",
+      "uncertainty": 0.55
+    },
+    {
+      "snippet_id": "8054::TABLE::3",
+      "route": "statistics",
+      "uncertainty": 0.4
+    },
+    {
+      "snippet_id": "8054::TABLE::5",
+      "route": "statistics",
+      "uncertainty": 0.6
+    },
+    {
+      "snippet_id": "8054::TABLE::6",
+      "route": "statistics",
+      "uncertainty": 0.5
+    },
+    {
+      "snippet_id": "8054::TABLE::8",
+      "route": "statistics",
+      "uncertainty": 0.65
+    },
+    {
+      "snippet_id": "8054::SECTION::0",
+      "route": "text",
+      "uncertainty": 0.4
+    },
+    {
+      "snippet_id": "8054::SECTION::1",
+      "route": "text",
+      "uncertainty": 0.45
+    },
+    {
+      "snippet_id": "8054::SECTION::10",
+      "route": "statistics",
+      "uncertainty": 0.6
+    }
+  ]
+}

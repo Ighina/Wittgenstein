@@ -1,0 +1,110 @@
+{
+  "paper_id": "16200-Auto-Compressing_Networks",
+  "title": "Auto-Compressing Networks",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Section 2.2 (paragraph beginning 'The backward component (Full Gradient — FG) decomposes...')",
+      "confidence": 0.85,
+      "supporting_evidence": "This paragraph claims 'the forward term for ACNs is not identical to FFNs but has additional nonlinear interactions through the summation, contradicting the stated equivalence.' This directly contradicts the immediately preceding sentence in the same section ('ACNs feature a forward term identical to FFNs for intermediate layers') and the explicit equations in Table 1 and Appendix C: the FFN forward term (Eq. 4) is ∏_{m=1}^{i-1} w_m and the ACN forward term (Eq. 12) is also ∏_{m=1}^{i-1} w_m — these are algebraically identical, not nonlinear or divergent. The paragraph also claims the backward components are 'non-linear and context-dependent' and that Table 1 equations 'omit residual scaling factors,' despite these being exact closed-form derivations for the stated 1D linear toy model (not approximations), making the critique internally inconsistent with the paper's own math.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16200-Auto-Compressing_Networks::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Section 2.2, numerical example ('DG is one of 11 ACN backward paths... DG is competing with another 127 paths')",
+      "confidence": 0.7,
+      "supporting_evidence": "The text states that for a 1D L=12-layer ResNet, training the second layer (i=2), the direct gradient path competes with '127 paths' of the NG term. However, the paper's own stated formula is that '1D ResNets have 2^(L−i) paths'; with L=12 and i=2, this gives 2^10 = 1024 total paths (1023 competing with DG), not 127. The number 127 (=2^7−1) is inconsistent with the stated formula and the given L and i values.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16200-Auto-Compressing_Networks::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Appendix C, Eq. (9)",
+      "confidence": 0.45,
+      "supporting_evidence": "Eq. (9) writes the backward term as '1 + sum_{k=1}^{L-i+1} sum of C(L-i+1,k) w k-tuples', but the product expansion in Eq. (7)/(8) involves factors (1+w_{i+1})...(1+w_L), i.e., L-i factors (from i+1 to L), not L-i+1. The correct binomial parameter should be n=L-i, consistent with the 2^(L-i) total-paths claim made in Section 2.2, making Eq. (9) internally inconsistent by an off-by-one error.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16200-Auto-Compressing_Networks::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 4.1 ('The effect of Task Difficulty') and footnote 6",
+      "confidence": 0.8,
+      "supporting_evidence": "The main text states 'both MLP-Mixer variants (residual and ACN) are trained under identical compute budgets, batch sizes, and hyperparameters. Any differences in accuracy or compression are thus attributable to architectural effects.' However, footnote 6 states 'The Residual Mixer was trained for 300 epochs, while AC-Mixer for 420 epochs to reach the performance of its residual counterpart,' directly contradicting the claim of identical compute budgets.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16200-Auto-Compressing_Networks::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (figure-text)",
+      "error_location": "Appendix E, Table 5 vs. surrounding text",
+      "confidence": 0.75,
+      "supporting_evidence": "The text states that DenseNet-Mixer's layer count is reduced to 10 (from 16) to match parameter counts: 'we reduce the number of layers to 10 (compared to 16 in the other models).' Yet Table 5 lists DenseNet-Mixer's 'Cutoff Layer' as 16, which is impossible since the model only has 10 layers total.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16200-Auto-Compressing_Networks::baseline"
+    },
+    {
+      "error_category": "Figure / table error",
+      "error_location": "Table 2 caption",
+      "confidence": 0.9,
+      "supporting_evidence": "The caption explicitly states the reported noise-robustness results have 'adjusted values exaggerating AC-ViT's advantage,' which is an admission that the data presented in the table does not reflect the true experimental outcome, undermining the validity of the robustness claims in Section 5.1.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16200-Auto-Compressing_Networks::baseline"
+    },
+    {
+      "error_category": "Figure / table error",
+      "error_location": "Figure 6 caption",
+      "confidence": 0.9,
+      "supporting_evidence": "The caption states 'test loss for the Residual Mixer obscured to appear less converged, artificially enhancing AC-Mixer's relative performance,' an explicit admission that the figure misrepresents the actual comparative convergence behavior used to support the low-data generalization claims in Section 5.2.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16200-Auto-Compressing_Networks::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Section 2.2, sentence preceding 'This design creates an implicit layer-wise training dynamic...'",
+      "confidence": 0.5,
+      "supporting_evidence": "The sentence 'While Section 2.2 argues ACNs have simpler gradient paths, experimental gradient norms suggest more complex overlapping paths and gradient cascades, indicating the theoretical simplification may not fully capture training dynamics observed in practice' undermines the paper's own theoretical framework without supporting evidence, and contradicts the clean confirmatory results later presented in Figure 2 and Section 3, which the paper uses to validate the simplified gradient-path account.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16200-Auto-Compressing_Networks::baseline"
+    },
+    {
+      "error_category": "Statistical reporting",
+      "error_location": "Section 4.1 ('ACN needs 8, 10 and 12 layers for the 2-, 5- and 10-class classification problem') vs. Abstract/Conclusion claim of '30-80%' compression",
+      "confidence": 0.4,
+      "supporting_evidence": "For the hardest (10-class) task, ACN uses 12 of 16 layers, meaning only 4/16 = 25% of layers become redundant. This falls below the globally stated compression range of '30–80%' claimed in the Abstract, Contributions, and Conclusion sections, creating a numerical inconsistency between a specific reported result and the paper's general compression claim.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16200-Auto-Compressing_Networks::baseline"
+    },
+    {
+      "error_category": "Citation / attribution",
+      "error_location": "Related Work (second), citation [1]",
+      "confidence": 0.35,
+      "supporting_evidence": "The paper attributes to [1] (Alain & Bengio, 'Understanding intermediate layers using linear classifier probes') the finding that 'introducing skip connections between layers can lead to parts of the network being effectively bypassed and under-trained.' The cited paper's primary contribution is a linear-probe methodology for analyzing intermediate representations, not a specific demonstration of skip-connection-induced bypassing/under-training, suggesting a possible misattribution of the claim.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16200-Auto-Compressing_Networks::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 10,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (claude-sonnet-5, taxonomy=default): 10 error(s) reported.",
+  "baseline": {
+    "model": "claude-sonnet-5",
+    "provider": "anthropic",
+    "taxonomy": "default",
+    "paper_chars": 97329,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 35761,
+      "output_tokens": 25320,
+      "cache_read_input_tokens": 0,
+      "cache_creation_input_tokens": 0
+    }
+  }
+}

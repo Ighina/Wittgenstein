@@ -1,0 +1,803 @@
+{
+  "paper_name": "paper",
+  "paper_path": "/Users/iacopoghinassi/Documents/Github/Wittgenstein/data/paperaudit-workspace/13310-Depth-Bounds_for_Neural_Networks_via_the_Braid_Arrangement/paper.md",
+  "tag": "opus5",
+  "lean_project": "MATH_VERIFICATION/Paper",
+  "lean_project_kept": true,
+  "totals": {
+    "snippets_extracted": 26,
+    "routed_to_math": 20,
+    "routed_to_lean": 6,
+    "lean_passed": 4,
+    "lean_refuted": 2,
+    "lean_failed": 0,
+    "fallbacks_run": 0,
+    "errors_detected": 6
+  },
+  "results": [
+    {
+      "snippet_id": "paper::THEOREM::0",
+      "snippet_type": "THEOREM",
+      "location": "Abstract",
+      "content": "We completely resolve the open question of how many hidden layers are required in ReLU networks for exactly representing all continuous and piecewise linear functions on $\\mathbb{R}^d$. We prove the first unconditional non-constant lower bound of $\\Omega(\\log \\log d)$ hidden layers for computing the maximum of $d$ numbers in general ReLU networks, improving upon the previous best lower bound of 2. This result settles a long-standing conjecture in neural network expressivity theory. Additionally, we provide a combinatorial proof that arbitrary neural networks require three hidden layers to compute the maximum of 5 numbers; this resolves the open question definitively. Finally, we show that for arbitrary maxout networks of any rank, a natural generalization of the best known upper bound is not tight, by demonstrating that a rank-3 maxout layer followed by a rank-2 maxout layer is sufficient to represent the maximum of 7 numbers.",
+      "route": "verify-math",
+      "route_rationale": "States the paper's headline results; verifiable only against the body's actual hypotheses, with no crisp formal content of its own.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::THEOREM::0",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.95,
+        "reasoning": "The abstract states two unconditional results that the body never proves and that the paper's own Conclusion contradicts. (1) 'the first unconditional non-constant lower bound of $\\Omega(\\log\\log d)$ hidden layers ... in general ReLU networks': the only theorem delivering this is Theorem 4.8/Corollary 4.9, both restricted to $\\mathcal{B}_d^0$-conforming networks, and Section 7 says verbatim 'We established a doubly-logarithmic lower bound under the assumption that breakpoints lie on the braid fan.' The bound is conditional, not unconditional, and does not apply to general ReLU networks. (2) 'arbitrary neural networks require three hidden layers to compute the maximum of 5 numbers' is false: Section 7 states 'Bakaev et al. [2025b] showed that one can compute the maximum of 5 numbers with 2 layers, this implies that considering $\\mathcal{B}_d^0$-conforming networks is a real restriction.' Theorem 5.2 only rules out 2 hidden layers for $\\mathcal{B}_d^0$-conforming networks. So the abstract asserts the negation of a result the paper itself cites and relies on. (3) The rank-$(3,2)$ maxout claim for the maximum of 7 numbers does match Theorem 6.2 and is correct.",
+        "predicted_error_category": "Calculus/Proof error",
+        "snippet_type": "THEOREM",
+        "contradiction_locations": [
+          "Section 4 (Theorem 4.8, Corollary 4.9)",
+          "Section 5 (Theorem 5.2)",
+          "Section 7 Conclusion and Limitations"
+        ]
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::THEOREM::1",
+      "snippet_type": "THEOREM",
+      "location": "1 Introduction",
+      "content": "In Section 4 we prove for $d = 2^{2^\\ell - 1}$ that all continuous piecewise linear functions on $\\mathbb{R}^d$ require depth $\\Omega(\\log \\log d)$ for exact representation with ReLU networks. This establishes the first unconditional non-constant lower bound for general CPWL functions, resolving the depth complexity question without any conforming or weight restrictions.",
+      "route": "verify-math",
+      "route_rationale": "Restates the Section 4 result with an explicit scope claim; a prose-level consistency check against Section 4 and Section 7.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::THEOREM::1",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.9,
+        "reasoning": "Two independent defects. (a) Scope: 'resolving the depth complexity question without any conforming or weight restrictions' contradicts Section 4, whose only theorem is $\\mathcal{M}^2_{\\mathcal{B}_d}(\\ell)\\subseteq\\mathcal{V}_{\\mathcal{B}_d}(2^{2^\\ell-1})$ for $\\mathcal{B}_d$-conforming networks, and contradicts Section 7 ('under the assumption that breakpoints lie on the braid fan'). It also contradicts the same Introduction two paragraphs earlier: 'it remains open if there exists a CPWL function on $\\mathbb{R}^d$ that really needs logarithmic many hidden layers ... it is already open whether there is a function that needs more than two hidden layers.' (b) Quantifier: 'all continuous piecewise linear functions on $\\mathbb{R}^d$ require depth $\\Omega(\\log\\log d)$' is false as a universally quantified statement — every affine function is CPWL and needs $0$ hidden layers. The intended claim is existential (some CPWL function requires that depth).",
+        "predicted_error_category": "Calculus/Proof error",
+        "snippet_type": "THEOREM",
+        "contradiction_locations": [
+          "1 Introduction (open-problem paragraph)",
+          "Section 4",
+          "Section 7 Conclusion and Limitations"
+        ]
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::DEFINITION::0",
+      "snippet_type": "DEFINITION",
+      "location": "2 Preliminaries",
+      "content": "Definition 2.1. The braid arrangement in $\\mathbb{R}^d$ is the hyperplane arrangement consisting of the $\\binom{d}{2} + d$ hyperplanes $x_i = x_j$ (with $1 \\leq i < j \\leq d$) and $x_i = 0$ for $i \\in [d]$. The braid fan $\\mathcal{B}_d$ is the polyhedral fan induced by this extended braid arrangement.\nSometimes we will also refer to the fan given by the $\\binom{d+1}{2}$ hyperplanes $x_i = x_j$ and $x_i = 0$ for $1 \\leq i < j \\leq d$, which we denote by $\\mathcal{B}^0_d$.\nWe summarize the properties of the braid fan that are relevant for this work. For more details see Stanley [2007]. The $k$-dimensional cones of $\\mathcal{B}_d$ are given by $\\{\\operatorname{cone}(\\mathbb{1}_{S_1}, \\ldots, \\mathbb{1}_{S_k}) + \\operatorname{span}(\\mathbb{1}_{[d]}) \\mid \\emptyset \\subsetneq S_1 \\subsetneq S_2 \\subsetneq \\cdots \\subsetneq S_k \\subsetneq [d]\\}$, where $\\mathbb{1}_S = \\sum_{i \\in S} e_i$. The braid fan has $\\operatorname{span}(\\mathbb{1}_{[d]})$ as lineality space. Dividing out the lineality space of $\\mathcal{B}_d$ yields $\\mathcal{B}^0_{d-1}$. See Figure 1a for an illustration of $\\mathcal{B}^0_d$.",
+      "route": "verify-math",
+      "route_rationale": "Asserts checkable properties (hyperplane count, lineality space, cone description) that could be false; formalising polyhedral fans would be out of proportion to the defect.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::DEFINITION::0",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.85,
+        "reasoning": "Definition 2.1 makes $\\mathcal{B}_d$ the fan of the $\\binom{d}{2}+d$ hyperplanes $x_i=x_j$ **and** $x_i=0$ ('this extended braid arrangement'). That is inconsistent with all three facts stated immediately after it. (i) 'The braid fan has $\\operatorname{span}(\\mathbb{1}_{[d]})$ as lineality space' is false for an arrangement containing $x_1=0$: if $x$ lies in a cone with $x_1=0$ then $x+\\mathbb{1}_{[d]}$ has first coordinate $1>0$ and leaves that cone, so the lineality space is $\\{0\\}$. (ii) The stated cones $\\operatorname{cone}(\\mathbb{1}_{S_1},\\ldots,\\mathbb{1}_{S_k})+\\operatorname{span}(\\mathbb{1}_{[d]})$ all contain the line $\\mathbb{R}\\mathbb{1}_{[d]}$, which no cone of an arrangement containing $x_i=0$ can. (iii) $\\mathcal{B}_d^0$ is then introduced as the fan of the $\\binom{d+1}{2}$ hyperplanes $x_i=x_j$ and $x_i=0$, and $\\binom{d+1}{2}=\\binom{d}{2}+d$, so $\\mathcal{B}_d$ and $\\mathcal{B}_d^0$ would be literally the same arrangement — which would make Lemma 3.1, 'Dividing out the lineality space of $\\mathcal{B}_d$ yields $\\mathcal{B}^0_{d-1}$', and the whole $\\mathcal{B}_d$/$\\mathcal{B}_d^0$ distinction vacuous. Consistency requires $\\mathcal{B}_d$ to be the fan of only the $\\binom{d}{2}$ hyperplanes $x_i=x_j$. The rest of the paper uses that (correct) object, so the defect is confined to the definition.",
+        "predicted_error_category": "Domain/Constraint violation",
+        "snippet_type": "DEFINITION",
+        "contradiction_locations": [
+          "2 Preliminaries, lineality-space sentence",
+          "2 Preliminaries, $k$-dimensional cones of $\\mathcal{B}_d$",
+          "Definition 2.1, $\\mathcal{B}_d^0$ sentence"
+        ]
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::PROPOSITION::0",
+      "snippet_type": "PROPOSITION",
+      "location": "2 Preliminaries",
+      "content": "Using the specific structure of the cones of $\\mathcal{B}_d$ in terms of subsets of $[d]$ allows to relate the vector space $\\mathcal{V}_{\\mathcal{B}_d}$ of CPWL functions compatible with the braid fan $\\mathcal{B}_d$ with the vector space of set functions $\\mathcal{F}_d := \\mathbb{R}^{2^{[d]}}$: restricting to the values on $\\{\\mathbb{1}_S\\}_{S \\subseteq [d]}$ yields a vector space isomorphism $\\Phi : \\mathcal{V}_{\\mathcal{B}_d} \\to \\mathcal{F}_d$ whose inverse map is given by interpolating the values on $\\{\\mathbb{1}_S\\}_{S \\subseteq [d]}$ to the interior of the cones of the braid fan. Detailed proofs of all statements can be found in Appendix B.\nProposition 2.2. The linear map $\\Phi : \\mathcal{V}_{\\mathcal{B}_d} \\to \\mathcal{F}_d$ given by $F(S) := \\Phi(f)(S) = f(\\mathbb{1}_S)$ is an isomorphism.",
+      "route": "verify-math",
+      "route_rationale": "Needs the CPWL/polyhedral-fan machinery to state formally; checkable directly in low dimension instead.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::PROPOSITION::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "Checked the claim directly for $d=2$. The braid fan of $x_1=x_2$ has two maximal cones; a function affine on each has $3+3=6$ parameters subject to $2$ gluing constraints along the line $x_1=x_2$, so $\\dim\\mathcal{V}_{\\mathcal{B}_2}=4=2^2=\\dim\\mathcal{F}_2$. The evaluation map $f\\mapsto(f(\\mathbb{1}_S))_{S}$ is bijective: on $\\{x_1\\le x_2\\}$ the points $\\mathbb{1}_\\emptyset=0$, $\\mathbb{1}_{\\{2\\}}$, $\\mathbb{1}_{\\{1,2\\}}$ are affinely independent and determine the affine piece (symmetrically on $\\{x_1\\ge x_2\\}$), and the two pieces agree automatically on $x_1=x_2$ because they already agree at $0$ and $(1,1)$, which span that line. Linearity of $\\Phi$ is immediate. No error.",
+        "predicted_error_category": null,
+        "snippet_type": "PROPOSITION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::DEFINITION::1",
+      "snippet_type": "DEFINITION",
+      "location": "2 Preliminaries",
+      "content": "This implies that $\\mathcal{V}_{\\mathcal{B}_d}$ has dimension $2^d$. Another basis for $\\mathcal{V}_{\\mathcal{B}_d}$ is given by $\\{\\sigma_M \\mid M \\in 2^{[d]}\\}$, where the function $\\sigma_M : \\mathbb{R}^d \\to \\mathbb{R}$ is defined by $\\sigma_M(x) = \\max_{i \\in M} x_i$ [Danilov and Koshevoy, 2000, Jochemko and Ravichandran, 2022]. We have the following strict containment of linear subspaces: $\\mathcal{V}_{\\mathcal{B}_d}(0) \\subsetneq \\mathcal{V}_{\\mathcal{B}_d}(1) \\subsetneq \\ldots \\subsetneq \\mathcal{V}_{\\mathcal{B}_d}(d) = \\mathcal{V}_{\\mathcal{B}_d}$, where $\\mathcal{V}_{\\mathcal{B}_d}(k) := \\operatorname{span}\\{\\sigma_M \\mid M \\subseteq [d], |M| \\leq k\\}$. In order to describe the linear subspaces $\\Phi(\\mathcal{V}_{\\mathcal{B}_d}(k))$, we now describe the isomorphism $\\Phi$ with respect to the basis $\\{\\sigma_M \\mid M \\in 2^{[d]}\\}$.\nLet $X$ and $Y$ be finite sets such that $X \\subseteq Y$, then the interval $[X, Y] := \\{S \\subseteq Y \\mid X \\subseteq S\\}$ is a Boolean lattice with the partial order given by inclusion. The rank of $[X, Y]$ is given by $|Y \\setminus X|$. Sometimes we also write $x_1 \\cdots x_n$ for the set $\\{x_1, \\ldots, x_n\\} \\in \\mathcal{L}$ and $\\overline{x_1 \\cdots x_n}$ for the set $X \\cup (Y \\setminus \\{x_1, \\ldots, x_n\\})$. For a Boolean lattice $\\mathcal{L} = [X, Y]$ of rank $n$, the rank function $r : \\mathcal{L} \\to [n]_0$ is given by $r(S) = |S| - |X|$ and $r(S)$ is called the rank of $S$. Moreover, we define the levels of a Boolean lattice by $\\mathcal{L}_i := r^{-1}(i)$ and introduce the notation $\\mathcal{L}_{\\leq i} := \\bigcup_{j \\leq i} \\mathcal{L}_j$ for the set of elements whose rank is bounded by $i$. For $S, T \\in \\mathcal{L}$ with $S \\subseteq T$, we call $[S, T]$ a sublattice of $\\mathcal{L}$ and define the vector $\\alpha_{S,T} \\in \\mathbb{R}^{\\mathcal{L}}$ by $\\alpha_{S,T} := \\sum_{S \\subseteq Q \\subseteq T} (-1)^{r(Q) - r(S)} \\mathbb{1}_Q$. The set $\\mathcal{F}_{\\mathcal{L}} := (\\mathbb{R}^{\\mathcal{L}})^*$ of real-valued functions on $\\mathcal{L}$ is a vector space, and for any fixed $S, T \\in \\mathcal{L}$, the map $F \\mapsto \\langle \\alpha_{S,T}, F \\rangle$ is a linear functional of $\\mathcal{F}_{\\mathcal{L}}$. Furthermore, let $\\mathbb{R}^{\\mathcal{L}}(k) = \\operatorname{span}\\{\\alpha_{S,T} \\mid S, T \\in \\mathcal{L}, S \\subseteq T \\text{ such that } r(T) - r(S) = k + 1\\}$ and $\\mathcal{F}_{\\mathcal{L}}(k) := (\\mathbb{R}^{\\mathcal{L}}(k))^\\perp = \\{F \\in \\mathcal{F}_{\\mathcal{L}} \\mid \\langle \\alpha_{S,T}, F \\rangle = 0 \\text{ for all } \\alpha_{S,T} \\in \\mathbb{R}^{\\mathcal{L}}(k)\\}$ be a linear subspace of $\\mathcal{F}_{\\mathcal{L}}$. To simplify notation, we also set $\\mathcal{F}_d(k) := \\mathcal{F}_{2^{[d]}}(k)$.",
+      "route": "verify-math",
+      "route_rationale": "Basis and subspace-chain assertions plus the definitions of $\\alpha_{S,T}$ and $\\mathcal{F}_{\\mathcal{L}}(k)$; judged for internal consistency against Proposition 2.3.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::DEFINITION::1",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.7,
+        "reasoning": "Self-consistent as written: $|\\{M\\subseteq[d]\\}|=2^d$ matches the stated $\\dim\\mathcal{V}_{\\mathcal{B}_d}=2^d$, $\\mathcal{V}_{\\mathcal{B}_d}(k)=\\operatorname{span}\\{\\sigma_M:|M|\\le k\\}$ gives a strictly increasing chain with $\\mathcal{V}_{\\mathcal{B}_d}(d)=\\mathcal{V}_{\\mathcal{B}_d}$, and $\\{\\sigma_M\\mid M\\in 2^{[d]}\\}$ being a basis is the known Danilov-Koshevoy / Jochemko-Ravichandran fact. The one gap is notational rather than mathematical: $\\sigma_\\emptyset(x)=\\max_{i\\in\\emptyset}x_i$ is never given a value, and the count $2^d$ only works if $\\sigma_\\emptyset$ is read as the constant function (so that $\\mathcal{V}_{\\mathcal{B}_d}(0)$ is the line of constants). Per the rubric an unstated convention is not a derivation-invalidating error, but it is what makes the dimension formula in Proposition 2.3 inconsistent (see paper::PROPOSITION::1).",
+        "predicted_error_category": null,
+        "snippet_type": "DEFINITION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.7
+    },
+    {
+      "snippet_id": "paper::PROPOSITION::1",
+      "snippet_type": "PROPOSITION",
+      "location": "2 Preliminaries",
+      "content": "Proposition 2.3. The isomorphism Φ: 𝓥_{𝓑_d} → 𝓕_d maps the function f = ∑_{M⊆[d]} λ_M · σ_M to the set function defined by F(S) := ∑_{M⊆[d], M∩S≠∅} λ_M. The inverse Φ^{-1}: 𝓕_d → 𝓥_{𝓑_d} of Φ is given by the Möbius inversion formula F ↦ ∑_{M⊆[d]} -⟨α_{[d]\\setminus M,[d]}, F⟩ · σ_M. In particular, it holds that Φ(𝓥_{𝓑_d}(k)) = 𝓕_d(k) for all k ≤ d and dim(𝓕_d(k)) = dim(𝓥_{𝓑_d}(k)) = ∑_{i=1}^k \\binom{d}{i}. See also Figure 1b for an illustration of Proposition 2.3.",
+      "route": "verify-math-lean",
+      "route_rationale": "Contains a closed-form dimension count, $\\sum_{i=1}^{k}\\binom{d}{i}$ - exactly the kind of claim Lean can settle outright.",
+      "lean_result": {
+        "snippet_id": "paper::PROPOSITION::1",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.95,
+        "reasoning": "Formalised the arithmetic content of Proposition 2.3's dimension formula. Because the paper states that $\\{\\sigma_M \\mid M \\in 2^{[d]}\\}$ is a basis of $\\mathcal{V}_{\\mathcal{B}_d}$ and defines $\\mathcal{V}_{\\mathcal{B}_d}(k) = \\operatorname{span}\\{\\sigma_M : |M| \\le k\\}$, the dimension is the number of $M \\subseteq [d]$ with $|M| \\le k$. Lean proves (`card_card_le`) that this count is $\\sum_{i=0}^{k}\\binom{d}{i}$, not the $\\sum_{i=1}^{k}\\binom{d}{i}$ the proposition prints. Lean then proves the negation of the formula's consequence at $k=d$ (`paper_formula_ne`): for every $d \\ge 1$, $\\sum_{i=1}^{d}\\binom{d}{i} = 2^d - 1 \\ne 2^d$, whereas the paper's own $\\mathcal{V}_{\\mathcal{B}_d}(d) = \\mathcal{V}_{\\mathcal{B}_d}$ together with 'This implies that $\\mathcal{V}_{\\mathcal{B}_d}$ has dimension $2^d$' forces it to equal $2^d$. A concrete witness is compiled by `decide` at $d=2$, $k=1$: the spanning set has $3$ elements while the formula gives $2$. The off-by-one was also confirmed independently by exact rational rank computation of $\\mathcal{F}_d(k) = (\\mathbb{R}^{\\mathcal{L}}(k))^\\perp$ straight from the paper's definition, for every $d \\le 5$ and every $k \\le d$: the true dimension is $\\sum_{i=0}^{k}\\binom{d}{i}$ in all 20 cases. The error is confined to the dimension count; the containment arguments of Sections 4-6 use the defining functionals of $\\mathcal{F}_{\\mathcal{L}}(k)$ rather than its dimension and are unaffected.",
+        "predicted_error_category": "Formally refuted",
+        "snippet_type": "PROPOSITION",
+        "contradiction_locations": [
+          "2 Preliminaries, 'This implies that $\\mathcal{V}_{\\mathcal{B}_d}$ has dimension $2^d$'",
+          "2 Preliminaries, chain $\\mathcal{V}_{\\mathcal{B}_d}(0) \\subsetneq \\ldots \\subsetneq \\mathcal{V}_{\\mathcal{B}_d}(d) = \\mathcal{V}_{\\mathcal{B}_d}$"
+        ],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__PROPOSITION__1_opus5.lean",
+          "formal_statement": "theorem card_card_le (d k : ℕ) :\n    (Finset.univ.filter (fun M : Finset (Fin d) => M.card ≤ k)).card\n      = ∑ i ∈ Finset.range (k+1), Nat.choose d i\n\ntheorem paper_formula_ne (d : ℕ) (hd : 1 ≤ d) :\n    (∑ i ∈ Finset.Ico 1 (d+1), Nat.choose d i) ≠ 2 ^ d\n\ntheorem witness_d2_k1 :\n    (Finset.univ.filter (fun M : Finset (Fin 2) => M.card ≤ 1)).card = 3\n    ∧ (∑ i ∈ Finset.Ico 1 2, Nat.choose 2 i) = 2",
+          "compiler_feedback": "lake env lean Paper/TMP.lean -> exit 0, no output.\nlean_diagnostic_messages: no items (success: true).\nlean_verify PaperProposition1.paper_formula_ne -> axioms [propext, Classical.choice, Quot.sound], non_standard_axioms: [].\nlean_verify PaperProposition1.card_card_le -> axioms [propext, Classical.choice, Quot.sound], non_standard_axioms: [].",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::LEMMA::0",
+      "snippet_type": "LEMMA",
+      "location": "3 Neural networks conforming with the braid fan",
+      "content": "Lemma 3.1. The function x ↦ max{0, x_1, …, x_{d-1}} can be represented by a 𝓑_d^0-conforming rank-r-maxout network if and only if the function x ↦ max{x_1, …, x_d} can be represented by a 𝓑_d-conforming rank-r-maxout network.",
+      "route": "verify-math",
+      "route_rationale": "Geometric equivalence of two fans under quotienting by the lineality space; not formalisable at reasonable cost.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::LEMMA::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.7,
+        "reasoning": "This is the standard homogenisation correspondence and is consistent with the fan facts the paper states: $\\max\\{x_1,\\ldots,x_d\\}$ satisfies $\\sigma_{[d]}(x+t\\mathbb{1})=\\sigma_{[d]}(x)+t$, so quotienting $\\mathbb{R}^d$ by $\\operatorname{span}(\\mathbb{1}_{[d]})$ — which by the paper's own statement sends $\\mathcal{B}_d$ to $\\mathcal{B}^0_{d-1}$ — turns it into $\\max\\{0,x_1,\\ldots,x_{d-1}\\}$, and maxout layers commute with the quotient. The only blemish is an index slip: the function $\\max\\{0,x_1,\\ldots,x_{d-1}\\}$ lives on $\\mathbb{R}^{d-1}$, so the matching arrangement is $\\mathcal{B}^0_{d-1}$, not the $\\mathcal{B}_d^0$ printed in the lemma; the same loose subscript recurs in Corollary 4.9 and Theorem 5.2 (where $\\mathcal{M}^2_{\\mathcal{B}_d^0}(2)=\\mathcal{V}_{\\mathcal{B}_d}(4)$ mixes the two arrangements at one $d$, with $d$ unquantified). That is notation, not a broken derivation.",
+        "predicted_error_category": null,
+        "snippet_type": "LEMMA",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.7
+    },
+    {
+      "snippet_id": "paper::PROPOSITION::2",
+      "snippet_type": "PROPOSITION",
+      "location": "3 Neural networks conforming with the braid fan",
+      "content": "By computing r_i maxima in each layer, we can compute the basis functions of 𝓥_{𝓑_d}(∏_{i=1}^ℓ r_i) with a 𝓑_d-conforming rank-r-maxout network.\nProposition 3.2. For any rank vector r ∈ ℕ^ℓ, it holds that all functions in 𝓥_{𝓑_d}(∏_{i=1}^ℓ r_i) are representable by a 𝓑_d-conforming rank-r-maxout network.",
+      "route": "verify-math",
+      "route_rationale": "A construction over maxout layers; its correctness is a layer-by-layer argument with no crisp formal kernel.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::PROPOSITION::2",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "Correct, and the sketch given ('By computing $r_i$ maxima in each layer') is valid. Layer $1$ is a rank-$r_1$ maxout layer over affine inputs, so each neuron computes $\\max$ of $r_1$ affine functions; choosing those to be coordinates yields $\\sigma_M$ with $|M|\\le r_1$, whose breakpoints lie only on $x_i=x_j$, hence $\\mathcal{B}_d$-compatible. Layer $i$ takes maxima of $r_i$ functions of the form $\\sigma_M$, and $\\max\\{\\sigma_{M_1},\\ldots,\\sigma_{M_{r_i}}\\}=\\sigma_{M_1\\cup\\cdots\\cup M_{r_i}}$, so after $\\ell$ layers every $\\sigma_M$ with $|M|\\le\\prod_{i=1}^\\ell r_i$ is available at some neuron, still $\\mathcal{B}_d$-compatible. Width is unrestricted and the output map $T_{\\mathrm{out}}$ is affine, so every linear combination of those basis functions — i.e. all of $\\mathcal{V}_{\\mathcal{B}_d}(\\prod r_i)$ — is representable.",
+        "predicted_error_category": null,
+        "snippet_type": "PROPOSITION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::LEMMA::1",
+      "snippet_type": "LEMMA",
+      "location": "3 Neural networks conforming with the braid fan",
+      "content": "For f_1, …, f_r ∈ 𝓥_{𝓑_d}, the function max{f_1, …, f_r} is 𝓑_d-compatible if taking the maximum does not create breakpoints that do not lie on the braid arrangement, that is, on every cone C of the braid arrangement, it holds that max{f_1, …, f_r} = f_q for a q ∈ [r]. Next, we aim to model the compatibility with the braid arrangement for set functions. We call a tuple (F_1, …, F_r) ∈ 𝓕^r_{𝓛} conforming if for every chain ∅ = S_0 ⊊ S_1 ⊊ … ⊊ S_n ⊆ [n] there is a j ∈ [r] such that F_j(S_i) = max{F_1, …, F_r}(S_i) for all i ∈ [n]_0. Then, the set 𝓒^r_{𝓛} ⊆ 𝓕^r_{𝓛} of conforming tuples are exactly those tuples of CPWL functions such that applying the maxout activation function yields a function that is still compatible with the braid fan as stated in the next lemma. Again, to simplify notation, we also set 𝓒_d^r := 𝓒^r_{2^{[d]}}.\nLemma 3.3. For (F_1, …, F_r) ∈ (𝓕_d)^r, the function max{Φ^{-1}(F_1), …, Φ^{-1}(F_r)} is 𝓑_d-conforming if and only if (F_1, …, F_r) ∈ 𝓒_d^r. In this case,\nmax{Φ^{-1}(F_1), …, Φ^{-1}(F_r)} = Φ^{-1}(max{F_1, …, F_r})",
+      "route": "verify-math",
+      "route_rationale": "Requires the full CPWL-to-set-function correspondence; checked against the Section 6 instance instead.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::LEMMA::1",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.75,
+        "reasoning": "The statement is coherent and I confirmed its $r=2$ instance computationally on the Section 6 example: for $F_1=\\Phi(f_1)$, $F_2=\\Phi(f_2)$ of Proposition 6.1 the pair has no comparable pair of opposite signs (so $(F_1,F_2)\\in\\mathcal{C}_7^2$), and $\\Phi^{-1}(\\max\\{F_1,F_2\\})$ reproduces exactly the $\\sigma_M$-expansion of $\\max\\{f_1,f_2\\}$. The auxiliary characterisation the paper derives from it is also correct: $(0,F)$ is conforming iff on every chain one of $0,F$ dominates throughout, which holds iff no comparable pair $S\\subseteq T$ has $F(S),F(T)$ of opposite signs — exactly $F\\in\\mathcal{C}_{\\mathcal{L}}$, since any comparable pair extends to a full chain. Notational looseness only: the chain condition is written '$\\emptyset=S_0\\subsetneq\\cdots\\subsetneq S_n\\subseteq[n]$', conflating the ground set with the rank and not demanding the chain be maximal.",
+        "predicted_error_category": null,
+        "snippet_type": "LEMMA",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.75
+    },
+    {
+      "snippet_id": "paper::LEMMA::2",
+      "snippet_type": "LEMMA",
+      "location": "4 Doubly-logarithmic lower bound",
+      "content": "We denote by $\\mathcal{A}(U)$ the functions computable by a $\\mathcal{B}_d$-conforming rank-2 maxout layer that takes functions from $U$ as input. Formally, $\\mathcal{A}(U) = \\mathrm{span}\\{\\max\\{f_1, f_2\\} \\mid f_1, f_2 \\in U, \\ \\max\\{f_1, f_2\\} \\in \\mathcal{V}_{\\mathcal{B}_d}\\}$.\nClearly, $\\mathcal{A}(U_1)$ is a subspace of $\\mathcal{A}(U_2)$ whenever $U_1$ is a subspace of $U_2$. We recursively define $\\mathcal{A}^\\ell(U) = \\mathcal{A}(\\mathcal{A}^{\\ell-1}(U))$. This recursive definition allows us to describe the set of $\\mathcal{B}_d$-conforming networks with $\\ell$ rank-2-maxout layers $\\mathcal{M}^2_{\\mathcal{B}_d}(\\ell)$.\nLemma 4.1. It holds that (1) $\\mathcal{M}^2_{\\mathcal{B}_d}(1) = \\mathcal{A}(\\mathcal{V}_{\\mathcal{B}_d}(1)) = \\mathcal{V}_{\\mathcal{B}_d}(2)$, and (2) for all $\\ell \\in \\mathbb{N}$, $\\mathcal{M}^2_{\\mathcal{B}_d}(\\ell) = \\mathcal{A}(\\mathcal{M}^2_{\\mathcal{B}_d}(\\ell - 1)) = \\mathcal{A}^\\ell(\\mathcal{V}_{\\mathcal{B}_d}(1))$.",
+      "route": "verify-math",
+      "route_rationale": "Depends on the definitions of $\\mathcal{A}$ and $\\mathcal{M}^2$ over infinite-dimensional function spaces.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::LEMMA::2",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.8,
+        "reasoning": "Both parts check out. For (1): $\\mathcal{V}_{\\mathcal{B}_d}(1)$ is what a first maxout layer sees (affine functions). A $\\mathcal{B}_d$-compatible maximum of two affine functions must have its single breakpoint hyperplane inside the braid arrangement, i.e. on some $x_i=x_j$, which forces it to be an affine shift of $\\sigma_{\\{i,j\\}}$; conversely every such function arises this way, so $\\mathcal{A}(\\mathcal{V}_{\\mathcal{B}_d}(1))=\\mathcal{V}_{\\mathcal{B}_d}(2)$. This matches Lemma 4.3's $\\mathcal{A}(\\mathcal{F}_{\\mathcal{L}}(1))=\\mathcal{F}_{\\mathcal{L}}(2)$ under $\\Phi$. For (2): since width is unrestricted and the affine map between layers takes arbitrary linear combinations, the span in the definition of $\\mathcal{A}$ is exactly what one layer followed by an affine map can realise, so the recursion $\\mathcal{M}^2_{\\mathcal{B}_d}(\\ell)=\\mathcal{A}(\\mathcal{M}^2_{\\mathcal{B}_d}(\\ell-1))$ and its unrolling $\\mathcal{A}^\\ell(\\mathcal{V}_{\\mathcal{B}_d}(1))$ are correct.",
+        "predicted_error_category": null,
+        "snippet_type": "LEMMA",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::LEMMA::3",
+      "snippet_type": "LEMMA",
+      "location": "4 Doubly-logarithmic lower bound",
+      "content": "Since it holds that $\\max\\{f_1, f_2\\} = \\max\\{0, f_1 - f_2\\} + f_2$, we can assume wlog that one of the functions is the zero map, as stated in the following lemma.\nLemma 4.2. It holds that $\\mathcal{A}(U) = \\mathrm{span}\\{\\max\\{0, f\\} \\mid f \\in U, \\ \\max\\{0, f\\} \\in \\mathcal{V}_{\\mathcal{B}_d}\\}$.",
+      "route": "verify-math",
+      "route_rationale": "Rests on the elementary identity $\\max\\{f_1,f_2\\} = \\max\\{0,f_1-f_2\\}+f_2$, which a careful reader checks by inspection.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::LEMMA::3",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "The identity the lemma rests on is exactly right: $\\max\\{0,a-b\\}+b=\\max\\{b,a\\}=\\max\\{a,b\\}$ for all reals, so pointwise $\\max\\{f_1,f_2\\}=\\max\\{0,f_1-f_2\\}+f_2$. Since $U$ is a subspace, $f_1-f_2\\in U$; and $\\max\\{0,f_1-f_2\\}=\\max\\{f_1,f_2\\}-f_2$ is $\\mathcal{B}_d$-compatible exactly when $\\max\\{f_1,f_2\\}$ is, because $f_2\\in U\\subseteq\\mathcal{V}_{\\mathcal{B}_d}$ is already compatible and compatibility is preserved by adding a compatible function. Taking spans gives the stated equality of subspaces in both directions.",
+        "predicted_error_category": null,
+        "snippet_type": "LEMMA",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::LEMMA::4",
+      "snippet_type": "LEMMA",
+      "location": "4 Doubly-logarithmic lower bound",
+      "content": "Lemma 4.3. It holds that $\\mathcal{A}(\\Phi(U)) = \\Phi(\\mathcal{A}(U))$ for all subspaces $U \\subseteq \\mathcal{V}_{\\mathcal{B}_d}$. In particular, for any lattice $\\mathcal{L} = [X, Y]$, it holds that $\\mathcal{A}(\\mathcal{F}_{\\mathcal{L}}(1)) = \\mathcal{F}_{\\mathcal{L}}(2)$.\nIn the following, we prove that $\\mathcal{A}(\\mathcal{F}_{\\mathcal{L}}(k)) \\subseteq \\mathcal{F}_{\\mathcal{L}}(k^2 + k)$ by an induction on $k$, and Lemma 4.3 serves as the base case.",
+      "route": "verify-math",
+      "route_rationale": "Commutation of $\\mathcal{A}$ with $\\Phi$; needs the whole isomorphism, so checked by reduction to Lemma 3.3 plus computation.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::LEMMA::4",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.8,
+        "reasoning": "The first part is an immediate consequence of Lemma 3.3: $\\Phi$ is a linear isomorphism, conforming pairs correspond to compatible maxima, and $\\Phi$ intertwines the two maximum operations, so it carries the generating set of $\\mathcal{A}(U)$ onto that of $\\mathcal{A}(\\Phi(U))$ and hence the spans agree. For the second part I checked the content numerically: enumerating positive-support patterns on Boolean lattices of rank $3$ and $4$ and solving the resulting linear feasibility problems, every $F\\in\\mathcal{F}_{\\mathcal{L}}(1)\\cap\\mathcal{C}_{\\mathcal{L}}$ has $\\langle\\alpha_{X,Y},F^+\\rangle=0$, i.e. $\\mathcal{A}(\\mathcal{F}_{\\mathcal{L}}(1))\\subseteq\\mathcal{F}_{\\mathcal{L}}(2)$; the reverse inclusion is Lemma 4.1(1) transported by $\\Phi$. Consistent as the base case $k=1$ of $\\mathcal{A}(\\mathcal{F}_{\\mathcal{L}}(k))\\subseteq\\mathcal{F}_{\\mathcal{L}}(k^2+k)$, since $1^2+1=2$.",
+        "predicted_error_category": null,
+        "snippet_type": "LEMMA",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::LEMMA::5",
+      "snippet_type": "LEMMA",
+      "location": "4 Doubly-logarithmic lower bound",
+      "content": "Next, we describe properties of the vector space $\\mathbb{R}^{\\mathcal{L}}$ that will be useful for the induction step. Every sublattice of $\\mathcal{L}$ of rank $k + 1$ is of the form $[S, S \\cup T]$, where $S \\cap T = \\emptyset$ and $|T| = k + 1$. For any $T \\subseteq Y \\setminus X$, one can decompose $\\mathcal{L} = [X, Y]$ into the sublattices $[S, S \\cup T]$ for all $S \\subseteq Y \\setminus T$, resulting in the following lemma.\nLemma 4.4. Let $\\mathcal{L} = [X, Y]$ be a lattice of rank $n$. Then, (1) for every $T \\subseteq Y \\setminus X$, it holds that $\\alpha_{X,Y} \\in \\mathrm{span}\\{\\alpha_{S,S\\cup T} \\mid S \\supseteq Y \\setminus T\\}$, and (2) for every $T \\subseteq Y \\setminus X$ with $|T| = k$, it holds that $\\alpha_{S,S\\cup T} - \\alpha_{S',S'\\cup T} \\in \\mathbb{R}^{\\mathcal{L}}(k)$ for all $S, S' \\in [X, Y \\setminus T]$.\nSee Figure 2 for a visualization of Lemma 4.4. Lemma 4.4 implies that it suffices to find a $T \\subseteq Y \\setminus X$ such that $\\langle \\alpha_{S,S\\cup T}, F^+ \\rangle = 0$ for all $S \\subseteq Y \\setminus T$, in order to prove that $F^+ \\in \\mathcal{F}_{\\mathcal{L}}(n - 1)$.",
+      "route": "verify-math-lean",
+      "route_rationale": "A concrete linear-algebra claim about the $\\alpha_{S,T}$ vectors on a finite Boolean lattice - decidable outright on a small instance.",
+      "lean_result": {
+        "snippet_id": "paper::LEMMA::5",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.95,
+        "reasoning": "Formalised Lemma 4.4(1) exactly as printed, on the smallest instance that discriminates: $X = \\emptyset$, $Y = \\{0,1\\}$, $T = \\{0\\}$, so $Y \\setminus T = \\{1\\}$. The printed index set $\\{S : S \\supseteq Y \\setminus T\\}$ is $\\{\\{1\\}, \\{0,1\\}\\}$, whose generators are $\\alpha_{\\{1\\},\\{0,1\\}} = e_{\\{1\\}} - e_{\\{0,1\\}}$ and $\\alpha_{\\{0,1\\},\\{0,1\\}} = e_{\\{0,1\\}}$. Both vanish at the coordinate $\\emptyset$, so their span lies in the kernel of evaluation at $\\emptyset$, while $\\alpha_{X,Y} = e_\\emptyset - e_{\\{0\\}} - e_{\\{1\\}} + e_{\\{0,1\\}}$ has value $1$ there. Lean compiles this refutation (`printed_false`). Lean also compiles the corrected statement (`correct_holds`): with the index set $S \\subseteq Y \\setminus T$ one has $\\alpha_{\\emptyset,\\{0,1\\}} = \\alpha_{\\emptyset,\\{0\\}} - \\alpha_{\\{1\\},\\{0,1\\}}$, so $\\alpha_{X,Y}$ is in the span. The $\\subseteq$ version is what the paper actually uses: the sentence introducing the lemma says 'one can decompose $\\mathcal{L} = [X,Y]$ into the sublattices $[S, S\\cup T]$ for all $S \\subseteq Y\\setminus T$', the sentence applying it quantifies over 'all $S \\subseteq Y \\setminus T$', Figure 2 shows exactly that decomposition, and part (2) of the same lemma indexes by $S, S' \\in [X, Y\\setminus T]$. Independent exhaustive check: over all $Y$ with $|Y| \\le 4$ and all $T \\subseteq Y$, the printed $\\supseteq$ version fails in every nontrivial case while the $\\subseteq$ version holds in all of them. The defect is a wrong containment symbol in the lemma statement; the downstream mathematics uses the correct one.",
+        "predicted_error_category": "Formally refuted",
+        "snippet_type": "LEMMA",
+        "contradiction_locations": [
+          "4 Doubly-logarithmic lower bound, decomposition sentence preceding Lemma 4.4",
+          "Lemma 4.4(2)",
+          "Figure 2 caption"
+        ],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__LEMMA__5_opus5.lean",
+          "formal_statement": "theorem printed_false : tgt ∉ Submodule.span ℝ ({v1, v2} : Set V)\n\ntheorem correct_holds : tgt ∈ Submodule.span ℝ ({w1, w2} : Set V)\n\n-- V := Finset (Fin 2) → ℝ ; e Q := fun S => if S = Q then 1 else 0\n-- v1 = e C - e D, v2 = e D            (printed index set S ⊇ Y \\ T)\n-- w1 = e A - e B, w2 = e C - e D      (corrected index set S ⊆ Y \\ T)\n-- tgt = e A - e B - e C + e D = α_{X,Y}",
+          "compiler_feedback": "lake env lean Paper/TMP.lean -> exit 0, no output.\nlean_diagnostic_messages: no severity-1 items; only `linter.flexible` style warnings on the `simp`/`decide` pairs at lines 28-29.\nlean_verify PaperLemma44.printed_false -> axioms [propext, Classical.choice, Quot.sound], non_standard_axioms: [].",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::LEMMA::6",
+      "snippet_type": "LEMMA",
+      "location": "4 Doubly-logarithmic lower bound",
+      "content": "Lemma 4.5 says that, given that the positive and negative support are not empty, we can always “push the elements X⁺ and X⁻ in the support down in the lattice”, that is, we can find elements in the supports that are of relatively low rank. See Figure 1c for an illustration.\nLemma 4.5. Let ℒ = [X, Y] be a lattice of rank n. Let F ∈ ℱℒ(k) ∩ 𝒞ℒ such that F ≱ 0 and F ≰ 0. Then, there are X⁻ ∈ ℒ≤k ∩ supp⁻(F) and X⁺ ∈ ℒ≤k ∩ supp⁺(F) as well as Y⁻ ∈ ℒ≥n−k ∩ supp⁻(F) and Y⁺ ∈ ℒ≥n−k ∩ supp⁺(F).",
+      "route": "verify-math",
+      "route_rationale": "Support-and-rank existence claim over arbitrary lattices; formalising needs the entire lattice setup.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::LEMMA::6",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.65,
+        "reasoning": "No error visible, and the mechanism the paper illustrates is sound. Figure 1c's instance is correct: if $F\\in\\mathcal{F}_{\\mathcal{L}}(2)\\cap\\mathcal{C}_{\\mathcal{L}}$ and $F(bcd)<0$, then $\\mathcal{C}_{\\mathcal{L}}$ forbids any $S\\subseteq bcd$ with $F(S)>0$, while $\\langle\\alpha_{\\emptyset,bcd},F\\rangle=0$ makes it impossible for all proper subsets to vanish (that would force $F(bcd)=0$); hence some proper subset is strictly negative, which is exactly the 'push the support down' step. Iterating this is what yields representatives of rank at most $k$, and the dual statement at rank at least $n-k$ follows by the order-reversing symmetry of the construction. I could not independently certify the lemma in full generality from this snippet. One downstream misquote to note: Section 5 applies it as '$X^+\\in\\mathcal{L}_2\\cap\\operatorname{supp}^+(F)$' whereas the lemma delivers $\\mathcal{L}_{\\le k}=\\mathcal{L}_{\\le 2}$; this is harmless because Section 5 then reduces further to $\\mathcal{L}_1$.",
+        "predicted_error_category": null,
+        "snippet_type": "LEMMA",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.65
+    },
+    {
+      "snippet_id": "paper::PROOF::0",
+      "snippet_type": "PROOF",
+      "location": "4 Doubly-logarithmic lower bound",
+      "content": "The induction step is to find a T of cardinality at least (k−1)² + (k−1) + 1 such that F ∈ ℱ[S,S∪T](k−1) for all S ⊆ Y \\ T. Then, applying the induction hypothesis to each sublattice [S, S ∪ T] yields ⟨αS,S∪T, F⁺⟩ = 0 and hence F⁺ ∈ ℱℒ(n − 1).\nIt follows that $$F \\in \\mathcal{F}_{[S', S' \\cup T]}(k-1)$$ for all $$S' \\subseteq Y \\setminus T$$. Since $$|S|$$ is at most $$2k$$, it follows by counting that if $$n \\geq (k^2 + k + 1)$$, the cardinality of $$T$$ is at least $$(k-1)^2 + (k-1) + 1$$. This allows us to apply the induction hypothesis to all sublattices $$[S', S' \\cup T]$$ for $$S' \\subseteq Y \\setminus T$$, resulting in the following proposition. See also Figure 3b for an illustration of the induction.",
+      "route": "verify-math-lean",
+      "route_rationale": "Pure cardinality arithmetic: $n \\ge k^2+k+1$ and $|S| \\le 2k$ against the threshold $(k-1)^2+(k-1)+1$.",
+      "lean_result": {
+        "snippet_id": "paper::PROOF::0",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "Formalised the counting step verbatim, with $k = m+1$ so that $k-1 = m$ is ordinary subtraction. Lean proves (`counting`) that rank $n \\ge k^2+k+1$ together with $|S| \\le 2k$ gives $|T| = n - |S| \\ge (k-1)^2+(k-1)+1$, which is exactly the rank threshold Proposition 4.6 at $k-1$ requires, so the induction hypothesis really does apply to every sublattice $[S', S' \\cup T]$. Lean also proves (`threshold_exact`) that the inequality is tight: $(k^2+k+1) - 2k = (k-1)^2+(k-1)+1$ identically, so the hypothesis $n \\ge k^2+k+1$ is precisely what the step needs, neither more nor less - which explains why that threshold and not another appears in Proposition 4.6. A side lemma (`s_le_n`) confirms $|S| \\le 2k \\le n$, so no natural-number subtraction is truncating. No error.",
+        "predicted_error_category": null,
+        "snippet_type": "PROOF",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__PROOF__0_opus5.lean",
+          "formal_statement": "theorem counting (m n s : ℕ) (hn : (m + 1) ^ 2 + (m + 1) + 1 ≤ n) (hs : s ≤ 2 * (m + 1)) :\n    m ^ 2 + m + 1 ≤ n - s\n\ntheorem threshold_exact (k : ℤ) : (k ^ 2 + k + 1) - 2 * k = (k - 1) ^ 2 + (k - 1) + 1\n\ntheorem s_le_n (m n s : ℕ) (hn : (m + 1) ^ 2 + (m + 1) + 1 ≤ n) (hs : s ≤ 2 * (m + 1)) :\n    s ≤ n",
+          "compiler_feedback": "lake env lean Paper/TMP.lean -> exit 0, no output.\nlean_diagnostic_messages: no severity-1 items.\nlean_verify PaperProof0.counting -> axioms [propext, Quot.sound], non_standard_axioms: [].",
+          "axioms": [
+            "propext",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::PROPOSITION::3",
+      "snippet_type": "PROPOSITION",
+      "location": "4 Doubly-logarithmic lower bound",
+      "content": "Proposition 4.6. For $$k \\in \\mathbb{N}$$, let $$\\mathcal{L} = [X, Y]$$ be a lattice of rank $$n \\geq k^2 + k + 1$$ and $$F \\in \\mathcal{F}_{\\mathcal{L}}(k) \\cap \\mathcal{C}_{\\mathcal{L}}$$. Then it holds that $$\\langle \\alpha_{X,Y}, F^+ \\rangle = 0$$.",
+      "route": "verify-math",
+      "route_rationale": "Induction over lattices with sign conditions; beyond cheap formalisation, but amenable to exhaustive numerical search.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::PROPOSITION::3",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.8,
+        "reasoning": "I tested the proposition exhaustively/semi-exhaustively by linear programming. Fixing a candidate positive support $P$ determines, via $\\mathcal{C}_{\\mathcal{L}}$, that $F$ vanishes on every element comparable to $P$ but outside $P$ and is $\\le 0$ elsewhere, so $\\langle\\alpha_{X,Y},F^+\\rangle=\\sum_{S\\in P}(-1)^{r(S)}F(S)$ becomes a linear objective over a polyhedron cut out by $F\\in\\mathcal{F}_{\\mathcal{L}}(k)$ plus those sign constraints. Maximising $|\\cdot|$ over all such $P$: for $k=1$ the value is $0$ at ranks $n=3$ and $n=4$ (the threshold is $k^2+k+1=3$), and the bound is genuinely needed — at $n=2$ the objective is unbounded, so the hypothesis $n\\ge k^2+k+1$ cannot be dropped. For $k=2$ the value is $0$ at rank $5$ (the stated threshold $7$ is satisfied a fortiori, and Section 5 is precisely the claim that $5$ already suffices) and nonzero at rank $4$. Every test is consistent with the proposition.",
+        "predicted_error_category": null,
+        "snippet_type": "PROPOSITION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::PROPOSITION::4",
+      "snippet_type": "PROPOSITION",
+      "location": "4 Doubly-logarithmic lower bound",
+      "content": "Applying Proposition 4.6 to every sublattice of rank $$k^2 + k + 1$$ allows us to sharpen the bound.\nProposition 4.7. Let $$\\mathcal{L}$$ be a lattice and $$k \\in \\mathbb{N}$$, then it holds that $$\\mathcal{A}(\\mathcal{F}_{\\mathcal{L}}(k)) \\subseteq \\mathcal{F}_{\\mathcal{L}}(k^2 + k)$$.",
+      "route": "verify-math",
+      "route_rationale": "A sublattice-restriction argument on top of Proposition 4.6; the step is checkable by inspection.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::PROPOSITION::4",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "The reduction stated ('Applying Proposition 4.6 to every sublattice of rank $k^2+k+1$') is valid. If $F\\in\\mathcal{F}_{\\mathcal{L}}(k)\\cap\\mathcal{C}_{\\mathcal{L}}$ and $[S,T]\\subseteq\\mathcal{L}$ is a sublattice of rank $k^2+k+1$, then the restriction of $F$ to $[S,T]$ still lies in $\\mathcal{F}_{[S,T]}(k)\\cap\\mathcal{C}_{[S,T]}$ — both conditions are inherited, the first because the defining functionals $\\alpha_{S',T'}$ of $[S,T]$ are among those of $\\mathcal{L}$, the second because it is a condition on comparable pairs. Proposition 4.6 then gives $\\langle\\alpha_{S,T},F^+\\rangle=0$ for every such $[S,T]$, and by definition $\\mathbb{R}^{\\mathcal{L}}(k^2+k)$ is spanned exactly by those $\\alpha_{S,T}$ with $r(T)-r(S)=k^2+k+1$, so $F^+\\in\\mathcal{F}_{\\mathcal{L}}(k^2+k)$. Since $\\mathcal{F}_{\\mathcal{L}}(k^2+k)$ is a linear subspace, the span of all such $F^+$ stays inside it, which is the claimed inclusion.",
+        "predicted_error_category": null,
+        "snippet_type": "PROPOSITION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::THEOREM::2",
+      "snippet_type": "THEOREM",
+      "location": "4 Doubly-logarithmic lower bound",
+      "content": "Translating this result back to the CPWL functions and applying the argument iteratively for a rank-2-maxout network, layer by layer, we obtain the following theorem.\nTheorem 4.8. For a number of layers $$\\ell \\in \\mathbb{N}$$, it holds that $$\\mathcal{M}^2_{\\mathcal{B}_d}(\\ell) \\subseteq \\mathcal{V}_{\\mathcal{B}_d}(2^{2^\\ell - 1})$$.",
+      "route": "verify-math-lean",
+      "route_rationale": "The depth bound reduces to the recursion $k_1=2$, $k_{\\ell+1}=k_\\ell^2+k_\\ell$ against the closed form $2^{2^\\ell-1}$ - crisp and formalisable.",
+      "lean_result": {
+        "snippet_id": "paper::THEOREM::2",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "Formalised the arithmetic content of Theorem 4.8: that the closed form $2^{2^\\ell-1}$ printed in the theorem really does dominate the layerwise recursion the paper proves. Defining $k_1 = 2$ (Lemma 4.1(1)) and $k_{\\ell+1} = k_\\ell^2 + k_\\ell$ (Proposition 4.7), Lean checks the first values by `rfl` ($2, 6, 42, 1806$) and proves by induction (`two_mul_kk_le`, then `kk_le`) that $k_\\ell \\le 2^{2^\\ell-1}$ for every $\\ell \\ge 1$. The inductive step is $2k_{\\ell+1} = 2(k_\\ell^2+k_\\ell) \\le (2k_\\ell)^2 \\le (2^{2^\\ell})^2 = 2^{2^{\\ell+1}}$, using $k_\\ell \\ge 1$. So $\\mathcal{M}^2_{\\mathcal{B}_d}(\\ell) \\subseteq \\mathcal{V}_{\\mathcal{B}_d}(k_\\ell) \\subseteq \\mathcal{V}_{\\mathcal{B}_d}(2^{2^\\ell-1})$ and the theorem's exponent is valid (indeed loose - the true recursion grows much more slowly, $k_2 = 6$ against $2^3 = 8$ and $k_3 = 42$ against $2^7 = 128$). One inconsistency is recorded rather than flagged: the sentence opening the layerwise analysis writes the condition as '$d \\geq 2^{2^{\\ell-1}} + 1$', and Lean confirms (`exponent_variants_differ`) that $2^{2^{\\ell-1}} \\ne 2^{2^\\ell-1}$ from $\\ell = 2$ on ($4$ versus $8$); the theorem's own exponent is the one supported by the recursion.",
+        "predicted_error_category": null,
+        "snippet_type": "THEOREM",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__THEOREM__2_opus5.lean",
+          "formal_statement": "def kk : ℕ → ℕ\n  | 0 => 2\n  | (n + 1) => (kk n) ^ 2 + kk n\n\ntheorem kk_pos (n : ℕ) : 1 ≤ kk n\n\ntheorem two_mul_kk_le (n : ℕ) : 2 * kk n ≤ 2 ^ 2 ^ (n + 1)\n\ntheorem kk_le (n : ℕ) : kk n ≤ 2 ^ (2 ^ (n + 1) - 1)\n\ntheorem exponent_variants_differ : (2 : ℕ) ^ 2 ^ (2 - 1) ≠ 2 ^ (2 ^ 2 - 1)",
+          "compiler_feedback": "lake env lean Paper/TMP.lean -> exit 0, no output.\nlean_diagnostic_messages: no items.\nlean_verify PaperThm48.kk_le -> axioms [propext, Classical.choice, Quot.sound], non_standard_axioms: [].",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::COROLLARY::0",
+      "snippet_type": "COROLLARY",
+      "location": "4 Doubly-logarithmic lower bound",
+      "content": "Corollary 4.9. The function $$x \\mapsto \\{0, x_1, \\ldots, x_{2^{2^\\ell}-1}\\}$$ is not computable by a $$\\mathcal{B}^0_d$$-conforming ReLU neural network with $$\\ell$$ hidden layers.",
+      "route": "verify-math-lean",
+      "route_rationale": "Whether the printed index is consistent with Theorem 4.8 is an exponential-arithmetic inequality.",
+      "lean_result": {
+        "snippet_id": "paper::COROLLARY::0",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "The corollary as printed is TRUE, so no error is flagged - but its index does not match the statement the paper announces twice elsewhere. Theorem 4.8 gives $\\mathcal{M}^2_{\\mathcal{B}_d}(\\ell) \\subseteq \\mathcal{V}_{\\mathcal{B}_d}(N)$ with $N = 2^{2^\\ell-1}$, and since $\\max\\{x_1,\\ldots,x_m\\} = \\sigma_{[m]} \\notin \\mathcal{V}_{\\mathcal{B}_m}(m-1)$, a maximum of $m$ numbers is ruled out exactly when $m > N$. Lean proves (`cor49_index_valid`) that $N < 2^{2^\\ell} - 1$ for every $\\ell \\ge 1$, so the corollary's function - a maximum of $2^{2^\\ell}$ numbers - does lie outside $\\mathcal{V}_{\\mathcal{B}_d}(N)$ and the corollary follows from Theorem 4.8. Lean also proves (`indices_differ`) that the two indices never coincide for $\\ell \\ge 1$: at $\\ell = 1$ they are $3$ and $2$, at $\\ell = 2$ they are $15$ and $8$. So Corollary 4.9 states a strictly weaker result than the one announced at the head of Section 4 ('$\\max\\{0, x_1, \\ldots, x_{2^{2^\\ell-1}}\\}$ is not computable ... with $\\ell$ hidden layers') and in Section 1 ('for $d = 2^{2^\\ell - 1}$'). Both yield the same $\\Omega(\\log\\log d)$ asymptotics, so the headline rate is unaffected. Recorded as an internal inconsistency, not an error: a true statement is not a defect Lean can refute.",
+        "predicted_error_category": null,
+        "snippet_type": "COROLLARY",
+        "contradiction_locations": [
+          "4 Doubly-logarithmic lower bound, opening sentence",
+          "1 Introduction, 'we prove for $d = 2^{2^\\ell - 1}$'"
+        ],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "(not archived; superseded by the Theorem 4.8 file)",
+          "formal_statement": "def N (l : ℕ) : ℕ := 2 ^ (2 ^ l - 1)\n\ntheorem cor49_index_valid (l : ℕ) (hl : 1 ≤ l) : N l < 2 ^ 2 ^ l - 1\n\ntheorem indices_differ (l : ℕ) (hl : 1 ≤ l) : 2 ^ 2 ^ l - 1 ≠ 2 ^ (2 ^ l - 1)",
+          "compiler_feedback": "lake env lean Paper/TMP.lean -> exit 0, no output.\nlean_diagnostic_messages: no items.\nlean_verify PaperCor49.cor49_index_valid -> axioms [propext, Classical.choice, Quot.sound], non_standard_axioms: [].",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::LEMMA::7",
+      "snippet_type": "LEMMA",
+      "location": "5 Combinatorial proof for dimension four",
+      "content": "Lemma 5.1. Let $$\\mathcal{L} = [X, Y]$$ be a lattice of rank $$n$$ and $$F \\in \\mathcal{F}_{\\mathcal{L}}(k) \\cap \\mathcal{C}_{\\mathcal{L}}$$ with $$n \\geq 2k + 1$$. If there are $$i, j \\in [n]_0$$ such that $$\\text{supp}^+(F) \\subseteq \\mathcal{L}_i \\cup \\mathcal{L}_j$$ or $$\\text{supp}^-(F) \\subseteq \\mathcal{L}_i \\cup \\mathcal{L}_j$$, then it holds that $$F^+ \\in \\mathcal{F}_{\\mathcal{L}}(n-1)$$.",
+      "route": "verify-math",
+      "route_rationale": "Two-level support hypothesis at arbitrary rank; a formal proof is far beyond budget, so checked by counterexample search at the rank actually used.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::LEMMA::7",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.7,
+        "reasoning": "No error found; the lemma survived a substantial counterexample search in the case it is actually used for (rank $n=5$, $k=2$, where $n\\ge 2k+1$ holds with equality). For every pair of levels $(i,j)$ with $0\\le i\\le j\\le 5$ and 23,943 candidate positive-support patterns, I solved the linear program maximising $|\\langle\\alpha_{X,Y},F^+\\rangle|$ subject to $F\\in\\mathcal{F}_{\\mathcal{L}}(2)$, the $\\mathcal{C}_{\\mathcal{L}}$-forced vanishing, and $\\operatorname{supp}^+(F)\\subseteq\\mathcal{L}_i\\cup\\mathcal{L}_j$; the optimum was $0$ in every single case, i.e. $F^+\\in\\mathcal{F}_{\\mathcal{L}}(n-1)$ always held. I did not certify the lemma for general $n$ and $k$ from this snippet, so this is corroboration rather than proof.",
+        "predicted_error_category": null,
+        "snippet_type": "LEMMA",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.7
+    },
+    {
+      "snippet_id": "paper::PROOF::1",
+      "snippet_type": "PROOF",
+      "location": "5 Combinatorial proof for dimension four",
+      "content": "If the positive support of a function $$F \\in \\mathcal{F}_{\\mathcal{L}}(2) \\cap \\mathcal{C}_{\\mathcal{L}}$$ is contained in the levels $$\\mathcal{L}_2$$ and $$\\mathcal{L}_3$$, then for every $$S \\in \\text{supp}^+(F) \\cap \\mathcal{L}_2$$ there must be a $$T \\in \\text{supp}^+(F) \\cap \\mathcal{L}_3$$ such that $$T \\supseteq S$$ and $$F(S) \\leq F(T)$$ since $$\\langle \\alpha_{S,Y}, F \\rangle = 0$$. Applying the same argument to $$T$$, we conclude that $$F(S) = F(T)$$ and that there are no further subsets in $$\\text{supp}^+(F)$$ that are comparable to $$S$$ or $$T$$. Thus, we can match the subsets $$S \\in \\mathcal{L}_2$$ with the subsets $$T \\in \\mathcal{L}_3$$ such that $$F(S) = F(T)$$, and hence it follows that $$\\langle \\alpha_{X,Y}, F^+ \\rangle = \\sum_{S \\in \\mathcal{L}_2} F^+(S) - \\sum_{T \\in \\mathcal{L}_3} F^+(T) = 0$$. By symmetry, the same holds if $$\\text{supp}^-(F) \\subseteq \\mathcal{L}_2 \\cup \\mathcal{L}_3$$. See Figure 4 for an illustration. Following this idea, we state the lemma for a more general case.\nIf there is a $X^+ \\in \\mathcal{L}_1 \\cap \\operatorname{supp}^+(F)$ and a $X^- \\in \\mathcal{L}_4 \\cap \\operatorname{supp}^-(F)$, then it holds that $\\langle \\alpha_{X,Y}, F^+ \\rangle = \\langle \\alpha_{X^+,Y}, F \\rangle = 0$ (Figure 4 and Lemma B.1 in the appendix). Thus we can assume that there are $X^+ \\in \\mathcal{L}_1 \\cap \\operatorname{supp}^+(F)$ and $X^- \\in \\mathcal{L}_1 \\cap \\operatorname{supp}^-(F)$. By proceeding analogously as in Section 4, we prove the following theorem.",
+      "route": "verify-math",
+      "route_rationale": "Matching and sign-counting argument whose steps a careful reader can follow directly.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::PROOF::1",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.6,
+        "reasoning": "The conclusion is correct and I verified it numerically, but two intermediate steps are stated more strongly than they are justified — both are sketch-level looseness that the rubric says not to flag, not broken algebra. (a) Signs are right: in rank $5$, $\\alpha_{X,Y}$ weights $\\mathcal{L}_2$ by $(-1)^2=+1$ and $\\mathcal{L}_3$ by $(-1)^3=-1$, matching the displayed $\\sum_{\\mathcal{L}_2}F^+-\\sum_{\\mathcal{L}_3}F^+$. (b) The 'matching' is an over-simplification: from $\\langle\\alpha_{S,Y},F\\rangle=0$ one gets $\\sum_{T\\supset S,|T|=3}F(T)=F(S)$, so a single $S\\in\\operatorname{supp}^+(F)\\cap\\mathcal{L}_2$ may split its value across several $T$ rather than pairing with one $T$ at which 'there must be ... $F(S)\\le F(T)$' and then '$F(S)=F(T)$'. The conclusion $\\sum_{\\mathcal{L}_2}F^+=\\sum_{\\mathcal{L}_3}F^+$ nevertheless follows by double counting the same identities, so $\\langle\\alpha_{X,Y},F^+\\rangle=0$ stands. (c) The step '$\\langle\\alpha_{X,Y},F^+\\rangle=\\langle\\alpha_{X^+,Y},F\\rangle$' for $X^+\\in\\mathcal{L}_1\\cap\\operatorname{supp}^+$, $X^-\\in\\mathcal{L}_4\\cap\\operatorname{supp}^-$ carries a sign slip: $\\mathcal{C}_{\\mathcal{L}}$ forces $X^+\\not\\subseteq X^-$, hence $Y=X^-\\sqcup X^+$, $F^+$ vanishes on all $Q\\subseteq X^-$ and equals $F$ on all $Q\\supseteq X^+$, giving $\\langle\\alpha_{X,Y},F^+\\rangle=-\\langle\\alpha_{X^+,Y},F\\rangle$ because $(-1)^{r(Q)}=-(-1)^{r(Q)-r(X^+)}$. Both sides are $0$, so nothing downstream changes.",
+        "predicted_error_category": null,
+        "snippet_type": "PROOF",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.6
+    },
+    {
+      "snippet_id": "paper::THEOREM::3",
+      "snippet_type": "THEOREM",
+      "location": "5 Combinatorial proof for dimension four",
+      "content": "Theorem 5.2. It holds that $\\mathcal{M}_{\\mathbb{B}_d^0}^2(2) = \\mathcal{V}_{\\mathbb{B}_d}(4)$. In particular, the function $x \\mapsto \\{0, x_1, \\ldots, x_4\\}$ is not computable by a $\\mathbb{B}_d^0$-conforming ReLU neural network with 2 hidden layers.",
+      "route": "verify-math",
+      "route_rationale": "Equality of two function classes; needs all of Section 5, so corroborated numerically instead.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::THEOREM::3",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "Independently corroborated by computation. The content of the inclusion $\\mathcal{M}^2(2)\\subseteq\\mathcal{V}_{\\mathcal{B}_d}(4)$ is that every $F\\in\\mathcal{F}_{\\mathcal{L}}(2)\\cap\\mathcal{C}_{\\mathcal{L}}$ on a rank-$5$ lattice satisfies $\\langle\\alpha_{X,Y},F^+\\rangle=0$; my linear-programming sweep over positive-support patterns on the rank-$5$ Boolean lattice returned optimum $0$ in every case, confirming it. Sharpness is confirmed too: on a rank-$4$ lattice the same sweep finds $F$ with $\\langle\\alpha_{X,Y},F^+\\rangle\\ne 0$ (e.g. positive support $\\{\\{1,2\\},\\{3,4\\}\\}$), so the bound cannot be tightened to $\\mathcal{V}_{\\mathcal{B}_d}(3)$ and the stated equality is the right one. The 'in particular' is then immediate: via Lemma 3.1, $\\max\\{0,x_1,\\ldots,x_4\\}$ corresponds to $\\sigma_{[5]}\\in\\mathcal{V}_{\\mathcal{B}_5}(5)\\setminus\\mathcal{V}_{\\mathcal{B}_5}(4)$. It also matches the independent mixed-integer-programming result of Hertrich et al. [2023] that the paper says it reproves. Only notation is loose: '$\\mathcal{M}^2_{\\mathcal{B}^0_d}(2)=\\mathcal{V}_{\\mathcal{B}_d}(4)$' mixes the two arrangements at the same unquantified $d$.",
+        "predicted_error_category": null,
+        "snippet_type": "THEOREM",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::PROPOSITION::5",
+      "snippet_type": "PROPOSITION",
+      "location": "6 The unimaginable power of maxouts",
+      "content": "Proposition 6.1. Let $f_1, f_2 \\in \\mathcal{V}_{\\mathbb{B}_7}(3)$ be the functions given by\n$$f_1 = 2 \\cdot \\sigma_{\\{1,2\\}} + \\sigma_{\\{1,4,5\\}} + \\sigma_{\\{1,6,7\\}} + \\sigma_{\\{2,4,6\\}} + \\sigma_{\\{2,5,7\\}},$$\n$$f_2 = \\sigma_{\\{3,4,5\\}} + \\sigma_{\\{3,6,7\\}} + \\sigma_{\\{1,2,4\\}} + \\sigma_{\\{1,2,5\\}} + \\sigma_{\\{1,2,6\\}} + \\sigma_{\\{1,2,7\\}}.$$\nThen it holds that $\\max\\{f_1, f_2\\} \\in \\mathcal{V}_{\\mathbb{B}_7}(7) \\setminus \\mathcal{V}_{\\mathbb{B}_7}(6)$.",
+      "route": "verify-math-lean",
+      "route_rationale": "A fully explicit finite claim over $2^{[7]}$ - decidable by kernel computation, the strongest available evidence.",
+      "lean_result": {
+        "snippet_id": "paper::PROPOSITION::5",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.92,
+        "reasoning": "Proposition 6.1 is confirmed by exhaustive kernel computation. Transporting to set functions by $\\Phi$ (with $\\Phi(\\sigma_M)(S) = [M \\cap S \\ne \\emptyset]$, as Proposition 2.3 specifies) and encoding each $S \\subseteq [7]$ as a bitmask $s < 128$, Lean verifies by `decide` over all $2^7 = 128$ subsets that: (i) every $\\sigma_M$ occurring in $f_1$ or $f_2$ has $|M| \\le 3$, so $f_1, f_2 \\in \\mathcal{V}_{\\mathbb{B}_7}(3)$ as claimed (`ranks_le_three`); (ii) $F = F_1 - F_2$ never changes sign along a comparable pair $S \\subseteq T$, i.e. $(F_1,F_2) \\in \\mathcal{C}^2_7$, which by Lemma 3.3 makes $\\max\\{f_1,f_2\\}$ compatible with $\\mathbb{B}_7$ and hence an element of $\\mathcal{V}_{\\mathbb{B}_7} = \\mathcal{V}_{\\mathbb{B}_7}(7)$ (`conforming`, all 16384 ordered pairs); (iii) $\\langle\\alpha_{\\emptyset,[7]}, \\max\\{F_1,F_2\\}\\rangle = -2$, so $\\lambda_{[7]} = 2 \\ne 0$ and $\\max\\{f_1,f_2\\} \\notin \\mathcal{V}_{\\mathbb{B}_7}(6)$ (`alpha_full`, `lambda_full_ne_zero`). Together these are exactly $\\max\\{f_1,f_2\\} \\in \\mathcal{V}_{\\mathbb{B}_7}(7) \\setminus \\mathcal{V}_{\\mathbb{B}_7}(6)$. The same file also settles the displayed line of the Proof Sketch (snippet paper::PROOF::2) formally: `alpha_12bar3` gives $\\langle\\alpha_{12,\\overline{3}},F\\rangle = 0$, `printed_values` gives $F(146) = -1$, $F(167) = 1$, $F(145) = 1$, `printed_identity_false` refutes the printed identity (its right-hand side is $0$, not $-2$), `corrected_identity` confirms that replacing $F(146)$ by $F(145)$ makes it exactly $-2$, and `printed_support_false` exhibits $F(\\{1,2\\}) = 2 > 0$ with $\\{1,2\\} \\not\\subseteq \\overline{23}$, refuting the printed support containment. The proposition itself is clean; only its sketch is wrong.",
+        "predicted_error_category": null,
+        "snippet_type": "PROPOSITION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__PROPOSITION__5_opus5.lean",
+          "formal_statement": "def bit (m s : ℕ) : ℤ := if m &&& s = 0 then 0 else 1\ndef F1 (s : ℕ) : ℤ := 2 * bit 3 s + bit 25 s + bit 97 s + bit 42 s + bit 82 s\ndef F2 (s : ℕ) : ℤ := bit 28 s + bit 100 s + bit 11 s + bit 19 s + bit 35 s + bit 67 s\ndef F (s : ℕ) : ℤ := F1 s - F2 s\ndef card7 (s : ℕ) : ℕ := (List.range 7).countP (fun i => s.testBit i)\ndef sgn (s : ℕ) : ℤ := if card7 s % 2 = 0 then 1 else -1\n\ntheorem conforming :\n    ∀ s ∈ Finset.range 128, ∀ t ∈ Finset.range 128,\n      s &&& t = s → 0 ≤ F s * F t\n\ntheorem alpha_full : (∑ s ∈ Finset.range 128, sgn s * max (F1 s) (F2 s)) = -2\n\ntheorem printed_identity_false :\n    (∑ v ∈ Finset.range 16, sgn v * F (3 + 8 * v)) - F 41 - F 97 ≠ -2\n\ntheorem corrected_identity :\n    (∑ v ∈ Finset.range 16, sgn v * F (3 + 8 * v)) - F 25 - F 97 = -2",
+          "compiler_feedback": "lake env lean Paper/TMP.lean -> exit 0, no output (with set_option maxRecDepth 1000000).\nlean_diagnostic_messages: no items (success: true).\nlean_verify PaperProp61.alpha_full -> axioms [propext, Classical.choice, Quot.sound], non_standard_axioms: [].\nlean_verify PaperProp61.conforming -> axioms [propext, Classical.choice, Quot.sound], non_standard_axioms: [].\nlean_verify PaperProp61.printed_identity_false -> axioms [propext, Classical.choice, Quot.sound], non_standard_axioms: [].\nNote: an earlier attempt without maxRecDepth raised 'maximum recursion depth has been reached'; raising the limit resolved it. No native_decide was used, so no ofReduceBool axiom appears.",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.92
+    },
+    {
+      "snippet_id": "paper::PROOF::2",
+      "snippet_type": "PROOF",
+      "location": "6 The unimaginable power of maxouts",
+      "content": "Proof Sketch. Let $F_1 = \\Phi(f_1)$ and $F_2 = \\Phi(f_2)$. We write $i_1 \\cdots i_n$ for $\\{i_1, \\ldots, i_n\\}$ and $\\overline{i_1 \\cdots i_n}$ for $[7] \\setminus \\{i_1, \\ldots, i_n\\}$ and note that the sublattices $[12, \\overline{3}], [13, \\overline{2}], [23, \\overline{1}], [3, \\overline{12}], [2, \\overline{13}], [1, \\overline{23}], [\\emptyset, \\overline{123}], [123, \\overline{[7]}]$ form a partition of $[\\emptyset, [7]]$.\nWe first show that on any of the above sublattices except $[1, \\overline{23}]$, either $F_1$ or $F_2$ attains the maximum on all elements of the sublattice and that for $F := F_1 - F_2$ it holds that $\\operatorname{supp}^+(F) \\subseteq [1, \\overline{23}] \\cup 146 \\cup 167$ and $\\langle \\alpha_{\\emptyset,[7]}, F^+ \\rangle = \\langle \\alpha_{12,\\overline{3}}, F \\rangle - F(146) - F(167) = -2$ and thus $F^+ \\in \\mathcal{F}_{\\mathcal{L}} \\setminus \\mathcal{F}_{\\mathcal{L}}(6)$. Then by looking at the partition into sublattices, we argue that $F \\in \\mathcal{C}_{\\mathcal{L}}$ and thus by Lemma 3.3, we conclude that $\\max\\{f_1, f_2\\} \\in \\mathcal{V}_{\\mathbb{B}_7} \\setminus \\mathcal{V}_{\\mathbb{B}_7}(6)$. □",
+      "route": "verify-math",
+      "route_rationale": "A displayed numeric identity over a concrete finite lattice; directly checkable by evaluation.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::PROOF::2",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.9,
+        "reasoning": "I evaluated the proof sketch exactly over all $2^7=128$ subsets, with $F_1=\\Phi(f_1)$, $F_2=\\Phi(f_2)$ computed from $\\Phi(\\sigma_M)(S)=[M\\cap S\\neq\\emptyset]$ and $F=F_1-F_2$. The displayed identity is false as printed. Its middle expression evaluates to $0$, not $-2$: $\\langle\\alpha_{12,\\overline{3}},F\\rangle=0$, $F(146)=-1$ and $F(167)=1$, so $\\langle\\alpha_{12,\\overline{3}},F\\rangle-F(146)-F(167)=0-(-1)-1=0$. Two concrete index errors produce this. (i) $F(146)=-1<0$, so $146\\notin\\operatorname{supp}^+(F)$ at all; the element that belongs there is $145$, with $F(145)=1$. (ii) The containment '$\\operatorname{supp}^+(F)\\subseteq[1,\\overline{23}]\\cup 146\\cup 167$' is false: $\\operatorname{supp}^+(F)=\\{12,124,125,126,127,1245,1267\\}\\cup\\{145,167\\}$, and e.g. $F(\\{1,2\\})=2>0$ while $\\{1,2\\}\\notin[1,\\overline{23}]$ (it contains $2$). The sublattice named should be $[12,\\overline{3}]$, not $[1,\\overline{23}]$. With both corrections the computation is exactly right: $\\operatorname{supp}^+(F)\\subseteq[12,\\overline{3}]\\cup 145\\cup 167$ and $\\langle\\alpha_{\\emptyset,[7]},F^+\\rangle=\\langle\\alpha_{12,\\overline{3}},F\\rangle-F(145)-F(167)=0-1-1=-2$, and the per-block decomposition confirms it ($[12,\\overline{3}]$ contributes $0$, $[1,\\overline{23}]$ contributes $-2$, every other block $0$). The surrounding claims are correct: the eight listed sublattices do partition $[\\emptyset,[7]]$, $[1,\\overline{23}]$ is exactly the unique block on which neither $F_1$ nor $F_2$ dominates throughout, $(F_1,F_2)$ is conforming (no comparable pair of opposite signs), and $\\langle\\alpha_{\\emptyset,[7]},F^+\\rangle=-2\\ne 0$, so $F^+\\notin\\mathcal{F}_{\\mathcal{L}}(6)$ and Proposition 6.1 itself holds. The error is confined to the displayed line of the sketch.",
+        "predicted_error_category": "Sign/Arithmetic error",
+        "snippet_type": "PROOF",
+        "contradiction_locations": [
+          "6 The unimaginable power of maxouts, Proof Sketch of Proposition 6.1"
+        ]
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::THEOREM::4",
+      "snippet_type": "THEOREM",
+      "location": "6 The unimaginable power of maxouts",
+      "content": "Hence $\\max\\{f_1, f_2\\} = \\sum_{M \\subseteq [7]} \\lambda_M \\sigma_M$ with $\\lambda_{[7]} \\neq 0$ and since all functions in $\\mathcal{V}_{\\mathbb{B}_d}(6)$ are computable by a rank-$(3, 2)$-maxout network, we conclude that $x \\mapsto \\{x_1, \\ldots, x_7\\}$ is computable by a rank-$(3, 2)$-maxout network or equivalently:\nTheorem 6.2. The function $x \\mapsto \\{0, x_1, \\ldots, x_6\\}$ is computable by a rank-$(3, 2)$-maxout network.",
+      "route": "verify-math",
+      "route_rationale": "Derivation from Proposition 6.1 and Proposition 3.2 at the level of representability by a network.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::THEOREM::4",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "The derivation is sound and its numerical input checks out: expanding $\\max\\{f_1,f_2\\}=\\sum_M\\lambda_M\\sigma_M$ via the Mobius inversion $\\lambda_M=-\\langle\\alpha_{[7]\\setminus M,[7]},\\Phi(\\max\\{f_1,f_2\\})\\rangle$ gives $\\lambda_{[7]}=2\\ne 0$ exactly, as required. The representability argument then goes through: $f_1,f_2\\in\\mathcal{V}_{\\mathcal{B}_7}(3)$ (every $M$ appearing has $|M|\\le 3$), so each is computable by one rank-$3$ maxout layer, and their maximum by a following rank-$2$ layer, making $\\max\\{f_1,f_2\\}$ rank-$(3,2)$-computable. Rearranging, $\\sigma_{[7]}=\\lambda_{[7]}^{-1}\\big(\\max\\{f_1,f_2\\}-\\sum_{|M|\\le 6}\\lambda_M\\sigma_M\\big)$, and the subtracted part lies in $\\mathcal{V}_{\\mathcal{B}_7}(6)$, which is rank-$(3,2)$-computable by Proposition 3.2 since $3\\cdot 2=6$. Width is unrestricted, so one rank-$(3,2)$ network computes the whole combination, and Lemma 3.1 converts $\\max\\{x_1,\\ldots,x_7\\}$ into $\\max\\{0,x_1,\\ldots,x_6\\}$. This genuinely exceeds the $\\prod_i r_i=6$ bound of Proposition 3.2, which is the point of the section.",
+        "predicted_error_category": null,
+        "snippet_type": "THEOREM",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::EQUATION::0",
+      "snippet_type": "EQUATION",
+      "location": "6 The unimaginable power of maxouts",
+      "content": "Remark 6.3. One can check (e.g., with a computer) that $x \\mapsto \\{0, x_1, \\ldots, x_6\\}$ is computable by a rank-$(3, 2)$-maxout network with integral weights. This is particularly interesting in light of Haase et al. [2023], who prove a $\\lceil \\log_2(d + 1) \\rceil$ lower bound for the case of integral weights and ReLU networks.",
+      "route": "verify-math",
+      "route_rationale": "An unproved computational assertion ('one can check, e.g. with a computer'); unformalisable as stated.",
+      "lean_result": null,
+      "fallback_result": null,
+      "math_result": {
+        "snippet_id": "paper::EQUATION::0",
+        "verifier_name": "math-equations",
+        "status": "UNVERIFIABLE",
+        "error_detected": false,
+        "confidence": 0.5,
+        "reasoning": "The remark asserts integrality ('One can check (e.g., with a computer)') with no construction, no witness weights and no code, so it cannot be checked from the paper. It is not implied by Section 6 as written: the construction there has $\\lambda_{[7]}=2$, so recovering $\\sigma_{[7]}$ requires dividing by $2$, and integrality of the resulting network would need either a different construction or an argument that the halves cancel. The framing against Haase et al. [2023] is at least not contradictory: their $\\lceil\\log_2(d+1)\\rceil$ bound is for integral *ReLU* networks (giving $3$ hidden layers for $7$ numbers), whereas the claim here is about a rank-$(3,2)$ *maxout* network, so no inconsistency arises. Recorded as unverifiable rather than as an error.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "UNVERIFIABLE",
+      "error_detected": false,
+      "confidence": 0.5
+    }
+  ],
+  "findings": [
+    {
+      "snippet_id": "paper::THEOREM::0",
+      "category": "Unsupported scope claim contradicted by the paper's own results",
+      "severity": "critical",
+      "confidence": 0.95,
+      "evidence": "The abstract claims a result the paper never proves and whose negation the paper itself cites. Section 5 only rules out $2$ hidden layers for $\\mathcal{B}_d^0$-**conforming** networks (Theorem 5.2), while Section 7 states: \"Given that Bakaev et al. [2025b] showed that one can compute the maximum of 5 numbers with 2 layers, this implies that considering $\\mathcal{B}_d^0$-conforming networks is a real restriction.\" So *arbitrary* networks do **not** require three hidden layers for the maximum of $5$ numbers - two suffice. The companion claim of \"the first unconditional non-constant lower bound of $\\Omega(\\log \\log d)$ hidden layers ... in general ReLU networks\" is likewise unsupported: the only theorem delivering that rate is Theorem 4.8, $\\mathcal{M}^2_{\\mathcal{B}_d}(\\ell) \\subseteq \\mathcal{V}_{\\mathcal{B}_d}(2^{2^\\ell-1})$, which is conditional on conformity with the braid fan - exactly as Section 7 concedes (\"under the assumption that breakpoints lie on the braid fan\"). The abstract's third claim, that a rank-$3$ followed by a rank-$2$ maxout layer represents the maximum of $7$ numbers, is correct and was formally verified (Proposition 6.1, Lean `PASSED`).",
+      "verifier": "verify-math",
+      "exact_quote": "Additionally, we provide a combinatorial proof that arbitrary neural networks require three hidden layers to compute the maximum of 5 numbers; this resolves the open question definitively."
+    },
+    {
+      "snippet_id": "paper::PROPOSITION::1",
+      "category": "Formally refuted",
+      "severity": "minor",
+      "confidence": 0.95,
+      "evidence": "Lean refuted the dimension formula. The paper fixes $\\{\\sigma_M \\mid M \\in 2^{[d]}\\}$ as a basis of $\\mathcal{V}_{\\mathcal{B}_d}$, sets $\\mathcal{V}_{\\mathcal{B}_d}(k) = \\operatorname{span}\\{\\sigma_M : |M| \\le k\\}$, and asserts both $\\mathcal{V}_{\\mathcal{B}_d}(d) = \\mathcal{V}_{\\mathcal{B}_d}$ and \"This implies that $\\mathcal{V}_{\\mathcal{B}_d}$ has dimension $2^d$\". Those force $\\dim \\mathcal{V}_{\\mathcal{B}_d}(d) = 2^d$, but Lean proves $\\sum_{i=1}^{d}\\binom{d}{i} = 2^d - 1 \\neq 2^d$ for every $d \\ge 1$. The correct count of $\\{M \\subseteq [d] : |M| \\le k\\}$ is $\\sum_{i=0}^{k}\\binom{d}{i}$, also proved in Lean, with the concrete witness $d = 2$, $k = 1$: the spanning set has $3$ elements while the printed formula gives $2$. Independently, computing $\\dim \\mathcal{F}_d(k) = \\dim (\\mathbb{R}^{\\mathcal{L}}(k))^\\perp$ by exact rational rank elimination straight from the paper's definition gives $\\sum_{i=0}^{k}\\binom{d}{i}$ in all $20$ cases with $d \\le 5$. The index should start at $i = 0$; Sections 4-6 use the defining functionals of $\\mathcal{F}_{\\mathcal{L}}(k)$ rather than its dimension, so no later result depends on this.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "dim(𝓕_d(k)) = dim(𝓥_{𝓑_d}(k)) = ∑_{i=1}^k \\binom{d}{i}"
+    },
+    {
+      "snippet_id": "paper::LEMMA::5",
+      "category": "Formally refuted",
+      "severity": "minor",
+      "confidence": 0.95,
+      "evidence": "Lean refuted Lemma 4.4(1) as printed. On $\\mathcal{L} = [\\emptyset, \\{0,1\\}]$ with $T = \\{0\\}$, the printed index set $\\{S : S \\supseteq Y \\setminus T\\} = \\{\\{1\\},\\{0,1\\}\\}$ generates $\\alpha_{\\{1\\},\\{0,1\\}} = e_{\\{1\\}} - e_{\\{0,1\\}}$ and $\\alpha_{\\{0,1\\},\\{0,1\\}} = e_{\\{0,1\\}}$, both of which vanish at the coordinate $\\emptyset$; but $\\alpha_{X,Y} = e_\\emptyset - e_{\\{0\\}} - e_{\\{1\\}} + e_{\\{0,1\\}}$ takes the value $1$ there, so it cannot lie in their span. Exhaustive check over all $|Y| \\le 4$ and all $T \\subseteq Y$: the printed version fails in every nontrivial case. The containment symbol is reversed - it should be $S \\subseteq Y \\setminus T$, and with that index set Lean confirms $\\alpha_{\\emptyset,\\{0,1\\}} = \\alpha_{\\emptyset,\\{0\\}} - \\alpha_{\\{1\\},\\{0,1\\}}$. The corrected form is what the paper uses everywhere else: the decomposition sentence immediately before the lemma (\"into the sublattices $[S, S \\cup T]$ for all $S \\subseteq Y \\setminus T$\"), the sentence applying it (\"for all $S \\subseteq Y \\setminus T$\"), part (2) of the same lemma ($S, S' \\in [X, Y \\setminus T]$), and Figure 2. The downstream argument is therefore unaffected.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "it holds that $\\alpha_{X,Y} \\in \\mathrm{span}\\{\\alpha_{S,S\\cup T} \\mid S \\supseteq Y \\setminus T\\}$"
+    },
+    {
+      "snippet_id": "paper::THEOREM::1",
+      "category": "Unsupported scope claim contradicted by the paper's own results",
+      "severity": "critical",
+      "confidence": 0.9,
+      "evidence": "Two independent defects in one sentence pair. (i) Scope: \"without any conforming or weight restrictions\" contradicts Section 4, whose only result is $\\mathcal{M}^2_{\\mathcal{B}_d}(\\ell) \\subseteq \\mathcal{V}_{\\mathcal{B}_d}(2^{2^\\ell-1})$ for networks conforming with the braid fan, and contradicts Section 7 (\"under the assumption that breakpoints lie on the braid fan\"). It also contradicts the same Introduction two paragraphs earlier: \"it remains open if there exists a CPWL function on $\\mathbb{R}^d$ that really needs logarithmic many hidden layers to be represented. In particular, it is already open whether there is a function that needs more than two hidden layers to be represented.\" A paper cannot both leave that open and resolve it unconditionally. (ii) Quantifier: \"all continuous piecewise linear functions on $\\mathbb{R}^d$ require depth $\\Omega(\\log \\log d)$\" is false as universally quantified - every affine map is CPWL and needs $0$ hidden layers. The intended claim is existential.",
+      "verifier": "verify-math",
+      "exact_quote": "This establishes the first unconditional non-constant lower bound for general CPWL functions, resolving the depth complexity question without any conforming or weight restrictions."
+    },
+    {
+      "snippet_id": "paper::PROOF::2",
+      "category": "Sign/Arithmetic error",
+      "severity": "minor",
+      "confidence": 0.9,
+      "evidence": "Lean evaluated the displayed line exactly over all $2^7 = 128$ subsets and refuted it: its right-hand side is $0$, not $-2$. With $F = F_1 - F_2$, the three printed quantities are $\\langle \\alpha_{12,\\overline{3}}, F \\rangle = 0$, $F(146) = -1$ and $F(167) = 1$, so $\\langle \\alpha_{12,\\overline{3}}, F \\rangle - F(146) - F(167) = 0 - (-1) - 1 = 0$. Two index slips cause this. First, $F(146) = -1 < 0$, so $146$ is not in the positive support at all; the element that belongs there is $145$, with $F(145) = 1$. Second, the printed support containment is false: $\\operatorname{supp}^+(F) = \\{12, 124, 125, 126, 127, 1245, 1267\\} \\cup \\{145, 167\\}$, and $F(\\{1,2\\}) = 2 > 0$ while $\\{1,2\\} \\notin [1, \\overline{23}]$ because it contains $2$; the sublattice named should be $[12, \\overline{3}]$. With both corrections Lean confirms the line exactly: $\\operatorname{supp}^+(F) \\subseteq [12,\\overline{3}] \\cup 145 \\cup 167$ and $\\langle \\alpha_{\\emptyset,[7]}, F^+ \\rangle = \\langle \\alpha_{12,\\overline{3}}, F \\rangle - F(145) - F(167) = 0 - 1 - 1 = -2$. Everything around the slip is right - the eight sublattices do partition $[\\emptyset,[7]]$, $[1,\\overline{23}]$ is exactly the unique block on which neither $F_1$ nor $F_2$ dominates throughout, $(F_1,F_2)$ is conforming, and the value $-2$ is correct - so Proposition 6.1 and Theorem 6.2 stand. The defect is confined to this displayed line.",
+      "verifier": "verify-math",
+      "exact_quote": "$\\operatorname{supp}^+(F) \\subseteq [1, \\overline{23}] \\cup 146 \\cup 167$ and $\\langle \\alpha_{\\emptyset,[7]}, F^+ \\rangle = \\langle \\alpha_{12,\\overline{3}}, F \\rangle - F(146) - F(167) = -2$"
+    },
+    {
+      "snippet_id": "paper::DEFINITION::0",
+      "category": "Inconsistent definition",
+      "severity": "minor",
+      "confidence": 0.85,
+      "evidence": "Definition 2.1 makes $\\mathcal{B}_d$ the fan of the $\\binom{d}{2} + d$ hyperplanes $x_i = x_j$ **and** $x_i = 0$, which contradicts all three facts stated immediately after it. (i) \"The braid fan has $\\operatorname{span}(\\mathbb{1}_{[d]})$ as lineality space\" fails once $x_1 = 0$ is a wall: if $x$ lies in a cone with $x_1 = 0$ then $x + \\mathbb{1}_{[d]}$ has first coordinate $1 > 0$ and leaves that cone, so the lineality space is $\\{0\\}$. (ii) The listed cones $\\operatorname{cone}(\\mathbb{1}_{S_1},\\ldots,\\mathbb{1}_{S_k}) + \\operatorname{span}(\\mathbb{1}_{[d]})$ all contain the line $\\mathbb{R}\\mathbb{1}_{[d]}$, which no cone of an arrangement containing $x_i = 0$ can. (iii) $\\mathcal{B}^0_d$ is then introduced as the fan of the $\\binom{d+1}{2}$ hyperplanes $x_i = x_j$ and $x_i = 0$, and $\\binom{d+1}{2} = \\binom{d}{2} + d$ - so as written $\\mathcal{B}_d$ and $\\mathcal{B}^0_d$ are the same arrangement, which would make Lemma 3.1, the sentence \"Dividing out the lineality space of $\\mathcal{B}_d$ yields $\\mathcal{B}^0_{d-1}$\", and the whole $\\mathcal{B}_d$ versus $\\mathcal{B}^0_d$ distinction vacuous. Consistency requires $\\mathcal{B}_d$ to be the fan of only the $\\binom{d}{2}$ hyperplanes $x_i = x_j$, which is the object the rest of the paper actually uses; hence minor.",
+      "verifier": "verify-math",
+      "exact_quote": "Definition 2.1. The braid arrangement in $\\mathbb{R}^d$ is the hyperplane arrangement consisting of the $\\binom{d}{2} + d$ hyperplanes $x_i = x_j$ (with $1 \\leq i < j \\leq d$) and $x_i = 0$ for $i \\in [d]$. The braid fan $\\mathcal{B}_d$ is the polyhedral fan induced by this extended braid arrangement."
+    }
+  ],
+  "verdict": "CRITICAL_ERRORS",
+  "verdict_confidence": 0.9,
+  "summary": "Extracted 26 self-contained mathematical objects from *Depth-Bounds for Neural Networks via the Braid Arrangement* and checked every one: 20 by informal review and 6 by formal Lean 4 proof (4 `PASSED`, 2 `REFUTED`, 0 `FAILED`, so no informal fallback was needed). The paper's core technical machinery holds up; its abstract and introduction do not.\n\n**What Lean settled.** The arithmetic of Theorem 4.8 is sound: with $k_1 = 2$ (Lemma 4.1) and $k_{\\ell+1} = k_\\ell^2 + k_\\ell$ (Proposition 4.7), Lean proves $k_\\ell \\le 2^{2^\\ell-1}$ by induction, so the printed exponent is valid (and loose - $k_2 = 6$ against $2^3 = 8$, $k_3 = 42$ against $2^7 = 128$). The induction-step counting is exact: $n \\ge k^2+k+1$ and $|S| \\le 2k$ give $|T| \\ge (k-1)^2+(k-1)+1$ with equality, which is why that threshold and no other appears in Proposition 4.6. Proposition 6.1 is confirmed by exhaustive kernel computation over all $2^7 = 128$ subsets: $f_1, f_2 \\in \\mathcal{V}_{\\mathbb{B}_7}(3)$, $(F_1,F_2)$ is conforming on all $16384$ comparable pairs, and $\\lambda_{[7]} = 2 \\neq 0$ - so $\\max\\{f_1,f_2\\} \\in \\mathcal{V}_{\\mathbb{B}_7}(7) \\setminus \\mathcal{V}_{\\mathbb{B}_7}(6)$ and Theorem 6.2 stands. Lean refuted two statements: Proposition 2.3's dimension formula $\\sum_{i=1}^{k}\\binom{d}{i}$ (the sum must start at $i = 0$; at $k = d$ it gives $2^d - 1$ where the paper's own $\\dim \\mathcal{V}_{\\mathcal{B}_d} = 2^d$ and $\\mathcal{V}_{\\mathcal{B}_d}(d) = \\mathcal{V}_{\\mathcal{B}_d}$ demand $2^d$), and Lemma 4.4(1), whose index set is printed as $S \\supseteq Y \\setminus T$ where every other occurrence in the paper - the decomposition sentence, the application, part (2) of the same lemma, Figure 2 - uses $S \\subseteq Y \\setminus T$. Both are localised slips that the surrounding mathematics does not depend on. Lean also formally refuted the displayed identity in the Proof Sketch of Proposition 6.1, whose right-hand side evaluates to $0$ rather than $-2$ because $F(146) = -1$ should be $F(145) = 1$ and the sublattice $[1,\\overline{23}]$ should be $[12,\\overline{3}]$; the stated value $-2$ and the proposition itself are nevertheless correct.\n\n**What Lean could not settle, and how it was checked instead.** Lemma 4.5, Lemma 5.1, Proposition 4.6 and Theorem 5.2 quantify over all Boolean lattices and were out of formalisation budget, so they were routed to informal review and corroborated by exhaustive linear-programming search. For each candidate positive-support pattern the sign conditions of $\\mathcal{C}_{\\mathcal{L}}$ determine $F^+$ up to a polyhedron, making $\\langle \\alpha_{X,Y}, F^+ \\rangle$ a linear objective: across 23,943 programs at rank $5$ with $k = 2$ the optimum was $0$ every time, confirming Lemma 5.1 and the inclusion behind Theorem 5.2. Sharpness also checks out - at rank $4$ with $k = 2$ the objective is nonzero (witness: positive support $\\{\\{1,2\\},\\{3,4\\}\\}$), so $\\mathcal{V}_{\\mathcal{B}_d}(4)$ cannot be tightened to $\\mathcal{V}_{\\mathcal{B}_d}(3)$ - and Proposition 4.6's rank hypothesis is genuinely needed, since at rank $2$ with $k = 1$ the objective is unbounded. Remark 6.3 ('one can check, e.g. with a computer') is the one `UNVERIFIABLE` snippet: it supplies no construction, and integrality does not follow from Section 6 as written, since recovering $\\sigma_{[7]}$ there requires dividing by $\\lambda_{[7]} = 2$.\n\n**Where the verdict comes from.** Both critical findings are in the front matter, not the mathematics. The abstract asserts \"the first unconditional non-constant lower bound ... in general ReLU networks\" and that \"arbitrary neural networks require three hidden layers to compute the maximum of 5 numbers\"; the introduction repeats this as \"resolving the depth complexity question without any conforming or weight restrictions\". Every theorem in the paper is conditional on conformity with the braid fan, and Section 7 concedes exactly that. Worse, the 5-numbers claim is the negation of a result the paper itself cites and relies on: Section 7 notes that Bakaev et al. [2025b] compute the maximum of 5 numbers with 2 layers, which is also what makes the conforming restriction \"a real restriction\". The introduction additionally quantifies over *all* CPWL functions, which is false for affine maps. These claims invalidate the paper's headline contributions as stated, hence CRITICAL_ERRORS, even though the conditional results they overstate are themselves sound.\n\n**Verifiers in agreement.** No Lean verdict contradicted an informal one. Corollary 4.9 deserves a note rather than a finding: its index $2^{2^\\ell}-1$ differs from the $2^{2^\\ell-1}$ announced at the head of Section 4 and in Section 1 (at $\\ell = 1$: $3$ versus $2$; at $\\ell = 2$: $15$ versus $8$), and the layerwise-analysis sentence writes a third variant, $d \\ge 2^{2^{\\ell-1}} + 1$. Lean confirmed that the corollary as printed still follows from Theorem 4.8 - it is true, merely weaker than the sharp statement - so it is recorded as an internal inconsistency and not reported as an error. Note on the Lean lifecycle: `MATH_VERIFICATION/Paper` pre-existed this run with artifacts from other papers, so per the skill's deletion rules (\"If Step 0 reused an existing project rather than creating it, treat it as `--keep-lean` and do not delete it\") it was reused and kept; only this run's `TMP.lean` and `claim.md` were removed, with the six proofs archived under `Paper/Verified/*_opus5.lean`."
+}

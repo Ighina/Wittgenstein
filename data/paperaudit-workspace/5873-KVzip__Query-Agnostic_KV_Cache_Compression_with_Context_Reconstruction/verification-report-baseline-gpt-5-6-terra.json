@@ -1,0 +1,86 @@
+{
+  "paper_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction",
+  "title": "KVzip: Query-Agnostic KV Cache Compression with Context Reconstruction",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Section 3.2, especially the definitions preceding Eq. (2)",
+      "confidence": 0.99,
+      "supporting_evidence": "The stated attention dimensions cannot score cached context KV pairs. The text defines Q_{l,h} as G × (n_c+n_in) × d and K_{l,h} as n_in × d, producing A of shape G × (n_c+n_in) × n_in. But K excludes the n_c cached-context keys, so no slice of this matrix can represent attention received by KV_c. The subsequently asserted \\bar A shape G × n_c × n_in and Eq. (2) index S[j]=max \\bar A[g,j,i] treat j as a cached-KV position even though the key dimension has size n_in. Algorithm 1 instead uses Q with n_in query positions and K with n_c+n_in keys, which is a materially different and more plausible computation. The formal method and pseudocode therefore contradict one another.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Section 3.4, “Chunked Scoring” and “Complexity Analysis”",
+      "confidence": 0.97,
+      "supporting_evidence": "The section first claims chunking reduces total computational complexity from O(n_c^2) to O(m n_c), because each chunk uses only m+n_in keys. But the chunk queries are explicitly obtained by forwarding each chunk 'through f_LM with KV_c'; therefore each of n_c/m chunks must attend to the full n_c-token cache in the actual model forward pass. The same section later acknowledges this, stating FlashAttention costs O(n_c m+m^2/2) per chunk and total scoring costs O(n_c^2+n_c m/2), approximately doubling prefill. These are incompatible total-complexity claims. The O(m n_c) statement applies only to the separate rescore over subsampled keys, not to the stated KVzip procedure.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction::baseline"
+    },
+    {
+      "error_category": "Figure / table error",
+      "error_location": "Figure 22, both SCBench multi-task result tables, KV cache ratio = 1.0",
+      "confidence": 0.99,
+      "supporting_evidence": "At a 1.0 KV-cache ratio no KV pairs are evicted, so all eviction methods evaluated with the same model, context, prompts, and decoding must use the identical full KV cache and obtain the same score. Instead, Mix.RepoQA+KV reports KVzip 80, H2O 40, SnapKV 60, and PyramidKV 50 at 1.0. Mix.Sum+NIAH happens to report 70 for all methods at 1.0. The first table is impossible under the paper's own definition of cache ratio and eviction protocol, and it artificially creates an apparent KVzip advantage even without compression.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction::baseline"
+    },
+    {
+      "error_category": "Figure / table error",
+      "error_location": "Figure 23, GSM8K table, KV cache ratio = 1.0",
+      "confidence": 0.96,
+      "supporting_evidence": "The GSM8K table reports different full-cache results at cache ratio 1.0: KVzip 65, H2O 60, SnapKV 65, and PyramidKV 60. As in Figure 22, retaining 100% of a cache means the cache cannot depend on the eviction scorer. Unless the methods change some unreported non-cache inference setting, these values should be identical; the table contradicts the stated experiment setup.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Abstract; Introduction paragraphs 3–4; Figure 8(a)",
+      "confidence": 0.9,
+      "supporting_evidence": "The paper gives mutually incompatible headline latency improvements. The abstract says FlashAttention decoding latency improves 'up to 1.5×'; the Introduction says 'approximately 2× latency reduction'; and Figure 8(a) reports 0.39 ms at ratio 1.0 versus 0.17 ms at ratio 0.2, which is a 0.39/0.17 = 2.29× speedup (or a 56% latency reduction). These cannot all be the stated maximum decoding-latency result without specifying different, clearly delimited settings.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction::baseline"
+    },
+    {
+      "error_category": "Experiment setup",
+      "error_location": "Section 4.1, “Eviction Structure,” and Appendix A, “Baseline Methods”",
+      "confidence": 0.93,
+      "supporting_evidence": "The main comparison confounds the proposed scoring method with a stronger allocation policy: Section 4.1 explicitly says non-uniform head-budget allocation is applied 'exclusively to KVzip,' while baselines use their recommended uniform settings. Appendix A repeats that main experiments use non-uniform head-budget allocation. Since allocation determines which and how many positions each head retains, superiority cannot be attributed solely to reconstruction-based scoring. A SQuAD-only appendix comparison is not an adequate matched-control correction for the headline 12-task results.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Section 4.3, immediately after Table 1, “Behavior Analysis Beyond Task Solving”",
+      "confidence": 0.99,
+      "supporting_evidence": "The text claims that compressed caches can create 'privacy risks where compressed KV caches leak sensitive information omitted by full caches.' Table 1 provides no such example: both the full-cache and evicted-cache responses are exactly 'I cannot provide personal contact information.' The context and query are removed, so the reader also cannot independently assess the alleged leakage. The stated conclusion is unsupported and directly at odds with the only displayed result.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "5873-KVzip__Query-Agnostic_KV_Cache_Compression_with_Context_Reconstruction::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 7,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (gpt-5.6-terra, taxonomy=default): 7 error(s) reported.",
+  "baseline": {
+    "model": "gpt-5.6-terra",
+    "provider": "openai",
+    "taxonomy": "default",
+    "paper_chars": 83648,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 20930,
+      "output_tokens": 4196,
+      "cache_read_input_tokens": null,
+      "cache_creation_input_tokens": null
+    }
+  }
+}

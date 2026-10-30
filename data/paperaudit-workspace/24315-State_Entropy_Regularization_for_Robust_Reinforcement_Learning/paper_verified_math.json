@@ -1,0 +1,732 @@
+{
+  "paper_name": "paper",
+  "paper_path": "/Users/iacopoghinassi/Documents/Github/Wittgenstein/data/paperaudit-workspace/24315-State_Entropy_Regularization_for_Robust_Reinforcement_Learning/paper.md",
+  "lean_project": "MATH_VERIFICATION/Paper",
+  "lean_project_kept": true,
+  "totals": {
+    "snippets_extracted": 22,
+    "routed_to_math": 15,
+    "routed_to_lean": 7,
+    "lean_passed": 2,
+    "lean_refuted": 2,
+    "lean_failed": 3,
+    "fallbacks_run": 3,
+    "errors_detected": 8
+  },
+  "results": [
+    {
+      "snippet_id": "paper::THEOREM::0",
+      "snippet_type": "THEOREM",
+      "location": "2 Preliminaries (Table 1)",
+      "content": "Table 1: Robustness guarantees for each regularization type including the form of the uncertainty set, the robust return, and the corresponding adversarial reward. We denote Δr := r - r̃ and r_s = r(s,·), π_s = π(·|s) for brevity.\n| Regularizer | Uncertainty Set | Robust Return | Worst Case Reward |\n| Policy | E_{d_P^π}[ LSE_A( Δr_s / α ) ] ≤ ε/α + log A | E_{ρ^π}[r] - ε + α( E_{d_P^π}[H_A(π_s)] - log A ) | r(s,a) - α log π(a|s) - ε |\n| State | LSE_S( Δr^π / α ) ≤ ε/α + log S | E_{ρ^π}[r] - ε + α( H_S(d_P^π) - log S ) | r(s,a) - α log d_P^π(s) - ε |\n| State-action | LSE_{S×A}( Δr / α ) ≤ ε/α + log(SA) | E_{ρ^π}[r] - ε + α( H_{S×A}(ρ_P^π) - log(SA) ) | r(s,a) - α log ρ^π(s,a) - ε |",
+      "route": "verify-math-lean",
+      "route_rationale": "Closed-form duality identities (policy/state-action rows); worst-case reward claims are concrete formal targets.",
+      "lean_result": {
+        "snippet_id": "paper::THEOREM::0",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.95,
+        "reasoning": "Formalised the Policy-row worst-case reward attainment claim of Table 1. Lean proved the NEGATION via a concrete instance faithful to the paper's standing assumptions (1 state, 2 actions, uniform policy π(a)=1/2, zero reward, α=1, ε=0): the stated worst-case reward r̃(a) = -log(1/2) = log 2 has occupancy value V = Σ_a (1/2)·(-log(1/2)) = log 2, whereas the stated robust return is R = E[r] - 0 + 1·(stateEntropy - log 2) = log 2 - log 2 = 0. Hence V = log 2 ≠ 0 = R: the printed worst-case reward is missing the - α log A term and does not attain the stated robust return.",
+        "predicted_error_category": "Formally refuted",
+        "snippet_type": "THEOREM",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean",
+          "formal_statement": "theorem worst_case_reward_does_not_attain : occExpect dU piU (fun s a => rU s a - alphaU * Real.log (piU s a) - epsU) ≠ robustReturn dU piU rU alphaU epsU",
+          "compiler_feedback": "'PaperTheorem0.worst_case_reward_does_not_attain' depends on axioms: [propext, Classical.choice, Quot.sound]",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 0,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::THEOREM::1",
+      "snippet_type": "THEOREM",
+      "location": "3.1 Reward-Robustness",
+      "content": "Theorem 3.1. For any π ∈ Π, the following duality holds:\nmin_{r̃ ∈ R̃^π(ε,α)} E_{ρ^π}[r̃] = E_{ρ^π}[r] + α( H_S(d_P^π) - log S ) - ε,  (5)\nwhere the reward uncertainty set is R̃^π(ε,α) := { r̃ | LSE_S( (r^π - r̃^π)/α ) ≤ ε/α + log S }. Moreover, the worst-case reward chosen by the adversary is given by r̃(s,a) = r(s,a) - α log d_P^π(s) - ε.",
+      "route": "verify-math-lean",
+      "route_rationale": "Convex-conjugate duality min_v[LSE(v)-⟨d,v⟩]=H(d) plus a concrete worst-case reward claim.",
+      "lean_result": {
+        "snippet_id": "paper::THEOREM::1",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.95,
+        "reasoning": "Formalised the worst-case reward attainment claim of Theorem 3.1. Lean proved the NEGATION via a concrete instance (S = Bool, 2 states, single action, uniform state distribution d(s)=1/2, zero reward, α=1, ε=0): the stated worst-case reward r̃(s,a) = -log d(s) = log 2 has value E_{ρ}[r̃] = Σ_s d(s)·log 2 = log 2, whereas the stated minimum is E[r] + α(H_S(d) - log S) - ε = 0 + (log 2 - log 2) = 0. Hence E[r̃] = log 2 ≠ 0 = stated minimum: the printed worst-case reward is missing the - α log S term.",
+        "predicted_error_category": "Formally refuted",
+        "snippet_type": "THEOREM",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean",
+          "formal_statement": "theorem worst_case_reward_does_not_attain : occExpect dS piOne (fun s a => rZero s a - alpha1 * Real.log (dS s) - eps0) ≠ occExpect dS piOne rZero - eps0 + alpha1 * (stateEntropy dS - Real.log (Fintype.card Bool))",
+          "compiler_feedback": "'PaperTheorem1.worst_case_reward_does_not_attain' depends on axioms: [propext, Classical.choice, Quot.sound]",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 0,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::THEOREM::2",
+      "snippet_type": "THEOREM",
+      "location": "3.1 Reward-Robustness",
+      "content": "Theorem 3.2 (Limit uncertainty in α). Consider the uncertainty sets associated with state entropy regularization defined as R̃_ε^π(α) = { r̃ | α LSE_S( (r^π - r̃^π)/α ) - α log(S) ≤ ε }. Then, the mapping α ↦ R̃_ε^π(α) is non-increasing in the sense that α₂ ≥ α₁ implies R̃_ε^π(α₁) ⊆ R̃_ε^π(α₂). Furthermore, the limit sets satisfy lim_{α→∞} R̃_ε^π(α) = ⋃_{α>0} R̃_ε^π(α) = { r̃ | (1/S) Σ_s (r^π(s) - r̃^π(s)) ≤ ε } and lim_{α→0} R̃_ε^π(α) = ⋂_{α>0} R̃_ε^π(α) = { r̃ | max_s (r^π(s) - r̃^π(s)) ≤ ε }.",
+      "route": "verify-math-lean",
+      "route_rationale": "Monotonicity of α↦α LSE(Δr/α) and limits as α→∞ / α→0; formalisable real analysis.",
+      "lean_result": {
+        "snippet_id": "paper::THEOREM::2",
+        "verifier_name": "math-lean",
+        "status": "UNVERIFIABLE",
+        "error_detected": false,
+        "confidence": 0.0,
+        "reasoning": "Faithful statements recorded (f_mono, limit_infty, limit_zero) and the core derivative-inequality log E_U[e^Y] ≤ E_softmax[Y] was machine-proved (fderiv_nonpos, no sorryAx), but the full AntitoneOn proof and the two limit identities were not completed within the bounded proof-search budget (left as sorry → FAILED).",
+        "predicted_error_category": null,
+        "snippet_type": "THEOREM",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "FAILED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean",
+          "formal_statement": "theorem f_mono (x : ι → ℝ) {a1 a2 : ℝ} (ha1 : 0 < a1) (ha2 : 0 < a2) (hle : a1 ≤ a2) : f x a2 ≤ f x a1",
+          "compiler_feedback": "declaration uses 'sorry'",
+          "axioms": [
+            "propext",
+            "sorryAx",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 0,
+          "project_kept": true
+        }
+      },
+      "fallback_result": {
+        "snippet_id": "paper::THEOREM::2",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": null,
+        "predicted_error_category": "Fallback informal review (Lean could not settle the full theorem): all substantive claims of Theorem 3.2 verify. f(α) = α·log((1/S)Σ e^{x_s/α}) is the log of the power mean of order 1/α, non-increasing in α, giving the containment R̃_ε(α₁) ⊆ R̃_ε(α₂) for α₂ ≥ α₁; lim_{α→∞} f = (1/S)Σ x_s via the expansion e^{x/α} = 1 + x/α + O(α⁻²); lim_{α→0} f = max_s x_s by factoring out e^{M/α}. The α→∞ set limit equals the printed closed form up to a measure-zero boundary case ({mean = ε with non-constant x}), a closure technicality. Lean machine-verified the core derivative inequality.",
+        "snippet_type": "THEOREM",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::THEOREM::3",
+      "snippet_type": "THEOREM",
+      "location": "3.2 Lower Bound under Kernel Uncertainty",
+      "content": "Theorem 3.3. For any policy π ∈ Π and α > 0, an approximate lower bound on worst-case performance under kernel uncertainty can be characterized by relating the transition uncertainty to reward uncertainty under restrictive assumptions on reward positivity and smoothness. However, this approximation may be loose in practice and does not guarantee tightness. Furthermore, the uncertainty sets induced depend on ratios of state visitation distributions but do not correspond to classic ℓ_p-norm uncertainty sets frequently used in robust MDP formulations, limiting their interpretability. Thus, while state entropy regularization provides a meaningful heuristic lower bound, formal guarantees require additional structural assumptions absent from the current statement.",
+      "route": "verify-math",
+      "route_rationale": "Statement is explicitly approximate/heuristic (‘may be loose’, no tightness guarantee); not crisply formalisable.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::THEOREM::3",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.95,
+        "reasoning": null,
+        "predicted_error_category": "Qualitative/heuristic prose statement with no equations or derivations; every claim is explicitly hedged and self-consistent. A lack of a tight formal guarantee is not a mathematical error. The concrete derivation (Appx A.4) is reviewed separately.",
+        "snippet_type": "THEOREM",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::THEOREM::4",
+      "snippet_type": "THEOREM",
+      "location": "4.1 Entropy Regularization Cannot Fully Solve Kernel Robustness",
+      "content": "Theorem 4.1. Let Ω(π, P) ≢ 0 be a regularization function. Assume toward contradiction there exists an uncertainty set function 𝒫̃(P, π) satisfying the robust return condition over all MDPs. Consider an MDP with constant reward vector r = c. Then for all π, P, min_{𝒿̃ ∈ 𝒫̃(P, π)} E_{ρ^π_𝒿̃}[r] = c = c + Ω(π, P), implying Ω(π, P) = 0 which contradicts the assumption.",
+      "route": "verify-math",
+      "route_rationale": "Short constant-reward contradiction argument, checkable by inspection.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::THEOREM::4",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": null,
+        "predicted_error_category": "The contradiction is sound: for constant reward r ≡ c, every kernel in the uncertainty set yields the same expectation c (up to a kernel-independent discounting normalization that cancels on both sides), so the assumed robust-return condition forces c = c + Ω(π,P), hence Ω ≡ 0, contradicting Ω ≢ 0. The reward-independence of Ω (part of the assumption) is what allows the universal instantiation.",
+        "snippet_type": "THEOREM",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::THEOREM::5",
+      "snippet_type": "THEOREM",
+      "location": "4.2 Entropy Regularization and Risk-Averse Performance",
+      "content": "Theorem 4.2. For every temperature α > 0, constant M ∈ ℝ, and 0 < β < 1, there exists an MDP M such that: CVaR_β^{π*}[G] - CVaR_β^{π_R*}[G] = M   (8), where G is the total discounted return.",
+      "route": "verify-math",
+      "route_rationale": "CVaR dual-representation and stochastic construction; sign/convention subtleties need informal judgment.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::THEOREM::5",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.92,
+        "reasoning": "Calculus/Proof error",
+        "predicted_error_category": "The definition (Eq. 41), its prose interpretation, and the proof's dual representation are mutually inconsistent, and the proof's central inequality is invalid for the functional Eq. 41 actually defines. (i) Eq. 41 is the Rockafellar-Uryasev UPPER-tail functional: min_η{η + 1/(1-β)E[(G-η)^+]} = E[G | G ≥ F^{-1}(β)], the mean of the BEST (1-β) fraction of returns (e.g. G ~ U[0,1], β=1/2 gives 3/4, not 1/4). It is the opposite of the 'worst β-fraction' risk measure the prose and Section 4.2 intend. (ii) The correct dual of Eq. 41 is a MAX over {dQ/dP ≤ 1/(1-β)}, not a MIN over {dQ/dP ∈ (0, 1/β)}; the paper's dual is that of the LEFT-tail ES (min_η{η + 1/β E[(η-G)^+]}), a different risk functional. (iii) With the true max-dual, exhibiting one feasible Q gives only the one-sided lower bound CVaR ≥ E_Q[G], so the bounding step cannot establish CVaR ≤ -M. Hence Theorem 4.2 is not established by the given argument for the functional Eq. 41 defines.",
+        "snippet_type": "THEOREM",
+        "contradiction_locations": []
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.92
+    },
+    {
+      "snippet_id": "paper::THEOREM::6",
+      "snippet_type": "THEOREM",
+      "location": "A.7 Robustness under estimation errors",
+      "content": "Corollary A.1. Let d̂ be an empirical estimate of d_P^π, obtained with n sampled trajectories, for which it holds ‖d̂ - d_P^π‖₁ ≤ 1/2. For δ ∈ (0,1) and any policy π, the following weak duality holds with probability 1-δ: min_{r̃ ∈ R̃^π(ε,α)} E_{ρ^π}[r̃] ≥ E_{ρ^π}[r] + α( H_S(d̂) - sqrt(2S log(2/δ)/n) · log sqrt(Sn/log(2/δ)) - log(S) ) - ε, where the reward uncertainty set is R̃^π(ε,α) := { r̃ | LSE_S((r^π - r̃^π)/α) ≤ ε/α + log(S) }.",
+      "route": "verify-math",
+      "route_rationale": "Rests on cited entropy-continuity and empirical-concentration bounds; rearrangement check by inspection.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::THEOREM::6",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.8,
+        "reasoning": null,
+        "predicted_error_category": "The rearrangement is valid: the exact robust value over R̃(ε,α) is min E_d[r̃] = E_d[r] + αH_S(d) - ε - α log S (verified numerically to ~1e-6 across configurations); substituting the pessimistic one-sided entropy estimate H(d̂) - conc ≤ H(d^Pπ) yields exactly the printed RHS, with all signs correct (error term subtracted, -log(S) offset matches the '+ log S' inside the set). In the limit d̂ = d, conc → 0 the printed RHS equals the exact value (tight). Minor non-flagged caveats: constants inside the concentration term are inherited from the cited bound; a degenerate δ-regime can make the log term negative.",
+        "snippet_type": "THEOREM",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::THEOREM::7",
+      "snippet_type": "THEOREM",
+      "location": "A.7 Robustness under estimation errors",
+      "content": "Corollary A.2. Let d̂ be an empirical estimate of d_P^π, obtained with n sampled trajectories, for which it holds ‖d̂ - d_P^π‖₁ ≤ 1/2. For any δ ∈ (0,1), policy π, and α > 0, the following weak duality holds with probability 1-δ: min_{𝒿̃ ∈ 𝒫̃^π(ε,α)} E_{ρ^π_𝒿̃}[r] ≥ exp( E_{ρ^π_P}[log(r)] + α( H_S(d̂) - sqrt(2S log(2/δ)/n) · log sqrt(Sn/log(2/δ)) - log(S) ) - ε ), where 𝒫̃^π(ε,α) := { 𝒿̃ | α log( (1/S) Σ_{s∈S} ( d_P^π(s)/d̃_P^π(s) )^{1/α} ) ≤ ε }.",
+      "route": "verify-math",
+      "route_rationale": "Immediate corollary of Cor A.1 + the (heuristic) Theorem 3.3 bound; structural check.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::THEOREM::7",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.72,
+        "reasoning": null,
+        "predicted_error_category": "The corollary's structure is valid: Jensen with weights d gives log E_{ρ̃}[r] ≥ E_{ρ}[log r] - KL(d‖d̃); the Gibbs variational principle gives KL(d‖d̃) ≤ α log S + L(x) - αH(d); under the constraint L(x) ≤ ε this yields log E[r] ≥ E[log r] + α(H(d) - log S) - ε, and exponentiating (monotone) gives the printed bound. The -ε is correctly outside the α(·) bracket (verified algebraically and numerically), the empirical-entropy correction H(d̂) - conc is inserted with the correct lower-bound direction, and reward positivity (r > 0) is a stated assumption. Exact concentration constants are inherited from cited results (outside verifiable scope).",
+        "snippet_type": "THEOREM",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.72
+    },
+    {
+      "snippet_id": "paper::EQUATION::0",
+      "snippet_type": "EQUATION",
+      "location": "A.3 Proof of Theorem 3.2",
+      "content": "(18) ∂/∂α( α log( (1/S) Σ_s e^{Δr^π/α} ) ) = log( (1/S) Σ_s e^{Δr^π/α} ) - α [ (1/S) Σ_s e^{Δr^π/α} (Δr^π/α²) ] / [ (1/S) Σ_s e^{Δr^π/α} ]\n(19) = log( E_{s∼U}[ e^{Δr^π/α} ] ) - E_{s∼softmax(Δr^π/α)}[ Δr^π/α ]\n(20) ≤ log( E_{s∼U}[ e^{Δr^π/α} ] ) - log( E_{s∼softmax(Δr^π/α)}[ e^{Δr^π/α} ] )\n(21) ≤ 0\nThe first inequality follows from Jensen, the second from properties of softmax.",
+      "route": "verify-math-lean",
+      "route_rationale": "Derivative computation plus Jensen/softmax inequalities; the crux of the monotonicity proof.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::0",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.97,
+        "reasoning": "Lean machine-proved the core inequality log((Σ_i e^{Y_i})/|ι|) ≤ Σ_i softmax(Y)_i · Y_i for any finite nonempty index set (softmax_expect_ge_log_mean_exp), via Jensen (concavity of log) and the entropy bound. With Y = Δr/α this is exactly f'(α) ≤ 0 (Eqs. 20-21), i.e. the free-energy derivative non-positivity. Proof compiles clean with no sorryAx.",
+        "predicted_error_category": null,
+        "snippet_type": "THEOREM",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean",
+          "formal_statement": "theorem softmax_expect_ge_log_mean_exp {ι} [Fintype ι] [Nonempty ι] (Y : ι → ℝ) : Real.log ((∑ i, Real.exp (Y i)) / Fintype.card ι) ≤ ∑ i, (Real.exp (Y i) / (∑ j, Real.exp (Y j))) * Y i",
+          "compiler_feedback": "'PaperEquation0.softmax_expect_ge_log_mean_exp' depends on axioms: [propext, Classical.choice, Quot.sound]",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 0,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.97
+    },
+    {
+      "snippet_id": "paper::EQUATION::1",
+      "snippet_type": "EQUATION",
+      "location": "A.3 Proof of Theorem 3.2",
+      "content": "(22) lim_{α→∞} α log( (1/S) Σ_s e^{Δr^π/α} ) = lim_{α→∞} [ -(1/S) Σ_s e^{Δr^π/α} (Δr^π/α²) ] / [ (1/S) Σ_s e^{Δr^π/α} (-1/α²) ]\n(23) = lim_{α→∞} E_{s∼softmax(Δr^π/α)}[ Δr^π ]\n(24) = (1/S) Σ_s Δr^π(s)\nwhere the last equality follows from the fact that as α goes to infinity, the softmax term approaches the uniform distribution.",
+      "route": "verify-math-lean",
+      "route_rationale": "L'Hôpital limit α→∞ = mean(Δr); formalisable limit identity.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::1",
+        "verifier_name": "math-lean",
+        "status": "UNVERIFIABLE",
+        "error_detected": false,
+        "confidence": 0.0,
+        "reasoning": "Faithful statement recorded (limit_infty) but the L'Hôpital / asymptotics proof was not completed within the bounded proof-search budget (sorry → FAILED). The derivative-inequality core for the same function f was machine-proved in paper::EQUATION::0.",
+        "predicted_error_category": null,
+        "snippet_type": "THEOREM",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "FAILED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean",
+          "formal_statement": "theorem limit_infty (x : ι → ℝ) : Filter.Tendsto (fun α : ℝ => f x α) Filter.atTop (nhds ((∑ i, x i) / Fintype.card ι))",
+          "compiler_feedback": "declaration uses 'sorry'",
+          "axioms": [
+            "propext",
+            "sorryAx",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 0,
+          "project_kept": true
+        }
+      },
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::1",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.95,
+        "reasoning": null,
+        "predicted_error_category": "Fallback informal review (Lean could not settle the limit within budget): the L'Hôpital computation is correct. Writing the limit as log(A(α))/(1/α) with A(α) = (1/S)Σ e^{x/α} → 1 gives a valid 0/0 form; the printed ratio (22) is algebraically identical to f'/g' (the 1/S and -1/α² factors cancel), simplifying to E_{softmax(x/α)}[x] as in (23); since softmax(x/α) → uniform as α→∞, the limit is (1/S)Σ x_s as in (24). Consistent with the expansion α·log(1 + (1/Sα)Σx + O(1/α²)) → (1/S)Σx.",
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::EQUATION::2",
+      "snippet_type": "EQUATION",
+      "location": "A.3 Proof of Theorem 3.2",
+      "content": "(25) lim_{α→0} α log( (1/S) Σ_s e^{Δr^π/α} ) = lim_{α→0} E_{s∼softmax(Δr^π/α)}[ Δr^π ] = max Δr^π\nwhere the final equality follows from the fact that as α goes to zero the softmax term is equivalent to taking a hard maximum over Δr.",
+      "route": "verify-math-lean",
+      "route_rationale": "Limit α→0 = max(Δr); softmax-to-hardmax formalisation.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::2",
+        "verifier_name": "math-lean",
+        "status": "UNVERIFIABLE",
+        "error_detected": false,
+        "confidence": 0.0,
+        "reasoning": "Faithful statement recorded (limit_zero, using Finset.sup' for max) but the softmax-to-hardmax limit proof was not completed within the bounded proof-search budget (sorry → FAILED).",
+        "predicted_error_category": null,
+        "snippet_type": "THEOREM",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "FAILED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean",
+          "formal_statement": "theorem limit_zero (x : ι → ℝ) : Filter.Tendsto (fun α : ℝ => f x α) (nhds 0 ⊓ Filter.principal (Set.Ioi 0)) (nhds (maxX x))",
+          "compiler_feedback": "declaration uses 'sorry'",
+          "axioms": [
+            "propext",
+            "sorryAx",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 0,
+          "project_kept": true
+        }
+      },
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::2",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.95,
+        "reasoning": null,
+        "predicted_error_category": "Fallback informal review (Lean could not settle the limit within budget): the identity is the standard temperature-annealed log-sum-exp limit. Factoring out e^{M/α} with M = max x: α log((1/S)Σ e^{x/α}) = M + α log((1/S)Σ e^{(x-M)/α}) → M since the inner sum → k/S > 0 (k = number of argmax states) and α·log(bounded) → 0. The intermediate equality of limits is valid: softmax(x/α) concentrates on the argmax set, so E_softmax[x] → max x. Ties are harmless. No error.",
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::EQUATION::3",
+      "snippet_type": "EQUATION",
+      "location": "A.4 Proof of Theorem 3.3",
+      "content": "(29) Δr' := r' - r̃' = log( ρ_P^π / ρ̃_P^π ) = log( d_P^π / d̃_P^π )",
+      "route": "verify-math",
+      "route_rationale": "Simple algebra: log(ρ/ρ̃) = log(d/d̃) since the fixed policy cancels.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::3",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.97,
+        "reasoning": null,
+        "predicted_error_category": "Algebraically correct: Δr' = log ρ_P^π - log ρ̃_P^π = log(ρ/ρ̃) (log quotient rule), and with ρ_P^π(s,a) = d_P^π(s)π(a|s) and ρ̃_P^π(s,a) = d̃_P^π(s)π(a|s) the policy factor cancels, giving log(d_P^π/d̃_P^π). No sign error or invalid cancellation (the standing support condition π(a|s) > 0 is standard).",
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.97
+    },
+    {
+      "snippet_id": "paper::EQUATION::4",
+      "snippet_type": "EQUATION",
+      "location": "A.4 Proof of Theorem 3.3",
+      "content": "(30) α LSE_S( Δr'/ α ) - α log(S) = α log( (1/S) Σ_{s∈S} ( d_P^π(s)/d̃_P^π(s) )^{1/α} ) ≤ ε",
+      "route": "verify-math-lean",
+      "route_rationale": "Pure exp/log algebra identity: e^{log x / α} = x^{1/α} and log(a/S) = log a - log S.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::4",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.97,
+        "reasoning": "Lean machine-proved the identity: α·log(Σ_s e^{log(d/d̃)/α}) - α·log|S| = α·log((Σ_s (d/d̃)^{1/α})/|S|) for positive d, d̃ and α ≠ 0, using Real.rpow_def_of_pos (e^{log x / α} = x^{1/α}) and Real.log_div. Compiles clean with no sorryAx.",
+        "predicted_error_category": null,
+        "snippet_type": "THEOREM",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean",
+          "formal_statement": "theorem eq30_lse_identity (d dt : S → ℝ) (α : ℝ) (hd : ∀ s, 0 < d s) (hdt : ∀ s, 0 < dt s) (hα : α ≠ 0) : α * Real.log (∑ s, Real.exp (Real.log (d s / dt s) / α)) - α * Real.log (Fintype.card S) = α * Real.log ((∑ s, (d s / dt s) ^ (1 / α)) / Fintype.card S)",
+          "compiler_feedback": "'PaperEquation4.eq30_lse_identity' depends on axioms: [propext, Classical.choice, Quot.sound]",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 0,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.97
+    },
+    {
+      "snippet_id": "paper::EQUATION::5",
+      "snippet_type": "EQUATION",
+      "location": "A.6 Proof of Theorem 4.2",
+      "content": "(41) CVaR_β^π[R(τ)] := min_{η ∈ ℝ} { η + 1/(1-β) E_{p_P^π}[(R(τ) - η)^+] } where (x)^+ := max(x, 0).\nMain text: ‘CVaR_β, which measures the expected return in the worst β-fraction of outcomes.’",
+      "route": "verify-math",
+      "route_rationale": "CVaR definition; sign/tail-convention check against its stated meaning.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::5",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.93,
+        "reasoning": "Sign/Arithmetic error",
+        "predicted_error_category": "Eq. (41) is the Rockafellar-Uryasev CVaR for a LOSS variable applied to a RETURN variable without flipping the sign. For a continuous return R the printed formula equals E[R | R ≥ q_β(R)], the mean of the BEST (1-β) fraction of outcomes (always ≥ E[R]); the stated meaning 'worst β-fraction' requires the LOWER tail E[R | R ≤ q_β(R)] = max_η{η - (1/β)E[(η - R)^+]}. Both the sign inside the positive part and the constant 1/(1-β) contradict the prose. Numerical check: R = 10 w.p. 0.9, R = 0 w.p. 0.1, β = 0.1: the formula gives 10 (best 90% average) while the 'worst 10%' mean is 0. The formula computes an upside/best-case measure, the opposite of the intended risk-averse quantity, so Theorem 4.2 built on it is affected.",
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.93
+    },
+    {
+      "snippet_id": "paper::PROOF::0",
+      "snippet_type": "PROOF",
+      "location": "A.1 Proof of Theorem 3.1",
+      "content": "Proof. We first show a result for the uncertainty set R̃(ε, π) = {r̃ | LSE_S(r^π - r̃^π) ≤ ε}, then use a change of variables. ... L(Δr, λ) = -⟨ρ^π, Δr⟩ + λ(LSE(Δr^π) - ε)  (10); ∇_{Δr(s,a)} L = -ρ^π(s, a) + λ π(a|s) softmax(Δr^π)(s) = 0  (11); -d^π(s) + λ softmax(Δr^π)(s) = 0  (12). ... the last line implies λ* = 1. ... min_{Δr} -⟨ρ^π, Δr⟩ + LSE_S(Δr^π) - ε = -ε + min_{Δr^π} -⟨d^π, Δr^π⟩ + LSE_S(Δr^π)  (13). Finally, noting that entropy is the convex conjugate of LSE we get: ... = E_{ρ^π}[r] + H_S(d^π) - ε  (14). We also note that substituting Δr(s,a) = log(d^π(s))/(π(a|s)|A|) + c ... satisfies equation (11) ... From the constraint LSE(Δr^π) = ε we can deduce that c = ε. Finally, we can now substitute r ← r/α, r̃ ← r̃/α, ε ← ε/α + log(S) and get the required result for different temperatures.",
+      "route": "verify-math",
+      "route_rationale": "KKT + temperature-scaling steps; informal check including the adversarial-reward substitution.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::PROOF::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": null,
+        "predicted_error_category": "Every step of the proof checks out: the convex-conjugate identity min_v[LSE(v) - ⟨d,v⟩] = H(d) holds for a probability vector d (stationarity gives softmax(v) = d, value H(d)); the adversarial reward Δr(s,a) = log d^π(s)/(π(a|s)|A|) + c sums over a to log d^π(s) + c, so softmax(Δr^π)(s) = d^π(s) and the active constraint LSE(Δr^π) = ε forces c = ε; the temperature scaling r ← r/α, ε ← ε/α + log S correctly turns the base result into E[r̃] = E[r] + α(H(d) - log S) - ε. HOWEVER the same substitution implies the temperature-α worst-case reward is r(s,a) - α log d^π(s) - ε - α log S (WITH the -α log S term); the theorem statement's printed reward r(s,a) - α log d^π(s) - ε omits it. That inconsistency lives in the theorem statement / Table 1 (captured in paper::THEOREM::1 / THEOREM::0), not in this proof excerpt.",
+        "snippet_type": "PROOF",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::PROOF::1",
+      "snippet_type": "PROOF",
+      "location": "A.2 Proof of results in Table 1",
+      "content": "Proof. ... For policy entropy the gradient of the Lagrangian becomes: ∇_{Δr(s,a)} L = -ρ^π(s, a) + λ d^π(s) softmax(Δr_s)(a) = 0  (15). By summing over (s, a) we can again infer that λ = 1. ... we get π(a|s) = softmax(Δr_s)(a). By taking the log of both sides and taking the inner product with ρ^π we get: -⟨ρ^π, log(π(a|s))⟩ = E_{d^π}[H_A(π(·|s))]  (16) = ⟨ρ^π, -Δr + LSE_A(Δr_s)⟩  (17). We can verify through explicit substitution that the worst case reward described in the table satisfies (15) and the requirement that E_{d^π}[LSE_A(Δr_s)] = ε.",
+      "route": "verify-math",
+      "route_rationale": "Policy/state-action KKT derivation; check the worst-case reward attainment claim.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::PROOF::1",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.85,
+        "reasoning": "Sign/Arithmetic error",
+        "predicted_error_category": "The KKT derivation (15)-(17) is internally sound (λ = 1, π(a|s) = softmax(Δr_s)(a), and (16)-(17) follow), but the final claim that the Table-1 worst-case reward r̃(s,a) = r(s,a) - α log π(a|s) - ε 'satisfies (15) and the requirement E_{d^π}[LSE_A(Δr_s)] = ε' is inconsistent with the table's own uncertainty set. Substituting Δr(s,a) = α log π(a|s) + ε gives LSE_A(Δr_s/α) = ε/α, which is strictly BELOW the bound ε/α + log A (slack α log A), so the stated reward is an interior, non-optimal point. Direct substitution gives E_{ρ^π}[r̃] = E[r] + α E_{d^π}[H_A(π_s)] - ε, whereas the stated robust return is E[r] - ε + α(E_{d^π}[H_A] - log A) — off by exactly α log A. The correct worst-case reward is r(s,a) - α log π(a|s) - ε - α log A. Corroborates paper::THEOREM::0.",
+        "snippet_type": "PROOF",
+        "contradiction_locations": []
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::PROOF::2",
+      "snippet_type": "PROOF",
+      "location": "A.3 Proof of Theorem 3.2",
+      "content": "(18) ∂/∂α( α log( (1/S) Σ_s e^{Δr^π/α} ) ) = log( (1/S) Σ_s e^{Δr^π/α} ) - α · [ (1/S) Σ_s e^{Δr^π/α} (Δr^π/α²) ] / [ (1/S) Σ_s e^{Δr^π/α} ]  (18)\n(19) = log( E_U[e^{Δr/α}] ) - E_softmax[Δr/α]  \n(20) ≤ log( E_U[e^{Δr/α}] ) - log( E_softmax[e^{Δr/α}] )\n(21) ≤ 0\nThe first inequality follows from Jensen, the second inequality follows from properties of softmax ...",
+      "route": "verify-math",
+      "route_rationale": "Containment argument via the derivative computation.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::PROOF::2",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.9,
+        "reasoning": "Calculus/Proof error",
+        "predicted_error_category": "The derivative computation (18)-(19) is correct: f'(α) = log E_U[e^Y] - E_softmax[Y] with Y = Δr/α. But inequality (20) has the WRONG direction. The paper needs E_softmax[Y] ≥ log E_softmax[e^Y]; Jensen applied to the concave log gives log E_softmax[e^Y] ≥ E_softmax[Y] (since log E[e^X] ≥ E[X]), the exact opposite. Numerical check with Δr = (0,1), α = 1: LHS(19) = -0.111, RHS(20) = -0.194, and -0.111 ≤ -0.194 is false. Moreover even correcting (20) to '≥' would not yield f' ≤ 0. The claim f' ≤ 0 is nonetheless TRUE (f' = -KL(softmax(Y)‖U) ≤ 0 by Gibbs' inequality; this is what Lean machine-verified in paper::EQUATION::0), so the theorem's monotonicity survives, but the printed proof of it is invalid.",
+        "snippet_type": "PROOF",
+        "contradiction_locations": []
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::PROOF::3",
+      "snippet_type": "PROOF",
+      "location": "A.4 Proof of Theorem 3.3",
+      "content": "(26) log E_{ρ̃}[r] = log E_{ρ}[(ρ̃/ρ) r]  (Importance sampling); (27) ≥ E_{ρ}[log r] + E_{ρ}[log(ρ̃/ρ)]  (Jensen); (28) = E_{ρ}[log r] + H_{S×A}(ρ_P^π) + E_{ρ}[log ρ̃]. ... (31) min_{𝒿̃∈𝒫̃} E_{ρ̃}[log ρ̃] ≥ min_{r̃'∈R̃} E[r̃'] = E_{ρ}[log ρ_P^π] + α(H_S(d) - log S) - ε = -H_{S×A}(ρ_P^π) + α(H_S(d) - log S) - ε  (32). Plugging this back into (28) we get: (33) min_{𝒿̃} log E_{ρ̃}[r] ≥ min_{𝒿̃} E_{ρ̃}[log r] + α(H_S(d) - log S) - ε. We finish the proof by taking the exponent of both sides.",
+      "route": "verify-math",
+      "route_rationale": "Kernel→reward reduction; check the (31)→(33) weighting switch.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::PROOF::3",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.85,
+        "reasoning": "Calculus/Proof error",
+        "predicted_error_category": "Steps (26)-(28) are correct (importance sampling, Jensen, algebra). The break is at (31): its LHS weights by the PERTURBED occupancy ρ̃ = d̃π, while the closed form is the exact solution of a minimization under the NOMINAL weighting E_{ρ}[r̃']; the containment (30) does not transfer E_{ρ̃}[log ρ̃] ≥ E_{ρ}[log ρ̃] (the difference Σ(d - d̃)log d̃ - Σ(d - d̃)H(π(·|s)) is not sign-definite). A concrete admissible counterexample (S = {1,2}, d = (0.2,0.8), d̃ = (0.5,0.5), π(·|1) = (0.5,0.5), α = 2, ε = 0) gives E_{ρ̃}[log ρ̃] = -1.0397 < -1.0244 = the claimed bound, falsifying (31). Hence (33) does not follow from (28)+(31) as written (the printed step silently swaps the nominal measure E_{ρ} for the perturbed E_{ρ̃}). Mitigating: the final statement (33) is nonetheless true trivially, since α(H_S(d) - log S) - ε ≤ 0 and Jensen alone gives log E_{ρ̃}[r] ≥ E_{ρ̃}[log r]; so Theorem 3.3's bound is valid but the printed proof contains a false intermediate inequality.",
+        "snippet_type": "PROOF",
+        "contradiction_locations": []
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::PROOF::4",
+      "snippet_type": "PROOF",
+      "location": "A.4.1 Policy entropy lower bound",
+      "content": "H_{S×A}(ρ^π) = H_S(d^π) + E_{d^π}[H_A π(·|s)]. ... α LSE_{S×A}( Δr/α ) - α log(SA) = α log( Σ_{s,a} ( d_P^π(s)/d̃_P^π(s) )^{1/α} ) - α log(SA)  (34) = α log( Σ_{s} ( d_P^π(s)/d̃_P^π(s) )^{1/α} ) - α log(S) ≤ ε  (35). ... H_{S×A}(ρ_P^π) - log(SA) = (H_S(d_P^π) - log S) + (E_{d_P^π}[H_A(π(·|s))] - log A)  (37) ≤ H_S(d_P^π) - log S  (38).",
+      "route": "verify-math",
+      "route_rationale": "Chain rule + uncertainty-set collapse + bound comparison.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::PROOF::4",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.95,
+        "reasoning": null,
+        "predicted_error_category": "All steps verified: (i) the chain rule H_{S×A}(ρ) = H_S(d) + E_d[H_A(π(·|s))] is standard for a joint with marginal d and conditional π; (ii) the S×A sum collapses to A·Σ_s because the summand depends only on s, and α log(A·Σ_s) - α log(SA) = α log Σ_s - α log S exactly; (iii) E_d[H_A] ≤ log A pointwise, so (37) ≤ (38), confirming the state-action bound is looser. No error.",
+        "snippet_type": "PROOF",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::PROOF::5",
+      "snippet_type": "PROOF",
+      "location": "A.5 Proof of Theorem 4.1",
+      "content": "Let Ω ≠ 0 be a function. Assume towards contradiction that there exists a function 𝒫̃(P) that satisfies min_{𝒿̃∈𝒫̃} E_{ρ^π_𝒿̃}[r] = E_{ρ^π_P}[r] + Ω(π, P). We consider an MDP with reward vector R ≡ c. For all π, P we have: min_{𝒿̃∈𝒫̃} E_{ρ^π_𝒿̃}[r] = c = c + Ω(π, P)  (39) ⇒ Ω(π, P) = 0  (40). But the last line implies Ω ≡ 0, a contradiction.",
+      "route": "verify-math",
+      "route_rationale": "Constant-reward contradiction, checkable by inspection.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::PROOF::5",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": null,
+        "predicted_error_category": "Sound contradiction: for constant reward R ≡ c, every kernel in the uncertainty set gives expectation c (the discounting normalization is kernel-independent and cancels on both sides), so min = c, and the assumed identity forces c = c + Ω(π,P), i.e. Ω ≡ 0, contradicting Ω ≠ 0. The universal instantiation to a constant-reward MDP is legitimate given the reward-independence of Ω.",
+        "snippet_type": "PROOF",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::PROOF::6",
+      "snippet_type": "PROOF",
+      "location": "A.6 Proof of Theorem 4.2",
+      "content": "We use the dual representation of CVaR: CVaR_β^{π_R^*}[G] = min_{Q ∈ U} E_{G∼Q}[G] where U = { Q ≪ P | ∀G : Q(G)/P(G) ∈ (0, 1/β) }. ... We choose 1 > p > 0 such that (1-q)p + q ≥ β and construct Q ∈ U with Q(R3) = p(1-q)/β and Q(R1) = 1 - Q(R3). ... (43) CVaR_β^{π_R^*}[G] ≤ R3 · p(1-q)/β + R1 · (1 - p(1-q)/β) ≤ -M; (44) R3 ≤ β(-M-R)/(p(1-q)) + R. ... we can fix R4 = (R-ε-pR')/(1-p) and we are done.",
+      "route": "verify-math",
+      "route_rationale": "CVaR construction; check the dual representation, the bounding direction, and the algebra.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::PROOF::6",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.95,
+        "reasoning": "Calculus/Proof error",
+        "predicted_error_category": "The load-bearing dual representation is invalid for the paper's own definition (Eq. 41). (1) The dual of Eq. 41 is a MAX over {dQ/dP ≤ 1/(1-β)}, never a MIN over {dQ/dP ∈ (0, 1/β)}; the paper's min-dual is the dual of the left-tail ES (min_η{η + 1/β E[(η-G)^+]}), a different functional. (2) With the correct max-dual, one feasible Q gives only CVaR ≥ E_Q[G], so (43)'s direction 'CVaR ≤ E_Q[G] ≤ -M' collapses. (3) The conclusion is FALSE under the paper's own Eq. 41: the construction pins the mean E[G|a2] = R - ε, so R4 = (R-ε-pR')/(1-p) → +∞ as R' → -∞, and Eq. 41's CVaR (the average of the BEST (1-β) tail, which always contains a positive fraction of the R4 mass) diverges to +∞, not ≤ -M. Numeric counterexample satisfying the paper's own bound (44) for M=10 (β=1/2, q=1/2, p=0.6, R=1, R'=-20): true CVaR ≈ 13.6 > 0. (4) Additionally Q ∉ U: Q(R4) = 0 while P(R4) = (1-q)(1-p) > 0 violates the strict density bound. The algebra (43)-(44) and R4 formula are correct; the duality step is not.",
+        "snippet_type": "PROOF",
+        "contradiction_locations": []
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::PROOF::7",
+      "snippet_type": "PROOF",
+      "location": "A.7 Robustness under estimation errors",
+      "content": "(45) |H_S(d̂) - H_S(d_P^π)| ≤ κ log S + κ log(1/κ) + (1-κ) log(1/(1-κ)); (46) ≤ 2κ log(S/κ); (47) ≤ sqrt(2S log(2/δ)/n) · log sqrt(Sn/log(2/δ))  [with probability 1-δ]. where the first inequality follows from continuity bounds of the entropy [60], the second from κ ≤ 1/2, the last invokes concentration of the empirical distribution [58]. ... straightforward by plugging (47) into the result of Theorem 3.1 (and 3.3).",
+      "route": "verify-math",
+      "route_rationale": "Entropy-continuity and empirical-concentration plug-in.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::PROOF::7",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.8,
+        "reasoning": null,
+        "predicted_error_category": "All three requested checks pass: (45) is κ log S + h(κ) (h the binary entropy), a looser valid continuity bound implied by the standard Csiszár-type bound under κ ≤ 1/2; (46) follows since (1-κ)log(1/(1-κ)) ≤ κ log(1/κ) on [0,1/2]; the plug-in to Theorems 3.1/3.3 is the standard sandwich H(d̂) - E ≤ H(d^π) inside the monotone bound. Non-flagged caveat: naive substitution of the concentration constant into 2κ log(S/κ) gives a log-argument differing from the printed (47) by a factor of ~2; but (47)'s exact constants come from cited result [58] (unavailable), so this is a constants-level issue, not a provable derivation error.",
+        "snippet_type": "PROOF",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.8
+    }
+  ],
+  "findings": [
+    {
+      "snippet_id": "paper::PROOF::6",
+      "category": "Formally refuted by analysis (CVaR dual/definition error)",
+      "severity": "critical",
+      "confidence": 0.95,
+      "evidence": "The proof of Theorem 4.2 (Appx A.6) uses a dual representation of CVaR that is invalid for the paper's own definition (Eq. 41): the correct dual of $\\mathrm{CVaR}_\\beta(X)=\\min_\\eta\\{\\eta+\\frac{1}{1-\\beta}\\mathbb{E}[(X-\\eta)^+]\\}$ is a **maximum** over measures with density $\\le 1/(1-\\beta)$, not a minimum over $\\{Q(G)/P(G)\\in(0,1/\\beta)\\}$. With the correct max-dual, exhibiting one feasible $Q$ gives only $\\mathrm{CVaR}\\ge \\mathbb{E}_Q[G]$, so the printed bound $\\mathrm{CVaR}_\\beta^{\\pi_R^*}[G]\\le -M$ does not follow; in fact under the paper's own Eq. 41 the construction forces $R_4=(R-\\varepsilon-pR')/(1-p)\\to+\\infty$ as $R'\\to-\\infty$, and $\\mathrm{CVaR}_\\beta^{\\pi_R^*}[G]$ (the mean of the best $(1-\\beta)$ tail) diverges to $+\\infty$, contradicting $\\le -M$ (numeric check: $\\beta=1/2,q=1/2,p=0.6,R=1,R'=-20$ satisfies the paper's bound (44) but gives $\\mathrm{CVaR}\\approx 13.6>0$). Additionally the constructed $Q\\notin\\mathcal{U}$ ($Q(R_4)=0$ while $P(R_4)>0$). The algebra (43)-(44) is correct.",
+      "verifier": "verify-math",
+      "exact_quote": "we use the dual representation of CVaR [3]: CVaR_β^{π_R^*}[G] = min_{Q ∈ U} E_{G∼Q}[G] where U = { Q ≪ P | ∀G : Q(G)/P(G) ∈ (0, 1/β) }"
+    },
+    {
+      "snippet_id": "paper::THEOREM::0",
+      "category": "Formally refuted",
+      "severity": "minor",
+      "confidence": 0.95,
+      "evidence": "Lean 4 refuted the attainment claim for the Policy row of Table 1: the stated worst-case reward $\\tilde r(s,a)=r(s,a)-\\alpha\\log\\pi(a\\mid s)-\\varepsilon$ has occupancy value $\\mathbb{E}_{\\rho^\\pi}[\\tilde r]=\\mathbb{E}[r]+\\alpha\\mathbb{E}_{d}[H_A(\\pi_s)]-\\varepsilon$, which exceeds the stated robust return $\\mathbb{E}[r]-\\varepsilon+\\alpha(\\mathbb{E}_{d}[H_A(\\pi_s)]-\\log A)$ by exactly $\\alpha\\log A$. The printed worst-case reward is missing the $-\\alpha\\log A$ term (concrete instance: 1 state, 2 actions, uniform policy, zero reward, $\\alpha=1$: stated reward value $=\\log 2$, stated robust return $=0$).",
+      "verifier": "verify-math-lean",
+      "exact_quote": "| Policy | ... | r(s,a) - α log π(a|s) - ε |"
+    },
+    {
+      "snippet_id": "paper::THEOREM::1",
+      "category": "Formally refuted",
+      "severity": "minor",
+      "confidence": 0.95,
+      "evidence": "Lean 4 refuted the worst-case reward claim of Theorem 3.1: the stated $\\tilde r(s,a)=r(s,a)-\\alpha\\log d_P^\\pi(s)-\\varepsilon$ has value $\\mathbb{E}_{\\rho^\\pi}[\\tilde r]=\\mathbb{E}[r]+\\alpha H_S(d)-\\varepsilon$, whereas the theorem's own minimum is $\\mathbb{E}[r]+\\alpha(H_S(d)-\\log S)-\\varepsilon$. The difference is exactly $\\alpha\\log S$; the printed worst-case reward (which A.1's temperature scaling implies should be $r(s,a)-\\alpha\\log d(s)-\\varepsilon-\\alpha\\log S$) does not attain the stated minimum. Concrete instance: 2 states, uniform $d$, $\\alpha=1$: stated reward value $=\\log 2$, stated minimum $=0$.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "the worst-case reward chosen by the adversary is given by r̃(s,a) = r(s,a) - α log d_P^π(s) - ε."
+    },
+    {
+      "snippet_id": "paper::EQUATION::5",
+      "category": "Sign/Arithmetic error",
+      "severity": "critical",
+      "confidence": 0.93,
+      "evidence": "Eq. (41) defines $\\mathrm{CVaR}_\\beta[R]=\\min_\\eta\\{\\eta+\\frac{1}{1-\\beta}\\mathbb{E}[(R-\\eta)^+]\\}$ and the paper says this 'measures the expected return in the worst $\\beta$-fraction of outcomes'. For a return variable this formula equals $\\mathbb{E}[R\\mid R\\ge q_\\beta(R)]$, the mean of the **best** $(1-\\beta)$ tail (always $\\ge\\mathbb{E}[R]$), not the worst $\\beta$-fraction; the correct lower-tail formula is $\\max_\\eta\\{\\eta-\\frac{1}{\\beta}\\mathbb{E}[(\\eta-R)^+]\\}$. Numeric check ($R=10$ w.p. 0.9, $R=0$ w.p. 0.1, $\\beta=0.1$): the printed formula gives 10, the worst-$10\\%$ mean is 0. Both the sign inside the positive part and the constant $1/(1-\\beta)$ contradict the stated meaning.",
+      "verifier": "verify-math",
+      "exact_quote": "CVaR_β^π[R(τ)] := min_{η ∈ ℝ} { η + 1/(1−β) E_{p_P^π}[(R(τ) − η)^+] }"
+    },
+    {
+      "snippet_id": "paper::THEOREM::5",
+      "category": "Calculus/Proof error",
+      "severity": "critical",
+      "confidence": 0.92,
+      "evidence": "Theorem 4.2 is not established (and, under the paper's own Eq. 41 CVaR, false) as printed: the dual representation used in its proof (Appx A.6) is a min over density-$1/\\beta$ measures, but the correct dual of Eq. 41 is a max over density-$1/(1-\\beta)$ measures; a single feasible $Q$ with $\\mathbb{E}_Q[G]\\le -M$ yields only $\\mathrm{CVaR}\\ge \\mathbb{E}_Q[G]$, not $\\le -M$. The claimed gap $\\mathrm{CVaR}_\\beta^{\\pi^*}[G]-\\mathrm{CVaR}_\\beta^{\\pi_R^*}[G]=M$ therefore does not follow from the given argument for the functional the paper defines.",
+      "verifier": "verify-math",
+      "exact_quote": "CVaR_β^{π*}[G] - CVaR_β^{π_R*}[G] = M"
+    },
+    {
+      "snippet_id": "paper::PROOF::2",
+      "category": "Calculus/Proof error",
+      "severity": "minor",
+      "confidence": 0.9,
+      "evidence": "In Appx A.3, inequality (20) has the wrong direction: the paper needs $\\mathbb{E}_{\\mathrm{softmax}(Y)}[Y]\\ge \\log\\mathbb{E}_{\\mathrm{softmax}(Y)}[e^Y]$, but Jensen (log concave) gives $\\log\\mathbb{E}[e^Y]\\ge\\mathbb{E}[Y]$, the opposite. Numerically with $\\Delta r=(0,1)$, $\\alpha=1$: $f'(\\alpha)=-0.111$ while the claimed upper bound is $-0.194$; $-0.111\\le-0.194$ is false. The monotonicity claim $f'\\le 0$ is nonetheless true ($f'=-\\mathrm{KL}(\\mathrm{softmax}(Y)\\,\\|\\,U)\\le 0$, machine-verified in paper::EQUATION::0), so Theorem 3.2's result survives but its printed proof is invalid.",
+      "verifier": "verify-math",
+      "exact_quote": "≤ log( E_{s∼U}[ e^{Δr^π/α} ] ) - log( E_{s∼softmax(Δr^π/α)}[ e^{Δr^π/α} ] )  (20)"
+    },
+    {
+      "snippet_id": "paper::PROOF::1",
+      "category": "Sign/Arithmetic error",
+      "severity": "minor",
+      "confidence": 0.85,
+      "evidence": "Appx A.2 claims the Table-1 policy-row worst-case reward $\\tilde r(s,a)=r(s,a)-\\alpha\\log\\pi(a\\mid s)-\\varepsilon$ satisfies the binding constraint, but substituting it gives $\\mathrm{LSE}_A(\\Delta r_s/\\alpha)=\\varepsilon/\\alpha$, strictly below the set bound $\\varepsilon/\\alpha+\\log A$ (slack $\\alpha\\log A$), and its value $\\mathbb{E}[r]+\\alpha\\mathbb{E}_d[H_A]-\\varepsilon$ is $\\alpha\\log A$ above the stated robust return. Same root cause as paper::THEOREM::0.",
+      "verifier": "verify-math",
+      "exact_quote": "the worst case reward described in the table satisfies (15) and the requirement that E_{d^π}[LSE_A(Δr_s)] = ε"
+    },
+    {
+      "snippet_id": "paper::PROOF::3",
+      "category": "Calculus/Proof error",
+      "severity": "minor",
+      "confidence": 0.85,
+      "evidence": "In Appx A.4, eq. (31) bounds $\\min E_{\\rho\\tilde{\\rho}}[\\log\\tilde\\rho]$ (perturbed-measure weighting) by a closed form derived under the nominal weighting $\\min E_{\\rho}[\\tilde r']$; these are not comparable (difference $\\sum_s(d-\\tilde d)\\log\\tilde d-\\sum_s(d-\\tilde d)H(\\pi(\\cdot|s))$ is not sign-definite), and a concrete admissible example falsifies (31) ($E_{\\tilde\\rho}[\\log\\tilde\\rho]=-1.0397<-1.0244$). The subsequent step (33) silently swaps the nominal measure for the perturbed one. The final bound is nonetheless true trivially ($\\alpha(H_S(d)-\\log S)-\\varepsilon\\le 0$), so Theorem 3.3's heuristic bound survives but the printed proof has a gap.",
+      "verifier": "verify-math",
+      "exact_quote": "min_{Ṕ ∈ 𝒫̃^π(ε, α)} E_{ρ̃_P^π}[ log ρ̃_P^π ] ≥ min_{r̃' ∈ R̃^π(ε, α)} E[r̃']  (31)"
+    }
+  ],
+  "verdict": "CRITICAL_ERRORS",
+  "verdict_confidence": 0.8,
+  "summary": "Verified 22 extracted mathematical objects from the paper (8 theorems, 6 equations, 8 proofs). Lean 4 (shared project MATH_VERIFICATION/Paper) formally **refuted** the worst-case-reward attainment claims of Theorem 3.1 and Table 1 (both are off by exactly $\\alpha\\log|\\cdot|$: the printed adversarial rewards $\\tilde r=r-\\alpha\\log d-\\varepsilon$ and $r-\\alpha\\log\\pi-\\varepsilon$ do not attain the stated minima), and machine-proved two correct cores: the free-energy derivative inequality $\\log\\mathbb{E}_U[e^Y]\\le \\mathbb{E}_{\\mathrm{softmax}(Y)}[Y]$ (Eqs. 20-21 / Theorem 3.2 monotonicity) and the Eq. (30) LSE identity. Three real-analysis claims (Theorem 3.2's full monotonicity+limits and the two limit identities) were not settled by Lean within the bounded budget (FAILED) and were confirmed correct by informal fallback review. Informal review additionally found a **critical** cluster in the risk-averse section: Eq. (41) defines CVaR with the wrong tail/sign (it computes the mean of the best $(1-\\beta)$ tail, not the worst $\\beta$-fraction), and Appx A.6 uses a dual representation of CVaR that is a min over density-$1/\\beta$ measures instead of a max over density-$1/(1-\\beta)$ measures, with the wrong inequality direction; under the paper's own definition the construction of Theorem 4.2 diverges to $+\\infty$ rather than $\\le -M$, so Theorem 4.2 as stated is not established (a numeric counterexample satisfying the paper's own bound (44) gives $\\mathrm{CVaR}\\approx 13.6 > 0$). Minor proof errors were also found in Appx A.3 (Eq. 20 reversed Jensen inequality) and Appx A.4 (Eqs. 31->33 swap the nominal and perturbed occupancy measures); in both cases the stated results remain true by other arguments, so these are erratum-level proof issues rather than false claims. All other checks (Theorem 3.3 heuristic bound, Theorem 4.1 impossibility, Corollaries A.1/A.2, and the remaining appendix derivations) passed informal review. Overall verdict: CRITICAL_ERRORS, driven by the CVaR/Theorem 4.2 cluster; the main reward-robustness results (the duality minima in Theorem 3.1 and Table 1) are correct, but their printed worst-case-reward formulas and the risk-averse section require correction."
+}

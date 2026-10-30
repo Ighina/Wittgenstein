@@ -1,0 +1,126 @@
+{
+  "paper_id": "20777-Memory_Mosaics_at_scale",
+  "title": "Memory Mosaics at scale",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Section 2, Eqs. (3)–(4)",
+      "confidence": 0.99,
+      "supporting_evidence": "The derivation of Eq. (4) from the Gaussian kernel in Eq. (3) drops a factor of two. Expanding the exponent gives -β||k-k_i||² = -β||k||² - β||k_i||² + 2β k^T k_i. If all k_i have the same norm, terms independent of i cancel in the softmax, leaving softmax_i(2β k^T k_i), not softmax_i(β k^T k_i) as printed in Eq. (4). The equation would be valid only after explicitly redefining β by a factor of two.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20777-Memory_Mosaics_at_scale::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Section 2, footnote 4",
+      "confidence": 0.98,
+      "supporting_evidence": "The stated kernel-regression bandwidth scaling is mathematically wrong in general: the paper claims consistency when β = sqrt(n) for the kernel exp(-β||k-k_i||²). With h=β^{-1/2}, the conventional dimension-p bandwidth scaling is h proportional to n^{-1/(p+4)}, hence β proportional to n^{2/(p+4)}, not n^{1/2} except in the degenerate p=0 case. This also conflicts with the dimension-dependent scaling correctly alluded to later in Section 3.1.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20777-Memory_Mosaics_at_scale::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Section 3.1 versus Appendix C, Table 6",
+      "confidence": 0.9,
+      "supporting_evidence": "Eq. (6) says β0, β1, and α are learnable, subject to 0<α<1. Appendix Table 6 provides parameterizations and initializations for β0 and β1 but contains no parameterization, initialization, or constraint implementation for α. Therefore the described learnable adaptive-bandwidth method is incomplete and internally inconsistent: it does not state how the claimed constrained learnable α is actually represented.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20777-Memory_Mosaics_at_scale::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 5.2, paragraph introducing Table 3",
+      "confidence": 0.99,
+      "supporting_evidence": "The text says Memory Mosaics v2 outperforms transformers at 4k by '1.4%∼5.6%.' Table 3 gives gaps of 45.0-39.4=5.6 points for small and 59.3-57.7=1.6 points for large. The lower endpoint is 1.6, not 1.4.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20777-Memory_Mosaics_at_scale::baseline"
+    },
+    {
+      "error_category": "Experiment setup",
+      "error_location": "Section 5.3, TACRED few-shot protocol and Figure 3/4 description",
+      "confidence": 0.92,
+      "supporting_evidence": "The stated TACRED setup cannot fit the reported highest-shot prompts in the claimed 32k context without truncation or another unstated mechanism. TACRED has 41 categories, each example averages 77 tokens, and the appendix describes up to 10 shots. Demonstrations alone therefore contain approximately 41×10×77=31,570 content tokens, before prompt text, repeated field labels, relation labels, entity wording, separators, and the test query. These additions necessarily push the serialized prompt beyond 32,768 tokens. The paper neither reports truncation nor provides a different context length for this evaluation, making the reported protocol impossible as described.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20777-Memory_Mosaics_at_scale::baseline"
+    },
+    {
+      "error_category": "Experiment setup",
+      "error_location": "Section 5.3, footnote 13",
+      "confidence": 0.95,
+      "supporting_evidence": "The evaluation explicitly tests multiple delimiters and shuffled/non-shuffled example orders, then says it will 'choose the best prompt strategy for each n-shot classification task.' Selecting the best prompt separately at every shot count based on the evaluated task results is test-set hyperparameter selection. The paper provides no held-out validation procedure, no fixed prompt-selection rule shared across models, and no correction for this multiple-comparison selection. This can inflate and distort the reported in-context-learning curves, especially comparative claims.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20777-Memory_Mosaics_at_scale::baseline"
+    },
+    {
+      "error_category": "Experiment setup",
+      "error_location": "Section 6.1, Table 5 and its use as a data-scaling comparison",
+      "confidence": 0.97,
+      "supporting_evidence": "The purported comparison of transformers trained on different quantities of data is confounded by architecture and training-context changes. Table 5 footnote states that the 8T 'transformer large*' uses grouped-query attention and increases training context length to 8k, whereas the 1T transformer uses multi-head attention and the paper otherwise states 4k training. Thus the 8T versus 1T difference is not attributable to training-token count alone, contrary to the section's framing as an answer to how much additional data is needed.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20777-Memory_Mosaics_at_scale::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Section 6.1, paragraph after Table 5",
+      "confidence": 0.99,
+      "supporting_evidence": "The paper claims its finite experiment 'definitively prove[s] that data scaling alone cannot close the gap' and that transformers are inferior 'regardless of training data quantity.' Results at only 200B, 1T, and one confounded 8T setting cannot establish an asymptotic impossibility claim. In fact, the paper immediately reports that the 8T transformer matches Memory Mosaics v2 on semantic-label in-context learning (Figure 6), which further undercuts the categorical conclusion.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20777-Memory_Mosaics_at_scale::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Abstract and Section 1",
+      "confidence": 0.96,
+      "supporting_evidence": "The abstract claims 'universal superiority in zero-shot and few-shot scenarios' and says the architecture 'completely eliminat[es] the need for additional training data that transformers require.' The reported evidence is limited to two RULER QA tasks and three classification datasets, not universal zero-/few-shot tasks. Moreover, Section 6 reports that an 8T-data transformer matches the 1T Memory Mosaics model on the semantic-label in-context tasks. These broad universal and complete-elimination claims substantially exceed the evidence.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20777-Memory_Mosaics_at_scale::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (figure-text)",
+      "error_location": "Section 5.3 narrative versus Appendix H, Figure 13 description",
+      "confidence": 0.86,
+      "supporting_evidence": "Section 5.3 says transformers 'completely fail to improve' as more demonstrations are added and summarizes that Memory Mosaics benefits from more shots 'unlike transformers.' But the Appendix H description of Figure 13 reports Transformer-small Banking77 semantic-label accuracy rising from about 0.58 to about 0.70 as shots increase. Thus at least one of the paper's own reported transformer results plainly improves with more demonstrations, contradicting the categorical narrative.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20777-Memory_Mosaics_at_scale::baseline"
+    },
+    {
+      "error_category": "Figure / table error",
+      "error_location": "Table 1 caption",
+      "confidence": 0.94,
+      "supporting_evidence": "Table 1's caption says it is 'demonstrating superior average performance.' Its large-model averages are exactly equal: 52.2 for Transformer large and 52.2 for Memory Mosaics v2 large. The table therefore does not demonstrate superior average performance for the large comparison claimed in its caption.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20777-Memory_Mosaics_at_scale::baseline"
+    },
+    {
+      "error_category": "Citation / attribution",
+      "error_location": "Section 3.2 and Appendix D citations to xLSTM",
+      "confidence": 0.98,
+      "supporting_evidence": "The text cites xLSTM as '[Beck et al., 2025],' while the reference list identifies the cited xLSTM work as Beck et al., 'Advances in Neural Information Processing Systems, 37,' 2024. The paper uses the incorrect publication year in multiple places, so the in-text citations do not match the supplied reference.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20777-Memory_Mosaics_at_scale::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 12,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (gpt-5.6-terra, taxonomy=default): 12 error(s) reported.",
+  "baseline": {
+    "model": "gpt-5.6-terra",
+    "provider": "openai",
+    "taxonomy": "default",
+    "paper_chars": 74240,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 19188,
+      "output_tokens": 4421,
+      "cache_read_input_tokens": null,
+      "cache_creation_input_tokens": null
+    }
+  }
+}

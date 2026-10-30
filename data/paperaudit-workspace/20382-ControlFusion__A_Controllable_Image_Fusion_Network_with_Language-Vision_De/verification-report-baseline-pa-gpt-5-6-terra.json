@@ -1,0 +1,134 @@
+{
+  "paper_id": "20382-ControlFusion__A_Controllable_Image_Fusion_Network_with_Language-Vision_De",
+  "title": "ControlFusion: A Controllable Image Fusion Network with Language-Vision De",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "reference_background_fabrication",
+      "error_location": "Section 3, Weather-related Distortions, Eq. (5)",
+      "confidence": 0.99,
+      "supporting_evidence": "The paper states that scene depth is \"estimated by DepthAnything-V2 [40].\" Reference [40] is instead Zamir et al., \"Restormer: Efficient Transformer for High-Resolution Image Restoration\" (CVPR 2022), not Depth Anything V2. This is a direct misattribution of the method used to generate degradation data.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20382-ControlFusion__A_Controllable_Image_Fusion_Network_with_Language-Vision_De::baseline"
+    },
+    {
+      "error_category": "reference_background_fabrication",
+      "error_location": "Section 5.3, Object Detection",
+      "confidence": 0.99,
+      "supporting_evidence": "The paper claims to use \"the retrained YOLOv8 [26].\" Reference [26] is Redmon et al.'s 2016 original YOLO paper, not YOLOv8. YOLOv8 is a substantially later Ultralytics implementation and requires an appropriate citation and version specification.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20382-ControlFusion__A_Controllable_Image_Fusion_Network_with_Language-Vision_De::baseline"
+    },
+    {
+      "error_category": "reference_background_fabrication",
+      "error_location": "Method dataset-construction paragraph before Section 4.1",
+      "confidence": 0.96,
+      "supporting_evidence": "The DDL-12 construction paragraph cites \"RoadScene [36],\" whereas the experimental section cites RoadScene [35]. Reference [36] is U2Fusion, while reference [35] is FusionDN, the cited source associated with RoadScene elsewhere in the paper. The data-source citation is internally inconsistent and one of the citations is wrong.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20382-ControlFusion__A_Controllable_Image_Fusion_Network_with_Language-Vision_De::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 4.3.1, Eq. (9)",
+      "confidence": 0.98,
+      "supporting_evidence": "The stated Q/K/V tensors are conventional token-feature matrices. Eq. (9) uses Q_vi K_ir and Q_ir K_vi, but omits the transpose on K. If Q and K have the usual N×d_k dimensions, these products are undefined (N×d_k times N×d_k). Cross-attention requires QK^T (followed by scaling and softmax).",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20382-ControlFusion__A_Controllable_Image_Fusion_Network_with_Language-Vision_De::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 3, Sensor-related Distortions, Eq. (3), versus Section 5.1/Table 2",
+      "confidence": 0.91,
+      "supporting_evidence": "Eq. (3) defines every image governed by that sensor model as simultaneously blurred and contaminated by Gaussian noise: D_m^s = I_m * K(N,theta) + N(0,sigma^2), with nonzero stated ranges N∈[3,12] and sigma∈[5,20]. Yet the experiments claim separate single-degradation conditions such as \"VI (Blur)\" and \"IR (Random noise).\" Under the supplied equation neither condition can be generated as a pure blur or pure noise case. No identity-kernel/zero-noise exception is specified.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20382-ControlFusion__A_Controllable_Image_Fusion_Network_with_Language-Vision_De::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Section 3, Weather-related Distortions, Eq. (5)",
+      "confidence": 0.9,
+      "supporting_evidence": "The weather model includes an additive rain term R in D_vi^w = I_vi t + A(1-t) + R, but never defines how R is generated, its distribution, intensity range, mask/streak geometry, or relation to the four severity levels. Therefore rain and rain-haze data in DDL-12 cannot be reproduced from the stated degradation model.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20382-ControlFusion__A_Controllable_Image_Fusion_Network_with_Language-Vision_De::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Section 5.2, \"Comparison with Pre-enhancement,\" and Table 2",
+      "confidence": 0.99,
+      "supporting_evidence": "The paper explicitly acknowledges that ControlFusion \"uniquely includes pre-enhancement by several SOTA image restoration algorithms tailored to each degradation type,\" while competing methods are evaluated on raw degraded inputs, and that \"a unified baseline applying pre-enhancement across all methods is not provided.\" This is not a fair comparison despite the preceding claim \"For a fair comparison.\" The Table 2 superiority results cannot attribute gains to ControlFusion rather than the unreported external restoration pipeline.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20382-ControlFusion__A_Controllable_Image_Fusion_Network_with_Language-Vision_De::baseline"
+    },
+    {
+      "error_category": "rhetorical_presentation_manipulation",
+      "error_location": "Section 5.2/Table 2 and Section 5.3/Table 4, Computational Efficiency",
+      "confidence": 0.94,
+      "supporting_evidence": "Table 2 quality results for ControlFusion rely on degradation-specific external pre-enhancement, but Table 4 reports only ControlFusion's own 182.54M parameters, 1622G FLOPs, and 0.183s runtime. The cost of the stated \"several SOTA image restoration algorithms\" is not included in the reported ControlFusion pipeline. Thus the claimed efficiency advantage of a \"unified model\" is incompatible with the evaluation protocol used to establish degradation-performance gains.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20382-ControlFusion__A_Controllable_Image_Fusion_Network_with_Language-Vision_De::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "DDL-12 construction paragraph before Section 4.1",
+      "confidence": 0.83,
+      "supporting_evidence": "The stated dataset arithmetic is unexplained and inconsistent on its face. From 2,050 clear image pairs, 12 degradation types, and 4 levels, exhaustive generation would yield 2,050×12×4 = 98,400 degraded pairs, whereas the paper claims approximately 48,000 training plus 4,800 test pairs (52,800 total). No sampling scheme, source split, exclusion rule, or definition of what counts as a \"type\" is supplied to reconcile the discrepancy.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20382-ControlFusion__A_Controllable_Image_Fusion_Network_with_Language-Vision_De::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 4.3.2, Eqs. (10)-(13)",
+      "confidence": 0.88,
+      "supporting_evidence": "The formulation defines infrared inputs as one-channel and visible inputs as three-channel, while the color loss implies that the fused output is RGB/YCbCr. Eqs. (10)-(12) nevertheless directly compute max and SSIM between I_f, I_ir^hq, and I_vi^hq without specifying a grayscale conversion, RGB replication, luminance-only operation, or channelwise definition. These expressions are not well-defined as written for one-channel versus three-channel images.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20382-ControlFusion__A_Controllable_Image_Fusion_Network_with_Language-Vision_De::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Section 5.3, Flexible Degree Control",
+      "confidence": 0.86,
+      "supporting_evidence": "The paper asserts that generalization from only levels 1, 4, 7, and 10 to intermediate integer severities occurs \"owing to the inherent encoding characteristics of CLIP.\" CLIP does not provide a guaranteed ordinal or interpolative numerical representation for textual number tokens, and no controlled quantitative test of intermediate held-out levels is reported. A qualitative figure for one low-light example does not establish the claimed mechanism or broad continuous controllability.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20382-ControlFusion__A_Controllable_Image_Fusion_Network_with_Language-Vision_De::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Appendix A.7, Model Complexity Analysis",
+      "confidence": 0.95,
+      "supporting_evidence": "The appendix states that frozen CLIP parameters \"introduce no training overhead.\" Freezing parameters removes gradient computation and optimizer updates, but the CLIP forward pass still consumes training-time computation, memory, and wall-clock time whenever textual embeddings are computed. The statement is technically false and understates training cost.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20382-ControlFusion__A_Controllable_Image_Fusion_Network_with_Language-Vision_De::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Section 5.3, Object Detection and Table 5",
+      "confidence": 0.87,
+      "supporting_evidence": "The downstream-detection comparison does not specify the YOLOv8 variant, training data, train/validation/test split, whether the detector was trained separately on each fusion method's outputs or held fixed, preprocessing, hyperparameters, seeds, or confidence/NMS settings. Without these details, the small claimed mAP advantage (0.609 versus 0.608 for LRRNet) is not reproducible or interpretable.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20382-ControlFusion__A_Controllable_Image_Fusion_Network_with_Language-Vision_De::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 13,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (gpt-5.6-terra, taxonomy=paperaudit): 13 error(s) reported.",
+  "baseline": {
+    "model": "gpt-5.6-terra",
+    "provider": "openai",
+    "taxonomy": "paperaudit",
+    "paper_chars": 79566,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 18979,
+      "output_tokens": 4832,
+      "cache_read_input_tokens": null,
+      "cache_creation_input_tokens": null
+    }
+  }
+}

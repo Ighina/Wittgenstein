@@ -1,0 +1,140 @@
+{
+  "paper_id": "3501",
+  "title": "TransferTraj: A Vehicle Trajectory Learning Model for Region and Task Transferability",
+  "paper_category": "cs.LG",
+  "predicted_errors": [
+    {
+      "error_category": "Cross-section inconsistency",
+      "error_location": "Abstract & Section 1 (line 48) vs Section 5.1 (line 305)",
+      "confidence": 0.88,
+      "supporting_evidence": "The Abstract/Introduction state 'It achieves an average improvement of 83.70% and 33.68% in zero-shot region transferability', attributing BOTH figures to zero-shot transfer. Section 5.1 explicitly says 'on the TP task, our method achieves improvements of 83.70% and 33.68% over SOTA models in zero-shot and few-shot settings'. The 33.68% figure is the FEW-SHOT (fine-tuned on 5,000 target-region trajectories) improvement, not zero-shot. Independent table checks confirm this: averaging RMSE improvements over Table 4 (zero-shot TP, vs best baseline START) gives ~83.9%, while averaging over Table 11 (few-shot TP) gives ~34.0%. The abstract therefore mislabels the few-shot gain as zero-shot, overstating zero-shot transferability.",
+      "verifier_name": "verify-cross-section-consistency",
+      "snippet_id": "3501::SECTION::0"
+    },
+    {
+      "error_category": "Cross-section inconsistency",
+      "error_location": "Appendix B.2 (line 474) vs Appendix F (line 828)",
+      "confidence": 0.7,
+      "supporting_evidence": "Appendix B.2 states 'The key hyperparameters for TransferTraj are set as L = 2 layers with 128 hidden state dimensions and C = 8 experts in SC-MoE'. Appendix F's hyperparameter study concludes 'The optimal value for d is 256; smaller values limit the model's learning capability...'. If d = 256 is optimal, the model evaluated in the main tables (configured with d = 128) is not run at the reported-optimal setting, contradicting the study's 'optimal values' framing. The two sections disagree on the model's hidden dimension.",
+      "verifier_name": "verify-cross-section-consistency",
+      "snippet_id": "3501::SECTION::19"
+    },
+    {
+      "error_category": "Dangling table reference / missing caption",
+      "error_location": "Section 5.1 (Tables 1, 5, 6)",
+      "confidence": 0.65,
+      "supporting_evidence": "The text references 'Tables 1, 2, and 3' (line 256), 'Tables 4 and 5' (line 305), 'Table 6' (line 309), and 'upper part of Table 1' (Appendix B.4), but no caption exists for Table 1 (the trajectory-prediction table, lines 201-215), Table 5 (the zero-shot OD TTE table, lines 273-289), or Table 6 (the ablation table, lines 293-299). Captions are present only for Tables 2, 3, 4, 7, 8 (and 9-16 in the appendix), leaving three referenced tables uncaptioned.",
+      "verifier_name": "verify-cross-section-consistency",
+      "snippet_id": "3501::TABLE::0"
+    },
+    {
+      "error_category": "Equation/formulation inconsistency",
+      "error_location": "Section 4.1.4, Equation (5) (line 168)",
+      "confidence": 0.6,
+      "supporting_evidence": "The text states 'we apply the Mean Squared Error (MSE) loss function to the predicted spatial and temporal modalities', but the temporal loss is written as L_i^t = ||t_hat_i - t_i||_2, an UNSQUARED L2 norm. MSE requires the squared norm (||t_hat_i - t_i||_2^2). As written, the temporal term is a distance/MAE-style loss, not MSE, contradicting the accompanying text.",
+      "verifier_name": "verify-math",
+      "snippet_id": "3501::EQUATION::4"
+    },
+    {
+      "error_category": "Statistical/data inconsistency",
+      "error_location": "Appendix D (lines 608, 644)",
+      "confidence": 0.55,
+      "supporting_evidence": "Claimed trajectory-recovery transfer gains are not fully reproducible from Tables 9-10. (1) 'outperforms the SOTA trajectory recovery baseline by 9.25% and 1.20%': for Porto (1.20%) this matches an RMSE average, but on the Porto mu=8*eps cell TransferTraj (w/o ft) RMSE 447.22 is actually WORSE than MM-STGED 446.18; for Xi'an the average RMSE improvement is ~10.6%, not 9.25%. (2) 'in the most challenging setting (mu=16) ... surpasses the baseline by 11.68% and 2.42%' does not match table-derived values (Xi'an ~13.3%, Porto ~1.0% RMSE). (3) 'fine-tuning further boosts performance by an additional 9.54% and 5.56%' is also not reproducible (computed ~5.9% and ~4.2% by RMSE). The numbers may reflect a specific aggregation, but no aggregation is stated.",
+      "verifier_name": "verify-statistical",
+      "snippet_id": "3501::SECTION::24"
+    },
+    {
+      "error_category": "Text inconsistency / broken sentence",
+      "error_location": "Section 4.1.3 (lines 151-153)",
+      "confidence": 0.5,
+      "supporting_evidence": "The sentence is broken mid-phrase by a paragraph break and a capitalisation error: '...we implement noisy top-K gating [27] before applying' followed by a blank line and 'The Softmax function in the gating network.' The phrase reads as 'applying The Softmax function' with 'The' capitalised mid-sentence, indicating a text corruption (the paragraph break interrupts the description of the gating mechanism before Equation (4)).",
+      "verifier_name": "verify-text",
+      "snippet_id": "3501::SECTION::8"
+    },
+    {
+      "error_category": "Text/formula formatting",
+      "error_location": "Section 5, TR task description (line 191)",
+      "confidence": 0.45,
+      "supporting_evidence": "The trajectory-recovery input sequence is written as '<p1, {p[m]}_{eps}^{mu/eps}, p_{1+mu/eps}, {p[m]}_{eps}^{mu/eps}, p_{1+mu/eps*2}, ..., pn>' using a non-standard, undefined mixed notation '{p[m]}_{eps}^{mu/eps}' (sub- and super-scripts on the mask point). The notation is never defined and is inconsistent with the cleaner 'p_{[m]}' mask-point notation used in Section 4.2.",
+      "verifier_name": "verify-text",
+      "snippet_id": "3501::SECTION::11"
+    },
+    {
+      "error_category": "Citation ambiguity (dual reference for one model)",
+      "error_location": "References [9] and [18]",
+      "confidence": 0.4,
+      "supporting_evidence": "The same model name 't2vec' is cited under two reference numbers: [9] Fang et al., 'Spatio-temporal trajectory similarity learning in road networks' (KDD 2022) in the experiments/baselines (line 197), and [18] Li et al., 'Deep representation learning for trajectory similarity computation' (ICDE 2018) in Related Work (line 60). Both are legitimate t2vec papers, but the text never disambiguates them, so a reader cannot tell which t2vec is being compared against in the experiments.",
+      "verifier_name": "verify-citation",
+      "snippet_id": "3501::REFERENCES"
+    },
+    {
+      "error_category": "Table formatting (unlabeled columns)",
+      "error_location": "Table 7 (lines 315-325)",
+      "confidence": 0.4,
+      "supporting_evidence": "Table 7 (Efficiency of methods on TP task) has 9 data columns whose header row only lists datasets ('Chengdu | Chengdu | Chengdu | Xi'an | Xi'an | Xi'an | Porto | Porto | Porto') with no sub-headers indicating which column is model size, training time, or testing time. The caption text (line 329) says the table measures 'the size of the learning model and the time required for training and testing', but the columns are unlabeled, making the table unreadable without inference.",
+      "verifier_name": "verify-text",
+      "snippet_id": "3501::TABLE::6"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 66,
+    "snippets_verified": 66,
+    "errors_detected": 9,
+    "verifier_usage": {
+      "text": 26,
+      "statistical": 16,
+      "math_equation": 9,
+      "vision": 14,
+      "citation": 4
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Exhaustive verification (lenient strictness) of 'TransferTraj: A Vehicle Trajectory Learning Model for Region and Task Transferability' (NeurIPS 2025) found 9 error candidates, 1 above the high-confidence threshold (>=0.85) and 2 in the medium range (0.7-0.85). The most substantive finding is a cross-section inconsistency: the Abstract and Introduction report 'an average improvement of 83.70% and 33.68% in zero-shot region transferability', but Section 5.1 explicitly assigns 83.70% to zero-shot and 33.68% to FEW-SHOT transfer; independent re-computation from Tables 4 and 11 confirms 33.68% is the few-shot figure, so the abstract overstates zero-shot transferability. A second inconsistency: Appendix B.2 configures the model with d=128 hidden units while Appendix F concludes the optimal d is 256. Three referenced tables (Tables 1, 5, 6) are missing their captions, Equation (5) writes the temporal loss as an unsquared L2 norm despite describing an MSE loss, and Appendix D's trajectory-recovery transfer percentages are only partially reproducible from Tables 9-10 (on Porto mu=8*eps, TransferTraj w/o ft is actually slightly worse than MM-STGED). Minor issues include a broken sentence in the SC-MoE description, garbled TR input-sequence notation, unlabeled efficiency-table columns, and the t2vec model cited under two reference numbers ([9] and [18]). Notably, the paper's central quantitative claims were independently validated: the task-transfer gains (20.18%/17.87%/7.94% over START/MM-STGED/DOT), region-transfer gains (83.70% zero-shot and 33.68% few-shot on TP, 18.08% on TR, 10.88%/13.07% on OD TTE), the ablation rankings, and the Appendix F POI/road-density figures (111.44/263.10/282.87 per km^2) all reproduce from the reported tables. The abstract-level misattribution and the hyperparameter discrepancy mandate correction.",
+  "uncertainty_map": [
+    {
+      "snippet_id": "3501::SECTION::0",
+      "uncertainty": 0.88,
+      "route": "cross-section"
+    },
+    {
+      "snippet_id": "3501::SECTION::19",
+      "uncertainty": 0.7,
+      "route": "cross-section"
+    },
+    {
+      "snippet_id": "3501::TABLE::0",
+      "uncertainty": 0.65,
+      "route": "text"
+    },
+    {
+      "snippet_id": "3501::EQUATION::4",
+      "uncertainty": 0.6,
+      "route": "math"
+    },
+    {
+      "snippet_id": "3501::SECTION::24",
+      "uncertainty": 0.55,
+      "route": "statistical"
+    },
+    {
+      "snippet_id": "3501::SECTION::8",
+      "uncertainty": 0.5,
+      "route": "text"
+    },
+    {
+      "snippet_id": "3501::SECTION::11",
+      "uncertainty": 0.45,
+      "route": "text"
+    },
+    {
+      "snippet_id": "3501::REFERENCES",
+      "uncertainty": 0.4,
+      "route": "citation"
+    },
+    {
+      "snippet_id": "3501::TABLE::6",
+      "uncertainty": 0.4,
+      "route": "text"
+    }
+  ]
+}

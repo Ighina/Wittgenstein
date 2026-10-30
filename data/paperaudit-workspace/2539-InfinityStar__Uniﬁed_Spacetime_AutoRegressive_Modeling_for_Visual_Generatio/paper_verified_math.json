@@ -1,0 +1,118 @@
+{
+  "paper_name": "paper",
+  "paper_path": "/Users/iacopoghinassi/Documents/Github/Wittgenstein/data/paperaudit-workspace/2539-InfinityStar__Unified_Spacetime_AutoRegressive_Modeling_for_Visual_Generatio/paper.md",
+  "lean_project": "MATH_VERIFICATION/Paper",
+  "lean_project_kept": true,
+  "totals": {
+    "snippets_extracted": 3,
+    "routed_to_math": 2,
+    "routed_to_lean": 1,
+    "lean_passed": 1,
+    "lean_refuted": 0,
+    "lean_failed": 0,
+    "fallbacks_run": 0,
+    "errors_detected": 1
+  },
+  "results": [
+    {
+      "snippet_id": "paper::EQUATION::0",
+      "snippet_type": "EQUATION",
+      "location": "3.2 Spacetime Pyramid Modeling for Unified Generation",
+      "content": "The clip tokens are generated auto-regressively across scales as:\n\n$$\np(r_1^1, \\ldots, r_K^1) = \\prod_{k=1}^{K} p(r_k^1 \\mid r_1^1, \\ldots, r_{k-1}^1, \\psi(t)),\n\\tag{1}\n$$",
+      "route": "verify-math-lean",
+      "route_rationale": "Chain-rule factorization of a joint probability; formalisable and non-trivial enough to warrant a machine check.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::0",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.95,
+        "reasoning": "Formalised Equation (1), the chain rule of conditional probability, and proved it in Lean 4. Faithful rendering: for a probability space (Ω, μ), a measurable context event ctx (representing the fixed text conditioning ψ(t)) with μ ctx ≠ 0, and a finite list A of measurable events representing the scale token blocks r_1, …, r_K, we proved μ[chainInter A | ctx] = condChain μ ctx A, where chainInter A is the intersection of all blocks and condChain μ ctx A = ∏_k μ[A_k | ctx ∩ A_1 ∩ … ∩ A_{k-1}]. This is exactly p(r_1, …, r_K | ψ(t)) = ∏_k p(r_k | r_1, …, r_{k-1}, ψ(t)). The proof is by induction on the list using ProbabilityTheory.cond_mul_eq_inter (μ[t | s] * μ s = μ (s ∩ t)); no extra hypotheses beyond measurability, positivity of the conditioning event, and μ being a probability measure. Lean accepted the proof: lake env lean exited 0 with no sorries; the only axioms are propext, Classical.choice, Quot.sound. The equation is correct.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean (preserved as Paper/Verified/InfinityStar__EQUATION__0.lean)",
+          "formal_statement": "theorem paper_eq1_cond {Ω : Type} [MeasurableSpace Ω] {μ : Measure Ω} [IsProbabilityMeasure μ] (ctx : Set Ω) (hctx : MeasurableSet ctx) (hctx0 : μ ctx ≠ 0) (A : List (Set Ω)) (hA : ∀ a ∈ A, MeasurableSet a) : cond μ ctx (chainInter A) = condChain μ ctx A",
+          "compiler_feedback": "lake env lean Paper/TMP.lean → exit 0; output: 'PaperEq0.paper_eq1_cond' depends on axioms: [propext, Classical.choice, Quot.sound]",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::EQUATION::1",
+      "snippet_type": "EQUATION",
+      "location": "3.2 Spacetime Pyramid Modeling for Unified Generation",
+      "content": "For inter-clip predictions, clips are generated sequentially conditioned on prior clip predictions and the text input in an autoregressive manner. In this way, we could generate infinitely long videos theoretically. Formally, the autoregressive likelihood of the whole video can be expressed as:\n\n$$\np(r_1^1, \\ldots, r_K^N) = \\prod_{c=1}^{N} \\prod_{k=1}^{K} p(r_k^c \\mid r_1^c, \\ldots, r_{k-1}^c, \\psi(t)),\n\\tag{2}\n$$",
+      "route": "verify-math",
+      "route_rationale": "The claimed factorization omits conditioning on prior clips; correctness is a modelling/notation judgement about an under-specified probability model, not formalisable in Lean.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::1",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.8,
+        "reasoning": "By the chain rule of probability, the joint likelihood of all clip tokens conditioned on text ψ(t) must factorize as ∏_{c=1}^N ∏_{k=1}^K p(r_k^c | r_1^c, ..., r_{k-1}^c, r^{<c}, ψ(t)), where r^{<c} denotes the tokens of all earlier clips. Equation (2) omits r^{<c} from every conditioning set, so as printed it asserts p(r_1^1,...,r_K^N|ψ(t)) = ∏_c p(r_1^c,...,r_K^c|ψ(t)) — i.e. clips are conditionally independent given the text. This contradicts the prose directly above the equation ('clips are generated sequentially conditioned on prior clip predictions and the text input') and the model design in §3.4, where spacetime sparse attention conditions each clip on the last scale of the preceding clip. The equation as displayed is therefore an incorrect expression of the model's autoregressive likelihood; the missing prior-clip conditioning makes it mathematically false for the described generative process.",
+        "predicted_error_category": "Algebraic manipulation",
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [
+          "§3.2 prose: 'clips are generated sequentially conditioned on prior clip predictions and the text input in an autoregressive manner'",
+          "§3.4 Spacetime Sparse Attention: attends to the last scale of the preceding clip"
+        ]
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::PROPOSITION::0",
+      "snippet_type": "PROPOSITION",
+      "location": "3.3 Visual Tokenizer",
+      "content": "During training, each one of the last $N$ scales has a probability $p$ of being discarded. In this way, there are $2^N$ possible scale schedules during training. This requires the tokenizer to reduce the reliance on last scales and store more information in tokens of early scales.",
+      "route": "verify-math",
+      "route_rationale": "Elementary counting (N independent binary choices → 2^N schedules); checkable by inspection.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::PROPOSITION::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.95,
+        "reasoning": "Each of the last N scales is independently either discarded or kept — 2 states per scale. The number of possible schedules is therefore the number of subsets of an N-element set, exactly 2^N. This is elementary and correct combinatorics; no error.",
+        "predicted_error_category": null,
+        "snippet_type": "PROPOSITION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.95
+    }
+  ],
+  "findings": [
+    {
+      "snippet_id": "paper::EQUATION::1",
+      "category": "Algebraic manipulation",
+      "severity": "minor",
+      "confidence": 0.8,
+      "evidence": "By the chain rule, each factor of a joint likelihood must condition on the tokens of earlier clips ($r^{<c}$); Equation (2) omits them, so as printed it asserts $p(r_1^1,\\ldots,r_K^N\\mid\\psi(t)) = \\prod_{c=1}^{N} p(r_1^c,\\ldots,r_K^c\\mid\\psi(t))$ — the clips are conditionally independent given the text. This contradicts the prose directly above the equation (\"clips are generated sequentially conditioned on prior clip predictions\") and the §3.4 spacetime sparse attention, which conditions each clip on the last scale of the preceding clip. The correct factorization is $\\prod_{c=1}^{N}\\prod_{k=1}^{K} p(r_k^c \\mid r_1^c,\\ldots,r_{k-1}^c, r^{<c}, \\psi(t))$. The displayed equation is thus an incorrect expression of the model's autoregressive likelihood.",
+      "verifier": "verify-math",
+      "exact_quote": "$$\np(r_1^1, \\ldots, r_K^N) = \\prod_{c=1}^{N} \\prod_{k=1}^{K} p(r_k^c \\mid r_1^c, \\ldots, r_{k-1}^c, \\psi(t)),\n\\tag{2}\n$$"
+    }
+  ],
+  "verdict": "MINOR_ERRORS",
+  "verdict_confidence": 0.75,
+  "summary": "InfinityStar is a systems/empirical paper; only three self-contained mathematical objects were extracted: the within-clip chain-rule factorization (Eq. 1), the whole-video likelihood factorization (Eq. 2), and the 2^N-schedules counting claim (§3.3). Eq. (1) was formally verified in Lean 4 and PASSED: the chain rule of conditional probability was proved in Lean (μ[⋂A_k | ctx] = ∏_k μ[A_k | ctx ∩ ⋂_{j<k} A_j] for a context event representing the text embedding ψ(t)), compiling clean with only the standard Mathlib axioms (propext, Classical.choice, Quot.sound) — the equation is correct. Eq. (2) was reviewed informally because the underlying probability model is under-specified and the judgement is about the conditioning structure rather than a formalisable identity: as printed, each factor conditions only on the earlier scales of the same clip plus the text, omitting the tokens of earlier clips (r^{<c}); by the chain rule this would make clips conditionally independent given ψ(t), contradicting the prose above the equation and the §3.4 spacetime sparse attention. This is reported as a single minor finding (confidence 0.8): a genuine error in a displayed core equation that would warrant a correction, but the intended meaning is recoverable from the surrounding prose and the paper's empirical claims are unaffected. The 2^N counting claim is correct (NO_ERROR, 0.95). No Lean refutations and no verifier disagreements (Lean was not attempted on Eq. 2). One note: the shared Lean project MATH_VERIFICATION/Paper pre-existed this run and contains proofs from several other papers, so it was reused and preserved rather than deleted (lean_project_kept = true); the proof for Eq. (1) was saved as MATH_VERIFICATION/Paper/Paper/Verified/InfinityStar__EQUATION__0.lean."
+}

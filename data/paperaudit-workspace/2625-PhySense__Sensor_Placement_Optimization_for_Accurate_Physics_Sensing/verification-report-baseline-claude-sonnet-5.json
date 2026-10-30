@@ -1,0 +1,102 @@
+{
+  "paper_id": "2625-PhySense__Sensor_Placement_Optimization_for_Accurate_Physics_Sensing",
+  "title": "PhySense: Sensor Placement Optimization for Accurate Physics Sensing",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Appendix A.2, Proof of Theorem 3.5, Part 3",
+      "confidence": 0.75,
+      "supporting_evidence": "The proof claims '(∑ᵢ√λᵢ)² ≤ 2∑ᵢλᵢ' via AM-GM, but this is false for dimension d>2. By Cauchy-Schwarz, (∑ᵢ√λᵢ)² ≤ d·∑ᵢλᵢ, which depends on the dimension d (e.g., for d=3 with λ1=λ2=λ3=1, (∑√λᵢ)²=9 while 2∑λᵢ=6, violating the claimed bound). Since the physical fields considered have very high dimensionality (d in the thousands, per Table 1), the derived constants c1=2/π² and c2=4/π² in Theorem 3.5 are invalid; the correct bound must scale with d, undermining the stated 'theoretical guarantee' for near-A-optimality.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "2625-PhySense__Sensor_Placement_Optimization_for_Accurate_Physics_Sensing::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Appendix A.2, Proof of Theorem 3.5, Part 1",
+      "confidence": 0.4,
+      "supporting_evidence": "Assumption 3.2 defines X1 | (p, X1(p)) ≈ N(μp, Σp) with a general (possibly non-zero) mean μp, but the proof of Theorem 3.5 explicitly states 'X1 | (p, X1(p)) ~ N(0, Σp)', silently substituting zero mean. This contradicts the stated assumption and is not justified anywhere in the text.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "2625-PhySense__Sensor_Placement_Optimization_for_Accurate_Physics_Sensing::baseline"
+    },
+    {
+      "error_category": "Statistical reporting",
+      "error_location": "Table 2, Turbulent Flow #100 'Relative Promotion'",
+      "confidence": 0.65,
+      "supporting_evidence": "The best baseline for Turbulent Flow #100 is S³GM at 0.2016, and PhySense-opt is 0.1257. The relative improvement is (0.2016-0.1257)/0.2016 = 37.65%, but the table reports 38.56%, an inconsistency not explained by rounding (all other promotion values in the table match their computed baseline-vs-PhySense-opt calculations exactly).",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "2625-PhySense__Sensor_Placement_Optimization_for_Accurate_Physics_Sensing::baseline"
+    },
+    {
+      "error_category": "Statistical reporting",
+      "error_location": "Appendix B, 'Relative Promotion' row for Sea Temperature",
+      "confidence": 0.7,
+      "supporting_evidence": "For Sea Temperature #100, #50, and #15, the reported 'Relative Promotion' (2.96%, 4.87%, 15.58%) matches a computation of (Random − Optimized)/Random, but for #25 the reported value (3.74%) instead matches (SSPOR − Optimized)/SSPOR (≈3.75%), not (Random − Optimized)/Random (≈8.39%). This is an internally inconsistent choice of baseline across sensor counts within the same table/row, unlike the Turbulent Flow row which consistently uses the SSPOR baseline for all four sensor counts.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "2625-PhySense__Sensor_Placement_Optimization_for_Accurate_Physics_Sensing::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 4.2 (Sea Temperature) vs Benchmarks section",
+      "confidence": 0.5,
+      "supporting_evidence": "The benchmarks section and Section 4.2 setup describe '27-year daily sea surface temperature' and training data 'from 1993 to 2019' (27 years), but later in Section 4.2 the text states SSPOR performs well 'due to the relatively stable temporal variations of sea temperature over the 30-year period,' which does not match the stated 27-year (or even 29-year, including the 2020-2021 test set) span of the dataset.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "2625-PhySense__Sensor_Placement_Optimization_for_Accurate_Physics_Sensing::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (figure-text)",
+      "error_location": "Section 4.4 'Efficiency analysis' vs Figure 6(c) caption and Appendix C.3",
+      "confidence": 0.55,
+      "supporting_evidence": "The main text claims PhySense 'consistently maintains a relative L2 error below 0.2 even with as few as 2 steps' and states 'we achieve better performance with only 1% model evaluations required by these baseline methods.' However, Figure 6(c)'s caption states diffusion-based methods require '1,000 generation steps (100x slower than PhySense)', implying PhySense uses ~10 steps (1000/100), not 2 steps as stated in the text. These two statements about PhySense's step count are inconsistent with each other and with the '1%' figure (2/1000=0.2%, not 1%).",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "2625-PhySense__Sensor_Placement_Optimization_for_Accurate_Physics_Sensing::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (figure-text)",
+      "error_location": "Figure 6(c) caption vs Appendix C.3 (DiffusionPDE implementation)",
+      "confidence": 0.55,
+      "supporting_evidence": "Figure 6(c) caption states 'these diffusion-based methods require 1,000 generation steps,' referring to both S³GM and DiffusionPDE. However, Appendix C.3 explicitly states DiffusionPDE inference 'using a total of 2,000 steps for better performance,' contradicting the figure caption's claim of 1,000 steps for both methods.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "2625-PhySense__Sensor_Placement_Optimization_for_Accurate_Physics_Sensing::baseline"
+    },
+    {
+      "error_category": "Figure / table error",
+      "error_location": "Table 9 (Appendix C.3, DiffusionPDE guidance weight)",
+      "confidence": 0.45,
+      "supporting_evidence": "The caption states 'Our final selection is bolded,' but the table shows the identical set '{1000, 2500, 5000}' for all three benchmarks with no distinguishing bolded value indicating which guidance weight was actually selected, making the stated final selection untraceable/missing from the table as presented.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "2625-PhySense__Sensor_Placement_Optimization_for_Accurate_Physics_Sensing::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Section 4.4, opening sentence on 'Model Analysis'",
+      "confidence": 0.45,
+      "supporting_evidence": "The text states: 'Ablations also include systematic sensitivity analyses to key training hyperparameters such as learning rate, optimizer type, and projected gradient descent iteration counts,' but no ablation study on 'optimizer type' is presented anywhere in the main paper or appendix (only learning rate sensitivity for PGD on one benchmark is shown in Appendix D.2, Table 13), making this claim unsupported by the reported evidence.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "2625-PhySense__Sensor_Placement_Optimization_for_Accurate_Physics_Sensing::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 9,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (claude-sonnet-5, taxonomy=default): 9 error(s) reported.",
+  "baseline": {
+    "model": "claude-sonnet-5",
+    "provider": "anthropic",
+    "taxonomy": "default",
+    "paper_chars": 85257,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 36042,
+      "output_tokens": 28382,
+      "cache_read_input_tokens": 0,
+      "cache_creation_input_tokens": 0
+    }
+  }
+}

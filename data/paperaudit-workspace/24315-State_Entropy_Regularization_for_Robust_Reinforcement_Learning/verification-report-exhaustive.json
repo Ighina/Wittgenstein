@@ -1,0 +1,76 @@
+{
+  "paper_id": "24315",
+  "title": "State Entropy Regularization for Robust Reinforcement Learning",
+  "paper_category": "cs.LG",
+  "predicted_errors": [
+    {
+      "error_category": "Misattribution (external)",
+      "error_location": "Section 5 (Experiments), 'Transition kernel robustness' paragraph; also Section 1 (Introduction)",
+      "confidence": 0.85,
+      "supporting_evidence": "The text states 'we compare against the PR-MDP and NR-MDP frameworks [6], two popular robustness baselines in continuous control'. Reference [6] is 'Top-K Off-Policy Correction for a REINFORCE Recommender System' (Minmin Chen et al., WSDM 2019), a YouTube recommender-system paper that does not introduce or support the PR-MDP/NR-MDP frameworks. These are action-robust RL frameworks from Tessler et al. 2019 ('Action Robust Reinforcement Learning in Continuous Control') / Pinto et al. 2017 ('Robust Adversarial Reinforcement Learning', which is reference [47] in the paper's own bibliography). Web search confirms [6] is the recommender paper, unrelated to PR-MDP/NR-MDP. Additionally, [6] is cited in the Introduction among 'impressive success of RL across various synthetic domains [29, 37, 51, 6]', where a recommender-system paper is also not an appropriate citation.",
+      "verifier_name": "verify-citation",
+      "snippet_id": "24315::SECTION::10"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Theorem 3.1 (Section 3.1); worst-case reward formulas also in Table 1",
+      "confidence": 0.8,
+      "supporting_evidence": "Theorem 3.1 claims the worst-case (adversarial) reward is r̃(s,a) = r(s,a) − α log d_P^π(s) − ε. Direct computation: E_{ρ^π}[r̃] = E[r] + α H_S(d^π) − ε, whereas the theorem's stated minimum is E[r] + α(H_S(d^π) − log S) − ε. The claimed reward exceeds the claimed minimum by α log S (> 0 for S > 1), so it is feasible but does NOT attain the worst case — the LSE constraint LSE_S((r^π − r̃^π)/α) ≤ ε/α + log S is left slack by log S. The correct minimizer (obtained by applying the paper's own change of variables r→r/α, r̃→r̃/α, ε→ε/α + log S to the α=1 result) is r̃(s,a) = r(s,a) − α log d_P^π(s) − ε − α log S. The same missing-normalization defect affects Table 1's worst-case reward rows: policy entropy states r − α log π(a|s) − ε (correct: − ε − α log A) and state-action entropy states r − α log ρ(s,a) − ε (correct: − ε − α log(SA)). The duality values themselves are correct; the adversarial-reward characterization is internally inconsistent with them.",
+      "verifier_name": "verify-math",
+      "snippet_id": "24315::THEOREM::0"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Appendix A.3, Proof of Theorem 3.2, equation (20)",
+      "confidence": 0.8,
+      "supporting_evidence": "Equation (20) asserts log E_{U}[e^X] − E_{p}[X] ≤ log E_{U}[e^X] − log E_{p}[e^X], i.e. E_p[X] ≥ log E_p[e^X] with p = softmax(X). By Jensen's inequality, log E_p[e^X] ≥ E_p[X], so the printed direction is exactly backwards. Numerical check with X = (0,1): E_p[X] = 0.731, log E_p[e^X] = 0.814, giving LHS = −0.110 and RHS = −0.193, so LHS ≤ RHS is false. The derivative of α log((1/S)Σ_s e^{Δr^π/α}) is indeed ≤ 0 (equivalently f' = H(p) − log S ≤ 0), so the Theorem 3.2 statement and its limits survive, but the printed derivation's first inequality is invalid and the proof as written does not establish the claimed bound.",
+      "verifier_name": "verify-math",
+      "snippet_id": "24315::PROOF::2"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Appendix A.6, Proof of Theorem 4.2, equation (41) (CVaR definition)",
+      "confidence": 0.75,
+      "supporting_evidence": "The text defines CVaR_β as 'the expected return in the worst β-fraction of outcomes', but equation (41) writes CVaR_β[R] = min_η { η + (1/(1−β)) E[(R−η)^+] }. The positive part (R−η)^+ with weight 1/(1−β) computes the average of the UPPER (best) tail, not the worst tail (e.g., for R ~ U[0,1], it returns (1+β)/2, whereas the worst β-fraction has mean β/2). The proof instead uses the dual CVaR_β = min_{Q: dQ/dP ∈ (0,1/β)} E_Q[G], which corresponds to the lower-tail definition min_η{η + (1/β)E[(η−R)^+]} — inconsistent with the printed primal. Consequently, under equation (41) the construction's value is positive rather than ≤ −M, and the stated identity in Theorem 4.2 does not follow from the printed definition; the theorem holds only under the (unstated) lower-tail CVaR convention.",
+      "verifier_name": "verify-math",
+      "snippet_id": "24315::EQUATION::43"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 119,
+    "snippets_verified": 119,
+    "errors_detected": 4,
+    "verifier_usage": {
+      "math_equation": 57,
+      "text": 38,
+      "vision": 23,
+      "statistical": 6,
+      "citation": 4,
+      "cross_section_consistency": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Exhaustive verification of the paper (mode=exhaustive, strictness=lenient) found 4 findings passing the confidence thresholds. (1) Citation error (conf. 0.85): reference [6] is cited as the source of the PR-MDP/NR-MDP robust-RL baselines, but [6] is a YouTube recommender-system paper (Chen et al., WSDM 2019); the correct attributions are Tessler et al. 2019 and Pinto et al. 2017 (the latter is already [47] in the bibliography). (2) Theorem 3.1 / Table 1 (conf. 0.80): the stated worst-case reward r − α log d_P^π − ε does not attain the theorem's own minimum E[r] + α(H_S(d) − log S) − ε; it is short by α log S (feasible but not adversarial-optimal). The consistent minimizer is r − α log d − ε − α log S, and Table 1's policy (missing −α log A) and state-action (missing −α log(SA)) worst-case rewards carry the same defect. (3) Appendix A.3, eq. (20) (conf. 0.80): the Jensen-based inequality is printed in the wrong direction; the theorem's monotonicity conclusion is nevertheless correct by a direct argument (f' = H(p) − log S ≤ 0). (4) Appendix A.6, eq. (41) (conf. 0.75): the printed CVaR formula measures the upper tail, contradicting the 'worst β-fraction' interpretation and the 1/β-dual used in the proof of Theorem 4.2. Minor notes (below flag threshold): in-text Figure 5 panel references for the rollout ablation (cited as 5(b)) and the regularization-temperature study (cited as 5(c)) appear swapped relative to the caption's panel labels (b)=Reward Shift, (c)=Rollouts, (d)=Varying Regularization; and Theorem 3.3 is a deliberately non-quantitative statement whose appendix derivation mixes nominal and perturbed occupancy measures (eqs. 31 vs 33), though the final corollary bound is internally consistent with eqs. 28–30. No impossible statistics, figure/table fabrication, or abstract-vs-conclusion contradictions were found; the core duality values and the impossibility/risk-aversion arguments are mathematically sound.",
+  "uncertainty_map": [
+    {
+      "snippet_id": "24315::THEOREM::0",
+      "route": "text",
+      "uncertainty": 0.8
+    },
+    {
+      "snippet_id": "24315::PROOF::2",
+      "route": "math",
+      "uncertainty": 0.8
+    },
+    {
+      "snippet_id": "24315::EQUATION::43",
+      "route": "math",
+      "uncertainty": 0.75
+    },
+    {
+      "snippet_id": "24315::SECTION::10",
+      "route": "citation",
+      "uncertainty": 0.85
+    }
+  ]
+}

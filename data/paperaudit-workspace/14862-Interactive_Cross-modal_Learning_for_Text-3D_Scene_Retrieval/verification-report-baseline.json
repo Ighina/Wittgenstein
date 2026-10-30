@@ -1,0 +1,87 @@
+{
+  "paper_id": "14862-Interactive_Cross-modal_Learning_for_Text-3D_Scene_Retrieval",
+  "title": "Interactive Cross-modal Learning for Text-3D Scene Retrieval",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Table 1, RoMa baseline row under 'w/ coarse-grained descriptions'",
+      "confidence": 0.95,
+      "supporting_evidence": "In Table 1, the RoMa baseline under 'w/ coarse-grained descriptions' shows ScanRefer results as R@1=11.4, R@5=34.8, R@10=54.4. However, in Table 2, the same RoMa baseline (without IDeal) shows ScanRefer results as R@1=9.7, R@5=33.1, R@10=50.2. These are supposed to be the same baseline method under the same conditions, but the numbers are inconsistent.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "14862-Interactive_Cross-modal_Learning_for_Text-3D_Scene_Retrieval::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Table 1 and Table 2, VSE∞ baseline",
+      "confidence": 0.95,
+      "supporting_evidence": "Table 1 shows VSE∞ with ScanRefer R@1=9.7, R@5=33.1, R@10=50.2 under coarse-grained descriptions. Table 2 shows the same VSE∞ baseline with identical values. However, Table 2 also shows VSE∞† (fine-grained) with R@1=14.9, R@5=42.3, R@10=61.5, while Table 1 does not report VSE∞ under fine-grained descriptions at all, making it impossible to verify consistency.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "14862-Interactive_Cross-modal_Learning_for_Text-3D_Scene_Retrieval::baseline"
+    },
+    {
+      "error_category": "Citation / attribution",
+      "error_location": "Section 3.2.1, footnote 2 and reference [60]",
+      "confidence": 0.85,
+      "supporting_evidence": "The paper cites '[60] Zhang, L., Wang, M., & Liu, Q. (2022). Bayesian Density Correction for Cross-Modal Retrieval. In Proceedings of ICLR 2022.' as theoretical foundation for density correction. However, this citation appears fabricated or misattributed - the authors, title, and venue combination is suspicious and the paper claims this provides 'theoretical foundation for Bayesian density correction in multimodal embedding spaces' but the actual formulation in Eq. (1)-(2) uses a simple density compensation factor without rigorous Bayesian derivation.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "14862-Interactive_Cross-modal_Learning_for_Text-3D_Scene_Retrieval::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Section 3.2.1, Equation (2) and density correction",
+      "confidence": 0.75,
+      "supporting_evidence": "The paper introduces a 'Density Compensated Factor' ρ(v_i) and claims to correct similarity as S̃(u_i^{r-1}, v_j) = S(u_i^{r-1}, v_j) · √ρ(v_j). However, this corrected similarity is then 'brought back into Equations (1) and (2)' to compute Ẽ. But Equation (2) defines p(u_i^{r-1}, v_j) using S in the exponential, and the text doesn't clearly specify whether the entire computation in Eq. (2) should use S̃ or just the final similarity score, creating ambiguity in the actual implementation.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "14862-Interactive_Cross-modal_Learning_for_Text-3D_Scene_Retrieval::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (figure-text)",
+      "error_location": "Figure 4 and Section 4.5",
+      "confidence": 0.7,
+      "supporting_evidence": "Figure 4 caption states 'Round 0 indicates the setting without interaction' and shows performance values. The text in Section 4.5 states 'Interaction improves performance up to an optimal number of rounds (approximately five rounds with fine-grained and three rounds with coarse-grained descriptions)'. However, examining Figure 4, the purple bars (fine-grained) show continued improvement beyond round 5 (rounds 6-7 still show gains), contradicting the claim that performance plateaus at round 5.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "14862-Interactive_Cross-modal_Learning_for_Text-3D_Scene_Retrieval::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Equation (6), discriminability and diversity risk formulation",
+      "confidence": 0.65,
+      "supporting_evidence": "Equation (6) defines R(θ) = R_dis(θ) + R_div(θ) where R_dis(θ) = E_Ũ[-E_Ũ+{S(ũ_i^+, ũ_i)}] and R_div(θ) = E_Ũ[E_Ũ-{S(ũ_i^-, ũ_i)}]. The discriminability risk has a negative sign on the inner expectation, which would make minimizing R_dis equivalent to maximizing similarity with positives (correct). However, the diversity risk as written would be minimized by minimizing similarity with negatives, which is already the goal. The formulation seems correct but the subsequent claim that 'minimizing the divergence risk R_div(θ)' requires special treatment is questionable since standard contrastive learning already does this.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "14862-Interactive_Cross-modal_Learning_for_Text-3D_Scene_Retrieval::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 4.1 and Table 1",
+      "confidence": 0.8,
+      "supporting_evidence": "Section 4.1 states 'All interactive methods are limited to 5 interaction rounds with identical LLM configurations'. However, Table 3 shows ablation results for different numbers of rounds (r=3, r=7) in addition to the default (presumably r=5), and Figure 4 shows results up to round 7. This suggests that the '5 interaction rounds' limit was not consistently applied across all experiments, creating inconsistency in the experimental protocol.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "14862-Interactive_Cross-modal_Learning_for_Text-3D_Scene_Retrieval::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Abstract and Section 1",
+      "confidence": 0.7,
+      "supporting_evidence": "The abstract claims the method 'completely solves the alignment challenge between texts and 3D scenes through continuous interaction, achieving near-perfect retrieval accuracy across diverse query types.' However, Table 1 shows the best R@1 performance is 37.8% on ScanRefer with fine-grained descriptions, which is far from 'near-perfect'. Even R@10 only reaches 86.4%. This is a significant overstatement of the actual results.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "14862-Interactive_Cross-modal_Learning_for_Text-3D_Scene_Retrieval::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 8,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (claude-sonnet-4-5-20250929, taxonomy=default): 8 error(s) reported.",
+  "baseline": {
+    "model": "claude-sonnet-4-5-20250929",
+    "taxonomy": "default",
+    "paper_chars": 60887,
+    "truncated": false
+  }
+}

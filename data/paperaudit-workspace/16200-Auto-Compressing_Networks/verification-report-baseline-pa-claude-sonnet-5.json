@@ -1,0 +1,126 @@
+{
+  "paper_id": "16200-Auto-Compressing_Networks",
+  "title": "Auto-Compressing Networks",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 2.2 (ResNet path-count argument)",
+      "confidence": 0.97,
+      "supporting_evidence": "For L=12 and the second layer (i=2), a ResNet has 2^(L-i)=2^10=1024 backward paths, so the direct-gradient path competes with 1023 other paths, not 127. The stated '127 paths' is arithmetically inconsistent with the stated depth and layer index.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16200-Auto-Compressing_Networks::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Appendix D (ACN connectivity analysis)",
+      "confidence": 0.9,
+      "supporting_evidence": "The text says 'in ACNs, intermediate layers behave like those in FFNs, but the final layer receives as input the outputs of all preceding layers.' This is false: in ACNs y = sum_{i=0}^L x_i, but each layer's input is x_{i-1}; the final layer does not receive the outputs of all preceding layers as input. Only the final output sums them.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16200-Auto-Compressing_Networks::baseline"
+    },
+    {
+      "error_category": "evidence_data_integrity",
+      "error_location": "Appendix E, Table 5",
+      "confidence": 0.95,
+      "supporting_evidence": "The DenseNet-Mixer variant is explicitly described as having only 10 layers (reduced from 16), yet Table 5 reports its 'Cutoff Layer' as 16, which is impossible for a 10-layer network.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16200-Auto-Compressing_Networks::baseline"
+    },
+    {
+      "error_category": "evidence_data_integrity",
+      "error_location": "Table 2 caption",
+      "confidence": 1.0,
+      "supporting_evidence": "The caption states 'with adjusted values exaggerating AC-ViT's advantage,' which is an explicit admission that the reported noise-robustness numbers were altered to favor the proposed method.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16200-Auto-Compressing_Networks::baseline"
+    },
+    {
+      "error_category": "evidence_data_integrity",
+      "error_location": "Figure 6 caption",
+      "confidence": 1.0,
+      "supporting_evidence": "The caption states that 'test loss for the Residual Mixer [was] obscured to appear less converged, artificially enhancing AC-Mixer's relative performance,' indicating deliberate manipulation of the displayed experimental result.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16200-Auto-Compressing_Networks::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Section 4.2.1 (AC-BERT experiments)",
+      "confidence": 0.95,
+      "supporting_evidence": "The text explicitly says 'detailed hyperparameter settings including learning rates, dropout rates, weight decay values, initialization schemes, and normalization details are omitted, limiting reproducibility and interpretability of results.' This contradicts the checklist claim that all experimental details are provided.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16200-Auto-Compressing_Networks::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Section 4.1, footnote 6",
+      "confidence": 0.95,
+      "supporting_evidence": "The main text claims both MLP-Mixer variants are trained under 'identical compute budgets, batch sizes, and hyperparameters,' but the footnote says the Residual Mixer was trained for 300 epochs while AC-Mixer was trained for 420 epochs. The compute budgets are therefore not identical, undermining the fairness claim.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16200-Auto-Compressing_Networks::baseline"
+    },
+    {
+      "error_category": "context_misalignment_incoherence",
+      "error_location": "Section 2.2, paragraph beginning 'The backward component (Full Gradient — FG)'",
+      "confidence": 0.85,
+      "supporting_evidence": "This paragraph directly contradicts the paper's own theoretical narrative, stating that the DG/NG decomposition is 'non-linear and context-dependent,' that the backward equations are 'over-simplified,' and that the forward term is 'not identical' to FFNs. It reads as an embedded critical review rather than a coherent part of the authors' argument.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16200-Auto-Compressing_Networks::baseline"
+    },
+    {
+      "error_category": "reference_background_fabrication",
+      "error_location": "Appendix G (Magnitude pruning citation)",
+      "confidence": 0.95,
+      "supporting_evidence": "Magnitude pruning is cited as reference [41], but reference [41] is Russakovsky et al., the ImageNet ILSVRC challenge paper, which is not the source of magnitude pruning.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16200-Auto-Compressing_Networks::baseline"
+    },
+    {
+      "error_category": "reference_background_fabrication",
+      "error_location": "Related Work section (citation [1])",
+      "confidence": 0.7,
+      "supporting_evidence": "Reference [1] (Alain & Bengio, 'Understanding intermediate layers using linear classifier probes') is cited for the claim that skip connections cause parts of the network to be bypassed and under-trained. That paper is about linear probes for intermediate representations, not about skip connections or under-trained bypassed submodules.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16200-Auto-Compressing_Networks::baseline"
+    },
+    {
+      "error_category": "evidence_data_integrity",
+      "error_location": "Table 6 vs Section 4.1",
+      "confidence": 0.75,
+      "supporting_evidence": "Section 4.1 states that AC-ViT reaches top performance at only 6 layers, but Table 6 reports AC-ViT with 51M parameters and 19.7 GFLOPs. For a 12-layer ViT-B/16 (about 86M params and 33.7 GFLOPs), 6 layers would be roughly 43M params and 16.9 GFLOPs; the reported values correspond to about 7 layers, not 6.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16200-Auto-Compressing_Networks::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Appendix H, Table 7",
+      "confidence": 0.8,
+      "supporting_evidence": "The table lists 'AC-Mixer (global cutoff at L = 12)' with speedup 1.5× normalized to the full Res-Mixer. But the MLP-Mixer has 16 layers (Appendix B/E), so using 12 of 16 layers gives a speedup of at most 16/12 ≈ 1.33× (less after fixed overhead), not 1.5×.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16200-Auto-Compressing_Networks::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 12,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (claude-sonnet-5, taxonomy=paperaudit): 12 error(s) reported.",
+  "baseline": {
+    "model": "claude-sonnet-5",
+    "provider": "anthropic",
+    "taxonomy": "paperaudit",
+    "paper_chars": 97329,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 71,
+      "output_tokens": 34059,
+      "cache_read_input_tokens": 21632,
+      "cache_creation_input_tokens": 0
+    }
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "paper_id": "20777-Memory_Mosaics_at_scale",
+  "title": "Memory Mosaics at scale",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 2, footnote 4",
+      "confidence": 0.9,
+      "supporting_evidence": "The footnote states: 'This Gaussian kernel smoothing not only converges to the true conditional expectation E(V|K) when n → ∞ and β = √n [Nadaraya, 1964; Watson, 1964]'. This is incorrect for d-dimensional keys. Standard Nadaraya-Watson consistency requires bandwidth h → 0 and n h^d → ∞. With h = 1/√β = n^{-1/4}, we have n h^d = n^{1-d/4}, which fails to go to infinity for d ≥ 4. Since the paper explicitly treats keys as vectors in R^d and d is the model hidden dimension (2048 or 4096), the stated condition does not give convergence. It also conflicts with the paper's own later formula 1/√β ∝ n^{-1/(p+4)} in Section 3.1.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20777-Memory_Mosaics_at_scale::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Section 6.1, Table 5",
+      "confidence": 0.9,
+      "supporting_evidence": "The 8T-token comparison is not a data-scaling-only comparison. The table footnote says: 'transformer large* uses grouped-query attention to reduce memory cost, increases training context length to 8k to boost long-context performance.' Thus the model labeled as trained on 8T tokens is not the same architecture/recipe as the 1T transformer; GQA and pretraining context length are also changed. Claims such as '8× more training tokens improves the performance of transformers' and comparisons attributing the gap to training-data quantity are confounded by these protocol changes.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20777-Memory_Mosaics_at_scale::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Section 6.1",
+      "confidence": 0.85,
+      "supporting_evidence": "The paper states: 'our results definitively prove that data scaling alone cannot close the gap, as the fundamental architectural limitations of transformers make them inherently inferior for these tasks regardless of training data quantity.' This is an unjustified universal causal conclusion. The evidence comes from selected tasks and a modified 8T transformer baseline, not from a controlled data-scaling experiment. Moreover, at 4k task length in Table 5, the 8T transformer (59.2) actually slightly exceeds Memory Mosaics v2 (58.9), undermining the blanket claim that transformers inherently lag regardless of data quantity.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20777-Memory_Mosaics_at_scale::baseline"
+    },
+    {
+      "error_category": "rhetorical_presentation_manipulation",
+      "error_location": "Abstract",
+      "confidence": 0.8,
+      "supporting_evidence": "The abstract claims 'universal superiority in zero-shot and few-shot scenarios' and 'dramatically outperforms transformers on all inference-time tasks'. The supporting experiments cover only a few RULER QA tasks and three classification datasets. 'Universal' and 'all inference-time tasks' are unjustified superlatives relative to the evidence presented, especially since on several reported conditions (e.g., 4k RULER QA in Table 3 and Table 5) the advantage is small or negative.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "20777-Memory_Mosaics_at_scale::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 4,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (claude-sonnet-5, taxonomy=paperaudit): 4 error(s) reported.",
+  "baseline": {
+    "model": "claude-sonnet-5",
+    "provider": "anthropic",
+    "taxonomy": "paperaudit",
+    "paper_chars": 74240,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 67,
+      "output_tokens": 48092,
+      "cache_read_input_tokens": 19200,
+      "cache_creation_input_tokens": 0
+    }
+  }
+}

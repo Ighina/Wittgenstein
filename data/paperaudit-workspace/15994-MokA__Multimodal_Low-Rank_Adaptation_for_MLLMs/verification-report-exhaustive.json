@@ -1,0 +1,151 @@
+{
+  "paper_id": "15994",
+  "title": "MokA: Multimodal Low-Rank Adaptation for MLLMs",
+  "paper_category": "cs.LG",
+  "predicted_errors": [
+    {
+      "error_category": "data inconsistency",
+      "error_location": "Table 2 (Section 4.2), LLaMA2/LoRA row, MME column",
+      "confidence": 0.95,
+      "supporting_evidence": "Table 2 reports LLaMA2 LoRA MME = 90.85, but the identical setting (LLaMA2, LoRA, visual-text) is reported as 908.52 in both Table 4 and Table 11. Every other LLaMA2 MME value in Table 2 lies in the 774.47-1025.86 range (e.g., HydraLoRA 774.47, MokA 1025.86), and the other three LoRA columns (MMBench 50.64, POPE 70.28, SEED-Bench 39.71) match exactly across Tables 2/4/11. 90.85 is a dropped-digit typo for 908.52; the correct MME perception-subset score cannot be in the tens.",
+      "verifier_name": "verify-vision",
+      "snippet_id": "15994::TABLE::1"
+    },
+    {
+      "error_category": "cross-section consistency",
+      "error_location": "Abstract vs Section 6 (Discussion)",
+      "confidence": 0.90,
+      "supporting_evidence": "Direct claim contradiction. Abstract: 'While improvements are promising across several settings, gains vary among backbones and modalities, suggesting further exploration is needed to fully assess its generality and robustness.' Section 6: 'This work completely solves the problem of multimodal adaptation... a groundbreaking strategy that perfectly balances unimodal preservation and cross-modal enhancement... absolutely ensures superior model performance and sets a new standard... final, conclusive exploration.' 'Completely solves / final' is mutually exclusive with the abstract's explicit hedging, and is also contradicted by the paper's own Table 3 (MokA on LLaMA2 speech-text is not superior to Uni LoRA + MM LoRA).",
+      "verifier_name": "verify-cross-section-consistency",
+      "snippet_id": "15994::SECTION::17"
+    },
+    {
+      "error_category": "data inconsistency",
+      "error_location": "Table 3 (Section 4.2) vs Table 5 (Section 4.5), LLaMA2 AIR-Bench column",
+      "confidence": 0.88,
+      "supporting_evidence": "For identical settings (LLaMA2, AIR-Bench_speech-en), Table 3 reports Multiple LoRA = 32.80 and MokA = 36.70, while Table 5 (ablation, same backbone) reports Multiple LoRA = 31.97 and MokA = 39.64. The LoRA baseline (31.75) matches across both tables, isolating the contradiction to these cells. Table 5's MokA 39.64 also exceeds every speech-text method in Table 3 (max 37.60), which is implausible for the same setting.",
+      "verifier_name": "verify-vision",
+      "snippet_id": "15994::TABLE::2"
+    },
+    {
+      "error_category": "unsupported claim",
+      "error_location": "Section 4.1 (Audio-visual-text scenario), Qwen2.5-VL claim vs Table 1",
+      "confidence": 0.85,
+      "supporting_evidence": "Text claims 'Qwen2.5-VL with LoRA outperforms both LLaMA-2 and Qwen2 under the LoRA fine-tuning setting.' Table 1 LoRA rows: LLaMA2 73.41/69.84, Qwen2 72.83/72.13, Qwen2.5-VL 73.00/71.38 (MUSIC-AVQA/AVE). Qwen2.5-VL is below LLaMA2 on MUSIC-AVQA (73.00 < 73.41) and below Qwen2 on AVE (71.38 < 72.13); its dataset mean (72.19) is also below Qwen2 (72.48). The claim holds only partially (Qwen2.5-VL beats LLaMA2 on AVE and Qwen2 on MUSIC-AVQA).",
+      "verifier_name": "verify-text",
+      "snippet_id": "15994::SECTION::10"
+    },
+    {
+      "error_category": "logical inconsistency",
+      "error_location": "Section 4.1, claim that Multiple LoRA 'underperforms both standard LoRA and MokA'",
+      "confidence": 0.80,
+      "supporting_evidence": "The blanket claim is contradicted by the paper's own Table 1: Multiple LoRA beats standard LoRA in 4 of 8 cells (LLaMA2 AVE 71.77 > 69.84; Qwen2.5-VL MUSIC-AVQA 73.13 > 73.00; LLaMA3 78.63 > 78.31 and 77.02 > 76.91) and also beats LoRA on several Table 2/Table 3 cells. It does underperform MokA everywhere, so only half the claim ('...and MokA') holds. The Abstract itself concedes this variability.",
+      "verifier_name": "verify-text",
+      "snippet_id": "15994::SECTION::10"
+    },
+    {
+      "error_category": "math",
+      "error_location": "Section 2.2.2 Eqs (5)-(6) vs Appendix B Eqs (14)-(17), attention scaling factor",
+      "confidence": 0.80,
+      "supporting_evidence": "The identical cross-attention operation is written with two different scaling factors: main text uses softmax((A^a x^a)(A^t x^t)^T / sqrt(d)) with d described as 'the dimensionality of the projected token embeddings', while Appendix B restates the same formula (and its W_q/W_k/W_v variants) with /sqrt(N_t), where N_t is the number of text tokens (Section 2.2.1), claiming 'the notation is consistent with the main manuscript'. d (feature dimension) and N_t (token count) are different quantities. Moreover, d is overloaded: Section 2.2.4 defines W_0 in R^{d x k}, B in R^{d x r} so d is the hidden width, while A^i in R^{r x k} maps tokens into R^r, so the projected embedding dimension is r, not d and not N_t. Standard attention scales by sqrt(key-dimension).",
+      "verifier_name": "verify-math",
+      "snippet_id": "15994::EQUATION::12"
+    },
+    {
+      "error_category": "text",
+      "error_location": "Section 4.1, orphaned/run-on paragraph immediately after Table 1",
+      "confidence": 0.70,
+      "supporting_evidence": "The paragraph begins with the relative clause 'which serves a similar role to the projector used in our other LLM variants, remains frozen during fine-tuning.' — 'which' has no antecedent in the visible text. It is a leftover fragment whose head clause (about the Qwen2.5-VL visual connector) was removed in an editing pass, and it repeats the claim already made two paragraphs earlier, from which it is separated by Table 1.",
+      "verifier_name": "verify-text",
+      "snippet_id": "15994::SECTION::10"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Equation numbering, Section 2.1 to Section 2.2.1",
+      "confidence": 0.70,
+      "supporting_evidence": "Displayed equations are numbered (1), then the next display (the sum-formula in Section 2.1) should carry (2), after which the numbered sequence jumps straight to (4) — Eq (3) is missing. The audio cross-attention equation (line 125) is also unnumbered while its visual sibling is printed as (6), indicating an inconsistent numbering scheme for the intended Eqs 1-17.",
+      "verifier_name": "verify-math",
+      "snippet_id": "15994::EQUATION::2"
+    },
+    {
+      "error_category": "text",
+      "error_location": "Benchmark naming: Section 3.2 'MMAU_{min-speech}' vs Table 3 caption and Appendix I 'MMAU_mini-speech'",
+      "confidence": 0.65,
+      "supporting_evidence": "The same benchmark is rendered three different ways: 'MMAU_{min-speech}' (Section 3.2), 'MMAU_mini-speech' (Table 3 caption, Appendix I), and the actual benchmark name 'MMAU-mini'. 'min-speech' is a typo of 'mini-speech'.",
+      "verifier_name": "verify-vision",
+      "snippet_id": "15994::TABLE::2"
+    },
+    {
+      "error_category": "math",
+      "error_location": "Eq (2), Section 2.1 (line 89): h = W0*x + sum_i ΔW_i*x^{m_i} + ΔW_cross*x",
+      "confidence": 0.60,
+      "supporting_evidence": "Dimensional inconsistency. Each x^{m_i} is the token subsequence of modality i (lengths N_a, N_v, N_t differ), so under the paper's own matrix convention (A^i in R^{r x k} on x^i in R^{k x N_i}) each ΔW_i*x^{m_i} is a d x N_{m_i} matrix while ΔW_cross*x is d x (N_a+N_v+N_t); the terms are not summable unless all modality lengths are equal or the blocks are zero-padded to full length. A valid formulation requires block-structured ΔW_i acting on the full sequence with explicit padding.",
+      "verifier_name": "verify-math",
+      "snippet_id": "15994::EQUATION::1"
+    },
+    {
+      "error_category": "math",
+      "error_location": "Eq (13), Section 2.2.4: cross-modal block 'B * 0_{N_t}'",
+      "confidence": 0.60,
+      "supporting_evidence": "B is R^{d x r} and 0_{N_t} is described as 'the zero vector of dimension N_t', so the product B (d x r) times a length-N_t vector is undefined unless r = N_t (in general false; rank r = 4 in experiments). For block concatenation to match the text block BA^t x^t of shape d x N_t, the last entry must be the zero matrix 0_{d x N_t}. The intended zero contribution is clear, so this is a minor notation error, not a derivation flaw.",
+      "verifier_name": "verify-math",
+      "snippet_id": "15994::EQUATION::11"
+    },
+    {
+      "error_category": "data inconsistency",
+      "error_location": "Table 6 (Section 4.6) vs Appendix D Table 8, forward-time ratios",
+      "confidence": 0.60,
+      "supporting_evidence": "Table 6 pairs POPE accuracy (a two-modality visual-text setting) with MokA 'Avg. forward time 1.134x', but Appendix D reports MokA forward times of VL = 1.069x, AVL = 1.134x, AVPL = 1.213x. The 1.134x value matches the three-modality AVL (MUSIC-AVQA) setting, not the two-modality setting implied by the POPE column. Multiple LoRA's 1.021x in Table 6 also coincides with Appendix D's MokA AVL FLOPs ratio. The table mixes timing from a different modality setting than its accuracy column.",
+      "verifier_name": "verify-statistical",
+      "snippet_id": "15994::TABLE::5"
+    },
+    {
+      "error_category": "data inconsistency",
+      "error_location": "Table 4 (Section 4.4), Cross-attention* row vs Uni LoRA + MM LoRA + Gate rows",
+      "confidence": 0.55,
+      "supporting_evidence": "Cross-attention* (text-as-query attention, distinct from gating) reports MUSIC-AVQA 74.94, exactly equal to the Uni LoRA + MM LoRA + Gate MUSIC-AVQA in Table 1 (74.94), and SEED-Bench 39.91 exactly equal to the Gate row's SEED-Bench in Table 2 (39.91), while all other columns differ (AVE 72.59 vs 73.56, MME 955.18 vs 988.37). Two exact 2-decimal matches with the same row of another table while remaining columns differ suggests partial copy-paste rather than chance.",
+      "verifier_name": "verify-vision",
+      "snippet_id": "15994::TABLE::3"
+    },
+    {
+      "error_category": "statistical",
+      "error_location": "Section 4.6, claim of a '3.95% performance gain on the POPE benchmark'",
+      "confidence": 0.55,
+      "supporting_evidence": "Table 6: LoRA POPE 70.28 vs MokA 74.23. The absolute difference is 3.95 percentage points, which corresponds to a relative improvement of 5.62% (3.95/70.28). Reporting the point difference as '3.95% performance gain' conflates percentage points with percent.",
+      "verifier_name": "verify-statistical",
+      "snippet_id": "15994::SECTION::15"
+    },
+    {
+      "error_category": "data inconsistency",
+      "error_location": "Table 3 (Section 4.2), Uni LoRA + MM LoRA + Gate ranking reversal",
+      "confidence": 0.55,
+      "supporting_evidence": "The Gate variant outperforms Uni LoRA + MM LoRA on every metric in Tables 1-2 (e.g., MUSIC-AVQA 74.94 vs 74.43; MME 988.37 vs 972.87), but in Table 3 the same pair flips dramatically, with Gate far below Uni LoRA + MM LoRA on both MMAU (32.13 vs 37.10) and AIR-Bench (33.04 vs 37.60) — a ~5-point reversal in a column where all other methods span only 29-37. The Table 3 Gate row is inconsistent with the behavior of the identical variant in the other scenario tables.",
+      "verifier_name": "verify-vision",
+      "snippet_id": "15994::TABLE::2"
+    },
+    {
+      "error_category": "statistical",
+      "error_location": "Table 10 (Appendix F), rank ablation rows",
+      "confidence": 0.50,
+      "supporting_evidence": "MokA is non-monotonic in rank: MUSIC-AVQA 75.71 (r=4) -> 74.68 (r=8) -> 74.89 (r=12), while LoRA is strictly monotonic (73.41 -> 73.56 -> 73.73). The value 74.68 appears as both MokA r=8 MUSIC-AVQA and MokA r=4 AVE, a possible transcription error. Non-monotonicity alone is not mathematically impossible, hence moderate confidence.",
+      "verifier_name": "verify-statistical",
+      "snippet_id": "15994::TABLE::9"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 71,
+    "snippets_verified": 71,
+    "errors_detected": 16,
+    "verifier_usage": {
+      "math_equation": 16,
+      "vision": 25,
+      "text": 28,
+      "statistical": 12,
+      "citation": 1,
+      "cross_section_consistency": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Exhaustive verification (strictness: lenient) of MokA: Multimodal Low-Rank Adaptation for MLLMs identified 16 findings, including 4 high-confidence issues. (1) Data error: Table 2 reports LLaMA2 LoRA MME = 90.85 while Tables 4 and 11 report the identical setting as 908.52 (confidence 0.95). (2) Internal data contradiction: Table 3 and Table 5 disagree on LLaMA2 AIR-Bench values for Multiple LoRA (32.80 vs 31.97) and MokA (36.70 vs 39.64) (confidence 0.88). (3) Claim-vs-data mismatch: Section 4.1 states Qwen2.5-VL LoRA 'outperforms both LLaMA-2 and Qwen2', but Table 1 shows it loses to LLaMA2 on MUSIC-AVQA and to Qwen2 on AVE (confidence 0.85). (4) Macro inconsistency: the cautious Abstract ('gains vary... further exploration is needed') contradicts the absolutist Section 6 Discussion ('completely solves the problem... final, conclusive exploration') (confidence 0.90). Medium-confidence issues include a sqrt(d) vs sqrt(N_t) attention-scaling contradiction between the main text and Appendix B, a second over-generalized claim about Multiple LoRA, an orphaned paragraph after Table 1, a missing equation number (3), and dimensional notation issues in Eqs (2) and (13). Lower-confidence concerns cover benchmark-name inconsistencies (MMAU_mini-speech vs MMAU_{min-speech}), a forward-time ratio mismatch between Table 6 and Appendix D, suspicious duplicate values in Table 4, and non-monotonic rank ablation in Table 10. The citation check found all 40 references accurate (including the MCUB-3 attribution to [3]). The paper requires correction primarily in its experimental tables and cross-section consistency.",
+  "uncertainty_map": []
+}

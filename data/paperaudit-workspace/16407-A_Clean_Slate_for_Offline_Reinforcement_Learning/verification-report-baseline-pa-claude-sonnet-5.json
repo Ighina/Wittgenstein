@@ -1,0 +1,126 @@
+{
+  "paper_id": "16407-A_Clean_Slate_for_Offline_Reinforcement_Learning",
+  "title": "A Clean Slate for Offline Reinforcement Learning",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "evidence_data_integrity",
+      "error_location": "Abstract, Section 4.1, Table 2, Figure 5",
+      "confidence": 0.98,
+      "supporting_evidence": "The Abstract claims average training speedups of 131.5× and 74.8× against OfflineRL-Kit and CORL. Table 2's training times give per-algorithm ratios of about 6–21× (e.g., OfflineRL-Kit CQL 203.9 min vs Unifloral 9.8 min ≈ 20.8×; CORL CQL 180.3 vs 9.8 ≈ 18.4×), and Figure 5 lists individual speedups of at most 16×. No combination of the reported numbers yields 131.5× or 74.8×.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16407-A_Clean_Slate_for_Offline_Reinforcement_Learning::baseline"
+    },
+    {
+      "error_category": "evidence_data_integrity",
+      "error_location": "Appendix G, Table 3",
+      "confidence": 0.9,
+      "supporting_evidence": "Table 3 claims the reimplementations match prior implementations, but multiple reported expert-dataset scores are implausibly low: CQL scores 3.3 on HalfCheetah-Expert, 1.4 on Hopper-Expert, and 2.4 on Walker2d-Expert; EDAC scores 2.3 on HalfCheetah-Expert; SAC-N scores 3.2 on Walker2d-Expert. Published CQL/EDAC/SAC-N results on these D4RL expert tasks are typically around 90–110+ normalized score, so the table is inconsistent with known baselines and with the accompanying claim of successful reproduction.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16407-A_Clean_Slate_for_Offline_Reinforcement_Learning::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Appendix I.1, Eq. (5)",
+      "confidence": 0.95,
+      "supporting_evidence": "Eq. (5) defines a scalar value target \\hat{v}_{t+1} but adds α_BC·(\\tilde{a}_{t+1} − a_{t+1}), where \\tilde{a} and a appear to be action vectors. Adding a raw vector action difference to a scalar target is dimensionally invalid, and \\tilde{a}_{t+1} is never defined. A behaviour-cloning term would need to be a scalar quantity such as a log-probability or squared error.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16407-A_Clean_Slate_for_Offline_Reinforcement_Learning::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 2.2",
+      "confidence": 0.95,
+      "supporting_evidence": "The dataset is defined as transitions (s_i, a_i, r_i, s_{i+1}, a_{i+1}), but the accompanying text says these are 'current and next states, action, and reward'. The next action a_{i+1} is both undefined and not part of a standard offline RL transition, which is (s,a,r,s'). Including a_{i+1} corrupts the definition and is not used elsewhere.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16407-A_Clean_Slate_for_Offline_Reinforcement_Learning::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 2.1",
+      "confidence": 0.8,
+      "supporting_evidence": "The MDP tuple is written ⟨S₀, S, 𝒜, D, R, T⟩, but S₀ is then used as a distribution in 's₀ ∼ S₀'. An element of the tuple cannot be both the initial-state space and the initial-state distribution; the initial-state distribution is not properly defined.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16407-A_Clean_Slate_for_Offline_Reinforcement_Learning::baseline"
+    },
+    {
+      "error_category": "method_logic_consistency",
+      "error_location": "Section 4.2 and Appendix I.2, Eq. (8)",
+      "confidence": 0.85,
+      "supporting_evidence": "Section 4.2 explicitly states the unified actor loss includes β_div·L_div and β_dyn·L_dyn. However, Eq. (8) in Appendix I.2 writes only L_actor = β_q·L_q + β_BC·L_BC − β_H·H, omitting the two terms that were claimed to be part of the same unified formulation.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16407-A_Clean_Slate_for_Offline_Reinforcement_Learning::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Section 5.2",
+      "confidence": 0.95,
+      "supporting_evidence": "The text first says MoBRAC outperforms the other model-based methods for all datasets except MOPO in maze2d-large-v1, then says under a transparent budget MoBRAC outperforms in 6 out of 9 datasets and is tied with MOPO for 3 others. These two statements are mutually inconsistent: winning 8/9 with one loss cannot also be 6 wins and 3 ties.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16407-A_Clean_Slate_for_Offline_Reinforcement_Learning::baseline"
+    },
+    {
+      "error_category": "claim_interpretation_distortion",
+      "error_location": "Section 5.1, Figure 6, Appendix J",
+      "confidence": 0.9,
+      "supporting_evidence": "Section 5.1 claims TD3-AWR underperforms or matches ReBRAC on pen-human, but Figure 6 and Appendix J show TD3-AWR and IQL around 65–70 on pen-human-v1 while ReBRAC is around 40. Thus the stated comparison on pen-human is contradicted by the paper's own displayed results.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16407-A_Clean_Slate_for_Offline_Reinforcement_Learning::baseline"
+    },
+    {
+      "error_category": "context_misalignment_incoherence",
+      "error_location": "Appendix J, Figure 14 caption",
+      "confidence": 0.95,
+      "supporting_evidence": "The caption reads 'Full comparison of TD3-AWR to prior model-based methods across all datasets', but the plotted algorithms are IQL, ReBRAC, and TD3-AWR. IQL and ReBRAC are model-free methods, not model-based methods.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16407-A_Clean_Slate_for_Offline_Reinforcement_Learning::baseline"
+    },
+    {
+      "error_category": "context_misalignment_incoherence",
+      "error_location": "Section 5.2",
+      "confidence": 0.8,
+      "supporting_evidence": "The sentence 'the design space of policy optimizers in model-based methods is underexplored, with all considered methods using SAC-N or CQL (Figure 5)' is wrong twice: MOPO and MOReL are based on SAC, not SAC-N or CQL, and Figure 5 is a speedup table, not a description of model-based policy optimizers. The relevant algorithmic contents are in Appendix A, not Figure 5.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16407-A_Clean_Slate_for_Offline_Reinforcement_Learning::baseline"
+    },
+    {
+      "error_category": "experimental_design_protocol",
+      "error_location": "Section 3.3",
+      "confidence": 0.85,
+      "supporting_evidence": "After proposing a rigorous evaluation procedure with fixed hyperparameter ranges and transparent tuning budgets, the main comparative evaluation in Figure 3 uses each algorithm's original per-dataset tuning ranges and explicitly does not equalize online tuning budgets or computational cost, stating 'which we continue here for consistency with original papers'. This undermines the proposed methodology and makes the cross-method comparisons unfair.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16407-A_Clean_Slate_for_Offline_Reinforcement_Learning::baseline"
+    },
+    {
+      "error_category": "rhetorical_presentation_manipulation",
+      "error_location": "Conclusion",
+      "confidence": 0.7,
+      "supporting_evidence": "The conclusion states that TD3-AWR and MoBRAC 'achieve superior performance over a wide range of tasks', but the results sections emphasize overlapping confidence intervals, dataset-dependent gains, underperformance on some tasks, and failures to outperform all baselines consistently. 'Superior performance over a wide range' overstates the reported evidence.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "16407-A_Clean_Slate_for_Offline_Reinforcement_Learning::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 12,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (claude-sonnet-5, taxonomy=paperaudit): 12 error(s) reported.",
+  "baseline": {
+    "model": "claude-sonnet-5",
+    "provider": "anthropic",
+    "taxonomy": "paperaudit",
+    "paper_chars": 90051,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 26316,
+      "cache_read_input_tokens": 23680,
+      "cache_creation_input_tokens": 0
+    }
+  }
+}

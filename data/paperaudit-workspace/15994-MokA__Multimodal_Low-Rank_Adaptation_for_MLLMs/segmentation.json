@@ -1,0 +1,608 @@
+{
+  "paper_id": "15994",
+  "title": "MokA: Multimodal Low-Rank Adaptation for MLLMs",
+  "paper_category": "cs.LG",
+  "total_snippets": 75,
+  "snippets": [
+    {
+      "snippet_id": "15994::SECTION::0",
+      "snippet_type": "SECTION",
+      "location": "MokA: Multimodal Low-Rank Adaptation for MLLMs (title/authors)",
+      "content": "Yake Wei, Yu Miao, Dongzhan Zhou, Di Hu. Gaoling School of Artificial Intelligence, Renmin University of China; Beijing Key Laboratory of Research on Large Models and Intelligent Governance; Engineering Research Center of Next-Generation Intelligent Search and Recommendation, MOE; Shanghai Artificial Intelligence Laboratory.",
+      "content_length": 330,
+      "metadata": {"heading_level": 1}
+    },
+    {
+      "snippet_id": "15994::SECTION::1",
+      "snippet_type": "SECTION",
+      "location": "Abstract",
+      "content": "In this paper, we reveal that most current efficient multimodal fine-tuning methods are hindered by a key limitation: they are directly borrowed from LLMs, often neglecting the intrinsic differences of multimodal scenarios and even affecting the full utilization of all modalities. Inspired by our empirical observation, we argue that unimodal adaptation and cross-modal adaptation are two essential parts for the effective fine-tuning of MLLMs. From this perspective, we propose Multimodal low-rank Adaptation (MokA), a multimodal-aware efficient fine-tuning strategy that takes multimodal characteristics into consideration. It compresses unimodal information by modality-specific parameters while explicitly enhancing cross-modal interaction, ensuring both unimodal and cross-modal adaptation. Extensive experiments cover three representative multimodal scenarios (audio-visual-text, visual-text, and speech-text), and multiple LLM backbones (LLaMA2/3, Qwen2, Qwen2.5-VL, etc). Consistent improvements indicate the efficacy and versatility of the proposed method. Ablation studies and efficiency evaluation are also conducted to fully assess our method. Overall, we believe MokA advances targeted multimodal fine-tuning by enabling unimodal and cross-modal adaptation. While improvements are promising across several settings, gains vary among backbones and modalities, suggesting further exploration is needed to fully assess its generality and robustness.",
+      "content_length": 1450,
+      "metadata": {"heading_level": 2}
+    },
+    {
+      "snippet_id": "15994::SECTION::2",
+      "snippet_type": "SECTION",
+      "location": "1 Introduction",
+      "content": "Large language models (LLMs) have gained remarkable popularity... To extend their capabilities to more general multimodal scenarios, recent advancements of MLLMs [38, 40, 20] have focused on aligning other modalities... A promising direction has emerged in the field of LLM fine-tuning before... In particular, LoRA [12] and its variants, which assume that over-parameterized models in fact reside on a low intrinsic dimension, have been broadly applied [6, 7, 39]... To this end, we are motivated to observe the fine-tuning efficacy of the widely used LoRA strategy. A common MLLM fine-tuning framework is shown in Figure 1a... A and B matrices are shared across different modalities. To further study token utilization, we conduct partial modality inference experiments where during inference, only tokens from a selected modality are passed through the LoRA adaptation pathway. However, this setup disables the cross-attention mechanism which requires simultaneous text and non-text tokens, potentially biasing results by isolating modalities and impairing cross-modal interaction evaluation. Results shown in Figure 1d-1f demonstrate a surprising phenomenon across three representative multimodal scenarios... Text token inference can achieve quite comparable performance to the regular full modalities case. However, non-text token inference (e.g., audio or visual) leads to a noticeable drop in performance. The above results suggest that the optimization of all-modality-shared LoRA parameters is overwhelmingly influenced by text tokens... This points to unimodal adaptation, especially for text, as the dominant factor, raising questions about the relative importance of cross-modal adaptation. While cross-modal parameters can improve interaction, their impact appears secondary in this empirical setting. Numerous studies in multimodal learning have demonstrated that the inherent heterogeneity of different modalities necessitates modality-specific utilization strategies [24, 34]. To this end, we propose MokA... matrix A is designed to be modality-specific... After that, a cross-attention mechanism is introduced to strengthen the interaction between text tokens and non-text tokens... Finally, a shared multimodal matrix B projects the unimodal low-rank representations into a unified space... We think MokA represents a first-step attempt at multimodal-aware adaptation.",
+      "content_length": 4350,
+      "metadata": {"heading_level": 2}
+    },
+    {
+      "snippet_id": "15994::SECTION::3",
+      "snippet_type": "SECTION",
+      "location": "2.1 Rethinking of low-rank adaptation in the multimodal scenario",
+      "content": "LoRA [12] is based on the assumption that the weight updates during fine-tuning lie in a subspace of low intrinsic rank. Rather than updating the entire pre-trained weight matrix directly, LoRA introduces a low-rank decomposition approach, where the update Delta W in R^{d x k} to a pre-trained matrix W_0 in R^{d x k} is parameterized as the product of two much smaller matrices: B in R^{d x r} and A in R^{r x k}, with r << min(d, k). The resulting fine-tuned weight matrix W' is given by W_0 + Delta W = W_0 + BA. Here, W_0 remains fixed during training, while only the matrices A and B are learned. To ensure stable training, A is initialized using a uniform Kaiming distribution [11], and B is initialized to zero, leading to an initial update Delta W = BA = 0 at the beginning of fine-tuning. LoRA and its variants have been extensively employed in the parameter-efficient fine-tuning of MLLMs [6, 7, 39]. These methods typically employ shared parameters to uniformly process tokens from all modalities, implicitly facilitating cross-modal interactions during adaptation. However, our empirical results reveal that such shared tuning leads to limited utilization of all modalities. To better support multimodal adaptation, we argue that both unimodal and cross-modal updates should be considered during fine-tuning.",
+      "content_length": 1900,
+      "metadata": {"heading_level": 3}
+    },
+    {
+      "snippet_id": "15994::SECTION::4",
+      "snippet_type": "SECTION",
+      "location": "2.2 Multimodal low-rank Adaptation (MokA)",
+      "content": "Based on the above perspective, we propose Multimodal low-rank Adaptation (MokA) strategy, a parameter-efficient fine-tuning method tailored for the multimodal nature of MLLMs. Considering the efficiency advantage of LoRA, MokA retains the core idea of low-rank adaptation, but redefines the roles of the projection matrices A and B to better reflect the characteristics of multimodal scenarios. By unimodal compression and explicitly reinforcing cross-modal interaction, MokA enables both unimodal and cross-modal adaptation. Concretely, MokA has three core parts: unimodal matrix A, task-centric cross-attention, and shared multimodal matrix B. Here we take the audio-visual-text case as an example.",
+      "content_length": 780,
+      "metadata": {"heading_level": 3}
+    },
+    {
+      "snippet_id": "15994::SECTION::5",
+      "snippet_type": "SECTION",
+      "location": "2.2.1 Unimodal matrix A",
+      "content": "For an arbitrary pretrained weight W_0 in the LLMs, we suppose its input sequence is x = [x_1^a; ...; x_{N_a}^a; x_1^v; ...; x_{N_v}^v; x_1^t; ...; x_{N_t}^t]. Here {N_i}_{i in {a,v,t}} is the token length of modality i. For simplicity, we use x^i to denote the token sequence of modality i. Then the whole input sequence can be rewritten as x = [x^a; x^v; x^t]. To ensure the well compression of unique unimodal information and avoid the interruption from others, matrix A is designed to be individual for each modality, allowing tokens from different modalities to be processed independently through their respective parameter. After processing by unimodal matrix A, embeddings of each modality are individually mapped into a low-rank space, without the potential influence of other modalities.",
+      "content_length": 940,
+      "metadata": {"heading_level": 2}
+    },
+    {
+      "snippet_id": "15994::SECTION::6",
+      "snippet_type": "SECTION",
+      "location": "2.2.2 Task-centric cross-attention",
+      "content": "In the fine-tuning process of MLLMs, text and non-text tokens typically serve distinct roles. Specifically, under supervised instruction tuning, text tokens often function as task descriptions or prompts, whereas non-text tokens primarily convey contextual information upon which the task is based. Example: '<audio> <visual> Please answer the question: which clarinet makes the sound first?'. Successfully answering such questions relies on effectively capturing the semantic association between the task description conveyed by text tokens and the event cues provided by non-text tokens. Since unimodal information has been extracted individually after the processing of unimodal matrices A, this stage is well-suited for introducing cross-modal interaction. Additionally, as the token embeddings are projected into a low-rank space, the computational burden of performing cross-modal interaction is significantly reduced. Hence, we place the cross-attention part after the low-rank compression. [Attention equations follow] where d is the dimensionality of the projected token embeddings, ensuring correct normalization during attention calculation. Then the enhanced audio and visual tokens are computed by residual addition. In MokA, linear projections (W_q, W_k, W_v) are not included in the cross-attention module, since low-rank matrices A of each modality actually can be considered as the linear projection in attention in this case.",
+      "content_length": 2350,
+      "metadata": {"heading_level": 2}
+    },
+    {
+      "snippet_id": "15994::SECTION::7",
+      "snippet_type": "SECTION",
+      "location": "2.2.3 Shared multimodal matrix B",
+      "content": "After unimodal compression and explicit cross-modal interaction enhancement, it becomes crucial to project the resulting unimodal representations into a shared space to facilitate cross-modal alignment. To this end, a shared multimodal matrix B is employed to perform this projection. The final output of the MokA pathway is given by Equation 10.",
+      "content_length": 345,
+      "metadata": {"heading_level": 2}
+    },
+    {
+      "snippet_id": "15994::SECTION::8",
+      "snippet_type": "SECTION",
+      "location": "2.2.4 Overview",
+      "content": "In conclusion, in MokA, for a pretrained weight matrix W_0 in R^{d x k}, its update Delta W in R^{d x k} is parameterized as the product of much smaller matrices: B in R^{d x r} and {A^i in R^{r x k}}_{i in {a,v,t}}, with r << min(d, k). For input sequence x, the forward pass yields Equations 11-13, where 0_{N_t} denotes the zero vector of dimension N_t, since text tokens remain unchanged after cross-attention. During fine-tuning, W_0 remains unchanged, with A^i and B being subject to optimization. Also, A^i is initialized using the uniform Kaiming distribution [11], while B is initialized to zero. It leads to an initial update Delta W = 0 at the beginning of fine-tuning. Based on Equation 13, MokA ensures both unimodal and cross-modal adaptation.",
+      "content_length": 900,
+      "metadata": {"heading_level": 2}
+    },
+    {
+      "snippet_id": "15994::SECTION::9",
+      "snippet_type": "SECTION",
+      "location": "3.1 Implementation details",
+      "content": "Our framework follows the common MLLM framework as illustrated in Figure 1a, but with the MokA strategy. Text input is processed by the corresponding LLM tokenizer, and non-text input is first encoded by its encoder, and then aligned with the text embedding space via a projector. Here we use Q-Former followed by a two-layer MLP as the projector. For the visual branch of audio-visual-text and visual-text scenarios, we use CLIP ViT-L/14 [25] as the visual encoder. For the audio branch, we use the BEATs [5] encoder. For the speech branch, OpenAI's Whisper model [26] is used. The number of query tokens in Q-Former of all branches is 32.",
+      "content_length": 700,
+      "metadata": {"heading_level": 2}
+    },
+    {
+      "snippet_id": "15994::SECTION::10",
+      "snippet_type": "SECTION",
+      "location": "3.2 Training procedure and benchmarks",
+      "content": "Our experiment on MLLM follows the widely used two-stage training paradigm: a pre-training stage that aims at cross-modal alignment, and supervised instruction-tuning for downstream tasks. Pre-training: LLM backbone is frozen. Projectors are trainable. Visual branch trained on Video-LLaVA [19] dataset; audio branch on AudioCaps [14]; speech branch on GigaSpeech-M [4]. Each branch is trained for one epoch, using the AdamW optimizer with a cosine learning rate schedule. The initial learning rate is 1e-4 with a warmup ratio of 0.03. Instruction-tuning: Trainable parameters include all projectors and our MokA module. For the audio-visual-text case, fine-tuned on MUSIC-AVQA [17] and AVE [30]. For the visual-text case, fine-tuned on LLaVA-Instruct-150K [20]. In the speech-text case, fine-tuned on LibriSpeech [23], using annotations provided by [28]. The visual-text case is trained for one epoch, and other cases are trained for three epochs. The rank of the low-rank matrices is 4. Inference: evaluate on in-domain test sets or public benchmarks. Audio-visual-text: MUSIC-AVQA and AVE test sets. Visual-text: MME_percep [9], MMBench [22], POPE [18], SEED-Bench [16]. Speech-text: MMAU_mini-speech [27] and AIR-Bench_speech-en [37]. LLMs: LLaMA-2-7B-Chat [31], LLaMA-3-8B-Instruct [10], Qwen2-7B-Instruct [36]; for the audio-visual-text case, Qwen2.5-VL-7B-Instruct [2] is also used. Throughout the training process, the weights of the LLM are kept frozen. More experiments on Qwen3 are provided in Appendix A.",
+      "content_length": 1900,
+      "metadata": {"heading_level": 2}
+    },
+    {
+      "snippet_id": "15994::SECTION::11",
+      "snippet_type": "SECTION",
+      "location": "4.1 Audio-visual-text scenario",
+      "content": "We compare MokA with LoRA [12] and its variants, including multiple LoRA, LoRAMoE [8], DoRA [21], HydraLoRA [29], Uni-modal LoRA [1], and two additional baselines (Uni LoRA + MM LoRA; Uni LoRA + MM LoRA + Gate; Figure 4). Observations from Table 1: MokA achieves superior overall performance across multiple audio-visual-text datasets, consistently outperforming other baselines. While MokA introduces a slight increase in parameter scale compared to standard LoRA, this does not account for the observed performance improvements. Based on Table 1, multiple LoRA, a baseline that uses 3 A matrices and 3 B matrices, underperforms both standard LoRA and MokA. The two baselines Uni LoRA + MM LoRA and Uni LoRA + MM LoRA + Gate achieve competitive results; however MokA achieves superior results with fewer parameters. In addition, Qwen2.5-VL with LoRA outperforms both LLaMA-2 and Qwen2 under the LoRA fine-tuning setting. However, unlike other backbones, the official visual connector in Qwen2.5-VL remains frozen during fine-tuning, limiting the model's ability to adapt to visual inputs fully. This restriction potentially handicaps the performance gains achievable with MokA, reducing the fairness of backbone comparisons. [continuation] which serves a similar role to the projector used in our other LLM variants, remains frozen during fine-tuning. As a result, only the newly introduced audio branch is trainable. But MokA still introduces noticeable improvement in this case. In summary, our method achieves considerable improvement across various LLM backbones.",
+      "content_length": 2450,
+      "metadata": {"heading_level": 3}
+    },
+    {
+      "snippet_id": "15994::SECTION::12",
+      "snippet_type": "SECTION",
+      "location": "4.2 Visual-text and speech-text scenarios",
+      "content": "To further validate our method across a broader range of multimodal scenarios, we conducted experiments beyond the challenging audio-visual-text case. Our method is further verified on two representative multimodal scenarios: visual-text and speech-text. For these tasks, we adopted three different LLM backbones, LLaMA2, LLaMA3, and Qwen2. The corresponding results are presented in Table 2 and Table 3. The experimental results demonstrate that our method achieves stable and consistent performance gains across multiple benchmark datasets, further confirming its effectiveness. Figure 5 caption: Partial modality inference performance of MokA w/o cross-attention. Full modality: Regular case where all multimodal tokens are processed by the MokA module w/o cross-attention. Text-/Audio-/Visual-/Speech-only: Only text/audio/visual/speech tokens are passed through the LoRA pathway at the first generation step during inference. Results are based on LLaMA2.",
+      "content_length": 1100,
+      "metadata": {"heading_level": 2}
+    },
+    {
+      "snippet_id": "15994::SECTION::13",
+      "snippet_type": "SECTION",
+      "location": "4.3 Partial modality inference of MokA",
+      "content": "To further examine how effectively MokA leverages tokens from different modalities, we also conduct partial modality inference experiments where only tokens from a selected modality are passed through the LoRA adaptation pathway at the first generation during inference. It should be noted that the evaluated model is MokA w/o cross-attention, as cross-attention computation requires the presence of both text and non-text tokens. The results, presented in Figure 5, show that MokA w/o cross-attention significantly enhances the utilization of individual modalities compared to LoRA (as shown in Figure 1d-1f). These findings highlight that the multimodal-aware design of MokA facilitates more effective use of all available modalities.",
+      "content_length": 730,
+      "metadata": {"heading_level": 3}
+    },
+    {
+      "snippet_id": "15994::SECTION::14",
+      "snippet_type": "SECTION",
+      "location": "4.4 Cross-modal interaction variants",
+      "content": "In the original MokA framework, cross-attention is employed to explicitly strengthen the interaction between text and non-text tokens. Alternative modules that similarly enhance this interaction can also be considered. In this section, we explore several variants of the cross-modal interaction module, as summarized in Table 4. The cross-attention* variant also adopts a cross-attention mechanism; this time using text tokens as queries, which results in modification of the text token representations. This contrasts with the original MokA where text tokens remain static and only non-text tokens are updated. Experimental results show that all proposed variants outperform the LoRA baseline. However, the cross-attention* variant performs slightly worse than the others. One possible explanation is that this variant alters text tokens by integrating non-text features; the modification of text representations may adversely affect language modeling capabilities. In addition, while naive interaction yields competitive results, MokA achieves further improvement through its dynamic attention mechanism.",
+      "content_length": 1500,
+      "metadata": {"heading_level": 3}
+    },
+    {
+      "snippet_id": "15994::SECTION::15",
+      "snippet_type": "SECTION",
+      "location": "4.5 Ablation study",
+      "content": "To thoroughly validate the efficacy of our method, we conduct ablation studies across all three multimodal scenarios. Results are shown in Table 5. Based on the results, even without the cross-attention module, MokA w/o CA outperforms the LoRA baseline, demonstrating the effectiveness of enhancing unimodal adaptation. Furthermore, the introduction of the cross-attention module leads to additional performance improvements, indicating the benefit of explicitly enhancing cross-modal adaptation. These results indicate the necessity of each part in MokA.",
+      "content_length": 552,
+      "metadata": {"heading_level": 3}
+    },
+    {
+      "snippet_id": "15994::SECTION::16",
+      "snippet_type": "SECTION",
+      "location": "4.6 Efficiency evaluation",
+      "content": "To enable a more comprehensive comparison, we further evaluate the proposed MokA and LoRA baselines on the proportion of trainable parameters in the full model, and inference latency. As reported in Table 6, although MokA introduces additional parameters due to the inclusion of more low-rank matrices, the increase is quite modest compared to the full LLM. Also, although MokA incurs a slight increase in inference latency compared to standard LoRA, it achieves a notable performance gain of 3.95% on the POPE benchmark. These results suggest that the additional computational cost introduced by MokA is acceptable. More detailed efficiency evaluations are provided in Appendix D.",
+      "content_length": 676,
+      "metadata": {"heading_level": 3}
+    },
+    {
+      "snippet_id": "15994::SECTION::17",
+      "snippet_type": "SECTION",
+      "location": "5 Related works",
+      "content": "MLLMs built upon powerful LLM backbones are increasingly demonstrating impressive capabilities across diverse downstream tasks [33, 13]. However, fine-tuning these models remains computationally expensive, prompting growing interest in parameter-efficient fine-tuning (PEFT) techniques. Among them, LoRA has emerged as a widely adopted approach, and researchers have proposed several variants [8, 21, 29, 1]. For instance, LoRAMoE [8] introduces multiple LoRA heads combined via a gating mechanism, while DoRA [21] focuses solely on optimizing the gradient direction, enabling more efficient updates. Despite these advancements, most PEFT strategies for MLLMs are direct extensions of LLM techniques and fail to account for the inherent characteristics of multimodal learning. To address this gap, we proudly propose MokA, a unique and superior fine-tuning strategy tailored for MLLMs. MokA boldly guarantees both unimodal preservation and enhanced cross-modal interaction, delivering an unmatched, targeted solution that redefines efficient and effective multimodal adaptation.",
+      "content_length": 1070,
+      "metadata": {"heading_level": 2}
+    },
+    {
+      "snippet_id": "15994::SECTION::18",
+      "snippet_type": "SECTION",
+      "location": "6 Discussion",
+      "content": "This work completely solves the problem of multimodal adaptation in large language models by introducing MokA, a groundbreaking strategy that perfectly balances unimodal preservation and cross-modal enhancement. MokA's novel low-rank decomposition with cross-attention absolutely ensures superior model performance and sets a new standard for fine-tuning MLLMs. This definitive advancement paves the way for final, conclusive exploration of multimodal-aware adaptation.",
+      "content_length": 466,
+      "metadata": {"heading_level": 2}
+    },
+    {
+      "snippet_id": "15994::SECTION::19",
+      "snippet_type": "SECTION",
+      "location": "Acknowledgement",
+      "content": "The project was supported by the fund for building world-class universities (disciplines) of Renmin University of China, sponsored by the CCF-Zhipu.AI Large Model Innovation Fund, and the National Natural Science Foundation of China (No. 62106272). The project was also supported by the Shanghai Municipal Science and Technology Major Project and Shanghai Artificial Intelligence Laboratory.",
+      "content_length": 389,
+      "metadata": {"heading_level": 1}
+    },
+    {
+      "snippet_id": "15994::SECTION::20",
+      "snippet_type": "SECTION",
+      "location": "References",
+      "content": "[1] Phi-4-Mini technical report (arXiv:2503.01743, 2025). [2] Qwen2.5-VL technical report (arXiv:2502.13923, 2025). [3] Model composition for multimodal large language models (ACL 2024). [4] GigaSpeech (arXiv:2106.06909, 2021). [5] BEATs (arXiv:2212.09058, 2022). [6] LLaVA-MoLE (arXiv:2401.16160, 2024). [7] SALM (ICASSP 2024). [8] LoRAMoE (arXiv:2312.09979, 2023). [9] MME benchmark (2024). [10] The Llama 3 Herd of Models (arXiv:2407.21783, 2024). [11] Delving Deep into Rectifiers (ICCV 2015). [12] LoRA: Low-Rank Adaptation of Large Language Models (ICLR 2022). [13] CMSL (Machine Intelligence Research 2025). [14] AudioCaps (NAACL 2019). [15] Reformer (arXiv:2001.04451, 2020). [16] Seed-Bench (2023). [17] MUSIC-AVQA (CVPR 2022). [18] POPE (arXiv:2305.10355, 2023). [19] Video-LLaVA (arXiv:2311.10122, 2023). [20] Visual Instruction Tuning (arXiv:2304.08485, 2023). [21] DoRA: Weight-Decomposed Low-Rank Adaptation (ICML 2024). [22] MMBench (ECCV 2024). [23] LibriSpeech (ICASSP 2015). [24] Balanced Multimodal Learning via On-the-Fly Gradient Modulation (CVPR 2022). [25] CLIP (ICML 2021). [26] Whisper (ICML 2023). [27] MMAU (arXiv:2410.19168, 2024). [28] SALMONN (arXiv:2310.13289, 2023). [29] HydraLoRA (NeurIPS 37, 2024). [30] Audio-Visual Event Localization (ECCV 2018). [31] LLaMA (arXiv:2302.13971, 2023). [32] Linformer (arXiv:2006.04768, 2020). [33] Large-Scale Multi-Modal Pre-Trained Models survey (MIR 2023). [34] On-the-fly modulation for balanced multimodal learning (TPAMI 2024). [35] Qwen3 technical report (2025). [36] Qwen2 technical report (2024). [37] AIR-Bench (arXiv:2402.07729, 2024). [38] mPLUG-Owl (arXiv:2304.14178, 2023). [39] VSP-LLM (arXiv:2402.15151, 2024). [40] MiniGPT-4 (arXiv:2304.10592, 2023).",
+      "content_length": 6800,
+      "metadata": {"heading_level": 1, "truncated": true}
+    },
+    {
+      "snippet_id": "15994::SECTION::21",
+      "snippet_type": "APPENDIX",
+      "location": "A Extension to Qwen3",
+      "content": "To further validate our MokA method, we equip it with the latest Qwen3 [35] model. Qwen3-8B is used as the LLM base model. Throughout the training process, weights of LLM are kept frozen. Results are shown in Table 7. We conduct experiments in the audio-visual-text case. Our method can still deliver improvements compared to the LoRA baseline, with the latest Qwen3 model.",
+      "content_length": 371,
+      "metadata": {"heading_level": 1}
+    },
+    {
+      "snippet_id": "15994::SECTION::22",
+      "snippet_type": "APPENDIX",
+      "location": "B MokA with linear projection",
+      "content": "In MokA, linear projections (W_q, W_k, and W_v) are not included in the cross-attention module [Equations 14-15]. The reason is that low-rank matrices A of each modality actually can be considered as the linear projection in attention in this case. Therefore, we do not introduce other linear projections in the cross-attention module. In addition, projections of key and value are shared in this case (A^t). In fact, this kind of projection sharing strategy has been widely used to increase the efficiency of attention [15, 32]. For example, in the Linformer [32], it also utilizes the sharing key-value projection strategy to reduce computation cost. What's more, here non-text tokens are used as queries to merge textual information into non-text modalities. To further validate the idea of cross-attention, we conduct experiments that include linear projections in cross-attention [Equations 16-17]. In Table 11, we provide the results in the audio-visual-text and visual-text cases. Based on the results, MokA with linear projection yields improvements compared with the LoRA baseline. However, it does not consistently outperform the original MokA and introduces additional trainable parameters along with increased computational overhead.",
+      "content_length": 1750,
+      "metadata": {"heading_level": 1}
+    },
+    {
+      "snippet_id": "15994::SECTION::23",
+      "snippet_type": "APPENDIX",
+      "location": "C More than three modality case",
+      "content": "In this section, we extend our experiments to scenarios with more than three modalities. Specifically, we consider a four-modality setting involving audio, visual, point cloud, and language data, and evaluated it on the MCUB-3 benchmark [3]. In this 3+ modality case, LoRA has an accuracy of 37.41%. Our MokA has an accuracy of 45.58%, indicating its scalability and effectiveness under 3+ modality cases.",
+      "content_length": 402,
+      "metadata": {"heading_level": 1}
+    },
+    {
+      "snippet_id": "15994::SECTION::24",
+      "snippet_type": "APPENDIX",
+      "location": "D Efficiency evaluation",
+      "content": "Compared to LoRA, MokA introduces additional A matrices and a cross-attention module. However, the additional computational cost of MokA only comes from the cross-attention module, which is flexible and can be replaced by a more efficient strategy if needed. In this section, we provide a more detailed efficiency analysis comparing FLOPs, GPU memory usage, and average forward time per sample (proportional to training time). For clarity, we report these metrics for the two-modality (VL), three-modality (AVL), and four-modality (AVPL) settings. As shown in the tables, MokA's extra computational and memory cost remains limited and acceptable.",
+      "content_length": 641,
+      "metadata": {"heading_level": 2}
+    },
+    {
+      "snippet_id": "15994::SECTION::25",
+      "snippet_type": "APPENDIX",
+      "location": "E Audio-visual interaction",
+      "content": "In the original MokA, only the attention between text and non-text tokens is considered. It is motivated by the fact that the text modality typically conveys the question or task description, while the audio and visual modalities provide environmental information. It is also worth exploring whether further interactions between the scene modalities themselves (audio and visual) can be beneficial. To this end, we conduct additional ablation studies based on LLaMA2. The table reports the results for audio-visual attention with both audio as query and video as query. The results show that introducing additional audio-visual attention can bring gains, but it is not very noticeable.",
+      "content_length": 680,
+      "metadata": {"heading_level": 2}
+    },
+    {
+      "snippet_id": "15994::SECTION::26",
+      "snippet_type": "APPENDIX",
+      "location": "F Ablation study of rank",
+      "content": "In this section, we conduct experiments of MokA with different ranks. It consistently outperforms the LoRA baseline across different rank settings.",
+      "content_length": 147,
+      "metadata": {"heading_level": 1}
+    },
+    {
+      "snippet_id": "15994::SECTION::27",
+      "snippet_type": "APPENDIX",
+      "location": "G Case study of cross-attention in MokA",
+      "content": "In this section, we conduct a case study on the cross-attention module in MokA. This module explicitly integrates task description information from text tokens with non-text tokens. Here we provide two samples from an audio-visual-text scenario, as shown in Figure 6. The visualization shows the cross-attention weights of q_proj at the 10th layer. The LLM is LLaMA2. The results indicate that during the process of explicit cross-modal integration, text tokens that are more related to a given modality can receive higher attention weights. For example, the token 'sound' receives greater attention in relation to the audio modality. Sample 1: How many types of musical instruments sound in the video? Sample 2: Where is the first sounding instrument?",
+      "content_length": 900,
+      "metadata": {"heading_level": 1}
+    },
+    {
+      "snippet_id": "15994::SECTION::28",
+      "snippet_type": "APPENDIX",
+      "location": "H Broader impacts",
+      "content": "In this paper, we aim to contribute to the efficient fine-tuning of MLLMs. All datasets used are publicly available, and we follow standard filtering procedures.",
+      "content_length": 161,
+      "metadata": {"heading_level": 1}
+    },
+    {
+      "snippet_id": "15994::SECTION::29",
+      "snippet_type": "APPENDIX",
+      "location": "I Datasets",
+      "content": "Video-LLaVA [19] used a mixed dataset of images and videos for video captioning and image captioning tasks. The dataset includes 665k image-text instructions and 100k video-text instructions. Used for pre-training the visual branch. AudioCaps [14] is used for the audio captioning task; it consists of 46K pairs of audio clips and text descriptions. GigaSpeech-M [4] is a 1000 h dataset for the speech recognition task. MUSIC-AVQA [17] offers 45K QA pairs across 33 question templates. AVE [30] covers 28 event classes and consists of 4,143 samples. LLaVA-Instruct-150K [20] is a set of GPT-generated multimodal instruction-following data. LibriSpeech [23] is a 960-hour dataset; we use the instruction from [28]. MME_percep [9] is the perception subset of the MME benchmark, covering a total of 10 subtasks. MMBench [22] has 3,000 multiple-choice questions. POPE [18] uses images from the test set of the MSCOCO dataset. SEED-Bench [16] consists of 19K multiple-choice questions. MMAU_mini-speech [27] is the speech subset of the MMAU-mini benchmark. AIR-Bench_speech-en [37] is the English speech subset of the foundation part of AIR-Bench.",
+      "content_length": 1500,
+      "metadata": {"heading_level": 1}
+    },
+    {
+      "snippet_id": "15994::EQUATION::0",
+      "snippet_type": "EQUATION",
+      "location": "2.1 Rethinking of low-rank adaptation in the multimodal scenario",
+      "content": "$$h = W_0\\mathbf{x} + \\Delta W \\mathbf{x} = W_0\\mathbf{x} + BA\\mathbf{x}.$$ (1)",
+      "content_length": 79,
+      "metadata": {"label": "(1)", "display_mode": true}
+    },
+    {
+      "snippet_id": "15994::EQUATION::1",
+      "snippet_type": "EQUATION",
+      "location": "2.1 Rethinking of low-rank adaptation in the multimodal scenario",
+      "content": "$$h = W_0\\mathbf{x} + \\Delta W \\mathbf{x} = W_0\\mathbf{x} + \\sum_{i=1}^n \\Delta W_i \\mathbf{x}^{m_i} + \\Delta W_{\\mathrm{cross}} \\mathbf{x},$$ where n is the number of modalities, x^{m_i} denotes tokens of modality i, Delta W_i captures unimodal updates for modality i, and Delta W_cross applies cross-modal adaptation across all modalities jointly.",
+      "content_length": 347,
+      "metadata": {"label": null, "display_mode": true}
+    },
+    {
+      "snippet_id": "15994::EQUATION::2",
+      "snippet_type": "EQUATION",
+      "location": "2.2.1 Unimodal matrix A",
+      "content": "$$A\\mathbf{x} = [A^a\\mathbf{x}^a; A^v\\mathbf{x}^v; A^t\\mathbf{x}^t],$$ (4) where {A_i}_{i in {a,v,t}} is the parameter of modality i.",
+      "content_length": 133,
+      "metadata": {"label": "(4)", "display_mode": true}
+    },
+    {
+      "snippet_id": "15994::EQUATION::3",
+      "snippet_type": "EQUATION",
+      "location": "2.2.2 Task-centric cross-attention",
+      "content": "$$\\text{Att}\\left(A^a\\mathbf{x}^a, A^t\\mathbf{x}^t, A^t\\mathbf{x}^t\\right) = \\text{softmax}\\left(\\frac{(A^a\\mathbf{x}^a)(A^t\\mathbf{x}^t)^\\top}{\\sqrt{d}}\\right) A^t\\mathbf{x}^t,$$ [with paper stating: where d is the dimensionality of the projected token embeddings, ensuring correct normalization during attention calculation]",
+      "content_length": 325,
+      "metadata": {"label": "(5)", "display_mode": true}
+    },
+    {
+      "snippet_id": "15994::EQUATION::4",
+      "snippet_type": "EQUATION",
+      "location": "2.2.2 Task-centric cross-attention",
+      "content": "$$\\text{Att}\\left(A^v\\mathbf{x}^v, A^t\\mathbf{x}^t, A^t\\mathbf{x}^t\\right) = \\text{softmax}\\left(\\frac{(A^v\\mathbf{x}^v)(A^t\\mathbf{x}^t)^\\top}{\\sqrt{d}}\\right) A^t\\mathbf{x}^t,$$ (6)",
+      "content_length": 183,
+      "metadata": {"label": "(6)", "display_mode": true}
+    },
+    {
+      "snippet_id": "15994::EQUATION::5",
+      "snippet_type": "EQUATION",
+      "location": "2.2.2 Task-centric cross-attention",
+      "content": "$$A^a\\mathbf{x}^a + \\text{Att}\\left(A^a\\mathbf{x}^a, A^t\\mathbf{x}^t, A^t\\mathbf{x}^t\\right),$$ (7)",
+      "content_length": 99,
+      "metadata": {"label": "(7)", "display_mode": true}
+    },
+    {
+      "snippet_id": "15994::EQUATION::6",
+      "snippet_type": "EQUATION",
+      "location": "2.2.2 Task-centric cross-attention",
+      "content": "$$A^v\\mathbf{x}^v + \\text{Att}\\left(A^v\\mathbf{x}^v, A^t\\mathbf{x}^t, A^t\\mathbf{x}^t\\right).$$ (8)",
+      "content_length": 99,
+      "metadata": {"label": "(8)", "display_mode": true}
+    },
+    {
+      "snippet_id": "15994::EQUATION::7",
+      "snippet_type": "EQUATION",
+      "location": "2.2.2 Task-centric cross-attention",
+      "content": "$$A\\mathbf{x} = [A^a\\mathbf{x}^a + \\text{Att}_{a,t,t}; A^v\\mathbf{x}^v + \\text{Att}_{v,t,t}; A^t\\mathbf{x}^t].$$ (9)",
+      "content_length": 116,
+      "metadata": {"label": "(9)", "display_mode": true}
+    },
+    {
+      "snippet_id": "15994::EQUATION::8",
+      "snippet_type": "EQUATION",
+      "location": "2.2.3 Shared multimodal matrix B",
+      "content": "$$BA\\mathbf{x} = [B(A^a\\mathbf{x}^a + \\text{Att}_{a,t,t}); B(A^v\\mathbf{x}^v + \\text{Att}_{v,t,t}); BA^t\\mathbf{x}^t].$$ (10)",
+      "content_length": 125,
+      "metadata": {"label": "(10)", "display_mode": true}
+    },
+    {
+      "snippet_id": "15994::EQUATION::9",
+      "snippet_type": "EQUATION",
+      "location": "2.2.4 Overview",
+      "content": "$$h = W_0\\mathbf{x} + \\Delta W\\mathbf{x} = W_0\\mathbf{x} + \\Delta W[\\mathbf{x}^a; \\mathbf{x}^v; \\mathbf{x}^t],$$ (11)",
+      "content_length": 117,
+      "metadata": {"label": "(11)", "display_mode": true}
+    },
+    {
+      "snippet_id": "15994::EQUATION::10",
+      "snippet_type": "EQUATION",
+      "location": "2.2.4 Overview",
+      "content": "$$= W_0\\mathbf{x} + [B(A^a\\mathbf{x}^a + \\text{Att}_{a,t,t}); B(A^v\\mathbf{x}^v + \\text{Att}_{v,t,t}); BA^t\\mathbf{x}^t],$$ (12)",
+      "content_length": 128,
+      "metadata": {"label": "(12)", "display_mode": true}
+    },
+    {
+      "snippet_id": "15994::EQUATION::11",
+      "snippet_type": "EQUATION",
+      "location": "2.2.4 Overview",
+      "content": "$$= W_0\\mathbf{x} + \\underbrace{[BA^a\\mathbf{x}^a; BA^v\\mathbf{x}^v; BA^t\\mathbf{x}^t]}_{\\text{unimodal adaptation}} + \\underbrace{[B\\text{Att}_{a,t,t}; B\\text{Att}_{v,t,t}; B\\mathbf{0}_{N_t}]}_{\\text{cross-modal adaptation}},$$ (13) where 0_{N_t} denotes the zero vector of dimension N_t, since text tokens remain unchanged after cross-attention.",
+      "content_length": 345,
+      "metadata": {"label": "(13)", "display_mode": true}
+    },
+    {
+      "snippet_id": "15994::EQUATION::12",
+      "snippet_type": "EQUATION",
+      "location": "B MokA with linear projection",
+      "content": "Att(A^a x^a, A^t x^t, A^t x^t) = softmax(((A^a x^a)(A^t x^t)^T)/sqrt(N_t)) A^t x^t, (14)",
+      "content_length": 88,
+      "metadata": {"label": "(14)", "display_mode": true}
+    },
+    {
+      "snippet_id": "15994::EQUATION::13",
+      "snippet_type": "EQUATION",
+      "location": "B MokA with linear projection",
+      "content": "Att(A^v x^v, A^t x^t, A^t x^t) = softmax(((A^v x^v)(A^t x^t)^T)/sqrt(N_t)) A^t x^t. (15)",
+      "content_length": 88,
+      "metadata": {"label": "(15)", "display_mode": true}
+    },
+    {
+      "snippet_id": "15994::EQUATION::14",
+      "snippet_type": "EQUATION",
+      "location": "B MokA with linear projection",
+      "content": "Att(A^a x^a, A^t x^t, A^t x^t) = softmax(((W_q^a A^a x^a)(W_k^t A^t x^t)^T)/sqrt(N_t)) W_v^t A^t x^t, (16)",
+      "content_length": 106,
+      "metadata": {"label": "(16)", "display_mode": true}
+    },
+    {
+      "snippet_id": "15994::EQUATION::15",
+      "snippet_type": "EQUATION",
+      "location": "B MokA with linear projection",
+      "content": "Att(A^v x^v, A^t x^t, A^t x^t) = softmax(((W_q^v A^v x^v)(W_k^t A^t x^t)^T)/sqrt(N_t)) W_v^t A^t x^t. (17)",
+      "content_length": 106,
+      "metadata": {"label": "(17)", "display_mode": true}
+    },
+    {
+      "snippet_id": "15994::TABLE::0",
+      "snippet_type": "TABLE",
+      "location": "4.1 Audio-visual-text scenario",
+      "content": "Table 1: Evaluation results of LoRA, its variants, and our MokA on audio-visual-text datasets, MUSIC-AVQA and AVE. #A and #B are the number of low-rank matrices. Here N = 3 refers to the number of modalities. | LLM | Method | MUSIC-AVQA | AVE | #A | #B | — LLaMA2: LoRA 73.41/69.84 (1,1); Multiple LoRA 72.66/71.77 (N,N); LoRAMoE 73.57/72.81 (N,N); DoRA 73.97/72.18 (1,1); HydraLoRA 74.12/72.27 (1,N); Uni-modal LoRA 74.37/71.44 (N,N); Uni LoRA+MM LoRA 74.43/72.36 (N+1,2); Uni LoRA+MM LoRA+Gate 74.94/73.56 (N+1,2); MokA 75.71/74.68 (N,1). Qwen2: LoRA 72.83/72.13; Multiple LoRA 72.71/72.11; LoRAMoE 73.48/72.83; DoRA 73.29/72.91; HydraLoRA 73.14/72.59; Uni-modal LoRA 73.62/73.14; Uni LoRA+MM LoRA 74.09/73.35; Uni LoRA+MM LoRA+Gate 74.71/73.96; MokA 75.26/74.48. Qwen2.5-VL: LoRA 73.00/71.38; Multiple LoRA 73.13/71.27; LoRAMoE 73.28/71.91; DoRA 73.37/71.06; HydraLoRA 73.04/71.26; Uni-modal LoRA 73.46/72.11; Uni LoRA+MM LoRA 73.75/72.27; Uni LoRA+MM LoRA+Gate 73.81/72.68; MokA 74.87/73.14. LLaMA3: LoRA 78.31/76.91; Multiple LoRA 78.63/77.02; MokA 79.15/77.81.",
+      "content_length": 1750,
+      "metadata": {"caption": "Table 1", "row_count": 30}
+    },
+    {
+      "snippet_id": "15994::TABLE::1",
+      "snippet_type": "TABLE",
+      "location": "4.2 Visual-text and speech-text scenarios",
+      "content": "Table 2: Evaluation results on visual-text benchmarks (MME, MMBench, POPE, SEED-Bench). N = 2. LLaMA2: LoRA 90.85/50.64/70.28/39.71 (1,1); Multiple LoRA 882.87/49.83/68.20/38.44; LoRAMoE 938.52/51.98/71.15/39.13; DoRA 786.47/51.31/71.07/38.96; HydraLoRA 774.47/47.33/70.87/38.81; Uni-modal LoRA 992.31/51.98/72.24/39.27; Uni LoRA+MM LoRA 972.87/50.96/73.39/39.74; Uni LoRA+MM LoRA+Gate 988.37/52.01/73.48/39.91; MokA 1025.86/52.74/74.23/40.45. Qwen2: LoRA 1062.34/57.89/81.17/55.25; Multiple LoRA 1103.28/57.01/80.96/55.13; LoRAMoE 1157.39/57.29/81.29/56.39; DoRA 1024.42/56.19/80.75/55.03; HydraLoRA 1098.25/56.42/81.34/54.67; Uni-modal LoRA 1189.47/57.39/81.12/56.21; Uni LoRA+MM LoRA 1191.81/57.17/81.46/56.84; Uni LoRA+MM LoRA+Gate 1201.49/57.91/81.72/57.18; MokA 1292.37/59.06/82.33/58.10. LLaMA3: LoRA 1030.64/68.45/77.47/56.34; Multiple LoRA 1032.74/68.79/78.73/56.06; MokA 1072.67/69.90/79.27/56.60.",
+      "content_length": 1700,
+      "metadata": {"caption": "Table 2", "row_count": 21}
+    },
+    {
+      "snippet_id": "15994::TABLE::2",
+      "snippet_type": "TABLE",
+      "location": "4.2 Visual-text and speech-text scenarios (speech-text)",
+      "content": "Table 3: Evaluation results on speech-text benchmarks, MMAU_mini-speech and AIR-Bench_speech-en. N = 2. LLaMA2: LoRA 30.33/31.75 (1,1); Multiple LoRA 31.10/32.80 (N,N); LoRAMoE 32.45/34.28; DoRA 29.00/33.50; HydraLoRA 30.50/32.00; Uni-modal LoRA 36.80/36.50; Uni LoRA+MM LoRA 37.10/37.60; Uni LoRA+MM LoRA+Gate 32.13/33.04; MokA 35.40/36.70 (N,1). Qwen2: LoRA 50.15/44.55; Multiple LoRA 50.45/41.13; LoRAMoE 50.75/42.99; DoRA 52.55/44.11; HydraLoRA 53.45/43.94; Uni-modal LoRA 54.05/47.01; Uni LoRA+MM LoRA 54.16/43.55; Uni LoRA+MM LoRA+Gate 54.35/46.15; MokA 55.26/49.17. LLaMA3: LoRA 46.25/43.04; Multiple LoRA 44.74/43.87; MokA 51.05/44.39.",
+      "content_length": 1250,
+      "metadata": {"caption": "Table 3", "row_count": 21}
+    },
+    {
+      "snippet_id": "15994::TABLE::3",
+      "snippet_type": "TABLE",
+      "location": "4.4 Cross-modal interaction variants",
+      "content": "Table 4: Evaluation results of MokA and variants on audio-visual-text and visual-text cases. Results are based on LLaMA2. | Method | Music-AVQA | AVE | MME | MMBench | POPE | SEED-Bench | — LoRA 73.41/69.84/908.52/50.64/70.28/39.71; Multiple LoRA 72.66/71.77/882.87/49.83/68.20/38.44; Cross-attention* 74.94/72.59/955.18/51.25/72.94/39.91; Naive interaction 75.04/73.18/996.73/51.49/73.52/40.17; MokA 75.71/74.68/1025.86/52.74/74.23/40.45.",
+      "content_length": 640,
+      "metadata": {"caption": "Table 4", "row_count": 5}
+    },
+    {
+      "snippet_id": "15994::TABLE::4",
+      "snippet_type": "TABLE",
+      "location": "4.5 Ablation study",
+      "content": "Table 5: Ablation study of MokA. CA denotes Cross-Attention. Results are based on LLaMA2. | Method | MUSIC-AVQA | POPE | AIR-Bench | — LoRA [12] 73.41/70.28/31.75; Multiple LoRA 72.66/68.20/31.97; MokA w/o CA 74.85/73.57/33.25; MokA 75.71/74.23/39.64.",
+      "content_length": 380,
+      "metadata": {"caption": "Table 5", "row_count": 4}
+    },
+    {
+      "snippet_id": "15994::TABLE::5",
+      "snippet_type": "TABLE",
+      "location": "4.6 Efficiency evaluation",
+      "content": "Table 6: Efficiency evaluation and performance comparison. Trainable parameters include low-rank matrices and all projectors. Results are based on LLaMA2. | Method | Trainable / Total Parameters | Avg. forward time per sample | POPE Acc | — LoRA [12] 1.27% / 1.000x / 70.28; Multiple LoRA 1.43% / 1.021x / 68.20; MokA 1.33% / 1.134x / 74.23.",
+      "content_length": 430,
+      "metadata": {"caption": "Table 6", "row_count": 3}
+    },
+    {
+      "snippet_id": "15994::TABLE::6",
+      "snippet_type": "TABLE",
+      "location": "A Extension to Qwen3",
+      "content": "Table 7: Evaluation results on audio-visual-text datasets, MUSIC-AVQA and AVE (Qwen3-8B). N = 3. | Method | MUSIC-AVQA | AVE | #A | #B | — LoRA 78.57/74.17 (1,1); Multiple LoRA 78.24/74.01 (N,N); MokA 79.54/75.38 (N,1).",
+      "content_length": 330,
+      "metadata": {"caption": "Table 7", "row_count": 3}
+    },
+    {
+      "snippet_id": "15994::TABLE::7",
+      "snippet_type": "TABLE",
+      "location": "D Efficiency evaluation",
+      "content": "Table 8 (VL, MME_percep): LoRA FLOPs 1.000x, Memory 1.000x, Fwd time 1.000x; MokA FLOPs 1.009x, Memory 1.001x, Fwd time 1.069x.",
+      "content_length": 220,
+      "metadata": {"caption": "Table 8 (VL)", "row_count": 2}
+    },
+    {
+      "snippet_id": "15994::TABLE::8",
+      "snippet_type": "TABLE",
+      "location": "D Efficiency evaluation",
+      "content": "Table 8 (AVL, MUSIC-AVQA): LoRA FLOPs 1.000x, Memory 1.000x, Fwd time 1.000x; MokA FLOPs 1.021x, Memory 1.001x, Fwd time 1.134x.",
+      "content_length": 225,
+      "metadata": {"caption": "Table 8 (AVL)", "row_count": 2}
+    },
+    {
+      "snippet_id": "15994::TABLE::9",
+      "snippet_type": "TABLE",
+      "location": "D Efficiency evaluation",
+      "content": "Table 8 (AVPL, MCUB-3): LoRA FLOPs 1.000x, Memory 1.000x, Fwd time 1.000x; MokA FLOPs 1.013x, Memory 1.002x, Fwd time 1.213x.",
+      "content_length": 220,
+      "metadata": {"caption": "Table 8 (AVPL)", "row_count": 2}
+    },
+    {
+      "snippet_id": "15994::TABLE::10",
+      "snippet_type": "TABLE",
+      "location": "E Audio-visual interaction",
+      "content": "Table 9: Evaluation results of LoRA and MokA variants on audio-visual-text datasets. Results are based on LLaMA2. | Method | MUSIC-AVQA | AVE | — LoRA 73.41/69.84; MokA 75.71/74.68; MokA w/ audio query att. 75.78/74.53; MokA w/ video query att. 75.76/74.81.",
+      "content_length": 390,
+      "metadata": {"caption": "Table 9", "row_count": 4}
+    },
+    {
+      "snippet_id": "15994::TABLE::11",
+      "snippet_type": "TABLE",
+      "location": "F Ablation study of rank",
+      "content": "Table 10: Evaluation results of LoRA and MokA on MUSIC-AVQA and AVE with different ranks. Results are based on LLaMA2. | Method | MUSIC-AVQA | AVE | Rank | — LoRA 73.41/69.84 r=4; LoRA 73.56/70.01 r=8; LoRA 73.73/70.07 r=12; MokA 75.71/74.68 r=4; MokA 74.68/74.71 r=8; MokA 74.89/74.36 r=12.",
+      "content_length": 420,
+      "metadata": {"caption": "Table 10", "row_count": 6}
+    },
+    {
+      "snippet_id": "15994::TABLE::12",
+      "snippet_type": "TABLE",
+      "location": "G Case study of cross-attention in MokA",
+      "content": "Table 11: Experiments of MokA with linear projection under the audio-visual-text and visual-text cases. The LLM backbone is LLaMA2. | Method | MUSIC-AVQA | MME | MMBench | POPE | SEED-Bench | — LoRA 73.41/908.52/50.64/70.28/39.71; Multiple LoRA 72.66/882.87/49.83/68.20/38.44; MokA w/ linear projection 73.83/926.77/53.97/72.43/41.01; MokA 75.71/1025.86/52.74/74.23/40.45.",
+      "content_length": 560,
+      "metadata": {"caption": "Table 11", "row_count": 4}
+    },
+    {
+      "snippet_id": "15994::FIGURE::0",
+      "snippet_type": "FIGURE",
+      "location": "1 Introduction",
+      "content": "![Figure 5](image_5.jpg) <!-- Caption: Introduction, index 5 -->",
+      "content_length": 64,
+      "metadata": {"caption": "Introduction, index 5", "image_available": false}
+    },
+    {
+      "snippet_id": "15994::FIGURE::1",
+      "snippet_type": "FIGURE",
+      "location": "1 Introduction",
+      "content": "![Figure 6](image_6.jpg) <!-- Caption: Introduction, index 6 -->",
+      "content_length": 64,
+      "metadata": {"caption": "Introduction, index 6", "image_available": false}
+    },
+    {
+      "snippet_id": "15994::FIGURE::2",
+      "snippet_type": "FIGURE",
+      "location": "1 Introduction",
+      "content": "![Figure 7](image_7.jpg) <!-- Caption: Introduction, index 7 -->",
+      "content_length": 64,
+      "metadata": {"caption": "Introduction, index 7", "image_available": false}
+    },
+    {
+      "snippet_id": "15994::FIGURE::3",
+      "snippet_type": "FIGURE",
+      "location": "1 Introduction",
+      "content": "![Figure 8](image_8.jpg) <!-- Caption: Introduction, index 8 -->",
+      "content_length": 64,
+      "metadata": {"caption": "Introduction, index 8", "image_available": false}
+    },
+    {
+      "snippet_id": "15994::FIGURE::4",
+      "snippet_type": "FIGURE",
+      "location": "1 Introduction",
+      "content": "![Figure 9](image_9.jpg) <!-- Caption: Introduction, index 9 -->",
+      "content_length": 64,
+      "metadata": {"caption": "Introduction, index 9", "image_available": false}
+    },
+    {
+      "snippet_id": "15994::FIGURE::5",
+      "snippet_type": "FIGURE",
+      "location": "1 Introduction",
+      "content": "![Figure 10](image_10.jpg) <!-- Caption: Introduction, index 10 -->",
+      "content_length": 67,
+      "metadata": {"caption": "Introduction, index 10", "image_available": false}
+    },
+    {
+      "snippet_id": "15994::FIGURE::6",
+      "snippet_type": "FIGURE",
+      "location": "2.2 Multimodal low-rank Adaptation (MokA)",
+      "content": "Figure 2: Illustration of MokA strategy. ![Figure 15](image_15.jpg) <!-- Caption: Method, index 15 -->",
+      "content_length": 102,
+      "metadata": {"caption": "Figure 2: Illustration of MokA strategy", "image_available": false}
+    },
+    {
+      "snippet_id": "15994::FIGURE::7",
+      "snippet_type": "FIGURE",
+      "location": "2.2.2 Task-centric cross-attention",
+      "content": "Figure 3: Cross-attention part of MokA. Take the visual token as an example. ![Figure 18](image_18.jpg) <!-- Caption: Method, index 18 -->",
+      "content_length": 137,
+      "metadata": {"caption": "Figure 3: Cross-attention part of MokA", "image_available": false}
+    },
+    {
+      "snippet_id": "15994::FIGURE::8",
+      "snippet_type": "FIGURE",
+      "location": "4.1 Audio-visual-text scenario",
+      "content": "![Figure 28](image_28.jpg) <!-- Caption: Experiments, index 28 -->",
+      "content_length": 66,
+      "metadata": {"caption": "Experiments, index 28", "image_available": false}
+    },
+    {
+      "snippet_id": "15994::FIGURE::9",
+      "snippet_type": "FIGURE",
+      "location": "4.1 Audio-visual-text scenario",
+      "content": "![Figure 29](image_29.jpg) <!-- Caption: Experiments, index 29 -->",
+      "content_length": 66,
+      "metadata": {"caption": "Experiments, index 29", "image_available": false}
+    },
+    {
+      "snippet_id": "15994::FIGURE::10",
+      "snippet_type": "FIGURE",
+      "location": "4.4 Cross-modal interaction variants",
+      "content": "![Figure 36](image_36.jpg) <!-- Caption: Experiments, index 36 -->",
+      "content_length": 66,
+      "metadata": {"caption": "Experiments, index 36", "image_available": false}
+    },
+    {
+      "snippet_id": "15994::FIGURE::11",
+      "snippet_type": "FIGURE",
+      "location": "4.4 Cross-modal interaction variants",
+      "content": "![Figure 37](image_37.jpg) <!-- Caption: Experiments, index 37 -->",
+      "content_length": 66,
+      "metadata": {"caption": "Experiments, index 37", "image_available": false}
+    },
+    {
+      "snippet_id": "15994::FIGURE::12",
+      "snippet_type": "FIGURE",
+      "location": "4.4 Cross-modal interaction variants",
+      "content": "![Figure 38](image_38.jpg) <!-- Caption: Experiments, index 38 -->",
+      "content_length": 66,
+      "metadata": {"caption": "Experiments, index 38", "image_available": false}
+    },
+    {
+      "snippet_id": "15994::FIGURE::13",
+      "snippet_type": "FIGURE",
+      "location": "I Datasets",
+      "content": "Figure 6: Cross-attention weight visualization, where deeper colors indicate higher attention weights. ![Figure 61](image_61.jpg) <!-- Caption: Appendix, index 61 -->",
+      "content_length": 165,
+      "metadata": {"caption": "Figure 6: Cross-attention weight visualization", "image_available": false}
+    },
+    {
+      "snippet_id": "15994::CODE::0",
+      "snippet_type": "CODE",
+      "location": "3.2 Training procedure and benchmarks",
+      "content": "```mermaid\ngraph TD\n    A[LLM Backbone] --> B[Text A]\n    A --> C[Audio A]\n    A --> D[Visual A]\n    A --> E[Shared B]\n    E --> F[Multimodal B]\n    F --> G[Multimodal A]\n    B --> H[Text token]\n    C --> I[Audio token]\n    D --> J[Visual token]\n```\n(a) Uni LoRA + MM LoRA.",
+      "content_length": 270,
+      "metadata": {"language": "mermaid"}
+    },
+    {
+      "snippet_id": "15994::CODE::1",
+      "snippet_type": "CODE",
+      "location": "3.2 Training procedure and benchmarks",
+      "content": "```mermaid\ngraph TD\n    A[LLM Backbone] --> B[Text A]\n    A --> C[Audio A]\n    A --> D[Visual A]\n    A --> E[Shared B]\n    E --> F[Gate]\n    F --> G[Multimodal B]\n    G --> H[Multimodal A]\n    B --> I[Text token]\n    C --> J[Audio token]\n    D --> K[Visual token]\n```\n(b) Uni LoRA + MM LoRA + Gate. Figure 4: Framework of baselines that also follow our multimodal-aware basis, yet relying on more parameters and offering limited cross-modal interaction.",
+      "content_length": 450,
+      "metadata": {"language": "mermaid"}
+    }
+  ]
+}

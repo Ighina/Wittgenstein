@@ -1,0 +1,118 @@
+{
+  "paper_id": "7354-Learning__Approximately__Equivariant_Networks_via_Constrained_Optimization",
+  "title": "Learning: Approximately: Equivariant Networks via Constrained Optimization",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "Citation / attribution",
+      "error_location": "Section 2, Related Work, final paragraph",
+      "confidence": 0.99,
+      "supporting_evidence": "The paper cites “Doe et al. [99]” with authors “J. Doe, A. Fake, and B. Smith” and title “Hybrid Symmetry Networks: Exact Partial Equivariance with Minimal Complexity.” Reference [99] does not appear in the reference list, and the placeholder-like author names strongly indicate a fabricated/unverifiable citation. This must be removed or replaced with a real, complete citation.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "7354-Learning__Approximately__Equivariant_Networks_via_Constrained_Optimization::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Theorem 4.1 and Appendix A.6, especially equations (9) and (10)",
+      "confidence": 0.98,
+      "supporting_evidence": "The proof asserts ||z_i|| ≤ ∏_{j=1}^i M(1+|γ_j|)||x||. This requires every layer to map zero to zero. Assumption 1 says only that f_eq is Lipschitz and f_neq satisfies ||f_neq(x)|| ≤ B||x||; it does not require f_eq(0)=0. A Lipschitz equivariant layer may have a nonzero invariant bias/constant output, particularly for trivial representations. Thus the asserted norm bound, and consequently the theorem bound proportional to ||x||, need not hold. For x=0, a nonzero equivariant bias can already invalidate the claimed zero right-hand side.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "7354-Learning__Approximately__Equivariant_Networks_via_Constrained_Optimization::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Theorem 4.2 and Appendix A.7",
+      "confidence": 0.97,
+      "supporting_evidence": "Theorem 4.2 inherits the invalid layer-norm bound from equation (9), so its equivariance-error bound is not established under the stated assumptions. In addition, Appendix Theorem A.2 states only Assumption 1, but its proof explicitly uses bounded group actions, e.g. ||ρ_i(g)f_neq(z)|| ≤ B||f_neq(z)|| and ||ρ_{i-1}(g)z|| ≤ B||z||. That necessary hypothesis is absent from Theorem A.2.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "7354-Learning__Approximately__Equivariant_Networks_via_Constrained_Optimization::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Theorem 4.2, comparison with Appendix A.7 equation (14)",
+      "confidence": 0.94,
+      "supporting_evidence": "The simplified main-text bound does not follow from the appendix derivation. Appendix equation (14) yields factors M^{L-1}(1+Cγ)^{L-1} with C=max(B/M,1), equivalently (M+max(B,M)γ)^{L-1}. Theorem 4.2 instead states (M+Cγ)^{L-1} with C=max(B,1). Under Assumption 1 there is no condition M≤1, so max(B,1) need not dominate M. For example, if M is large and B≤1, the stated main-text factor is too small and is not a valid consequence of the proof.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "7354-Learning__Approximately__Equivariant_Networks_via_Constrained_Optimization::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Algorithm 2, step 5; Section 4.2 derivation from (PII)",
+      "confidence": 0.99,
+      "supporting_evidence": "For (PII), the Lagrangian contribution involving u_i is (ρ/2)u_i^2 + λ_i(|γ_i|−u_i). Its gradient with respect to u_i is ρu_i−λ_i. A primal gradient-descent update must therefore be u_i(t+1)=u_i(t)−η_p(ρu_i(t)−λ_i(t)) = u_i(t)+η_p(λ_i(t)−ρu_i(t)). Algorithm 2 gives the opposite sign, u_i(t+1)=u_i(t)+η_p(ρu_i(t)−λ_i(t)), which ascends in u and does not implement the stated constrained problem.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "7354-Learning__Approximately__Equivariant_Networks_via_Constrained_Optimization::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Algorithm 2 and Appendix A.1 pseudo-code for resilient constraints",
+      "confidence": 0.97,
+      "supporting_evidence": "Problem (PII) requires u∈R_+^L, but Algorithm 2 supplies neither an initialization for u nor a projection/clamp of u onto the nonnegative orthant. The Appendix code likewise makes u an unconstrained nn.Parameter and clamps only λ. Moreover, its proposed Algorithm-2 code uses `dual_loss += (dual_var * slack) - (u * slack)` and assigns `lambdas[i].grad = -slack - u`; neither expression is the Lagrangian or dual gradient of (PII). Thus the supplied implementation cannot be regarded as an implementation of the stated resilient optimization algorithm.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "7354-Learning__Approximately__Equivariant_Networks_via_Constrained_Optimization::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Section 3 description of γ versus Algorithms 1–2",
+      "confidence": 0.93,
+      "supporting_evidence": "Section 3 defines relaxation parameters as γ∈{0,1}^L and then says continuous γ values lie between 0 and 1. Algorithms 1 and 2 perform unconstrained gradient updates on γ with no projection to [0,1], and the subsequent theory explicitly uses |γ_i|, acknowledging potentially negative values. The claimed parameter domain and the actual algorithm are inconsistent; either the domain restriction must be removed or the algorithms must enforce it.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "7354-Learning__Approximately__Equivariant_Networks_via_Constrained_Optimization::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Appendix A.9, paragraph preceding Table 5 versus Table 5",
+      "confidence": 0.99,
+      "supporting_evidence": "The text says that “results [were] averaged over 3 seeds only,” whereas Table 5 reports 5 seeds for ModelNet40, N-Body, and QM9, and 3 only for CMU MoCap. These statements cannot both describe the reported experimental results without qualification.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "7354-Learning__Approximately__Equivariant_Networks_via_Constrained_Optimization::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Section 7 Conclusion",
+      "confidence": 0.99,
+      "supporting_evidence": "The conclusion says ACE “completely solves the challenges,” “consistently and significantly” improves results across benchmarks, achieves “unmatched accuracy and robustness relative to all existing methods,” and does so “without any need for manual tuning.” These claims contradict the paper's own cautious abstract (“improvements in select settings”), Section 5.2 (“does not consistently outperform baselines”), and Appendix A.9/Table 5, which report selective grid searches over primal and dual learning rates. The conclusion materially overstates the evidence.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "7354-Learning__Approximately__Equivariant_Networks_via_Constrained_Optimization::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "RQ3 and Section 5.2 discussion following Figure 4",
+      "confidence": 0.95,
+      "supporting_evidence": "RQ3 asks whether Theorem 4.2’s theoretical bounds predict observed deviations, but the reported analysis only plots an empirical equivariance deviation estimated from five rotations. It never evaluates the theorem's upper bound, reports the required constants M and B, or compares observed errors with the bound. Therefore the statement that the experiment addresses theoretical-versus-empirical alignment is unsupported.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "7354-Learning__Approximately__Equivariant_Networks_via_Constrained_Optimization::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Section 4.2 statement that translations are isometric group actions; Section 3 representation assumption",
+      "confidence": 0.89,
+      "supporting_evidence": "The paper assumes each group action ρ_i maps G into GL_{k_i}, hence is linear, then states that “rotation, translation” actions are isometric. Ordinary translations of point coordinates are affine, not linear maps in GL_k, and are not norm-preserving about the origin. The statement is only defensible after an unstated homogeneous-coordinate or centered/displacement representation construction, which is particularly important because the experiments invoke E(3)/SE(3) architectures.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "7354-Learning__Approximately__Equivariant_Networks_via_Constrained_Optimization::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 11,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (gpt-5.6-terra, taxonomy=default): 11 error(s) reported.",
+  "baseline": {
+    "model": "gpt-5.6-terra",
+    "provider": "openai",
+    "taxonomy": "default",
+    "paper_chars": 77192,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 22185,
+      "output_tokens": 4654,
+      "cache_read_input_tokens": null,
+      "cache_creation_input_tokens": null
+    }
+  }
+}

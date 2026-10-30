@@ -1,0 +1,536 @@
+{
+  "paper_name": "paper",
+  "paper_path": "/Users/iacopoghinassi/Documents/Github/Wittgenstein/data/paperaudit-workspace/20382-ControlFusion__A_Controllable_Image_Fusion_Network_with_Language-Vision_De/paper.md",
+  "tag": "opus5",
+  "lean_project": "MATH_VERIFICATION/Paper",
+  "lean_project_kept": true,
+  "totals": {
+    "snippets_extracted": 17,
+    "routed_to_math": 9,
+    "routed_to_lean": 8,
+    "lean_passed": 7,
+    "lean_refuted": 1,
+    "lean_failed": 0,
+    "fallbacks_run": 0,
+    "errors_detected": 1
+  },
+  "results": [
+    {
+      "snippet_id": "paper::EQUATION::0",
+      "snippet_type": "EQUATION",
+      "location": "3 Physics-driven Degraded Imaging Model",
+      "content": "$$D_m = \\mathcal{P}_s(\\mathcal{P}_w(\\mathcal{P}_i(I_m))),$$ (1)\n\nwhere $D_m$ is the corresponding degraded image, and $\\mathcal{P}_i$, $\\mathcal{P}_w$, and $\\mathcal{P}_s$ represent illumination-, weather-, and sensor-related distortions, respectively; $I_m$ ($m \\in \\{ir, vi\\}$) is a clear image.",
+      "route": "verify-math",
+      "route_rationale": "Composition of three operators that are only pinned down informally; no closed-form claim to formalise.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.75,
+        "reasoning": "The composition order is physically coherent: illumination acts on the scene first, atmospheric transfer next, sensor response last, so $\\mathcal{P}_s \\circ \\mathcal{P}_w \\circ \\mathcal{P}_i$ is the right nesting. No algebraic step is performed, so there is nothing to invalidate. One observation that is **not** an error but is worth noting: the component operators are specified on mutually inconsistent intensity scales — $\\mathcal{P}_s$ adds noise with $\\sigma \\in [5, 20]$ and $\\varepsilon \\in [1, 15]$ (an 8-bit $[0,255]$ convention), while $\\mathcal{P}_w$ constrains atmospheric light to $A \\in [0.3, 0.9]$ and $\\mathcal{P}_i$ uses $L^\\gamma$ with $L$ normalised (a $[0,1]$ convention). Eq. (1) composes them without stating a rescaling. This is a presentation gap in a stated convention, not a derivation error.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.75
+    },
+    {
+      "snippet_id": "paper::EQUATION::1",
+      "snippet_type": "EQUATION",
+      "location": "Sensor-related Distortions",
+      "content": "$$D_{ir}^s = \\mathcal{P}_s(I_{ir}) = \\alpha \\cdot I_{ir} + \\mathbf{1}_H \\mathbf{n}^\\top,$$ (2)\n\nwhere $\\alpha$ is a constant less than 1 for contrast reduction, $\\mathbf{1}_H \\in \\mathbb{R}^H$ is an all-ones column vector and $\\mathbf{n} \\in \\mathbb{R}^W$ represents the column-wise Gaussian noise vector sampled from $\\mathcal{N}(0, \\varepsilon^2)$ with $\\varepsilon \\in [1, 15]$.",
+      "route": "verify-math-lean",
+      "route_rationale": "Outer-product dimensions and the \"$\\alpha < 1$ reduces contrast\" claim are both formalisable.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::1",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "Formalised over $\\texttt{Matrix (Fin H) (Fin W)}\\ \\mathbb{R}$ with hypotheses $0 < \\alpha < 1$ (the paper's \"constant less than 1\", read in its evident sense). Three conjuncts compiled clean: (i) the additive term $\\mathbf{1}_H \\mathbf{n}^\\top$ is constant down each column, so it is genuinely vertical stripe noise as described and its $H \\times W$ shape matches $D_{ir}^s$; (ii) within a column, $D$'s inter-row differences equal $\\alpha$ times the clean image's; (iii) therefore $|D_{ij} - D_{i'j}| < |I_{ij} - I_{i'j}|$ strictly wherever the clean signal differs, which is exactly the claimed contrast reduction. The only pedantic gap is that the literal condition \"$\\alpha$ less than 1\" admits $\\alpha \\le 0$, under which contrast would be amplified or inverted; the intended reading is plainly $\\alpha \\in (0,1)$ and this is not reported as an error.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean (saved as Paper/Verified/paper__EQUATION__1_20382opus5.lean)",
+          "formal_statement": "theorem eq2_stripe_and_contrast {H W : ℕ} (α : ℝ) (hα : 0 < α) (hα1 : α < 1)\n    (I : Matrix (Fin H) (Fin W) ℝ) (n : Fin W → ℝ) :\n    (∀ i i' : Fin H, ∀ j : Fin W,\n        Matrix.vecMulVec (fun _ : Fin H => (1 : ℝ)) n i j\n          = Matrix.vecMulVec (fun _ : Fin H => (1 : ℝ)) n i' j)\n    ∧ (∀ i i' : Fin H, ∀ j : Fin W,\n        D α I n i j - D α I n i' j = α * (I i j - I i' j))\n    ∧ (∀ i i' : Fin H, ∀ j : Fin W, I i j ≠ I i' j →\n        |D α I n i j - D α I n i' j| < |I i j - I i' j|)",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::EQUATION::2",
+      "snippet_type": "EQUATION",
+      "location": "Sensor-related Distortions",
+      "content": "$$D_m^s = \\mathcal{P}_s(I_m) = I_m \\ast K(N, \\theta) + \\mathcal{N}(0, \\sigma^2),$$ (3)\n\nwhere $\\mathcal{N}(0, \\sigma^2)$ represents Gaussian noise with $\\sigma \\in [5, 20]$. $\\ast$ denotes convolution with a blur kernel $$K(N, \\theta) = \\frac{1}{N} R_\\theta(\\delta_c \\otimes \\mathbf{1}_N)$$ constructed by rotating an impulse $\\delta_c \\otimes \\mathbf{1}_N$ with random angle $\\theta \\in [10, 80]$, using $1/N$ to normalize the kernel energy. Here, $N \\in [3, 12]$ controls the blur level.",
+      "route": "verify-math-lean",
+      "route_rationale": "\"$1/N$ normalizes the kernel energy\" is a crisp normalisation claim with a definite truth value.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::2",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "The pre-rotation kernel has exactly $N$ taps of value $1/N$ (rotation only permutes/resamples tap positions). Lean proved, clean: $\\sum_i k_i = 1$, $\\sum_i k_i^2 = 1/N$, and for $N \\ge 2$, $\\sum_i k_i^2 \\ne 1$. So the $1/N$ factor is the **correct** scaling for a motion-blur kernel: it gives unit DC gain, which is what makes the blur mean-preserving and is unambiguously the right choice for $N \\in [3,12]$. What it does not do is normalise *energy* in the $\\ell^2$ sense ($\\|K\\|_2 = 1/\\sqrt{N}$). The mathematics is right and the word \"energy\" is loose; per this skill's rules a terminology slip over correct mathematics is not flagged.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean (saved as Paper/Verified/paper__EQUATION__2_20382opus5.lean)",
+          "formal_statement": "theorem kernel_unit_sum_but_l2_energy_eq_inv_N (N : ℕ) (hN : 0 < N) :\n    (∑ i, k N i) = 1\n    ∧ (∑ i, (k N i) ^ 2) = 1 / (N : ℝ)\n    ∧ (2 ≤ N → (∑ i, (k N i) ^ 2) ≠ 1)",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::EQUATION::3",
+      "snippet_type": "EQUATION",
+      "location": "Illumination-related Distortions",
+      "content": "$$D_{vi}^i = \\mathcal{P}_i(I_{vi}) = \\frac{I_{vi}}{L} \\cdot L^\\gamma,$$ (4)\n\nwhere $L$ is the illumination map estimated by LIME. $\\gamma \\in [0.5, 3]$ controls the illumination level.",
+      "route": "verify-math-lean",
+      "route_rationale": "Monotonicity of the degradation in $\\gamma$ is a clean inequality claim.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::3",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "Formalised with real exponent $\\texttt{Real.rpow}$ under a normalised illumination map $0 < L < 1$ and clean pixel $I > 0$. Lean proved clean: $D|_{\\gamma=1} = I$ (identity), $\\gamma \\mapsto D$ is strictly decreasing, and hence $\\gamma > 1 \\Rightarrow D < I$ (low-light) while $\\gamma < 1 \\Rightarrow D > I$ (over-exposure). This confirms the Retinex construction behaves as claimed and that the single range $\\gamma \\in [0.5, 3]$ does straddle both degradations the paper attributes to it, with $\\gamma = 1$ the neutral point. Note the hypothesis $L < 1$ is load-bearing and is not stated in the paper: if LIME returned an unnormalised $L > 1$ the direction of the effect would invert. That is an unstated-convention gap, not an error in the equation.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean (saved as Paper/Verified/paper__EQUATION__3_20382opus5.lean)",
+          "formal_statement": "theorem retinex_gamma_controls_illumination\n    (I L : ℝ) (hI : 0 < I) (hL0 : 0 < L) (hL1 : L < 1) :\n    Ddeg I L 1 = I\n    ∧ (∀ γ₁ γ₂ : ℝ, γ₁ < γ₂ → Ddeg I L γ₂ < Ddeg I L γ₁)\n    ∧ (∀ γ : ℝ, 1 < γ → Ddeg I L γ < I)\n    ∧ (∀ γ : ℝ, γ < 1 → I < Ddeg I L γ)",
+          "compiler_feedback": "Paper/TMP.lean:18:31: warning: This simp argument is unused: div_mul_cancel₀ (linter only; no severity-1 diagnostic)",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::EQUATION::4",
+      "snippet_type": "EQUATION",
+      "location": "Weather-related Distortions",
+      "content": "$$D_{vi}^w = \\mathcal{P}_w(I_{vi}) = I_{vi} \\cdot t + A(1 - t) + R,$$ (5)\n\nwhere $t$ and $A$ denote the transmission map and atmospheric light, respectively, and $t$ is defined by the exponential decay of light, expressed as $t = e^{-\\beta d(x)}$, where the haze density coefficient $\\beta \\in [0.5, 2.0]$. $d(x)$ refers to the scene depth, estimated by DepthAnything-V2. Besides, $A$ is constrained within $[0.3, 0.9]$ for realistic simulation.",
+      "route": "verify-math-lean",
+      "route_rationale": "Range of $t = e^{-\\beta d}$ and the convex-combination bound are directly formalisable.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::4",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.88,
+        "reasoning": "Lean proved clean, under the paper's own parameter ranges $\\beta \\in [0.5, 2]$, $d \\ge 0$, $A \\in [0.3, 0.9]$, $I \\in [0,1]$: (i) $t = e^{-\\beta d} \\in (0, 1]$, so $t$ is a valid transmission; (ii) the haze term $I t + A(1-t)$ is a convex combination of $I$ and $A$ and stays in $[0,1]$ — the scattering model is range-preserving; (iii) adding the rain layer $R > 0$ breaks that, with explicit witness $I = 1$, $A = 0.9$, $t = 1$, $R = 0.5$ giving $D = 1.5 > 1$. Point (iii) is a property of the additive-rain convention used throughout the dehazing/deraining literature and is handled by clipping in any implementation; the paper makes no range claim about $D_{vi}^w$, so this is recorded as a modelling note, not an error.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean (saved as Paper/Verified/paper__EQUATION__4_20382opus5.lean)",
+          "formal_statement": "theorem eq5_transmission_convexity_and_rain_overshoot\n    (β d I A t : ℝ) (hβ : (0.5 : ℝ) ≤ β) (hβ2 : β ≤ 2) (hd : 0 ≤ d)\n    (hI0 : 0 ≤ I) (hI1 : I ≤ 1) (hA0 : (0.3 : ℝ) ≤ A) (hA1 : A ≤ (0.9 : ℝ))\n    (ht : t = Real.exp (-(β * d))) :\n    (0 < t ∧ t ≤ 1)\n    ∧ (0 ≤ I * t + A * (1 - t) ∧ I * t + A * (1 - t) ≤ 1)\n    ∧ (∃ I' A' R' t' : ℝ, 0 ≤ I' ∧ I' ≤ 1 ∧ (0.3 : ℝ) ≤ A' ∧ A' ≤ (0.9 : ℝ)\n        ∧ 0 < R' ∧ 0 < t' ∧ t' ≤ 1 ∧ 1 < I' * t' + A' * (1 - t') + R')",
+          "compiler_feedback": "Paper/TMP.lean:6:42: warning: Variable name `hβ2` is not explicitly referenced (linter only; no severity-1 diagnostic)",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.88
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::1",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "Method (DDL-12 dataset construction)",
+      "content": "Based on Eq. (1), we construct a multi-modal composite Degradation Dataset with four Levels (DDL-12), comprising 12 distinct degradations. We selected 2,050 high-quality clear images from RoadScene, LLVIP, and MSRS datasets. Subsequently, the degraded imaging model is employed to synthesize degraded images with 12 types and 4 levels of degradation. Finally, the DDL-12 dataset contains approximately 48,000 training image pairs and 4,800 test image pairs.",
+      "route": "verify-math",
+      "route_rationale": "Cardinality arithmetic whose correctness depends on an unstated sampling protocol; not a theorem.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::1",
+        "verifier_name": "math-equations",
+        "status": "UNVERIFIABLE",
+        "error_detected": false,
+        "confidence": 0.5,
+        "reasoning": "The counts cannot be reconciled or refuted without the sampling protocol, which the paper does not state. Under exhaustive synthesis ($12$ types $\\times\\, 4$ levels $= 48$ variants per clear pair), the reported $48{,}000 + 4{,}800 = 52{,}800$ pairs correspond to $52{,}800/48 = 1{,}100$ distinct clear pairs, not the $2{,}050$ \"high-quality clear images\" selected — and $2{,}050 \\times 48 = 98{,}400$, nearly twice the reported total. Two readings make the numbers consistent, and the paper does not say which holds: (a) $2{,}050$ counts individual images rather than registered IR/VI pairs, i.e. about $1{,}025$ pairs, which is close to the $1{,}100$ implied; or (b) synthesis is non-exhaustive, which the hedge \"approximately 48,000\" suggests. The test count $4{,}800 = 100 \\times 12 \\times 4$ does match §5.1's \"Each degradation scenario includes 100 image pairs\" exactly. Because either reading is admissible, this is recorded as unsettled rather than as an error.",
+        "predicted_error_category": null,
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": []
+      },
+      "status": "UNVERIFIABLE",
+      "error_detected": false,
+      "confidence": 0.5
+    },
+    {
+      "snippet_id": "paper::EQUATION::5",
+      "snippet_type": "EQUATION",
+      "location": "4.2 Stage I: Textual-Visual Prompts Alignment",
+      "content": "F^m_fre = \\sum_{x=0}^{W-1} \\sum_{y=0}^{H-1} D_m(x,y) e^{-j 2\\pi (ux/W + vy/H)}, \\quad F_fre = Linear(Conv([F^{ir}_{fre}, F^{vi}_{fre}])). (6)\n\nHere $[\\cdot, \\cdot]$ denotes channel-wise concatenation.",
+      "route": "verify-math",
+      "route_rationale": "Standard DFT definition; an index-convention check by inspection, and formalising the DFT in Lean buys nothing here.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::5",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "The 2D DFT is written correctly: the spatial index $x$ runs $0 \\ldots W-1$ and is paired with $u/W$, while $y$ runs $0 \\ldots H-1$ and is paired with $v/H$, so the index-to-dimension pairing is consistent and the kernel $e^{-j2\\pi(ux/W + vy/H)}$ is the standard forward transform. The left-hand side omits its free arguments $(u,v)$, and the complex-valued output is fed directly into a real-valued `Conv`/`Linear` without an explicit magnitude or real/imaginary split — both are notational omissions of the kind this verifier is instructed not to flag, not mathematical errors.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::EQUATION::6",
+      "snippet_type": "EQUATION",
+      "location": "4.2 Stage I: Textual-Visual Prompts Alignment",
+      "content": "To ensure semantic consistency between visual/text embeddings, we apply MSE loss $L_{mse}$ and cosine similarity loss $L_{cos}$:\nL_I = \\lambda_1 ||p_vis - p_text||^2_2 + \\lambda_2 (1 - (p_vis \\cdot p_text)/(||p_vis|| ||p_text||)). (7)\nwhere $\\lambda_1$ and $\\lambda_2$ balance the loss components.",
+      "route": "verify-math-lean",
+      "route_rationale": "Non-negativity and boundedness of the cosine term follow from Cauchy-Schwarz; a clean Lean target.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::6",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "Formalised in $\\texttt{EuclideanSpace}\\ \\mathbb{R}\\ (\\texttt{Fin } n)$ for non-zero embeddings. Lean proved clean, via $|\\langle u, v\\rangle| \\le \\|u\\|\\|v\\|$: (i) the cosine penalty $1 - \\langle u,v\\rangle/(\\|u\\|\\|v\\|)$ lies in $[0, 2]$, so it is a well-posed non-negative loss and the stated $\\lambda_1 : \\lambda_2 = 1 : 3$ weighting cannot produce a negative, unbounded-below objective; (ii) $L_I \\ge 0$ for $\\lambda_1, \\lambda_2 \\ge 0$; (iii) $L_I = 0$ at $p_{vis} = p_{text}$, i.e. the MSE term and the cosine term share a common minimiser and the two components do not pull against each other. The degenerate case $p_{vis} = 0$ or $p_{text} = 0$ makes the cosine term undefined; the paper does not mention it, and it is a measure-zero edge case for learned embeddings.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean (saved as Paper/Verified/paper__EQUATION__6_20382opus5.lean)",
+          "formal_statement": "theorem eq7_cosine_term_bounded_and_loss_nonneg {n : ℕ}\n    (l1 l2 : ℝ) (hl1 : 0 ≤ l1) (hl2 : 0 ≤ l2)\n    (u v : EuclideanSpace ℝ (Fin n)) (hu : u ≠ 0) (hv : v ≠ 0) :\n    (0 ≤ 1 - ⟪u, v⟫ / (‖u‖ * ‖v‖) ∧ 1 - ⟪u, v⟫ / (‖u‖ * ‖v‖) ≤ 2)\n    ∧ 0 ≤ LI l1 l2 u v\n    ∧ (u = v → LI l1 l2 u v = 0)",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 3,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::EQUATION::7",
+      "snippet_type": "EQUATION",
+      "location": "4.3.1 Network Architectures",
+      "content": "{Q_{ir}, K_{ir}, V_{ir}} = \\mathfrak{F}^{qkv}_{ir}(F_{ir}), \\quad {Q_{vi}, K_{vi}, V_{vi}} = \\mathfrak{F}^{qkv}_{vi}(F_{vi}). (8)\n\nSubsequently, we swap the queries Q of complementary modalities to promote spatial interaction:\nF^{ir}_f = softmax((Q_{vi} K_{ir})/\\sqrt{d_k}) V_{ir}, \\quad F^{vi}_f = softmax((Q_{ir} K_{vi})/\\sqrt{d_k}) V_{vi}, (9)\nwhere $d_k$ is the scaling factor. We concatenate $F^{ir}_f$ and $F^{vi}_f$ to get fusion features: $F_f = [F^{ir}_f, F^{vi}_f]$.",
+      "route": "verify-math",
+      "route_rationale": "Architecture notation; no crisp formal assertion that could be true or false.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::7",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.8,
+        "reasoning": "This is standard scaled dot-product cross-attention with queries swapped across modalities, and the swap is self-consistent: $F^{ir}_f$ uses $Q_{vi}$ against $K_{ir}, V_{ir}$, and $F^{vi}_f$ mirrors it. Two notational slips, neither derivation-invalidating: the inner product is printed as $Q K$ rather than $Q K^\\top$ (with $Q, K \\in \\mathbb{R}^{n \\times d_k}$ the un-transposed product is not conformable), and the text calls $d_k$ \"the scaling factor\" when the scaling factor is $\\sqrt{d_k}$ and $d_k$ is the key dimension. Both are ubiquitous shorthand in the attention literature.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "4.3.1 Network Architectures (Prompt-modulated Module)",
+      "content": "First, sequential MLPs ($\\Phi_p$) derive distributional optimization parameters: $[\\gamma_p, \\beta_p] = \\Phi_p(p)$, where $p \\in \\{p_{vis}, p_{text}\\}$. Then, $\\gamma_p$ and $\\beta_p$ are applied for feature scaling and bias shifting in a residual manner: $\\hat{F}_f = (1 + \\gamma_p) \\odot F_f + \\beta_p$, where $\\odot$ denotes the Hadamard product.",
+      "route": "verify-math",
+      "route_rationale": "A modelling construction (FiLM-style modulation) rather than an assertion; nothing to prove or refute.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "This is standard FiLM-style affine feature modulation written in residual form. The residual parameterisation $(1 + \\gamma_p)$ is deliberate and correct for its stated purpose: $\\gamma_p = \\beta_p = 0$ recovers the identity $\\hat{F}_f = F_f$, so a zero-initialised $\\Phi_p$ starts from an unmodulated network, which is exactly what \"in a residual manner\" should mean. The Hadamard product requires $\\gamma_p$ to be broadcast across spatial positions (per-channel modulation); that is implied rather than stated, which is an omission, not an error.",
+        "predicted_error_category": null,
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::EQUATION::8",
+      "snippet_type": "EQUATION",
+      "location": "4.3.2 Loss Functions",
+      "content": "$$\\mathcal{L}_{int} = \\frac{1}{HW} \\left\\| I_f - \\max(I_{ir}^{hq}, I_{vi}^{hq}) \\right\\|_1,$$ (10)\nwhere $I_{ir}^{hq}$ and $I_{vi}^{hq}$ are the high-quality source images. From 4.1: $I_{ir} \\in \\mathbb{R}^{H \\times W \\times 1}$, $I_{vi} \\in \\mathbb{R}^{H \\times W \\times 3}$.",
+      "route": "verify-math",
+      "route_rationale": "Channel-count and normalisation bookkeeping, checkable by inspection.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::8",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.7,
+        "reasoning": "The intensity loss is a well-formed $\\ell_1$ regression onto the pointwise maximum of the two clean sources, and it is non-negative by construction. Two bookkeeping looseness points, neither invalidating: (a) $\\max(I_{ir}^{hq}, I_{vi}^{hq})$ pairs a single-channel infrared image with a three-channel visible image, so an unstated broadcast (or luminance projection) is required for the maximum to be defined; (b) the prefactor is $1/HW$ while the summand ranges over $3HW$ entries, so the quantity is a channel-sum rather than a mean. Both only rescale the term, and the scale is absorbed by the hyper-parameter $\\alpha_{int}$ in Eq. (14).",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.7
+    },
+    {
+      "snippet_id": "paper::EQUATION::9",
+      "snippet_type": "EQUATION",
+      "location": "4.3.2 Loss Functions",
+      "content": "$$\\mathcal{L}_{ssim} = 2 - \\big(\\mathrm{SSIM}(I_f, I_{ir}^{hq}) + \\mathrm{SSIM}(I_f, I_{vi}^{hq})\\big).$$ (11)\n\nThe structural similarity loss $L_{ssim}$ ensures the fused image maintains structural consistency with the high-quality source images, preserving essential structural information.",
+      "route": "verify-math-lean",
+      "route_rationale": "$\\mathcal{L}_{ssim} \\ge 0$ given $\\mathrm{SSIM} \\le 1$ is a formalisable bound, as is the zero-set characterisation.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::9",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "Formalised with SSIM abstracted as $S$ carrying its standing properties ($S \\in [-1,1]$ and $S(a,b) = 1 \\iff a = b$). Lean proved clean: $0 \\le \\mathcal{L}_{ssim} \\le 4$, so the loss is well-posed and the constant $2$ is exactly right for a two-term sum; $\\mathcal{L}_{ssim} = 0$ iff $I_f$ equals **both** high-quality sources; and consequently whenever $I_{ir}^{hq} \\ne I_{vi}^{hq}$ — always, for an infrared/visible pair — the loss has a strictly positive floor and cannot be driven to zero. The last point is intrinsic to any fusion objective that regresses one output onto two distinct references, is shared by $\\mathcal{L}_{int}$ and $\\mathcal{L}_{grad}$, and does not contradict anything the paper claims.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean (saved as Paper/Verified/paper__EQUATION__9_20382opus5.lean)",
+          "formal_statement": "theorem eq11_nonneg_bounded_and_positive_floor (S : α → α → ℝ)\n    (hub : ∀ a b, S a b ≤ 1) (hlb : ∀ a b, -1 ≤ S a b)\n    (hid : ∀ a b, S a b = 1 ↔ a = b) (If Iir Ivi : α) :\n    0 ≤ Lssim S If Iir Ivi\n    ∧ Lssim S If Iir Ivi ≤ 4\n    ∧ (Lssim S If Iir Ivi = 0 ↔ (If = Iir ∧ If = Ivi))\n    ∧ (Iir ≠ Ivi → Lssim S If Iir Ivi ≠ 0)",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::EQUATION::10",
+      "snippet_type": "EQUATION",
+      "location": "4.3.2 Loss Functions",
+      "content": "$$\\mathcal{L}_{grad} = \\frac{1}{HW} \\left\\| \\nabla I_f - \\max(\\nabla I_{ir}^{hq}, \\nabla I_{vi}^{hq}) \\right\\|_1,$$ (12)\nwhere $\\nabla$ denotes the Sobel operator. The maximum gradient loss $L_{grad}$ maximizes the retention of key edge information from both source images, generating fusion results with clearer textures.",
+      "route": "verify-math-lean",
+      "route_rationale": "Whether the signed pointwise maximum has the edge-retention property the text asserts is decidable formally.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::10",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.75,
+        "reasoning": "Eq. (12) regresses $\\nabla I_f$ onto the **signed** pointwise maximum $\\max(\\nabla I_{ir}^{hq}, \\nabla I_{vi}^{hq})$, with $\\nabla$ explicitly declared to be \"the Sobel operator\" — a signed response. The accompanying text requires that target to retain the stronger edge of the two sources. Lean settled both directions. The magnitude form satisfies the property: $\\forall a, b$, $|a| \\le \\max(|a|,|b|)$ and $|b| \\le \\max(|a|,|b|)$ compiled clean. The signed form does not: $\\neg\\,\\forall a, b,\\ \\max(|a|,|b|) \\le |\\max(a,b)|$ compiled clean, with explicit witness $a = -3$, $b = -2$ giving $|\\max(a,b)| = 2 < 3 = \\max(|a|,|b|)$. So wherever both Sobel responses are negative — half the edge polarities, by symmetry — the printed target discards the stronger edge and in fact drives $\\nabla I_f$ toward the weaker one. The standard formulation in this literature writes the target as $\\max(|\\nabla I_{ir}|, |\\nabla I_{vi}|)$; the omitted absolute values are what breaks the stated property. Severity is minor: the fix is notational, the surrounding argument and all reported results survive it, and the issue vanishes entirely if $\\nabla$ is read as gradient magnitude rather than as the signed Sobel response the paper says it is. Confidence is held at 0.75 rather than the usual $\\ge 0.9$ for a refutation precisely because of that benign reading.",
+        "predicted_error_category": "Formally refuted",
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean (saved as Paper/Verified/paper__EQUATION__10_20382opus5.lean)",
+          "formal_statement": "theorem eq12_signed_max_loses_edge_magnitude :\n    (∀ a b : ℝ, |a| ≤ max |a| |b| ∧ |b| ≤ max |a| |b|)\n    ∧ ¬ (∀ a b : ℝ, max |a| |b| ≤ |max a b|)\n    ∧ (|max (-3 : ℝ) (-2)| = 2 ∧ max |(-3 : ℝ)| |(-2 : ℝ)| = 3\n        ∧ |max (-3 : ℝ) (-2)| < max |(-3 : ℝ)| |(-2 : ℝ)|)",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.75
+    },
+    {
+      "snippet_id": "paper::EQUATION::11",
+      "snippet_type": "EQUATION",
+      "location": "4.3.2 Loss Functions",
+      "content": "$$\\mathcal{L}_{color} = \\frac{1}{HW} \\left\\| \\mathcal{F}_{CbCr}(I_f) - \\mathcal{F}_{CbCr}(I_{vi}^{hq}) \\right\\|_1,$$ (13)\nwhere $\\mathcal{F}_{CbCr}$ denotes the transfer function of RGB to CbCr.",
+      "route": "verify-math",
+      "route_rationale": "Colour-space regression term; inspection-level check.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::11",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "Well-formed and non-negative. Comparing only the chrominance channels $(Cb, Cr)$ against the visible reference, while leaving luminance to $\\mathcal{L}_{int}$ and $\\mathcal{L}_{grad}$, is the standard and internally consistent decomposition: the RGB$\\to$YCbCr transform is linear and invertible, so constraining $Cb, Cr$ to the visible image does not over-constrain $Y$. The $1/HW$ prefactor again normalises by pixel count rather than entry count (two channels), a scale absorbed into $\\alpha_{color}$.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::EQUATION::12",
+      "snippet_type": "EQUATION",
+      "location": "4.3.2 Loss Functions",
+      "content": "$$\\mathcal{L}_{II} = \\alpha_{int} \\cdot \\mathcal{L}_{int} + \\alpha_{ssim} \\cdot \\mathcal{L}_{ssim} + \\alpha_{grad} \\cdot \\mathcal{L}_{grad} + \\alpha_{color} \\cdot \\mathcal{L}_{color},$$ (14)\nwhere $\\alpha_{int}$, $\\alpha_{ssim}$, $\\alpha_{grad}$, and $\\alpha_{color}$ are hyper-parameters. From 5.1: \"$\\lambda_1$ and $\\lambda_2$ are set with a weight ratio of $1 : 3$, and $\\alpha_{int}$, $\\alpha_{ssim}$, $\\alpha_{grad}$, and $\\alpha_{color}$ are assigned values of $8 : 1 : 10 : 12$\".",
+      "route": "verify-math",
+      "route_rationale": "Weighted sum plus hyper-parameter specification; arithmetic consistency only.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::12",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.8,
+        "reasoning": "A non-negative weighted sum of four non-negative terms with positive weights; nothing can go wrong algebraically. $\\mathcal{L}_{ssim} \\ge 0$ was independently machine-checked (see paper::EQUATION::9), so $\\mathcal{L}_{II} \\ge 0$ follows. The paper gives $\\alpha$ and $\\lambda$ only as ratios ($8:1:10:12$ and $1:3$) rather than absolute values, which is an under-specification for reproduction, but for a single additively-weighted objective the overall scale only interacts with the learning rate and so does not make the stated configuration inconsistent.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::DEFINITION::0",
+      "snippet_type": "DEFINITION",
+      "location": "A.1 Prompt Design Details",
+      "content": "Each prompt specifies three key components: (i) the affected modality, (ii) the degradation type, and (iii) the severity level (an integer from 1 to 10). ... To characterize degradation severity, we define a scale from 1 to 10, with representative anchor points as follows: Level 1: barely perceptible degradation, Level 4: degradation begins to interfere with human scene understanding, Level 7: degradation severely hinders human perception of the scene, Level 10: most useful information is completely obscured. Intermediate levels can be interpolated between these anchor points. [cf. 5.3: \"We employ numerical values to quantify the severity of degradation in our design, where higher numbers indicate more severe degradation, enabling precise continuous control.\"]",
+      "route": "verify-math",
+      "route_rationale": "Asserts a property of the severity scale (ordering, interpolability, continuity) that could be false; prose argument with no formalisable core.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::DEFINITION::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.65,
+        "reasoning": "The scale is internally coherent: the four anchors $1 < 4 < 7 < 10$ are monotonically ordered by described severity, and the six remaining integers $\\{2,3,5,6,8,9\\}$ are exactly the \"intermediate levels\" interpolable between anchors, consistent with §5.3's claim of generalisation to unseen intermediate degrees. The one friction is terminological: §A.1 defines severity as \"an integer from 1 to 10\" while §5.3 claims \"precise continuous control\". A $10$-point integer scale supports fine-grained but not continuous control. This overstates granularity in prose; it does not make any equation or quantity wrong, so it is not flagged.",
+        "predicted_error_category": null,
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.65
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::2",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "A.7 Model Complexity Analysis (Table 8)",
+      "content": "Although CLIP accounts for a significant number of parameters (102M, 55.9% of the total), they are frozen during training and thus introduce no training overhead. In terms of inference cost, CLIP and SFVA are responsible for a modest 0.81% and 7.5% of the total.\n\nTable 8: | CLIP-L/14@336px | 102.00 (55.88%) | 13.088 (0.81%) | 0.0120 (6.55%) | | SFVA | 15.27 (8.37%) | 122.32 (7.54%) | 0.0067 (3.66%) | | Full Model | 182.54 | 1622.00 | 0.1833 |",
+      "route": "verify-math-lean",
+      "route_rationale": "Pure rational arithmetic — exactly what `norm_num` settles, and cheaper to machine-check than to eyeball.",
+      "lean_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::2",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.95,
+        "reasoning": "All six printed percentages were re-derived from the printed absolute values in exact $\\mathbb{Q}$ arithmetic and every one agrees to the two decimal places shown (within $0.005$ percentage points): $102.00/182.54 = 55.88\\%$, $15.27/182.54 = 8.37\\%$, $13.088/1622.00 = 0.81\\%$, $122.32/1622.00 = 7.54\\%$, $0.0120/0.1833 = 6.55\\%$, $0.0067/0.1833 = 3.66\\%$. The prose figure \"55.9% of the total\" also agrees, and the two components' parameter counts sum to less than the stated full-model total. Note the prose \"0.81% and 7.5%\" quotes the FLOPs column, not the time column (which is $6.55\\%$ and $3.66\\%$) — consistent with its \"inference cost\" framing. Worth recording: an initial hand calculation suggested the SFVA parameter share should round to $8.36\\%$; the exact Lean computation gives $8.3653\\%$, confirming the paper's $8.37\\%$ is correct and the hand estimate was wrong.",
+        "predicted_error_category": null,
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean (saved as Paper/Verified/paper__MATHEMATICAL_MODEL__2_20382opus5.lean)",
+          "formal_statement": "theorem table8_percentage_audit :\n    |(10200 : ℚ) / 18254 * 100 - 5588 / 100| < 1 / 200\n    ∧ |(1527 : ℚ) / 18254 * 100 - 837 / 100| < 1 / 200\n    ∧ |(13088 : ℚ) / 1622000 * 100 - 81 / 100| < 1 / 200\n    ∧ |(12232 : ℚ) / 162200 * 100 - 754 / 100| < 1 / 200\n    ∧ |(120 : ℚ) / 1833 * 100 - 655 / 100| < 1 / 200\n    ∧ |(67 : ℚ) / 1833 * 100 - 366 / 100| < 1 / 200\n    ∧ |(10200 : ℚ) / 18254 * 100 - 559 / 10| < 1 / 20\n    ∧ (10200 : ℚ) / 100 + 1527 / 100 < 18254 / 100",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 3,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.95
+    }
+  ],
+  "findings": [
+    {
+      "snippet_id": "paper::EQUATION::10",
+      "category": "Formally refuted",
+      "severity": "minor",
+      "confidence": 0.75,
+      "evidence": "Eq. (12) regresses the fused gradient onto the **signed** pointwise maximum $\\max(\\nabla I_{ir}^{hq}, \\nabla I_{vi}^{hq})$, with $\\nabla$ explicitly declared to be \"the Sobel operator\" (a signed response), while the accompanying text claims the loss \"maximizes the retention of key edge information from both source images\". Lean refuted that property for the signed form: $\\neg\\,\\forall a, b \\in \\mathbb{R},\\ \\max(|a|,|b|) \\le |\\max(a,b)|$ compiles clean, with witness $a = -3$, $b = -2$ giving $|\\max(a,b)| = 2 < 3 = \\max(|a|,|b|)$. Lean also confirmed the magnitude form does have the property: $|a| \\le \\max(|a|,|b|)$ and $|b| \\le \\max(|a|,|b|)$ for all $a, b$. So wherever both Sobel responses are negative, the printed target discards the stronger edge and pulls $\\nabla I_f$ toward the weaker one. The literature-standard form is $\\max(|\\nabla I_{ir}^{hq}|, |\\nabla I_{vi}^{hq}|)$; the missing absolute values are the defect. Severity is minor — the correction is notational and no reported result depends on it, and the objection disappears if $\\nabla$ is read as gradient magnitude rather than as the signed operator the paper names.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "$$\\mathcal{L}_{grad} = \\frac{1}{HW} \\left\\| \\nabla I_f - \\max(\\nabla I_{ir}^{hq}, \\nabla I_{vi}^{hq}) \\right\\|_1,$$"
+    }
+  ],
+  "verdict": "MINOR_ERRORS",
+  "verdict_confidence": 0.72,
+  "summary": "ControlFusion is an engineering paper: its mathematics is a physics-driven degradation model (Eqs. 1-5), an architecture specification (Eqs. 6-9) and a loss suite (Eqs. 10-14), with no theorems or proofs. Seventeen self-contained mathematical objects were extracted; 8 went to Lean 4 and 9 to informal review.\n\n**Lean settled all 8 of its snippets** — 7 `PASSED`, 1 `REFUTED`, zero `FAILED`, so no informal fallbacks were owed under Step 5. The machine-checked results are substantive rather than cosmetic. The stripe-noise/contrast model (Eq. 2) provably produces vertical stripes of the right $H \\times W$ shape and strictly reduces inter-row contrast for $\\alpha \\in (0,1)$. The Retinex model (Eq. 4) is strictly monotone in $\\gamma$, with $\\gamma = 1$ the identity, so one range $\\gamma \\in [0.5,3]$ really does cover both low-light ($\\gamma > 1$) and over-exposure ($\\gamma < 1$) as the paper claims. The scattering model (Eq. 5) has $t = e^{-\\beta d} \\in (0,1]$ and its haze term is a genuine convex combination, hence range-preserving. The two loss bounds that matter are confirmed: the Stage-I cosine penalty lies in $[0,2]$ by Cauchy-Schwarz and shares a minimiser with the MSE term, and $\\mathcal{L}_{ssim} = 2 - (\\mathrm{SSIM} + \\mathrm{SSIM}) \\in [0,4]$ with the constant $2$ exactly right. Every Table 8 percentage was re-derived in exact $\\mathbb{Q}$ arithmetic and all six check out to the printed precision.\n\n**One finding, minor.** Eq. (12) writes its edge-retention target as the *signed* maximum $\\max(\\nabla I_{ir}^{hq}, \\nabla I_{vi}^{hq})$ with $\\nabla$ declared to be the Sobel operator. Lean proved that the magnitude form $\\max(|a|,|b|)$ dominates both source magnitudes while the signed form does not — witness $a = -3$, $b = -2$, where $|\\max(a,b)| = 2 < 3$. Wherever both Sobel responses are negative the printed loss therefore targets the *weaker* edge, contradicting the stated purpose. The standard form in this literature carries absolute values. This is graded minor and held at confidence $0.75$ rather than the $\\ge 0.9$ a refutation normally earns, because reading $\\nabla$ as gradient magnitude makes the objection vanish; the fix is notational and no reported result turns on it.\n\n**One snippet unsettled.** The DDL-12 cardinality (2,050 clear images; 12 types $\\times$ 4 levels; $\\approx$48,000 train + 4,800 test pairs) is `UNVERIFIABLE`. Exhaustive synthesis would imply 1,100 distinct clear pairs, not 2,050 images, and $2{,}050 \\times 48 = 98{,}400$ is nearly double the reported total; but either \"2,050 images\" meaning $\\approx$1,025 pairs, or the non-exhaustive sampling implied by \"approximately\", reconciles it. The test figure $4{,}800 = 100 \\times 12 \\times 4$ matches §5.1 exactly. Without the sampling protocol this cannot be called an error.\n\n**Observations recorded but not flagged**, since none invalidates a derivation: Eq. (1) composes operators defined on mixed intensity scales ($\\sigma \\in [5,20]$, $\\varepsilon \\in [1,15]$ suggest 8-bit, while $A \\in [0.3,0.9]$ and normalised $L$ suggest $[0,1]$) without stating a rescaling; \"using $1/N$ to normalize the kernel energy\" (Eq. 3) is loose wording over correct mathematics, since $1/N$ gives unit DC gain, which is the right choice, while the $\\ell^2$ energy is $1/\\sqrt{N}$; Eq. (9) prints $QK$ for $QK^\\top$ and calls $d_k$ the scaling factor when it is $\\sqrt{d_k}$; Eqs. (10)-(13) normalise by $HW$ rather than entry count and require an unstated broadcast between 1- and 3-channel sources; Eq. (4)'s correctness depends on an unstated $L < 1$ normalisation; and §5.3's \"precise continuous control\" overstates a scale that §A.1 defines as an integer from 1 to 10.\n\nNo verifier disagreements arose: Lean settled every snippet it was given, so no claim was judged twice. Verdict confidence is held at $0.72$ rather than higher because the paper's headline contributions are empirical, not mathematical — Lean's clean passes establish that the degradation model and losses are internally sound, which is most of what is mathematically at stake here, but they cannot speak to the experimental claims that carry the paper.\n\nThe Lean project `MATH_VERIFICATION/Paper` was **reused, not created** by this run and is shared with other papers' verifications, so it was kept; per-snippet scratch (`TMP.lean`, `claim.md`) was removed and the eight proofs saved to `Paper/Verified/paper__*_20382opus5.lean`."
+}
