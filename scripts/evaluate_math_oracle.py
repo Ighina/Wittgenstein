@@ -590,15 +590,28 @@ def rate(num: int, den: int) -> float:
     return num / den if den else 0.0
 
 
-def summarize(rows: List[Dict[str, Any]], label: str) -> Dict[str, Any]:
+def summarize(
+    rows: List[Dict[str, Any]], label: str, detector_mode: bool = False
+) -> Dict[str, Any]:
     n = len(rows)
-    covered = [r for r in rows if r["coverage"] in ("covered", "partial")]
-    strictly_covered = [r for r in rows if r["coverage"] == "covered"]
+    # Two coverage sets, and the difference matters: an oracle hands over a
+    # SELF-CONTAINED statement, so `strict` is the oracle-supply analogue and
+    # `loose` only says the statement was reached at all. The ladder's rungs E
+    # and F use strict for that reason; both conditionals are reported here so
+    # the two tables cannot be read as disagreeing.
+    loose_covered = [r for r in rows if r["coverage"] in ("covered", "partial")]
+    covered = [r for r in rows if r["coverage"] == "covered"]
+    strictly_covered = covered
     raw = [r for r in rows if r["flag_raw"]]
     conf = [r for r in rows if r["flag_conf"]]
     same = [r for r in rows if r["flag_raw"] and r["same_defect"] is True]
     abstained = [r for r in rows if r["abstained"]]
     decided = [r for r in covered if not r["abstained"]]
+    cov_ids = {r["paper_id"] for r in covered}
+    loose_ids = {r["paper_id"] for r in loose_covered}
+    raw_cov = [r for r in raw if r["paper_id"] in cov_ids]
+    conf_cov = [r for r in conf if r["paper_id"] in cov_ids]
+    raw_loose = [r for r in raw if r["paper_id"] in loose_ids]
 
     # False-positive rate over the statements with NO annotated error: every
     # flag beyond the located one(s). Oracle localisation never sees these.
@@ -610,25 +623,35 @@ def summarize(rows: List[Dict[str, Any]], label: str) -> Dict[str, Any]:
         "subset": label,
         "papers": n,
         "coverage_strict": rate(len(strictly_covered), n),
-        "coverage": rate(len(covered), n),
+        "coverage": rate(len(loose_covered), n),
         "detect_raw": rate(len(raw), n),
         "detect_conf": rate(len(conf), n),
-        "detect_raw_cov": rate(len(raw), len(covered)),
-        "detect_conf_cov": rate(len(conf), len(covered)),
-        "detect_raw_decided": rate(len(raw), len(decided)),
+        # A conditional must intersect its own denominator. Dividing ALL
+        # flagged papers by only the covered ones counts a flag on a
+        # partial-coverage paper against a denominator that excludes it, and
+        # the ratio can even exceed what rung E reports for the same quantity.
+        "detect_raw_cov": rate(len(raw_cov), len(covered)),
+        "detect_conf_cov": rate(len(conf_cov), len(covered)),
+        "detect_raw_cov_loose": rate(len(raw_loose), len(loose_covered)),
+        "detect_raw_decided": rate(
+            len([r for r in raw_cov if not r["abstained"]]), len(decided)
+        ),
         "abstain_rate": rate(len(abstained), n),
         "n_abstained": len(abstained),
         "n_decided": len(decided),
         "detect_same_defect": rate(len(same), n),
         "detect_same_defect_cov": rate(len(same), len(covered)),
         "n_covered": len(covered),
+        "n_covered_loose": len(loose_covered),
         "n_flag_raw": len(raw),
         "n_flag_conf": len(conf),
         "n_same_defect": len(same),
         "statements_total": sum(r["n_snippets"] for r in rows),
         "statements_clean": other_total,
         "statements_clean_flagged": other_flagged,
-        "fp_rate_clean": rate(other_flagged, other_total),
+        # None in detector-only mode: a detector has no unflagged statements,
+        # so there is no clean-statement population to be wrong about.
+        "fp_rate_clean": None if detector_mode else rate(other_flagged, other_total),
     }
 
 
@@ -874,14 +897,18 @@ def main() -> None:
         ("Computer Science",
          [r for r in rows if r["paper_category"] == "Computer Science"]),
     ]
-    summaries = [summarize(rs, label) for label, rs in subsets if rs]
+    summaries = [
+        summarize(rs, label, detector_mode=bool(args.from_detector))
+        for label, rs in subsets
+        if rs
+    ]
 
     print(f"\n{'=' * 118}")
     print("ORACLE-LOCALISATION SCORES — orchestrate-math on SPOT equation/proof errors")
     print(f"{'=' * 118}")
     head = (
         f"{'Subset':<20}{'N':>4}{'cover':>7}{'cover+':>8}{'detect':>8}"
-        f"{'det>=.7':>9}{'det|cov':>9}{'det|dec':>9}{'abstain':>9}"
+        f"{'det>=.7':>9}{'det|cov':>9}{'det|cov+':>9}{'abstain':>9}"
         f"{'det&same':>10}{'clean FP':>10}"
     )
     print(head)
@@ -890,9 +917,12 @@ def main() -> None:
         print(
             f"{s['subset']:<20}{s['papers']:>4}{s['coverage_strict']:>7.3f}"
             f"{s['coverage']:>8.3f}{s['detect_raw']:>8.3f}{s['detect_conf']:>9.3f}"
-            f"{s['detect_raw_cov']:>9.3f}{s['detect_raw_decided']:>9.3f}"
+            f"{s['detect_raw_cov']:>9.3f}{s['detect_raw_cov_loose']:>9.3f}"
             f"{s['abstain_rate']:>9.3f}{s['detect_same_defect']:>10.3f}"
-            f"{s['fp_rate_clean']:>10.3f}"
+            + (
+                "       n/a" if s["fp_rate_clean"] is None
+                else f"{s['fp_rate_clean']:>10.3f}"
+            )
         )
     print(
         "\ncover   = annotated statement extracted and self-contained "
@@ -900,10 +930,12 @@ def main() -> None:
         "cover+  = cover plus partial coverage\n"
         "detect  = annotated statement flagged error_detected, any confidence\n"
         "det>=.7 = same, at the confidence that promotes a verdict to findings[]\n"
-        "det|cov = detect over covered papers only — the closest analogue of an\n"
-        "          accuracy reported on oracle-supplied statements\n"
-        "det|dec = detect over covered papers where the verifier reached a\n"
-        "          verdict (UNVERIFIABLE on every located statement excluded)\n"
+        "det|cov = detect over STRICTLY covered papers — the statement arrived\n"
+        "          self-contained. The closest analogue of an accuracy reported\n"
+        "          on oracle-supplied statements, and the denominator the\n"
+        "          ladder's rungs E and F use.\n"
+        "det|cov+= the same over cover+ (partial included), i.e. the statement\n"
+        "          was reached but not necessarily in a catchable form\n"
         "abstain = papers where every located statement came back UNVERIFIABLE\n"
         "det&same= flagged AND the stated reason is the annotated defect\n"
         "clean FP= share of the OTHER extracted statements we also flag; the\n"
