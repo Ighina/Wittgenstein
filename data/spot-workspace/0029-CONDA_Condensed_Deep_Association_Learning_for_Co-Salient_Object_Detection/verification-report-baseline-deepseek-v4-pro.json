@@ -1,0 +1,62 @@
+{
+  "paper_id": "0029-CONDA_Condensed_Deep_Association_Learning_for_Co-Salient_Object_Detection",
+  "title": "CONDA Condensed Deep Association Learning for Co-Salient Object Detection",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Section 3.1, Eq. (10) (Association-induced Feature Enhancement)",
+      "confidence": 0.9,
+      "supporting_evidence": "The text defines \\(F_s^A \\in \\mathbb{R}^{N \\times H_s \\times W_s \\times C_s}\\) and \\(F_{s-1,l} \\in \\mathbb{R}^{N \\times H_{s-1} \\times W_{s-1} \\times C_{s-1}}\\). With a VGG-16 backbone, consecutive stages have different channel counts (e.g., stage 4 has 512 channels and stage 3 has 256). Equation (10) adds \\(U(F_s^A)\\) to \\(F_{s-1,l}\\) after only spatial upsampling, so the channel dimensions do not match and the addition is invalid without an explicit channel projection.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0029-CONDA_Condensed_Deep_Association_Learning_for_Co-Salient_Object_Detection::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Section 3.2, Eqs. (13)-(15) (Correspondence Estimation and Condensation Operation)",
+      "confidence": 0.85,
+      "supporting_evidence": "The offsets \\(\\Delta_s^j\\) are predicted by a linear layer and are continuous real numbers, so the coordinates \\(n_s^j(x,y,:)\\) are not integer grid indices. Equation (15) states \\(\\tilde{a}_s^j = a_s^j(n_s^j)\\), described as index selection on the tensor. This is undefined for continuous coordinates and would require differentiable grid sampling, rounding, or another interpolation scheme, which is not specified.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0029-CONDA_Condensed_Deep_Association_Learning_for_Co-Salient_Object_Detection::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Eq. (4) (Hyperassociation Calculation)",
+      "confidence": 0.7,
+      "supporting_evidence": "The formula divides by \\(\\|\\hat{F}_{s,l}\\|\\|\\hat{F}_{s,l}^{\\top}\\|\\), which are global tensor norms rather than per-pixel L2 norms, so it does not correctly compute pairwise cosine similarity as claimed. The transpose notation, described as 'transposing the last dimension and the first three dimensions', also does not define a standard operation yielding the stated \\(N \\times H_s \\times W_s \\times N \\times H_s \\times W_s\\) tensor without an explicit flatten/reshape.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0029-CONDA_Condensed_Deep_Association_Learning_for_Co-Salient_Object_Detection::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Section 3.3 (OCC loss) and 'Effectiveness of OCC'",
+      "confidence": 0.7,
+      "supporting_evidence": "The paper claims that because correspondence annotations are unavailable it relies on 'unsupervised losses', and later calls OCC 'self-supervision'. However, Eq. (16) masks images with ground-truth co-saliency masks \\(G_i^s\\), making OCC a mask-supervised/weakly supervised loss rather than unsupervised or purely self-supervised.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0029-CONDA_Condensed_Deep_Association_Learning_for_Co-Salient_Object_Detection::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 4,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (deepseek-v4-pro, taxonomy=default): 4 error(s) reported.",
+  "baseline": {
+    "model": "deepseek-v4-pro",
+    "provider": "deepseek",
+    "taxonomy": "default",
+    "paper_chars": 453206,
+    "truncated": true,
+    "usage": {
+      "input_tokens": 263642,
+      "output_tokens": 26072,
+      "cache_read_input_tokens": null,
+      "cache_creation_input_tokens": null
+    }
+  }
+}

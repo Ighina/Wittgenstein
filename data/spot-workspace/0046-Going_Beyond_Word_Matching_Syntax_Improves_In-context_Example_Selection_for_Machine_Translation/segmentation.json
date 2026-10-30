@@ -1,0 +1,240 @@
+{
+  "paper_id": "0046",
+  "title": "Going Beyond Word Matching: Syntax Improves In-context Example Selection for Machine Translation",
+  "paper_category": "cs.CL",
+  "total_snippets": 29,
+  "snippets": [
+    {
+      "snippet_id": "0046::SECTION::0",
+      "snippet_type": "SECTION",
+      "location": "Preamble",
+      "content": "In the era of LLMs, ICL has become a popular prompting strategy to elicit the power of LLMs on a wide range of tasks. In ICL, a few demonstrations are given in the input context during inference while not involving parameter tuning (Dong et al., 2022; Min et al., 2022).\n\nAs a major natural language processing (NLP) task, there have been several works exploring in-context example selection strategy for MT. Agrawal et al. (2023) propose R-BM25 on the basis of BM25 (Robertson et al., 1994) to enhance word overlap. M et al. (2023) propose CTQScorer combining multiple features. Zhang et al. (2023) conduct a comprehensive study on prompting LLMs for MT and claim that templates, number of examples, features and the quality of example databases all matter for ICL on MT.\n\nIn previous studies, for both statistical MT and neural MT, syntax plays an important role to improve model performance (Williams and Koehn, 2014; Wu et al., 2017). However, in case of in-context example selection for MT, previous works focus on superficial word-level matching (like BM25 and R-BM25) or combining multiple straightforward features (like CTQScorer). To the best of our knowledge, no research dig out syntax-level features for ICL demonstrations. To this end, we propose a syntax-based in-context example selection strategy for MT, which selects examples most similar to the test source in syntax based on similarity of dependency trees. In addition, word-level and syntax-level features complement each other and combining both would further elicit LLMs' power on MT. Therefore, we propose an ensemble strategy, concatenating examples selected by BM25 and our syntax-based strategy.",
+      "content_length": 1597,
+      "metadata": { "heading_level": 0 }
+    },
+    {
+      "snippet_id": "0046::SECTION::1",
+      "snippet_type": "SECTION",
+      "location": "Abstract",
+      "content": "In-context learning (ICL) is the trending prompting strategy in the era of large language models (LLMs), where a few examples are demonstrated to evoke LLMs' power for a given task. How to select informative examples remains an open issue. Previous works on in-context example selection for machine translation (MT) focus on superficial word-level features while ignoring deep syntax-level knowledge. In this paper, we propose a syntax-based in-context example selection method for MT, by computing the syntactic similarity between dependency trees using Polynomial Distance. In addition, we propose an ensemble strategy combining examples selected by both word-level and syntax-level criteria. Experimental results between English and 6 common languages indicate that syntax can effectively enhancing ICL for MT, obtaining the highest COMET scores on 11 out of 12 translation directions.",
+      "content_length": 895,
+      "metadata": { "heading_level": 0 }
+    },
+    {
+      "snippet_id": "0046::SECTION::2",
+      "snippet_type": "SECTION",
+      "location": "Results Highlight",
+      "content": "Experimental results between English and 6 common languages indicate that syntax helps find better in-context examples and thus improves LLMs' ability in MT. Comparing with various baselines, our proposed methods obtain the highest COMET scores on 11 out of 12 translation directions.",
+      "content_length": 323,
+      "metadata": { "heading_level": 0 }
+    },
+    {
+      "snippet_id": "0046::SECTION::3",
+      "snippet_type": "SECTION",
+      "location": "Contributions & Affiliation",
+      "content": "Our contributions can be summarized as follows:\n\nNational Key Laboratory for Multimedia Information Processing, Peking University\nMOE Key Laboratory of Computational Linguistics, Peking University\nSchool of Computer Science, Peking University\n{tangchenming@stu, ekko@stu, wuyf@}pku.edu.cn\n\n1. Generally, the syntactic structures of sentences are represented by syntax trees, and thus it is natural to measure the syntactic similarity based on similarity or distance between syntax trees. Tree similarity can be measured by Edit Distance (de Castro Reis et al., 2004), Polynomial Distance (Liu et al., 2022), Tree Kernel (Collins and Duffy, 2002; Vishwanathan et al., 2004; Moschitti, 2006), etc.\n\n2. Compared to other algorithms mentioned above, Polynomial Distance (Liu et al., 2022) is convenient to implement and relatively time-saving to run. So, in this work, we adopt Polynomial Distance between dependency trees to measure the syntactic similarity.",
+      "content_length": 857,
+      "metadata": { "heading_level": 0 }
+    },
+    {
+      "snippet_id": "0046::SECTION::4",
+      "snippet_type": "SECTION",
+      "location": "Method: Polynomial Definition",
+      "content": "3. Concretely, given d as the number of dependency labels, which indicate the grammatical relations between dependents and their heads, we transform dependency trees into polynomials recursively based on two variable sets: X = {x₁, x₂, ... x_d} and Y = {y₁, y₂, ... y_d}. Considering a node with Label l as nˡ, its corresponding polynomial is represented as:\n\n4. [see equation]\n\nwhere n₁, ..., nₖ are all child nodes of nˡ if it is non-leaf. Then, given a root node r, we obtain the polynomial representing the whole tree by computing P(r). A detailed demonstration from Liu et al. (2022) can be found in Appendix A.",
+      "content_length": 461,
+      "metadata": { "heading_level": 0 }
+    },
+    {
+      "snippet_id": "0046::SECTION::5",
+      "snippet_type": "SECTION",
+      "location": "Method: Distance Computation",
+      "content": "5. Next, we compute the distance between polynomials. Note that the polynomial representing a dependency tree can be described term by term. For each term $c x_1^{e_{x1}} x_2^{e_{x2}} ... x_d^{e_{xd}} y_1^{e_{y1}} y_2^{e_{y2}} ... y_d^{e_{yd}}$ in the polynomial, where e_{xi}, e_{yi} and c are the exponent of variable xᵢ, yᵢ and the coefficient of the term respectively, we denote it as a term vector:\n\n6. [see equation]\n\n7. In this way, a polynomial P can be written as a set of term vectors V_P. Then, we compute the distance between two polynomials (P and Q) as:\n\n8. [see equation]\n\n9. where ∥s − t∥₁ is the Manhattan distance (Craw, 2017) between term vector s and t.",
+      "content_length": 639,
+      "metadata": { "heading_level": 0 }
+    },
+    {
+      "snippet_id": "0046::SECTION::6",
+      "snippet_type": "SECTION",
+      "location": "Method: ICL & Prompt Design",
+      "content": "10. In recent years, ICL has been proved effective for improving LLMs' performance on various tasks without training or finetuning (Brown et al., 2020; Von Oswald et al., 2023).\n\n11. To design instructions for MT, we first inform the language pair and the template of presenting the result. Then, we provide several in-context examples selected using our proposed strategy. Last, the source sentence of the test sample is concatenated at the end. An example of our prompt is shown in Figure 1, and we draw inspiration from the work of Agrawal et al. (2023).\n\n12. We parse all our datasets with spaCy (Honnibal et al., 2020) to get dependency trees. Appendix B lists spaCy models we use for different languages.",
+      "content_length": 648,
+      "metadata": { "heading_level": 0 }
+    },
+    {
+      "snippet_id": "0046::SECTION::7",
+      "snippet_type": "SECTION",
+      "location": "Method: Selection & Ensemble",
+      "content": "13. For each test sample, we compute its Polynomial Distance from each instance of the example database on the source side, and then select the top-k most similar examples. The selected examples serve as demonstrations for ICL, as shown in Figure 1.\n\n14. We hypothesize that a combination of word-level closeness and syntax-level similarity would make the LLM generate results good on both counts. So we propose an ensemble strategy, where examples selected by different selection strategies are concatenated. In this work, we explore the ensemble of BM25 and Polynomial Distance, where half of the final examples are from BM25 and the other half are from Polynomial Distance.",
+      "content_length": 574,
+      "metadata": { "heading_level": 0 }
+    },
+    {
+      "snippet_id": "0046::SECTION::8",
+      "snippet_type": "SECTION",
+      "location": "Model & Experimental Setup",
+      "content": "15. Following Agrawal et al. (2023), we adopt XGLM₇.₅ᴮ (Lin et al., 2022) for all our experiments, which is a decoder-only multilingual generative language model supporting 30 languages. XGLM₇.₅B has 32 layers, a hidden dimension of 4096 and 7.5B parameters in total.\n\n[Figure 1 referenced]\n\nThe first 4 examples are the top-4 from BM25 and the rest 4 are the top-4 from Polynomial. Polynomial + BM25: The first 4 are from Polynomial and the rest 4 are from BM25.",
+      "content_length": 451,
+      "metadata": { "heading_level": 0 }
+    },
+    {
+      "snippet_id": "0046::SECTION::9",
+      "snippet_type": "SECTION",
+      "location": "Example Database",
+      "content": "Example Database  We adopt WikiMatrix v1 (Schwenk et al., 2021) as our example database, which has 135M parallel sentences for 1620 language pairs. Detailed statistics of WikiMatrix for each language can be found in Appendix C.",
+      "content_length": 253,
+      "metadata": { "heading_level": 1 }
+    },
+    {
+      "snippet_id": "0046::SECTION::10",
+      "snippet_type": "SECTION",
+      "location": "Test Set",
+      "content": "Test Set  We perform our evaluation on the devtest set of FLORES+ (Costa-jussà et al., 2022), which has 1012 sentences for around 200 languages. We experiment between English and 6 common languages including German, Spanish, French, Japanese, Russian and Chinese.",
+      "content_length": 283,
+      "metadata": { "heading_level": 1 }
+    },
+    {
+      "snippet_id": "0046::SECTION::11",
+      "snippet_type": "SECTION",
+      "location": "Experimental Results",
+      "content": "Experimental results on all 6 languages (into and out of English) are shown in Table 1, where the number of in-context examples is set to 8.\n\nWithout the help of word-level closeness, Polynomial itself cannot reach perfection in many cases. However, it performs competitively on DE-EN translation, outperforming Random by 1.58 points and BM25 by 3.53 points.\n\nWith a combination of word-level closeness and syntax-level similarity, our ensemble strategies take the lead in most cases, outperforming Random by around 1 point on average.\n\nTo sum up, the highest scores of 11 out of 12 translation directions are achieved by our proposed methods, which indicates the effectiveness of syntax in in-context example selection for MT.",
+      "content_length": 693,
+      "metadata": { "heading_level": 1 }
+    },
+    {
+      "snippet_id": "0046::SECTION::12",
+      "snippet_type": "SECTION",
+      "location": "Evaluation Metrics",
+      "content": "Evaluation Metrics  We report COMET (Rei et al., 2020) from wmt20-comet-da, which is considered a superior metric for MT nowadays (Kocmi et al., 2021). As a complement, we report BLEU from sacreBLEU (Post, 2018) in Appendix D.",
+      "content_length": 258,
+      "metadata": { "heading_level": 1 }
+    },
+    {
+      "snippet_id": "0046::SECTION::13",
+      "snippet_type": "SECTION",
+      "location": "R-BM25 Performance Note",
+      "content": "Surprisingly, the performance of R-BM25 is poor under our experimental settings. This might be due to differences in example database, data preprocessing and the design of prompt templates. We leave exploration of the cause to future work.",
+      "content_length": 249,
+      "metadata": { "heading_level": 1 }
+    },
+    {
+      "snippet_id": "0046::SECTION::14",
+      "snippet_type": "SECTION",
+      "location": "Data Cleaning",
+      "content": "Cleaning  We remove sentences longer than 100 or shorter than 4 tokens and those cannot be identified as their corresponding languages by Langid.py. Sentence pairs with a source/target length ratio exceeding 1.5 are also removed. We have around 85% sentences remaining after preprocessing for all languages except Japanese, of which the percentage is 67%. See Appendix C for detailed statistics.",
+      "content_length": 375,
+      "metadata": { "heading_level": 1 }
+    },
+    {
+      "snippet_id": "0046::SECTION::15",
+      "snippet_type": "SECTION",
+      "location": "CTQScorer Comparison",
+      "content": "We also compare with CTQScorer (M et al., 2023) in Table 2, where the number of examples is set to 4 and we focus on only 3 language pairs, to be in line with their work. Our proposed methods secure all the highest scores on all 6 translation directions. Note that M et al. (2023) use Europarl (Koehn, 2005) and ParaCrawl (Bañón et al., 2020) as example database, and experiment on FLORES-101, which is an earlier version of FLORES+. These factors may lead to an unequal comparison.",
+      "content_length": 495,
+      "metadata": { "heading_level": 1 }
+    },
+    {
+      "snippet_id": "0046::SECTION::16",
+      "snippet_type": "SECTION",
+      "location": "Tokenization",
+      "content": "Tokenization  We tokenize Chinese with Jieba, Japanese with Mecab and other languages with Sacremoses.",
+      "content_length": 104,
+      "metadata": { "heading_level": 1 }
+    },
+    {
+      "snippet_id": "0046::SECTION::17",
+      "snippet_type": "SECTION",
+      "location": "Baselines",
+      "content": "Random: We report the average result of 3 different random seeds. BM25: The BM25 scores are computed using Rank-BM25 (Brown, 2020). R-BM25: We evaluate R-BM25 (Agrawal et al., 2023) on our datasets.\n\nPolynomial: Our syntax-based selection method with Polynomial Distance. BM25 + Polynomial:",
+      "content_length": 297,
+      "metadata": { "heading_level": 1 }
+    },
+    {
+      "snippet_id": "0046::SECTION::18",
+      "snippet_type": "SECTION",
+      "location": "Ablation: Number of Examples",
+      "content": "We carry out experiments under different numbers of in-context examples. The average COMET scores of our ensemble strategy and other baselines on all 12 translation directions under different numbers of examples are shown in Figure 2. Please refer to Appendix E for our full results. Our proposed ensemble strategy constantly outperforms baselines under different numbers of examples.",
+      "content_length": 374,
+      "metadata": { "heading_level": 1 }
+    },
+    {
+      "snippet_id": "0046::SECTION::19",
+      "snippet_type": "SECTION",
+      "location": "Conclusion",
+      "content": "In this work, we investigate whether syntactic information can help find better in-context examples for MT. We propose selecting examples based on similarity of dependency trees, and present a simple but effective ensemble method by selecting examples from both word-overlap-based and syntax-similarity-based selection. Our proposed methods obtain the highest COMET scores on 11 out of 12 translation directions, indicating that injecting syntax information during in-context example selection is helpful for MT. We call on the NLP community to pay more attention to syntactic knowledge for syntax-rich tasks like MT.",
+      "content_length": 628,
+      "metadata": { "heading_level": 1 }
+    },
+    {
+      "snippet_id": "0046::SECTION::20",
+      "snippet_type": "SECTION",
+      "location": "Qualitative Analysis",
+      "content": "We give an instance to compare the examples selected by different strategies, as shown in Table 3. BM25 selects sentences with more word overlapping (\"cannot be purchased\") while Polynomial selects sentences with the similar syntactic structure (perfect tense, \"that\" clause, negative sentence, passive voice). For closely related language pairs like EN-DE, when the source sentences share similar syntax or patterns, it is likely that the target sentences also share these features. See Appendix F for an instance of model outputs.\n\nTable 3: Top-1 examples of EN-DE translation selected by BM25 and Polynomial.",
+      "content_length": 427,
+      "metadata": { "heading_level": 1 }
+    },
+    {
+      "snippet_id": "0046::SECTION::21",
+      "snippet_type": "SECTION",
+      "location": "Limitations",
+      "content": "First, due to limited time and computational resources, we have not evaluated our methods on low-resource languages and other LLMs. Second, in our ensemble strategy, we have only explored combining word-level selection and syntax-level selection. Other types of selection strategies (e.g., selection based on semantics) are not explored in the ensemble. Third, we have not explored methods based on constituent trees and other algorithms of tree similarity besides Polynomial distance. Last, our selection is based on the similarity on the source side. However, similarity on the target side or between two sides is also worth trying.",
+      "content_length": 612,
+      "metadata": { "heading_level": 1 }
+    },
+    {
+      "snippet_id": "0046::SECTION::22",
+      "snippet_type": "SECTION",
+      "location": "Computational Budget",
+      "content": "Computational Budget  We run pre-processing and in-context example selection on Intel Xeon Gold 5218 CPU and the LLM's inference on NVIDIA A40. Table 4 shows the average computation time.",
+      "content_length": 199,
+      "metadata": { "heading_level": 1 }
+    },
+    {
+      "snippet_id": "0046::EQUATION::0",
+      "snippet_type": "EQUATION",
+      "location": "Method: Polynomial Definition",
+      "content": "$$\nP(n^l) =\n\\begin{cases}\nx_l, & n^l \\text{ is leaf,} \\\\\ny_l + \\prod_{i=1}^k P(n_i), & n^l \\text{ is non-leaf,}\n\\end{cases}\n$$",
+      "content_length": 114,
+      "metadata": { "label": "polynomial_node", "display_mode": true }
+    },
+    {
+      "snippet_id": "0046::EQUATION::1",
+      "snippet_type": "EQUATION",
+      "location": "Method: Distance Computation",
+      "content": "$$\nt = [e_{x1}, e_{x2}, ..., e_{xd}, e_{y1}, e_{y2}, ..., e_{yd}, c]\n$$",
+      "content_length": 71,
+      "metadata": { "label": "term_vector", "display_mode": true }
+    },
+    {
+      "snippet_id": "0046::EQUATION::2",
+      "snippet_type": "EQUATION",
+      "location": "Method: Distance Computation",
+      "content": "$$\nd(P, Q) = \\frac{\\sum_{s \\in V_P} \\min_{t \\in V_Q} \\| s - t \\|_1 + \\sum_{t \\in V_Q} \\min_{s \\in V_P} \\| s - t \\|_1}{|V_P| + |V_Q|}\n$$",
+      "content_length": 126,
+      "metadata": { "label": "polynomial_distance", "display_mode": true }
+    },
+    {
+      "snippet_id": "0046::FIGURE::0",
+      "snippet_type": "FIGURE",
+      "location": "Method: ICL & Prompt Design",
+      "content": "![Figure 0](data:image/jpeg;base64,...)",
+      "content_length": 2500,
+      "metadata": { "caption": "Figure 0" }
+    },
+    {
+      "snippet_id": "0046::FIGURE::1",
+      "snippet_type": "FIGURE",
+      "location": "Model & Experimental Setup",
+      "content": "![Figure 1](data:image/jpeg;base64,...)",
+      "content_length": 2500,
+      "metadata": { "caption": "Figure 1: Prompt template example" }
+    },
+    {
+      "snippet_id": "0046::FIGURE::2",
+      "snippet_type": "FIGURE",
+      "location": "Ablation: Number of Examples",
+      "content": "![Figure 2](data:image/jpeg;base64,...)",
+      "content_length": 2500,
+      "metadata": { "caption": "Figure 2: COMET scores under different numbers of examples" }
+    }
+  ]
+}

@@ -1,0 +1,483 @@
+{
+  "paper_name": "paper",
+  "tag": "opus5",
+  "paper_path": "/Users/iacopoghinassi/Documents/Github/Wittgenstein/data/spot-workspace/0002-A_New_Radio_to_Overcome_Critical_Link_Budgets/paper.md",
+  "lean_project": "MATH_VERIFICATION/Paper",
+  "lean_project_kept": true,
+  "totals": {
+    "snippets_extracted": 15,
+    "routed_to_math": 8,
+    "routed_to_lean": 7,
+    "lean_passed": 7,
+    "lean_refuted": 0,
+    "lean_failed": 0,
+    "fallbacks_run": 0,
+    "errors_detected": 1
+  },
+  "results": [
+    {
+      "snippet_id": "paper::EQUATION::0",
+      "snippet_type": "EQUATION",
+      "location": "III. STATE OF THE ART / A. Transmit Beamforming",
+      "content": "Consider a radio transmitter with $N$ antenna elements. Let $x$ be a $1\\times Q$-vector of data symbols to be transmitted... We write $x = [x_0, \\ldots, x_{B-1}]$ with $B = Q/N$ and $x_b \\in \\mathbb{C}^{1\\times N}$. The transmit signal at data block $b \\in \\{0,\\ldots,B-1\\}$ is\n\n$$T_b^{\\mathrm{BF}} = \\phi x_b \\tag{1}$$\n\nwith $\\phi \\in \\mathbb{C}^{N\\times 1}$ containing the phase shifts at the various antennas. The $N\\times N$ space-time transmit matrix $T_b^{\\mathrm{BF}}$ has rank one. Rows and columns indicate space and time, respectively. Despite its $N^2$ entries, this matrix only contains $N$ data symbols. Thus, coherent combining of $N^2$ entries at the receiver to $N$ data symbols can result in an $N$-fold gain in received power.",
+      "route": "verify-math-lean",
+      "route_rationale": "The rank-one assertion is a crisp linear-algebra claim about an outer product — exactly what Lean settles best.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::0",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.95,
+        "reasoning": "Formalised the paper's assertion that $T_b^{\\mathrm{BF}} = \\phi x_b$ has rank one, as `(Matrix.vecMulVec φ x).rank = 1` for `φ x : Fin N → ℂ`. Hypotheses assumed: `φ ≠ 0` and `x ≠ 0`. These are faithful standing assumptions, not strengthenings — PSK data symbols lie on the unit circle and the phase-shift vector has unit-modulus entries, so neither vector vanishes; without them the matrix is $0$ and has rank $0$, so the paper's wording already presupposes them. The upper bound came from `Matrix.rank_vecMulVec_le`; the lower bound by exhibiting `x j • φ ≠ 0` in the range of `mulVecLin`. Lean compiled it clean: exit 0, no severity-1 diagnostics, no `sorry`, and `#print axioms` returned only the three standard Mathlib axioms. The accompanying counting remark ($N^2$ entries carrying $N$ symbols, hence an $N$-fold coherent-combining gain) is the direct consequence of rank one and is consistent with the $T$-fold generalisation in Eq. (3)/(4) at $T = N$.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__EQUATION__0_0002opus5.lean",
+          "formal_statement": "theorem matisk_eq1_rank_one {N : ℕ} (φ x : Fin N → ℂ) (hφ : φ ≠ 0) (hx : x ≠ 0) :\n    (Matrix.vecMulVec φ x).rank = 1",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::EQUATION::1",
+      "snippet_type": "EQUATION",
+      "location": "III. STATE OF THE ART / A. Transmit Beamforming",
+      "content": "Denoting the propagation channels of the $N$ antenna elements towards the receiver as $h \\in \\mathbb{C}^{1\\times N}$, the received signal becomes\n\n$$hT_b^{\\mathrm{BF}} = h\\phi x_b. \\tag{2}$$\n\nThe well-known theory of matched filters implies that $\\phi = h^\\dagger$ (complex conjugate transpose of $h$) is an optimal choice. If $\\phi$ shall only contain phases, but not amplitudes, the optimum can only be approximated, in general.",
+      "route": "verify-math-lean",
+      "route_rationale": "Optimality of the matched filter is a Cauchy–Schwarz statement with an attainment case — formalisable and non-trivial.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::1",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.95,
+        "reasoning": "Formalised 'φ = h† is an optimal choice' as a three-part statement: (i) under the power constraint $\\sum_i |\\phi_i|^2 = \\sum_i |h_i|^2$ the received amplitude obeys $|h\\phi| = |\\sum_i h_i\\phi_i| \\le \\sum_i |h_i|^2$; (ii) $\\phi = h^\\dagger$ satisfies that constraint; (iii) $\\phi = h^\\dagger$ attains the bound with equality. Together these are exactly optimality, with no hypothesis added beyond the power constraint that makes the comparison meaningful. Part (i) is Cauchy–Schwarz (`norm_sum_le` then `sum_mul_sq_le_sq_mul_sq`); part (iii) uses `RCLike.mul_conj`. Lean compiled clean — exit 0, no diagnostics, no `sorry`, standard axioms only. The paper's caveat that a phase-only $\\phi$ can in general only approximate the optimum is correct and consistent: it is the equality condition of Cauchy–Schwarz ($\\phi \\parallel h^\\dagger$) that generally fails once the moduli are forced to be equal.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__EQUATION__1_0002opus5.lean",
+          "formal_statement": "theorem matisk_eq2_matched_filter_optimal {N : ℕ} (h : Fin N → ℂ) :\n    (∀ φ : Fin N → ℂ, (∑ i, ‖φ i‖ ^ 2) = (∑ i, ‖h i‖ ^ 2) →\n        ‖∑ i, h i * φ i‖ ≤ ∑ i, ‖h i‖ ^ 2)\n    ∧ (∑ i, ‖(starRingEnd ℂ) (h i)‖ ^ 2) = (∑ i, ‖h i‖ ^ 2)\n    ∧ ‖∑ i, h i * (starRingEnd ℂ) (h i)‖ = ∑ i, ‖h i‖ ^ 2",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 3,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::EQUATION::2",
+      "snippet_type": "EQUATION",
+      "location": "III. STATE OF THE ART / A. Transmit Beamforming",
+      "content": "For some matrix $\\mathbf{F}_b \\in \\mathbb{C}^{T\\times T}$ to be specified, we can alternatively allow for a more general $N\\times T$ transmit matrix\n\n$$\\mathbf{T}_b = \\operatorname{diag}(\\mathbf{x}_b)\\mathbf{F}_b \\tag{3}$$\n\nwith $\\operatorname{diag}(\\cdot)$ denoting an $N\\times T$ diagonal matrix with the components of its argument as diagonal entries. This transmit matrix contains $TN$ entries, but only $N$ data symbols. Under mild conditions on the matrix $\\mathbf{F}_b$, it allows for a coherent superposition of the $TN$ transmit signals onto $N$ data symbols that results in a $T$-fold improvement of received power. For $T = N$, the same combining gain as with transmit beamforming is achieved.",
+      "route": "verify-math",
+      "route_rationale": "A dimensional/modelling set-up rather than an assertion with formal content; the checkable part is shape bookkeeping and internal consistency with Eq. (1).",
+      "lean_result": null,
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.82,
+      "math_result": {
+        "snippet_id": "paper::EQUATION::2",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.82,
+        "reasoning": "Dimensional bookkeeping checks out: $\\operatorname{diag}(\\mathbf{x}_b)$ is $N\\times T$ and $\\mathbf{F}_b$ is $T\\times T$, so the product is $N\\times T$ as stated, and the construction requires $N \\le T$ so that the $N$ diagonal entries and the $N$ rows $f_{b,n}$ used in Eq. (4) exist — satisfied by both numerical examples ($N=16$, $T=18.375$; $N=32$, $T=46$). The entry count $TN$ and the symbol count $N$ are correct. The combining arithmetic is internally consistent with Eq. (1): $TN$ transmit samples collapsing onto $N$ symbols gives a $T$-fold power gain, which at $T=N$ reproduces the $N$-fold beamforming gain of Eq. (1) ($N^2$ entries onto $N$ symbols). No algebraic, sign, or domain error. Two non-invalidating observations: (a) the $T$-fold gain holds under per-sample (constant-envelope) power normalisation, not under the strictly unitary normalisation invoked for $\\mathbf{F}_b$ at Eq. (4) — see paper::EQUATION::3; (b) the numerical sections use non-integer $T = 18.375$, which cannot literally be the dimension of a $T\\times T$ matrix. The paper effectively acknowledges (b) by describing the waveforms as only 'approximately orthogonal' and reporting finite SIR, so it is a modelling imprecision rather than a derivation error.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      }
+    },
+    {
+      "snippet_id": "paper::EQUATION::3",
+      "snippet_type": "EQUATION",
+      "location": "III. STATE OF THE ART / A. Transmit Beamforming",
+      "content": "The received signal is given by\n\n$$h \\mathbf{T}_b = \\sum_{n=0}^{N-1} h_n x_{b,n} f_{b,n} \\tag{4}$$\n\nwith $h_n$, $x_{b,n}$, and $f_{b,n}$ denoting the $n^\\text{th}$ component of $h$, the $n^\\text{th}$ component of $\\mathbf{x}_b$, and the $n^\\text{th}$ row of $\\mathbf{F}_b$, respectively. If the matrix $\\mathbf{F}_b$ is unitary, the data symbols $x_{b,n}$ can be recovered without crosstalk by the matched filters $f_{b,n}^\\dagger$ that provide the $T$-fold improvement of SINR.",
+      "route": "verify-math-lean",
+      "route_rationale": "Crosstalk-free recovery under a unitary $\\mathbf{F}_b$ is a precise orthogonality claim; the $T$-fold SINR factor is a checkable normalisation claim.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::3",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.95,
+        "reasoning": "Formalised three statements. (1) `matisk_eq4_crosstalk_free`: if $\\mathbf{F}\\mathbf{F}^\\dagger = I$ then correlating the received signal $r_s = \\sum_n h_n x_n F_{n,s}$ with the $m$-th matched filter $\\overline{F_{m,s}}$ returns exactly $h_m x_m$ — the paper's crosstalk-free recovery claim, **PASSED**. (2) `matisk_eq4_unitary_row_norm`: a unitary $\\mathbf{F}$ has rows of squared norm $1$, so the matched filter's noise gain is $1$ — **PASSED**. (3) `matisk_eq4_const_envelope_not_unitary`: a matrix all of whose entries have modulus $1$ (the constant-envelope condition the paper imposes on the subcarrier waveforms) cannot be unitary once $T \\ge 2$, because its rows have squared norm $T$ — **PASSED**. All three compiled clean, standard axioms only.\n\nReading: the paper's substantive claim (crosstalk-free recovery) is formally confirmed. (2)+(3) pin down a normalisation looseness rather than an error: the stated $T$-fold SINR improvement requires rows of squared norm $T$, i.e. $\\mathbf{F}_b = \\sqrt{T}\\,U$ with $U$ unitary, which is precisely the unit-modulus (constant-envelope) convention the paper uses everywhere else and which matches Eq. (1)'s unit-modulus $\\phi$. A strictly unitary $\\mathbf{F}_b$ would give noise gain $1$ and no factor $T$. Since 'unitary' for 'proportional to unitary / orthogonal rows' is standard shorthand in this literature and the quantitative conclusion is correct under the paper's own power convention, this is reported as an observation, not an error.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__EQUATION__3_0002opus5.lean",
+          "formal_statement": "theorem matisk_eq4_crosstalk_free {T : ℕ} (F : Matrix (Fin T) (Fin T) ℂ)\n    (hF : F * Fᴴ = 1) (h x : Fin T → ℂ) (m : Fin T) :\n    ∑ s, (∑ n, h n * x n * F n s) * (starRingEnd ℂ) (F m s) = h m * x m\n\ntheorem matisk_eq4_unitary_row_norm {T : ℕ} (F : Matrix (Fin T) (Fin T) ℂ)\n    (hF : F * Fᴴ = 1) (m : Fin T) : ∑ s, ‖F m s‖ ^ 2 = 1\n\ntheorem matisk_eq4_const_envelope_not_unitary {T : ℕ} (hT : 2 ≤ T)\n    (F : Matrix (Fin T) (Fin T) ℂ) (hce : ∀ i s, ‖F i s‖ = 1) : F * Fᴴ ≠ 1",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 4,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::EQUATION::4",
+      "snippet_type": "EQUATION",
+      "location": "III. STATE OF THE ART / A. Transmit Beamforming",
+      "content": "For data symbols $x_{b,n}$ on the complex unit circle, i.e. any phase-shift keying, the signal at any antenna has constant envelope in discrete time... Let\n\n$$t_n = [x_{0,n} f_{0,n}, \\ldots, x_{B-1,n} f_{B-1,n}] \\tag{5}$$\n\nbe the transmit signal at antenna number $n$. If all data symbols were identical, this signal would be a complex sinusoid and thus a single tone in the spectral domain. Due to modulation with the data symbols, phase jumps occur when data symbols change. These phase jumps lead to spectral regrowth that is unacceptable for most applications.",
+      "route": "verify-math-lean",
+      "route_rationale": "The 'identical symbols give a single tone' claim is a periodicity statement about concatenated DFT rows — formalisable.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::4",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.95,
+        "reasoning": "Formalised the claim 'if all data symbols were identical, this signal would be a complex sinusoid and thus a single tone'. In the exact-DFT case the subcarrier waveform is the $n$-th DFT row, $f_{b,n,s} = \\exp(2\\pi j sn/N)$, the same for every block $b$, so with all symbols equal to $c$ the concatenation is $t_n[k] = c\\exp(2\\pi j (k \\bmod N) n / N)$ at global time index $k$ (block $b = \\lfloor k/N\\rfloor$, in-block index $s = k \\bmod N$). Lean proved this equals $c\\exp(2\\pi j k n/N)$ for every $k$ — one global complex sinusoid of frequency $n/N$, with no phase discontinuity at block boundaries, hence a single spectral tone. The proof splits $k = N\\lfloor k/N\\rfloor + (k \\bmod N)$ and kills the block term with `Complex.exp_nat_mul_two_pi_mul_I`. Compiled clean, standard axioms only. The complementary remark — that non-constant symbols introduce phase jumps and hence spectral regrowth — is the contrapositive of the same periodicity fact and is correct.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__EQUATION__4_0002opus5.lean",
+          "formal_statement": "theorem matisk_eq5_identical_symbols_single_tone\n    (N : ℕ) (hN : 0 < N) (n : ℕ) (c : ℂ) (k : ℕ) :\n    c * Complex.exp (2 * Real.pi * Complex.I * (((k % N : ℕ) : ℂ) * n / N))\n      = c * Complex.exp (2 * Real.pi * Complex.I * ((k : ℂ) * n / N))",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::EQUATION::5",
+      "snippet_type": "EQUATION",
+      "location": "III. STATE OF THE ART / A. Transmit Beamforming",
+      "content": "Let $f_{b,n}^{(S)} \\in \\mathbb{C}^{1\\times ST}$ be a version of $f_{b,n}$ oversampled by factor $S$ and appropriately interpolated. For most of the time, it shall be a complex sinusoid, i.e.\n\n$$f_{b,n}^{(S)} = [f_{b,n,0}^{(S)}, \\ldots, f_{b,n,s}^{(S)}, \\ldots, f_{b,n,ST-1}^{(S)}] \\tag{6}$$\n\nwith\n\n$$f_{b,n,s}^{(S)} = \\begin{cases} \\exp\\left(2\\pi j \\frac{s n}{S N}\\right) & L_s \\leq s < ST - L_e \\\\ q_{n,s,d} & \\text{else} \\end{cases} \\tag{7}$$\n\nfor some values $L_s$ and $L_e$ with $L = L_s + L_e < ST$, $d \\in \\{1, \\ldots, |A|^2\\}$, and some sequences $q_{n,s,d}$ to be optimized.",
+      "route": "verify-math",
+      "route_rationale": "A piecewise definition rather than an assertion; what is checkable is index-range and notation consistency, which has no crisp formal content.",
+      "lean_result": null,
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.78,
+      "math_result": {
+        "snippet_id": "paper::EQUATION::5",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.78,
+        "reasoning": "The definition is internally consistent: $f_{b,n}^{(S)}$ has $ST$ components indexed $s = 0,\\ldots,ST-1$ per Eq. (6), the sinusoidal window $L_s \\le s < ST - L_e$ is non-empty exactly when $L = L_s + L_e < ST$ as stated, and the transition index range $d \\in \\{1,\\ldots,|A|^2\\}$ matches the $|A|^2$ transition patterns counted at Eq. (8). The phase $2\\pi j sn/(SN)$ is the correct oversampled form: at sample time $t = s T_{sym}/(ST)$ it gives subcarrier frequency $f_n = nT/(N T_{sym})$, which reproduces the paper's own numbers (verified under paper::MATHEMATICAL_MODEL::1). No algebraic, sign, or domain error.\n\nOne non-invalidating notational inconsistency: Sec. IV-A-1 restates the sinusoidal window as '$L_s \\leq s < SN - L_e$', with $SN$ where Eq. (7) has $ST$. Since the numerical examples take $T \\neq N$ ($T = 18.375$ vs $N = 16$), these are genuinely different bounds, so one of the two is a slip — Eq. (7)'s $ST$ is the correct one, being the frame length fixed by Eq. (6). This is a typo in accompanying prose and is explicitly outside what this verifier flags; it is recorded for the authors rather than reported as a finding.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      }
+    },
+    {
+      "snippet_id": "paper::EQUATION::6",
+      "snippet_type": "EQUATION",
+      "location": "III. STATE OF THE ART / A. Transmit Beamforming",
+      "content": "Note that for any regular PSK constellation $\\mathcal{A}$ there are only as many possible phase jumps as there are constellation points. If we allow the discrete waveform $f_{b,n}$ to depend on the data symbols of blocks $b-1$, $b$, and $b+1$, phase jumps can be avoided... During the time frames $0 \\leq s < L_s$ and $ST - L_e \\leq s < ST$ the average is given by\n\n$$\\frac{1}{|A|^2} \\sum_{d=1}^{|A|^2} q_{n,s,d}. \\tag{8}$$",
+      "route": "verify-math",
+      "route_rationale": "A counting/averaging claim resting on the modelling of symbol transitions; no self-contained formal content beyond the count.",
+      "lean_result": null,
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.8,
+      "math_result": {
+        "snippet_id": "paper::EQUATION::6",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.8,
+        "reasoning": "The transition count is right. Although $f_{b,n}$ is allowed to depend on the symbols of three blocks ($b-1$, $b$, $b+1$), which would be $|A|^3$ symbol triples, the waveform shape depends only on the two phase jumps at the leading and trailing edge of block $b$; for a regular PSK constellation each jump takes $|A|$ values, giving $|A|^2$ distinct transition patterns. That is consistent with $d \\in \\{1,\\ldots,|A|^2\\}$ in Eq. (7), and the uniform weight $1/|A|^2$ in Eq. (8) is the correct average under i.i.d. uniform symbols. Restricting the average to $0 \\le s < L_s$ and $ST - L_e \\le s < ST$ is also correct, since on the complementary window the waveforms are identical by Eq. (7) and need no averaging — which the paper states. No algebraic, sign, or domain error. (The later suggestion to shape the phase-shift distribution non-uniformly would change these weights, but it is offered as future work, not as a property of Eq. (8).)",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      }
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "IV. MULTI-ANTENNA TOWARDS INBAND SHIFT KEYING / A. Transmitter, 2a) Round-Robin D/A-Conversion",
+      "content": "a) Round-Robin D/A-Conversion: An obvious way to generate arbitrary phase transitions is to use D/A-converters to steer the VCOs. The number of D/A-converters can be reduced significantly, if symbols transitions at the various antennas are not aligned in time. If transitions occur one after the other, the same D/A-converter can serve multiple antennas in a round-robin fashion. If ST ≥ LN, a single D/A-converter can serve all antennas. However, symbol transitions at one antenna create interference onto the data signals at other antennas.",
+      "route": "verify-math-lean",
+      "route_rationale": "A sharp counting condition (N disjoint windows of length L inside a frame of ST samples) — cheap and decisive in Lean.",
+      "lean_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.95,
+        "reasoning": "Formalised the scheduling claim behind 'if $ST \\ge LN$, a single D/A-converter can serve all antennas'. One symbol frame spans $ST$ samples of the oversampled grid (Eq. 6/7) and each antenna's phase transition occupies $L = L_s + L_e$ of them. Lean proved that under $LN \\le ST$ the $N$ windows $[nL, (n+1)L)$, one per antenna, all lie inside $\\{0,\\ldots,ST-1\\}$ and are pairwise disjoint — so a single converter serving the antennas one after the other covers all $N$ of them within one frame. Compiled clean; axioms `propext` and `Quot.sound` only (no choice needed). The claim is exactly right, with $\\ge$ the correct direction. The paper's own caveat that round-robin switching nonetheless injects intercarrier interference is separate from, and not contradicted by, this counting fact.",
+        "predicted_error_category": null,
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__MATHEMATICAL_MODEL__0_0002opus5.lean",
+          "formal_statement": "theorem matisk_round_robin_single_dac (S T L N : ℕ) (_hL : 0 < L)\n    (hcap : L * N ≤ S * T) :\n    (∀ n i, n < N → i < L → n * L + i < S * T) ∧\n    (∀ m n i j, m < N → n < N → i < L → j < L → m * L + i = n * L + j → m = n)",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::1",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "V. NUMERICAL RESULTS (both parameter sets)",
+      "content": "We target the spectral mask of 5G downlink at 100 MHz channel bandwidth. We choose a transmit array with N = 16 antennas and QPSK modulation at a symbol rate of 5 Msymbols/s on each subcarrier resulting in a total data rate of 160 Mbit/s. The corresponding symbol period is 200 ns. In order to cope with the spectral mask, we set T = 18.375. This results in a subcarrier spacing of 5.74 MHz. This is, by far, wide enough to be insensitive to Doppler-induced frequency shifts.\n\n[...] We choose a transmit array with \\(N = 32\\) antennas and QPSK modulation at a symbol rate of 2 Msymbols/s on each subcarrier resulting in a total data rate of 128 Mbit/s. This corresponds to a symbol period of 500 ns. [...] We set T = 46, which results in a subcarrier spacing of 2.88 MHz.",
+      "route": "verify-math-lean",
+      "route_rationale": "The derived parameters follow from Eq. (7) by exact rational arithmetic, so Lean can settle every quoted figure outright.",
+      "lean_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::1",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.95,
+        "reasoning": "Formalised the parameter arithmetic of both numerical examples, using the subcarrier spacing read off Eq. (7), $\\Delta f = T/(N T_{sym})$, with time in $\\mu$s and frequency in MHz. A third theorem confirms the equivalent form $\\Delta f = T R_{sym}/N$.\n\nExample 1 ($N=16$, $R_{sym}=5$ MHz, QPSK, $T=18.375$): aggregate rate $16 \\times 5 \\times 2 = 160$ Mbit/s ✓; symbol period $1/5\\,\\mu\\text{s} = 200$ ns ✓; $\\Delta f = 18.375/(16 \\times 0.2) = 5.7421875$ MHz, which rounds to the quoted $5.74$ MHz (error $\\le 0.005$) ✓; occupied bandwidth $16 \\Delta f = 91.875$ MHz $\\le 100$ MHz ✓.\n\nExample 2 ($N=32$, $R_{sym}=2$ MHz, QPSK, $T=46$): aggregate rate $32 \\times 2 \\times 2 = 128$ Mbit/s ✓; symbol period $0.5\\,\\mu\\text{s} = 500$ ns ✓; $\\Delta f = 46/(32 \\times 0.5) = 2.875$ MHz, rounding to the quoted $2.88$ MHz ✓; occupied bandwidth $32 \\Delta f = 92$ MHz $\\le 100$ MHz ✓.\n\nAll three theorems compiled clean with standard axioms only. Every quoted figure is mutually consistent and both configurations genuinely fit the 100 MHz mask; the abstract's '160 MBit/s with 5.74 MHz subcarrier spacing when using 16 transmit antennas' agrees with Sec. V.",
+        "predicted_error_category": null,
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__MATHEMATICAL_MODEL__1_0002opus5.lean",
+          "formal_statement": "theorem matisk_params_example1 :\n    (16 : ℝ) * 5 * 2 = 160 ∧\n    (1 : ℝ) / 5 = 0.2 ∧\n    (18.375 : ℝ) / (16 * 0.2) = 5.7421875 ∧\n    |(18.375 : ℝ) / (16 * 0.2) - 5.74| ≤ 0.005 ∧\n    16 * ((18.375 : ℝ) / (16 * 0.2)) = 91.875 ∧\n    16 * ((18.375 : ℝ) / (16 * 0.2)) ≤ 100\n\ntheorem matisk_params_example2 :\n    (32 : ℝ) * 2 * 2 = 128 ∧\n    (1 : ℝ) / 2 = 0.5 ∧\n    (46 : ℝ) / (32 * 0.5) = 2.875 ∧\n    |(46 : ℝ) / (32 * 0.5) - 2.88| ≤ 0.005 ∧\n    32 * ((46 : ℝ) / (32 * 0.5)) = 92 ∧\n    32 * ((46 : ℝ) / (32 * 0.5)) ≤ 100\n\ntheorem matisk_spacing_formula (T N Rsym : ℝ) (hN : N ≠ 0) (hR : Rsym ≠ 0) :\n    T / (N * (1 / Rsym)) = T * Rsym / N",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.93
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::2",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "V. NUMERICAL RESULTS / 1) Rectangular Pulse Shape, 2) Squared Sine Wave Pulse Shape",
+      "content": "The temporal combining gains of the two receive filters are 12.6 dB and 12.2 dB, respectively. The FFT-based receive filter has a slightly lower combining gain, as it windows the received signal more sharply. This compares favorably to the 12.0 dB combining gain of transmit beamforming with 16 antennas. Note that the temporal combining gain can exceed 12 dB as T = 18.375 > N = 16.\n\n[...] The temporal combining gains of the two receive filters are 12.5 dB and 12.1 dB, respectively. It is almost unaffected by the choice of the pulse shape.\n\n[...] For such a wide pulse, the lowpass filter hardly distorts the pulse shape. Therefore, we use an FFT-based receiver with rectangular windowing. This achieves an SIR of 43 dB. The combining gain is 15 dB, exactly the same as for transmit beamforming.",
+      "route": "verify-math",
+      "route_rationale": "Reported experimental gains in dB; the checkable part is the logarithmic arithmetic and the theoretical ceilings, which a careful reader can confirm by inspection.",
+      "lean_result": null,
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85,
+      "math_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::2",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "Every dB figure is arithmetically consistent and respects its theoretical ceiling.\n\nExample 1 ($N=16$, $T=18.375$): transmit-beamforming gain $10\\log_{10} 16 = 12.04$ dB, quoted as 12.0 dB ✓. The temporal-combining ceiling is $10\\log_{10} 18.375 = 12.64$ dB, so the reported 12.6 dB and 12.2 dB (rectangular pulse) and 12.5 dB and 12.1 dB (squared-sine pulse) all sit just below it ✓, and the paper's justification that the gain 'can exceed 12 dB as $T = 18.375 > N = 16$' is exactly right ✓.\n\nExample 2 ($N=32$, $T=46$): $10\\log_{10} 32 = 15.05$ dB, so 'the combining gain is 15 dB, exactly the same as for transmit beamforming' ✓; the ceiling $10\\log_{10} 46 = 16.63$ dB is respected ✓.\n\nThe abstract's 'no loss in link budget gain compared to spatial beamforming at the transmitter' is therefore supported by both parameter sets. No algebraic, sign, or domain error. Two presentational observations that are not mathematical errors: the average-matched-filter figure is quoted as exactly 9.7 dB for both pulse shapes, and the metric label changes from SIR to SINR between the two subsections even though the text states no Gaussian noise was added.",
+        "predicted_error_category": null,
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": []
+      }
+    },
+    {
+      "snippet_id": "paper::EQUATION::7",
+      "snippet_type": "EQUATION",
+      "location": "VI. PEAK DATA RATE / A. Higher Order Modulation",
+      "content": "Data rate R is fundamentally related to signal-to-noise ratio (SNR). For the complex-valued additive white Gaussian noise channel with power constraint, the relation is well-investigated and given by\n\n$$R = \\log_2(1 + \\text{SNR})$$ (9)",
+      "route": "verify-math",
+      "route_rationale": "Shannon capacity of the complex AWGN channel — a cited information-theoretic result, not a self-contained claim Lean can state without building up channel coding theory.",
+      "lean_result": null,
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.92,
+      "math_result": {
+        "snippet_id": "paper::EQUATION::7",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.92,
+        "reasoning": "Correct as stated. $R = \\log_2(1+\\mathrm{SNR})$ is the Shannon capacity of the complex-valued AWGN channel under an average power constraint, in bits per complex channel use — the standard result, and the paper attributes it as 'well-investigated' rather than deriving it. The units are the right ones for the paper's subsequent use (it is this per-complex-symbol form, not the real-channel $\\tfrac12\\log_2(1+\\mathrm{SNR})$, that makes the QPSK rate bookkeeping of Sec. V consistent). The downstream remark that 'higher order modulation converts a linear increase in SNR into a logarithmic increase in data rate' follows directly from (9). No error.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      }
+    },
+    {
+      "snippet_id": "paper::EQUATION::8",
+      "snippet_type": "EQUATION",
+      "location": "VI. PEAK DATA RATE / A. Higher Order Modulation",
+      "content": "If the link budget is critical, SNR is low, that means SNR ≪ 1. In that case, the logarithm in (9) is well approximated by a linear function. We have\n\n$$R \\approx \\frac{\\text{SNR}}{\\ln 2}.$$ (10)\n\nIn that regime, you can hardly do anything better than concatenating standard methods of forward-error correction coding designed for moderate rates with repetition coding in order to get an overall very low rate.",
+      "route": "verify-math-lean",
+      "route_rationale": "A limit/approximation claim with a specific constant $1/\\ln 2$ — Lean can both confirm the constant and quantify the error.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::8",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.95,
+        "reasoning": "Formalised Eq. (10) as a two-part error bound for $x = \\mathrm{SNR} > 0$, which is strictly more informative than the limit statement and confirms the constant: (i) $\\log_2(1+x) \\le x/\\ln 2$, so the linearisation never under-estimates the true rate; and (ii) $x/\\ln 2 - \\log_2(1+x) \\le (x/\\ln 2)\\cdot x/(1+x)$, i.e. the **relative** error of (10) is at most $x/(1+x) < x = \\mathrm{SNR}$. The error therefore vanishes linearly as $\\mathrm{SNR} \\to 0$, which is exactly the paper's 'well approximated by a linear function' for $\\mathrm{SNR} \\ll 1$, and the coefficient $1/\\ln 2$ is the correct first-order coefficient of $\\log_2(1+x)$. Proof used `Real.log_le_sub_one_of_pos` for both the upper bound $\\ln(1+x) \\le x$ and, applied to $(1+x)^{-1}$, the lower bound $\\ln(1+x) \\ge x/(1+x)$. Compiled clean, standard axioms only. Concretely the bound gives under 1% relative error at $\\mathrm{SNR} = 0.01$ ($-20$ dB), so (10) is amply justified in the critical-link-budget regime the paper targets.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__EQUATION__8_0002opus5.lean",
+          "formal_statement": "theorem matisk_eq10_low_snr_linearisation (x : ℝ) (hx : 0 < x) :\n    Real.logb 2 (1 + x) ≤ x / Real.log 2 ∧\n    x / Real.log 2 - Real.logb 2 (1 + x) ≤ (x / Real.log 2) * (x / (1 + x))",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::3",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "VI. PEAK DATA RATE / C. Transmit Beamforming vs. MA-TISK",
+      "content": "Such a system pays for serving K users with different data, instead of a single one, with a loss in beamforming gain by a factor of (at least) K, if the data rate per user stays fixed.¹ There are simply (by a factor of K) fewer antennas available to form a beam towards an individual user. In MA-TISK, users cannot be separated spatially. However, we do not need to split our antennas among users, as they radiate in all directions. Therefore, we can split our subcarriers among users. The K users are separated in frequency. As each antenna corresponds to one subcarrier, this is, in fact, also a split of antennas. In contrast to transmit beamforming, users do not suffer from a loss of combining gain, but they suffer from a loss in data rate by a factor of K. For critical link-budget, however, a loss in data rate and a loss in beamforming gain are equivalent due to (10). Data rate can be converted into link-budget and vice versa.",
+      "route": "verify-math",
+      "route_rationale": "A system-level scaling argument resting on modelling assumptions about multi-user allocation; no crisp formal statement without inventing the multi-user model.",
+      "lean_result": null,
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.8,
+      "math_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::3",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.8,
+        "reasoning": "The scaling argument is internally coherent. Transmit beamforming with $N/K$ antennas per user gives beamforming gain $N/K$ instead of $N$, i.e. a factor-$K$ loss — as claimed. For MA-TISK, allocating $N/K$ of the $N$ subcarriers per user leaves the *temporal* combining gain $T$ per subcarrier untouched (each waveform still spans $T$ samples and is matched-filtered over all of them, per Eq. 4), while the per-user symbol count drops by $K$ — so 'no loss of combining gain, loss in data rate by a factor of $K$' is the right bookkeeping. The stated equivalence of the two losses follows from Eq. (10): since $R \\approx \\mathrm{SNR}/\\ln 2$ is linear in the low-SNR regime, dividing rate by $K$ and dividing SNR by $K$ are interchangeable, which is precisely what adapting the error-correction code rate by $K$ realises. Eq. (10) itself was machine-verified (paper::EQUATION::8), so the inference the argument rests on is sound. No algebraic, sign, or domain error; the remaining content is a modelling judgement about multi-user allocation that this verifier cannot and should not adjudicate.",
+        "predicted_error_category": null,
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": []
+      }
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::4",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "VII. CONCLUSIONS",
+      "content": "Each of the N antenna elements operates only at about (1/N)th of the channel bandwidth. So does the corresponding power oscillator, the cables, and connectors. Narrowband RF hardware is generally less costly than wideband equipment.\n\nThe transmit signals have perfect constant envelope. This allows power-efficient and cost-effective RF hardware. This is possible despite the limitations of Heisenberg’s time-frequency uncertainty, as the frequency constraint is not per antenna, but only for the aggregate spectrum of all antennas.\n\n[...] Peak data rate can be made to grow linearly with SNR by means of spatial multiplexing even in far field scenarios, since omni-directional transmission does not prevent rich scattering.",
+      "route": "verify-math",
+      "route_rationale": "Prose summary claims about bandwidth partitioning and the uncertainty principle; no self-contained formal content.",
+      "lean_result": null,
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.72,
+      "math_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::4",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.72,
+        "reasoning": "The bandwidth claim holds: each antenna carries one subcarrier of width $\\approx \\Delta f$ while the aggregate occupies $\\approx N\\Delta f$, so '$1/N$th of the channel bandwidth' is right, and the hedge 'about' correctly accommodates the transition-induced sidelobes.\n\nThe Heisenberg escape is also consistent rather than circular. Sec. II-4 argues that a signal whose symbol rate is similar to its bandwidth cannot be both constant-envelope and spectrally confined — but it states the exception explicitly ('unless it is a complex sinusoid'), and by Eq. (7) the per-antenna MA-TISK signal is a complex sinusoid for all but $L$ of $ST$ samples. The price is paid as intercarrier interference, which is in-band and so unconstrained by the spectral mask; the paper reports it candidly as a finite SIR (9.7/18.3 dB, and 43 dB for the wide-pulse design). No contradiction.\n\nOne imprecision, below the threshold for a finding: 'Peak data rate can be made to grow linearly with SNR by means of spatial multiplexing' conflates two distinct mechanisms. Sec. VI-B states the correct version — spatial multiplexing converts a linear increase in the *number of antennas* into a linear increase in data rate — while linearity in SNR is the separate low-SNR property of Eq. (10) that holds without any multiplexing. In the critical-link-budget regime the paper targets, the sentence is not false; its attribution is just loose.",
+        "predicted_error_category": null,
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": []
+      }
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::5",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "IV. MULTI-ANTENNA TOWARDS INBAND SHIFT KEYING / A. Transmitter, 2) Phase Transitions (with Sec. V)",
+      "content": "Positive and negative frequency deviations predominantly create spectral regrowth at higher and lower frequencies, respectively. Consider, e.g., the rightmost subcarrier. A frequency deviation towards higher frequencies creates out-of-band radiation. A frequency deviation towards lower frequencies, however, only creates interference to adjacent subcarriers. For the leftmost subcarrier, this consideration holds vice versa. [...] When implementing a phase shift of +π/2 at the rightmost subcarrier, it is better not to raise the instantaneous frequency, but to lower it three times as much as for −π/2. [...] For subcarriers left of the center frequency, these considerations hold vice versa. For a QPSK constellation, this means that there are some subcarriers which use phase shifts from {0, −π/2, −π, −3π/2}, some from {+π/2, 0, −π/2, −π}, some from {+π, +π/2, 0, −π/2}, and some from {+3π/2, +π, +π/2, 0}. The set that is used depends on the position of the subcarrier.\n\n[Sec. V] The four possible symbol transitions for the leftmost subcarrier are shown in Fig. 2 and compared to its average. The transition starts at t = 200 ns. The phase is changed by temporarily lowering the frequency.\n\n[Sec. V-1] The instantaneous frequencies change over time, but they always keep between the lowest and highest subcarrier frequency. Changes are predominantly directed towards the center of the frequency band.",
+      "route": "verify-math",
+      "route_rationale": "A sign/direction rule over the QPSK phase-shift sets, cross-checked against its application in Sec. V — sign propagation is squarely in the informal verifier's remit, and there is no formal object to state.",
+      "lean_result": null,
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.75,
+      "math_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::5",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.75,
+        "reasoning": "The design rule itself is coherent and the four QPSK shift sets are correct: each of $\\{0,-\\pi/2,-\\pi,-3\\pi/2\\}$, $\\{+\\pi/2,0,-\\pi/2,-\\pi\\}$, $\\{+\\pi,+\\pi/2,0,-\\pi/2\\}$ and $\\{+3\\pi/2,+\\pi,+\\pi/2,0\\}$ is a complete residue system modulo $2\\pi$, so each realises all four QPSK phase jumps while biasing the frequency deviation in one direction. The sets are correctly ordered from all-non-positive (rightmost subcarrier, deviating downwards, i.e. in-band) to all-non-negative (leftmost subcarrier, deviating upwards, i.e. in-band). Sec. V-1's 'Changes are predominantly directed towards the center of the frequency band' restates the same rule, and Sec. V's observation that the centre subcarrier 'performs phase shifts by $-\\pi$, but not by $+\\pi$' is consistent with the second or third set.\n\nHowever, Sec. V's description of Fig. 2 contradicts it. For the **leftmost** subcarrier the rule requires deviating towards **higher** frequencies: by Sec. IV-A-2, for the rightmost subcarrier a deviation towards higher frequencies creates out-of-band radiation while a downward one only causes intercarrier interference, and 'for the leftmost subcarrier, this consideration holds vice versa'. The leftmost subcarrier must therefore use the non-negative shift set $\\{+3\\pi/2,+\\pi,+\\pi/2,0\\}$ and raise its instantaneous frequency. Sec. V instead states, of the leftmost subcarrier, that 'The phase is changed by temporarily lowering the frequency' — which would push energy below the lower band edge and produce exactly the out-of-band radiation the design rule exists to avoid. The statement also contradicts Sec. V-1's 'changes are predominantly directed towards the center'. Two independent passages corroborate the upward direction, so the Fig. 2 description is the one in error. The sign is inverted relative to the stated rule; the rule, the shift sets and all quantitative results are unaffected, so this is a minor, correctable inconsistency rather than an invalidation of the design.",
+        "predicted_error_category": "Sign/Arithmetic error",
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": []
+      }
+    }
+  ],
+  "findings": [
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::5",
+      "category": "Sign/Arithmetic error",
+      "severity": "minor",
+      "confidence": 0.75,
+      "evidence": "Sec. IV-A-2 fixes the direction of the frequency deviation: for the rightmost subcarrier an upward deviation 'creates out-of-band radiation' while a downward one 'only creates interference to adjacent subcarriers', and 'for the leftmost subcarrier, this consideration holds vice versa'. The leftmost subcarrier must therefore deviate **upwards**, using the non-negative QPSK shift set $\\{+3\\pi/2, +\\pi, +\\pi/2, 0\\}$ — which is also what Sec. V-1 asserts: 'Changes are predominantly directed towards the center of the frequency band.' Sec. V nevertheless describes Fig. 2, the four symbol transitions **of the leftmost subcarrier**, as being realised by *lowering* the frequency. Lowering the leftmost subcarrier's frequency pushes energy below the lower band edge and produces precisely the out-of-band radiation the rule is designed to avoid, so the direction is inverted. Two independent passages support the upward direction, which identifies the Fig. 2 description as the erroneous one. Severity is minor: the design rule, the four shift sets (each a complete residue system mod $2\\pi$) and every quantitative result are unaffected.",
+      "verifier": "verify-math",
+      "exact_quote": "The four possible symbol transitions for the leftmost subcarrier are shown in Fig. 2 and compared to its average. The transition starts at t = 200 ns. The phase is changed by temporarily lowering the frequency."
+    }
+  ],
+  "verdict": "MINOR_ERRORS",
+  "verdict_confidence": 0.78,
+  "summary": "**What was checked.** 15 self-contained mathematical objects were extracted from *A New Radio to Overcome Critical Link Budgets* (MA-TISK): Eqs. (1)–(10), the round-robin D/A scheduling condition, the two numerical parameter sets of Sec. V, the dB combining-gain figures, the $K$-user rate/link-budget trade-off of Sec. VI-C, the Sec. VII conclusions, and the phase-transition direction rule of Sec. IV-A-2. Seven were routed to formal Lean 4 verification and eight to informal review.\n\n**What Lean settled.** All seven Lean snippets **PASSED** — ten theorems in total, every one compiling clean with no `sorry` and no axioms beyond `propext`, `Classical.choice` and `Quot.sound`. Formally confirmed: Eq. (1)'s beamforming matrix $T_b^{\\mathrm{BF}} = \\phi x_b$ has rank exactly one; Eq. (2)'s $\\phi = h^\\dagger$ is optimal (Cauchy–Schwarz bound plus attainment); Eq. (4)'s matched filters $f_{b,n}^\\dagger$ recover $h_m x_m$ with **zero crosstalk** when $\\mathbf{F}_b\\mathbf{F}_b^\\dagger = I$; Eq. (5)'s claim that identical data symbols yield a single complex sinusoid across block boundaries; the round-robin condition $ST \\ge LN$ really does admit $N$ pairwise-disjoint transition windows of length $L$ in a frame of $ST$ samples; both Sec. V parameter sets are mutually consistent and fit the 100 MHz 5G mask ($\\Delta f = T/(N T_{sym})$ gives $5.7421875$ MHz and $2.875$ MHz, matching the quoted 5.74 MHz and 2.88 MHz, with occupied bandwidths 91.875 MHz and 92 MHz); and Eq. (10)'s linearisation $R \\approx \\mathrm{SNR}/\\ln 2$ with the correct coefficient and a relative error bounded by $\\mathrm{SNR}/(1+\\mathrm{SNR})$. No Lean run FAILED, so no informal fallbacks were needed.\n\n**The one finding.** A minor sign inconsistency, found informally in Sec. V. The design rule of Sec. IV-A-2 requires the **leftmost** subcarrier to deviate its instantaneous frequency *upwards* (towards band centre), as Sec. V-1 also states; Sec. V's description of Fig. 2 nevertheless says the leftmost subcarrier's phase 'is changed by temporarily lowering the frequency', which would radiate below the lower band edge. Two independent passages back the upward direction, so the figure description is the error. It affects neither the rule, the four QPSK shift sets (each verified to be a complete residue system modulo $2\\pi$), nor any quantitative result — hence **minor**, at confidence 0.75.\n\n**Verifier agreement.** The two verifiers never disagreed: every Lean verdict was `PASSED` and every informal review of the same region concurred. Three sub-threshold observations are recorded in the per-snippet reasoning rather than as findings. (i) *Normalisation at Eq. (4):* Lean proved both that a unitary $\\mathbf{F}_b$ has unit-norm rows (noise gain 1, not $T$) and that a constant-envelope matrix cannot be unitary for $T \\ge 2$. The stated $T$-fold SINR gain is correct under the unit-modulus convention the paper uses everywhere else, so 'unitary' here is standard shorthand for 'proportional to unitary', not a mathematical error. (ii) *Notation:* Sec. IV-A-1 writes the sinusoidal window as $L_s \\le s < SN - L_e$ where Eq. (7) has $ST$; since $T = 18.375 \\neq N = 16$ these differ, and Eq. (7) is the correct one — a prose typo, explicitly outside what the informal verifier flags. (iii) *Altitude:* Sec. VII's 'peak data rate can be made to grow linearly with SNR by means of spatial multiplexing' conflates the antenna-count linearity of Sec. VI-B with the low-SNR linearity of Eq. (10); loose attribution rather than a false statement.\n\n**Verdict: MINOR_ERRORS** at confidence 0.78. The paper's core mathematics — the rank/combining-gain argument, matched-filter optimality, crosstalk-free FFT demodulation, the parameter design and the low-SNR rate linearisation — is machine-checked clean, which makes the absence of critical errors a high-confidence conclusion. The verdict is held at 0.78 rather than higher only because the single finding rests on informal cross-section reading, and because much of the paper's load-bearing content (spectral regrowth magnitudes, SIR figures, hardware efficiency) is simulation and RF-design evidence that lies outside mathematical verification altogether.\n\n**Lean project.** `MATH_VERIFICATION/Paper` was **reused, not created** by this run — it holds a built Mathlib and 191 saved proofs from other papers' runs. Per `verify-math-lean`'s deletion rule ('if Step 0 reused an existing project, treat it as `--keep-lean` and do not delete it'), every call was pinned to `--project=Paper --keep-lean`, including the last, and the project was kept: `lean_project_kept: true`. Only per-snippet scratch (`TMP.lean`, `claim.md`) was removed; the seven proofs are saved as `Paper/Verified/paper__<SNIPPET>_0002opus5.lean`."
+}

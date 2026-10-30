@@ -1,0 +1,365 @@
+{
+  "paper_name": "paper",
+  "paper_path": "/Users/iacopoghinassi/Documents/Github/Wittgenstein/data/spot-workspace/0021-ITERTL_An_Iterative_Framework_for_Fine-tuning_LLMs_for_RTL_Code_Generation/paper.md",
+  "tag": "opus5",
+  "lean_project": "MATH_VERIFICATION/Paper",
+  "lean_project_kept": true,
+  "totals": {
+    "snippets_extracted": 11,
+    "routed_to_math": 7,
+    "routed_to_lean": 4,
+    "lean_passed": 2,
+    "lean_refuted": 2,
+    "lean_failed": 0,
+    "fallbacks_run": 0,
+    "errors_detected": 4
+  },
+  "results": [
+    {
+      "snippet_id": "paper::EQUATION::0",
+      "snippet_type": "EQUATION",
+      "location": "3 APPROACH / 3.1 Framework",
+      "content": "Conditional log probability (length-normalized) is calculated leveraging the model π that is being trained:\n\np_k = (Σ_j log P_π(a^t_{k,j} | s, a^t_{k,<j})) / ||a^t_k||       (1)",
+      "route": "verify-math",
+      "route_rationale": "Definition of a length-normalised sequence log-probability; a careful reader can check well-formedness and domain by inspection. Nothing to formalise beyond a definition.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "Well-formed. The numerator is exactly the autoregressive sequence log-likelihood $\\log P_\\pi(a^t_k \\mid s) = \\sum_j \\log P_\\pi(a^t_{k,j} \\mid s, a^t_{k,<j})$; dividing by the token length $\\|a^t_k\\|$ gives the average per-token log-probability, matching the RRHF/RTLCoder formulation cited as [12, 24]. Domain sound: each $\\log P \\in (-\\infty, 0]$ and $\\|a^t_k\\| > 0$ for a non-empty response, so $p_k$ is a well-defined non-positive real with no division by zero. Downstream use is consistent: Equation 2 compares $p_k$ across the $K$ candidates for the same instruction, and length normalisation is precisely what makes that cross-candidate comparison meaningful. Non-defects: the left side is written $p_k$ rather than $p^t_k$ while the right side carries the superscript $t$ (the round index is suppressed and unambiguous, since all of Section 3.1 is scoped to round $t$), and $\\|\\cdot\\|$ is overloaded to mean sequence length rather than a vector norm, which the words \"length-normalized\" disambiguate.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::EQUATION::1",
+      "snippet_type": "EQUATION",
+      "location": "3 APPROACH / 3.1 Framework",
+      "content": "Combining the quality score z and log probability p, the ranking loss [12, 24, 14] can be computed:\n\nL^t_ranking = Σ_{z^t_k < z^t_r - β} max(p_k - p_r + α, 0)         (2)",
+      "route": "verify-math",
+      "route_rationale": "Definition of a margin ranking (hinge) loss. The checkable content — index binding, inequality direction, sign — is settled by inspection against the paper's own Section 3.2 restatement.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::1",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "Internally coherent. The subscript $z^t_k < z^t_r - \\beta$ is the standard shorthand (identical to RRHF [24] and RTLCoder [12]) for summing over all ordered candidate pairs $(k, r)$ with $1 \\le k, r \\le K$ satisfying the condition, so both $k$ and $r$ are bound and the expression denotes a single well-defined scalar. This reading is confirmed by the paper's own Section 3.2 re-derivation, which replaces the sum by a nested expectation over **both** indices, $\\mathbb{E}_{a_k \\sim \\pi_c} \\mathbb{E}_{a_\\tau \\sim \\pi_c}[-\\max(p_k - p_\\tau + \\alpha, 0) I(z_k < z_\\tau - \\beta)]$. Inequality direction is correct, not inverted: $z_k < z_r - \\beta$ selects pairs where $k$ is worse than $r$ by quality margin $\\beta$, and the hinge is positive exactly when $p_k > p_r - \\alpha$, so minimising it pushes the lower-quality candidate's log-probability down — which is what \"penalise lower-quality samples that have higher probability\" requires. Both margins are non-negative ($\\alpha = 0.3$, $\\beta = 0.2$), the loss is non-negative and convex in the $p$'s, and the gradient vanishes once the margin is met. Cosmetic slips only: the index letter changes from $r$ here to $\\tau$ in Section 3.2 (a pure rename, likely because $r$ already denotes the reward in Equation 5 — an unfortunate symbol collision in Equation 2 itself), and the superscript $t$ appears on $z^t_k, z^t_r$ but is dropped from $p_k, p_r$ in the same formula.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::EQUATION::2",
+      "snippet_type": "EQUATION",
+      "location": "3 APPROACH / 3.1 Framework",
+      "content": "Another loss component is the common cross entropy loss relative to the reference sample a_K:\n\nL_ce = -Σ_i log P_π(a_{K,j} | s, a_{K,<j})                     (3)",
+      "route": "verify-math",
+      "route_rationale": "Definition of the MLE/cross-entropy loss; the defect to look for is index-notation coherence, which is an inspection check, not a formalisation one.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::2",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.85,
+        "reasoning": "Real index mismatch: the summation is written over $i$ ($\\sum_i$) while the summand is indexed exclusively by $j$ ($\\log P_\\pi(a_{K,j} \\mid s, a_{K,<j})$). Read literally the expression is ill-formed — $i$ is a bound index appearing nowhere in the summand, so the sum degenerates to (number of values of $i$) times a single term, while $j$ is a free variable that is never quantified, making $L_{ce}$ depend on an undetermined token position rather than on the whole sequence. The intended object is unambiguous and standard: $L_{ce} = -\\sum_j \\log P_\\pi(a_{K,j} \\mid s, a_{K,<j})$ over all token positions $j$ of $a_K$, exactly as Equation 1 in the same subsection correctly writes $\\sum_j$ with a summand indexed by $j$. Severity is minor: the slip propagates into no derivation and changes no downstream result — Section 3.2 uses $L_{ce}$ only as a scalar whose stop-gradient value supplies $\\lambda$ in Equation 4. Otherwise the definition is sound: omitting the superscript $t$ on $a_K$ is explicitly licensed by the preceding text (\"Assume the distribution of π_teacher remains unchanged ... Therefore, we omit the superscript t from a^t_K\"), the sign is correct ($-\\log P \\ge 0$ so $L_{ce} \\ge 0$), and the absence of length normalisation here, unlike $p_k$ in Equation 1, is the conventional sum-form MLE loss serving a different role, not an inconsistency. Correction: replace $\\sum_i$ with $\\sum_j$.",
+        "predicted_error_category": "Algebraic manipulation",
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [
+          "Section 3.1, Equation (3)",
+          "Section 3.1, Equation (1) (correctly uses Σ_j with summand indexed by j)"
+        ]
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::EQUATION::3",
+      "snippet_type": "EQUATION",
+      "location": "3 APPROACH / 3.1 Framework",
+      "content": "The overall loss function is a weighted sum of both\n\nL^t = L_ce + λ L^t_ranking                                    (4)\n\nTo control the scale relationship between the two loss functions we set λ equal to sg(L_ce), where sg(.) represents a stop-gradient operation.",
+      "route": "verify-math",
+      "route_rationale": "A weighted-sum definition plus a stop-gradient weighting choice. The claim to check is a gradient-flow argument about an autodiff primitive, which has no crisp formal content to hand Lean.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::3",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.88,
+        "reasoning": "Well-formed, and the $\\lambda = \\mathrm{sg}(L_{ce})$ choice is internally coherent. Both components are non-negative ($L_{ce} \\ge 0$; the ranking term is a sum of $\\max(\\cdot, 0)$ hinges) and $\\lambda \\ge 0$, so $L^t \\ge 0$ and minimising it genuinely drives both components down — there is no sign error and no way to reduce the objective by inflating one term. The gradient behaviour is exactly what the stated purpose requires: $\\nabla L^t = \\nabla L_{ce} + \\mathrm{sg}(L_{ce}) \\nabla L^t_{ranking}$, i.e. the ranking gradient is rescaled by the current scalar cross-entropy value treated as a constant. Had the plain product $L_{ce} \\cdot L^t_{ranking}$ been used, the product rule would give $(1 + L^t_{ranking}) \\nabla L_{ce} + L_{ce} \\nabla L^t_{ranking}$, so the cross-entropy gradient would be spuriously amplified and the optimiser could reduce the objective by shrinking the weight itself rather than improving the ranking. Applying $\\mathrm{sg}(\\cdot)$ removes precisely that parasitic gradient path, so the construction does what the accompanying sentence claims — the standard, legitimate use of a stop-gradient as an adaptive loss-balancing coefficient. Because $\\lambda$ tracks the magnitude of $L_{ce}$, the ranking term is automatically down-weighted as the model fits the reference data: a self-annealing schedule rather than a hand-tuned constant. The degenerate case $L_{ce} \\to 0$ killing the ranking gradient is an intended consequence of the chosen weighting, not an ill-definedness. Cosmetic slip only: $L_{ce}$ carries no superscript $t$ while $L^t$ and $L^t_{ranking}$ do, though $L_{ce}$ does depend on the round through $\\pi$ (the reference sample $a_K$ is round-invariant by the paper's own stated assumption, which largely justifies the asymmetric decoration).",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.88
+    },
+    {
+      "snippet_id": "paper::EQUATION::4",
+      "snippet_type": "EQUATION",
+      "location": "3 APPROACH / 3.2 (theoretical analysis)",
+      "content": "Inspired by the previous work [8], we regard fine-tuning LLMs as a reward maximization problem, which can be formulated as follows:\n\nmax_π 𝔼_{s~ρ(.)} 𝔼_{a~π(.|s)} [r(s,a)],                        (5)\n\nwhere 𝔼 denotes the expected value, s represents the instruction (prompt), following the distribution ρ(.). a represents the response (code) generated by the LLM π which is being optimized. r represents the reward for the response, in other words, the quality of the generated code.",
+      "route": "verify-math",
+      "route_rationale": "A problem statement, not a derivation. Its symbols (reward over generated RTL code) are undefined domain objects, so a faithful Lean statement is impossible; what is checkable is well-posedness and consistency with later uses.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::4",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "The standard reward-maximisation formulation of LLM fine-tuning, well-formed. The nested expectation is correctly ordered and every symbol properly quantified: outer over prompts $s \\sim \\rho(\\cdot)$, inner over responses $a \\sim \\pi(\\cdot \\mid s)$ conditioned on that $s$, integrand $r(s,a)$ a scalar function of the realised pair, so the whole expression is a scalar functional of $\\pi$ and $\\max_\\pi$ of it is well posed. The conditioning is written correctly ($\\pi(\\cdot \\mid s)$, not $\\pi(\\cdot)$), so the iterated expectation equals the joint expectation $\\mathbb{E}_{(s,a) \\sim \\rho(s)\\pi(a \\mid s)}[r(s,a)]$ by the tower property; no measurability issue arises since $r$ is bounded in practice (a code-quality score). Consistent with every later use: Equation 6 is the same template with two substitutions ($a \\sim \\pi_{teacher}$ for $a \\sim \\pi$, and $-\\sum_j \\mathrm{KL}$ for $r$), matching exactly the paper's two stated criticisms of the baseline; Equation 7 substitutes $a \\sim \\pi_c$ and $r_\\pi$; Equation 8 substitutes $a \\sim \\pi_t$. Sign conventions are consistent throughout (maximisation of reward matches the minus signs introduced when minimisation of $L_{ce}$ and $L_{ranking}$ is converted to maximisation). Two fair caveats, both acknowledged by the paper and therefore not errors: from Equation 7 onward the reward depends on the optimised policy ($r_\\pi$), so the objective is no longer the expectation of a fixed reward — the paper states this explicitly and addresses it with the EM-style reading; and Equation 5 carries no KL-to-reference regulariser and no explicit constraint set for $\\max_\\pi$, so its exact unconstrained optimum would be degenerate (concentrated on the highest-reward response), the well-known property of the unregularised RL objective and a modelling simplification in a motivating formulation, with nothing in Sections 3.1-3.2 depending on non-degeneracy. Notational nit: $r$ denotes the reward here while $r$ was a candidate index in Equation 2 (later renamed $\\tau$).",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::0",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "3 APPROACH / 3.2 (theoretical analysis of the naive distillation baseline)",
+      "content": "Let's first consider a naive approach that directly fine-tunes LLMs using reference data drawn from π_teacher, which can be considered a form of knowledge distillation. The optimization objective can be derived as follows:\n\nmin_π Σ_j -log P_π(a_j | s, a_{<j}) = min_π Σ_j log (P_teacher(a_j | s, a_{<j}) / log P_π(a_j | s, a_{<j}))\n= min_π Σ_j KL(P_teacher,j || P_π,j)\n≈ max_π 𝔼_{s~ρ(.)} 𝔼_{a~π_teacher(.|s)} [Σ_j -KL(P_teacher,j || P_π,j)]     (6)\n\nThe first equality holds because P_teacher is independent of π. While the approximate equality in the third line is based on the law of large numbers. Comparing equations 5 and 6, it is clear that this approach leads to systematic errors in two aspects: (1) replacing the distribution of the model being trained π(. | s) with that of π_teacher(. | s), and (2) the use of the negative Kullback-Leibler divergence (KL divergence) as the surrogate reward function between the probability distribution of the reference data and π.",
+      "route": "verify-math-lean",
+      "route_rationale": "A chain of asserted equalities between log-probability expressions whose correctness turns on a real identity, not on modelling judgement. Exactly the shape Lean settles decisively.",
+      "lean_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::0",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.95,
+        "reasoning": "Formalised the **first** asserted equality — the one the paper explicitly justifies (\"The first equality holds because P_teacher is independent of π\") — read as an equality of the summed per-token quantities for a fixed sampled response: $\\forall \\pi, \\sum_j (-\\log P_\\pi(a_j \\mid s, a_{<j})) = \\sum_j \\log(P_{teacher}(a_j \\mid s, a_{<j}) / P_\\pi(a_j \\mid s, a_{<j}))$. Rendered per-token with $p = P_{teacher}$, $q = P_\\pi$; the only hypotheses assumed are the domain constraints the paper's own setting supplies, namely that both are values of next-token conditional distributions, so $0 < p \\le 1$, $0 < q \\le 1$. No extra hypotheses were added and the conclusion was not weakened. Lean compiled a refutation of the universally quantified claim, instantiating $p = q = 1/2$: the left side is $-\\log(1/2) = \\log 2 > 0$ while the right side is $\\log 1 = 0$. Mechanically $\\log(p/q) = \\log p - \\log q$, so the asserted equality holds iff $\\log p = 0$, i.e. iff $p = 1$ — and the paper quantifies over all probability values $p \\in (0,1]$. A companion theorem also compiled clean to pin down what **is** true: $\\log(p/q) = (-\\log q) + \\log p$, i.e. the two expressions differ by the additive, π-independent constant $\\log p$. SCOPE: what is refuted is the asserted equality **as written**. The paper's own justification legitimately establishes that the two objectives share the same **argmin** over π (they differ by a π-independent additive constant), but not that the expressions are equal, nor that the two **minimum values** are equal. So this is a notational/derivational defect in the displayed chain, not a collapse of the argument: the conclusion that the naive distillation baseline optimises $\\sum_j \\mathrm{KL}(P_{teacher,j} \\| P_{\\pi,j})$ still goes through. SECONDARY DEFECTS in the same chain, each independent and neither formalised: (1) the denominator of the second line is printed as $\\log P_\\pi(a_j \\mid s, a_{<j})$ rather than $P_\\pi(a_j \\mid s, a_{<j})$ — a stray $\\log$ that makes the right-hand side ill-formed even as an intended expression, since $P_\\pi \\in (0,1]$ gives $\\log P_\\pi \\le 0$, so the ratio is negative (or a division by zero at $P_\\pi = 1$) and its log is undefined over the reals. The formalisation charitably read the denominator as the intended $P_\\pi$, the strongest reading available to the paper, and the equality is false even then. (2) The **second** equality identifies the single-sample log-ratio $\\sum_j \\log(P_{teacher,j}/P_{\\pi,j})$ with $\\sum_j \\mathrm{KL}(P_{teacher,j} \\| P_{\\pi,j})$ exactly, but a pointwise log-ratio at the realised token equals a KL divergence only in expectation over $a_j \\sim P_{teacher,j}$; the paper attributes its law-of-large-numbers approximation to the **third** line only, leaving this second equality unjustified.",
+        "predicted_error_category": "Formally refuted",
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": [
+          "Section 3 APPROACH / 3.2, Equation (6), first asserted equality",
+          "Section 3 APPROACH / 3.2, prose after Equation (6): \"The first equality holds because P_teacher is independent of π\" — justifies argmin-equivalence, not equality",
+          "Section 3 APPROACH / 3.2, Equation (6), denominator of the second line: stray `log` in `log P_π(a_j | s, a_{<j})`",
+          "Section 3 APPROACH / 3.2, Equation (6), second asserted equality: holds only in expectation and is left unjustified"
+        ],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__FORMULA_BLOCK__0_0021opus5.lean",
+          "formal_statement": "theorem itertl_eq6_first_equality_false :\n    ¬ (∀ p q : ℝ, 0 < p → p ≤ 1 → 0 < q → q ≤ 1 →\n        -Real.log q = Real.log (p / q)) := by\n  intro h\n  have h1 := h (1 / 2) (1 / 2) (by norm_num) (by norm_num) (by norm_num) (by norm_num)\n  rw [div_self (by norm_num : (1 : ℝ) / 2 ≠ 0), Real.log_one] at h1\n  have h2 : Real.log ((1 : ℝ) / 2) < 0 := Real.log_neg (by norm_num) (by norm_num)\n  linarith\n\ntheorem itertl_eq6_correct_identity (p q : ℝ) (hp : 0 < p) (hq : 0 < q) :\n    Real.log (p / q) = (-Real.log q) + Real.log p := by\n  rw [Real.log_div (ne_of_gt hp) (ne_of_gt hq)]\n  ring",
+          "compiler_feedback": "'itertl_eq6_first_equality_false' depends on axioms: [propext, Classical.choice, Quot.sound]\n'itertl_eq6_correct_identity' depends on axioms: [propext, Classical.choice, Quot.sound]\nEXIT=0\n\n[lean_diagnostic_messages] {\"result\":{\"partial\":false,\"still_elaborating_lines\":null,\"success\":true,\"timed_out\":false,\"items\":[{\"severity\":\"info\",\"message\":\"'itertl_eq6_first_equality_false' depends on axioms: [propext, Classical.choice, Quot.sound]\",\"line\":38,\"column\":1,\"category\":\"diagnostic\"},{\"severity\":\"info\",\"message\":\"'itertl_eq6_correct_identity' depends on axioms: [propext, Classical.choice, Quot.sound]\",\"line\":39,\"column\":1,\"category\":\"diagnostic\"}],\"failed_dependencies\":[]}}\n\n[lean_verify itertl_eq6_first_equality_false] {\"axioms\":[\"propext\",\"Classical.choice\",\"Quot.sound\"],\"trust\":\"standard\",\"non_standard_axioms\":[]}",
+          "axioms": ["propext", "Classical.choice", "Quot.sound"],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::1",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "3 APPROACH / 3.2 (theoretical analysis of the non-iterative degenerate variant)",
+      "content": "Next, let's consider a non-iterative degenerate version of our approach, where a constant distribution π_c is used to generate training samples. ... To simplify the derivation, here we only present the ranking loss component from Equation 2. And the term associated with the reference data in the ranking loss are also omitted, which does not interfere with our conclusions.\n\n$$\n\\min_{\\pi}(L_{\\text{ranking}}) = \\min_{\\pi}\\left[ \\sum_{z_k < z_{\\tau} - \\beta} \\max(p_k - p_{\\tau} + \\alpha, 0) \\right]\n$$\n\n$$\n\\simeq \\min_{\\pi} [\\max(p_k - p_{\\tau} + \\alpha, 0) I(z_k < z_{\\tau} - \\beta)]\n$$\n\n$$\n\\simeq \\max_{\\pi} \\mathbb{E}_{s \\sim \\rho(\\cdot)} \\mathbb{E}_{a_k \\sim \\pi_c (\\cdot | s)} \\left\\{\n\\mathbb{E}_{a_{\\tau} \\sim \\pi_c (\\cdot | s)} \\left[ - \\max(p_k - p_{\\tau} + \\alpha, 0) I(z_k < z_{\\tau} - \\beta) \\right] \\right\\}\n$$\n\n$$\n= \\max_{\\pi} \\mathbb{E}_{s \\sim \\rho(\\cdot)} \\mathbb{E}_{a \\sim \\pi_c (\\cdot | s)} [r_{\\pi}(s, a)]\n$$\n\nHere, we denote the surrogate reward function as $r_{\\pi}$ to show its dependency on $\\pi$.",
+      "route": "verify-math-lean",
+      "route_rationale": "A four-line derivation turning a minimisation into a maximisation of a negation. The min/max/sign relation is a crisp formal claim Lean can settle, and the scaling step is formalisable too.",
+      "lean_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::1",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.6,
+        "reasoning": "Formalised the step carrying the mathematical content: the **third** line, which turns a minimisation of a non-negative hinge objective into a maximisation of the **negation** of that same objective. Read literally as a (near-)equality of **optimal values**, that line asserts the schema $\\min f = \\max(-f)$. Hypotheses: $f$ an arbitrary real-valued function on a finite nonempty domain, with no extra assumptions — the paper states none, and in particular does not assume the optimum is $0$. The negation compiles clean, witness $f \\equiv 1$ (min $= 1$, max of negation $= -1$). The correct relation $\\min f = -(\\max(-f))$ was also proved, exhibiting exactly the outer minus sign the paper's display omits, as were two companion theorems establishing that negation turns minimisers into maximisers and that multiplication by any positive constant preserves the ordering. FAITHFULNESS CAVEAT — READ BEFORE ACTING ON THIS: the paper hedges the second and third lines with $\\simeq$ (approximately equal), **not** $=$; only the first and fourth lines use $=$. The refutation therefore establishes a **presentational/notational** defect — chaining a min-expression and a max-expression as (near-)equalities when what actually holds is only argmin/argmax equivalence up to sign and a positive rescaling — and is **not** evidence that the paper's conclusion is wrong. The companion theorems pin down that the derived optimisation problem is equivalent to the original: minimising the ranking loss and maximising the negated surrogate reward have the same optimisers, invariantly under positive rescaling. The paper's substantive claim (that the degenerate non-iterative variant can be read as reward maximisation with surrogate reward $r_\\pi$) **survives**. Confidence is 0.6 rather than ≥0.9 for exactly this reason: the Lean refutation of the literal value-equality is certain, but the underlying mathematical conclusion is sound. SECONDARY OBSERVATIONS, not formalised: (1) the second line replaces the double sum over all violating candidate pairs $(k, \\tau)$ by a **single** indexed term, leaving $k$ and $\\tau$ free/unbound on the right-hand side — the sum's binding of those indices is silently dropped; (2) the third line replaces a sum over pairs by a nested expectation over $a_k, a_\\tau \\sim \\pi_c$, which differs from the sum by a positive factor of order $K(K-1)$ (with $K = 4$); argmax-preserving, but not an equality, and unjustified beyond the $\\simeq$ symbol; (3) the sampling distribution inside the expectations is $\\pi_c$ while the quantity being optimised, $p_k$, is computed under $\\pi$ — the very distribution mismatch the paper criticises in the baseline at Equation 6, reintroduced here by construction. The paper partially acknowledges this immediately afterwards, noting $\\pi_c$ \"can be adjusted to an appropriate distribution to reduce the mismatch with π\".",
+        "predicted_error_category": "Sign/Arithmetic error",
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": [
+          "Section 3 APPROACH / 3.2, Equation 7, third line — the outer negation of the optimal value is dropped, so the chain asserts min f = max (-f) instead of min f = -(max (-f))",
+          "Section 3 APPROACH / 3.2, Equation 7, second line — the double sum over violating pairs is replaced by a single indexed term, leaving k and τ unbound"
+        ],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__FORMULA_BLOCK__1_0021opus5.lean",
+          "formal_statement": "theorem not_min_eq_max_neg :\n    ¬ ∀ f : Fin 2 → ℝ,\n        (Finset.univ.inf' Finset.univ_nonempty f)\n          = (Finset.univ.sup' Finset.univ_nonempty fun i => -f i) := by\n  intro h\n  have := h (fun _ => 1)\n  norm_num [Finset.inf'_const, Finset.sup'_const] at this\n\ntheorem min_eq_neg_max_neg (f : Fin 2 → ℝ) :\n    (Finset.univ.inf' Finset.univ_nonempty f)\n      = -(Finset.univ.sup' Finset.univ_nonempty fun i => -f i) := by\n  refine le_antisymm ?_ ?_ <;>\n    simp [Finset.inf'_le_iff, Finset.le_sup'_iff, neg_le, le_neg]\n\ntheorem argmin_eq_argmax_neg_smul {α : Type*} (c : ℝ) (hc : 0 < c)\n    (f : α → ℝ) (x y : α) :\n    f x ≤ f y ↔ c * (-f y) ≤ c * (-f x) := by\n  constructor <;> intro h <;> nlinarith\n\ntheorem isLeast_iff_isGreatest_neg_smul {α : Type*} (c : ℝ) (hc : 0 < c)\n    (f : α → ℝ) (s : Set α) (x : α) :\n    IsLeast (f '' s) (f x) ↔\n      IsGreatest ((fun y => c * (-f y)) '' s) (c * (-f x)) := by\n  constructor\n  · rintro ⟨⟨z, hz, hfz⟩, hlb⟩\n    refine ⟨⟨z, hz, by simp [hfz]⟩, ?_⟩\n    rintro b ⟨w, hw, rfl⟩\n    have hw' : f x ≤ f w := hlb ⟨w, hw, rfl⟩\n    nlinarith\n  · rintro ⟨⟨z, hz, hfz⟩, hub⟩\n    have hzx : f z = f x := by\n      have : c * -f z = c * -f x := hfz\n      nlinarith\n    refine ⟨⟨z, hz, hzx⟩, ?_⟩\n    rintro b ⟨w, hw, rfl⟩\n    have hw' : c * -f w ≤ c * -f x := hub ⟨w, hw, rfl⟩\n    nlinarith",
+          "compiler_feedback": "$ lake env lean Paper/TMP.lean\n(no output; exit status 0)\n\nlean_diagnostic_messages (Paper/TMP.lean): {\"result\":{\"partial\":false,\"still_elaborating_lines\":null,\"success\":true,\"timed_out\":false,\"items\":[],\"failed_dependencies\":[]}}\n\nlean_verify ITERTL.not_min_eq_max_neg: {\"axioms\":[\"propext\",\"Classical.choice\",\"Quot.sound\"],\"trust\":\"standard\",\"non_standard_axioms\":[]}\n\nlean_verify ITERTL.argmin_eq_argmax_neg_smul: {\"axioms\":[\"propext\",\"Classical.choice\",\"Quot.sound\"],\"trust\":\"standard\",\"non_standard_axioms\":[]}\n\n$ lake env lean Paper/TMP.lean   # with #print axioms appended\n'ITERTL.not_min_eq_max_neg' depends on axioms: [propext, Classical.choice, Quot.sound]\n'ITERTL.min_eq_neg_max_neg' depends on axioms: [propext, Classical.choice, Quot.sound]\n'ITERTL.argmin_eq_argmax_neg_smul' depends on axioms: [propext, Classical.choice, Quot.sound]\n'ITERTL.isLeast_iff_isGreatest_neg_smul' depends on axioms: [propext, Classical.choice, Quot.sound]\nEXIT=0\n\n$ lake env lean Paper/Verified/paper__FORMULA_BLOCK__1_0021opus5.lean\n(no output; exit status 0)",
+          "axioms": ["propext", "Classical.choice", "Quot.sound"],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.6
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "3 APPROACH / 3.2 (theoretical analysis)",
+      "content": "Based on the analysis of the above two cases, we can formally reveal the superiority of our method. Using similar notations, our optimization scheme can be formulated as:\n\n$$\n\\pi_{t+1} = \\arg\\max_{\\pi} \\mathbb{E}_{s \\sim \\rho(\\cdot)} \\mathbb{E}_{a \\sim \\pi_t (\\cdot | s)} [r_{\\pi}(s, a)]\n$$\n\nAfter t-th iteration, $\\pi$ is updated, progressively deviating from the previous distribution $\\pi_{old}$ ($\\pi_0, ..., \\pi_{t-1}$). By replacing $\\pi_{old}$ with $\\pi_t$ for sampling, our method effectively mitigates the distribution mismatch. Furthermore, due to the law of large numbers, increasing the number of sampling promotes better estimation expected values.",
+      "route": "verify-math",
+      "route_rationale": "The equation is a definition; the checkable content is a modelling claim about \"distribution mismatch\" — a quantity the paper never defines — so no faithful Lean statement exists.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.72,
+        "reasoning": "Equation 8 is well-formed and contains no algebraic, sign, domain, or calculus defect. On the three substantive concerns: (a) replacing $\\pi_{old}$ with $\\pi_t$ does **not** eliminate the sampling/optimisation mismatch — the argmax ranges over all candidate $\\pi$ while samples are drawn from the frozen $\\pi_t$, so the mismatch is structurally the same kind the authors criticise as \"systematic error (1)\" in the Equation 5 → 6 comparison, only smaller in magnitude because $\\pi_t$ is the most recent iterate. Crucially the paper writes \"effectively mitigates the distribution mismatch\", not \"eliminates\", so the prose is correctly hedged and is not a false statement. (b) \"Law of large numbers\" is the conventional and already-used justification for replacing an expectation by an empirical average; the stated claim — that more samples give a better estimate of the expected value — is exactly the LLN's content. A sharper finite-$n$ statement would invoke Chebyshev/CLT, but citing the LLN here is standard usage, not an error. (c) \"we can formally reveal the superiority of our method\" **is** an overclaim: nothing formal is derived — no theorem, no inequality, no bound, and in particular no monotonic-improvement guarantee for the true objective (Equation 5) or even for the surrogate. The passage is an informal plausibility argument comparing which sampling distribution sits closer to $\\pi$, with \"mismatch\" never defined as a quantity, so no ordering between methods is established. Secondary looseness: because this snippet carries only the ranking-loss component, the unconstrained $\\arg\\max_\\pi$ of $r_\\pi$ is degenerate ($r_\\pi \\le 0$, attained by any $\\pi$ satisfying all ranking margins), so Equation 8 does not uniquely define $\\pi_{t+1}$; in practice $\\pi_{t+1}$ comes from 3 epochs of AdamW, not an argmax. Both items are rhetorical/notational rather than derivation-invalidating, so they stay below the erratum bar, but the \"formally reveal the superiority\" framing should be downgraded to an informal argument.",
+        "predicted_error_category": null,
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": [],
+        "exact_quote": "Based on the analysis of the above two cases, we can formally reveal the superiority of our method."
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.72
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::2",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "3 APPROACH / 3.2 (theoretical analysis)",
+      "content": "From another perspective, our approach can also be regarded as a degenerate variant of the generalized Expectation-Maximization (EM) algorithm. Consider the following optimization problem:\n\n$$\n\\max_{\\pi} \\mathbb{E}_{s \\sim \\rho(\\cdot)} \\mathbb{E}_{a \\sim \\pi (\\cdot | s)} [r_{\\pi}(s, a)]\n$$\n\nSince $\\pi$ appears in both the subscript of the expected symbol and the reward function, an EM-style optimization procedure would be like:\n\n$$\n\\pi_{t+1} = \\arg\\max_{\\pi} \\mathbb{E}_{s \\sim \\rho(\\cdot)} \\mathbb{E}_{a \\sim \\pi_t (\\cdot | s)} [r_{\\pi}(s, a)]\n$$\n\n$$\n\\pi_{t+2} = \\arg\\max_{\\pi} \\mathbb{E}_{s \\sim \\rho(\\cdot)} \\mathbb{E}_{a \\sim \\pi (\\cdot | s)} [r_{\\pi_{t+1}}(s, a)]\n$$\n\nEquation 10 corresponds to our optimization approach, while optimizing Equation 11 typically requires reinforcement learning methods like policy gradients, which may increase the complexity and instability of the whole scheme. So we simply set $\\pi_{t+2}$ equal to $\\pi_{t+1}$ to avoid these issues. We leave the exploration of more precise optimization methods to future researches.",
+      "route": "verify-math",
+      "route_rationale": "The defect to assess is whether the \"generalized EM\" label is warranted — a claim about algorithm taxonomy and about guarantees over undefined objects, with no self-contained formal statement to hand Lean.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::2",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.7,
+        "reasoning": "The equations themselves are algebraically sound, but the mathematical characterisation attached to them is false. (a) The scheme is **not** EM, generalized or otherwise. EM maximises a marginal likelihood $\\log p_\\theta(x) = \\log \\sum_z p_\\theta(x,z)$ by constructing, via Jensen, an evidence lower bound $\\mathcal{L}(q,\\theta) \\le \\log p_\\theta(x)$ that is **tight** at the current iterate ($q = p(z \\mid x; \\theta_t)$); it is exactly this touching-lower-bound property that yields EM's monotone likelihood increase, and generalized EM weakens only the M-step (partial maximisation) while preserving monotonicity. Here there is no likelihood, no latent variable being marginalised, and no Jensen step: nothing establishes $\\mathbb{E}_{a \\sim \\pi_t}[r_\\pi] \\le \\mathbb{E}_{a \\sim \\pi}[r_\\pi]$ with equality at $\\pi = \\pi_t$, so $\\mathbb{E}_{a \\sim \\pi_t}[r_\\pi]$ is neither a lower bound nor a majorant on the Equation 9 objective. What is actually being done is 2-block coordinate ascent on the lifted function $F(\\pi_{samp}, \\pi_{rew}) = \\mathbb{E}_{s \\sim \\rho} \\mathbb{E}_{a \\sim \\pi_{samp}}[r_{\\pi_{rew}}(s,a)]$, whose diagonal $F(\\pi,\\pi)$ is the Equation 9 target. Coordinate ascent monotonically increases $F$, but monotone increase of $F$ along the blocks does **not** imply monotone increase of the diagonal restriction $F(\\pi,\\pi)$ — which is the actual objective. So the scheme has no monotone-improvement or convergence guarantee, and the \"generalized EM\" label imports exactly the guarantee it lacks. This is a substantive mischaracterisation of the algorithm, not merely loose wording. (b) The degeneracy compounds it: setting $\\pi_{t+2} = \\pi_{t+1}$ deletes Equation 11, the only step distinguishing the procedure from Equation 8, leaving plain repetition of Equation 10 — so the resulting scheme retains none of EM's E-step/M-step structure and none of its convergence properties, making the EM framing vacuous as applied. (c) Equation 10 is character-for-character identical to Equation 8 earlier in the section (independently confirmed in the source); re-numbering the same formula as a new equation is a presentational defect that inflates the apparent derivation, though not itself a mathematical error. (d) Index bookkeeping is confusing but not incoherent: since Equation 11 is never executed, $\\pi_{t+2} = \\pi_{t+1}$ means the theory's index advances by 2 per real update while the experimental counter (\"The total number of iterations is set to 7\") advances by 1; the two counters are never reconciled, but no contradiction follows because the implemented algorithm is just iterated Equation 10. Severity: the EM paragraph is explicitly hedged (\"From another perspective\", \"can also be regarded as\") and nothing downstream — method, training recipe, or experiments — depends on it, so the defect is an unsupported theoretical framing rather than an erratum-level computational mistake.",
+        "predicted_error_category": "Calculus/Proof error",
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": [
+          "Section 3.2, sentence introducing Equation 9: \"our approach can also be regarded as a degenerate variant of the generalized Expectation-Maximization (EM) algorithm\"",
+          "Section 3.2, Equation 10 (duplicate of Equation 8)",
+          "Section 3.2, sentence after Equation 11: \"So we simply set $\\pi_{t+2}$ equal to $\\pi_{t+1}$ to avoid these issues.\""
+        ],
+        "exact_quote": "From another perspective, our approach can also be regarded as a degenerate variant of the generalized Expectation-Maximization (EM) algorithm."
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.7
+    },
+    {
+      "snippet_id": "paper::EQUATION::5",
+      "snippet_type": "EQUATION",
+      "location": "4 EXPERIMENTAL EVALUATION / 4.1 Experimental Setup (Metric)",
+      "content": "**Metric:** As with many code generation researches, pass@k metric [6] is employed to measure the performance, by regard a problem as solved if at least one of the $k$ generated code samples passes the unit tests. Specifically, for each problem, the model generated $n \\geq k$ candidates, where $c \\leq n$ samples pass the unit tests. The pass@k metric is estimated unbiasedly use the following expression [3]:\n\n$$\n\\text{pass@}k = \\mathbb{E}_{\\text{Problems}} \\left[1 - \\frac{\\binom{n-c}{k}}{\\binom{n}{k}}\\right]\n$$",
+      "route": "verify-math-lean",
+      "route_rationale": "A closed-form combinatorial identity (the Chen et al. unbiased pass@k estimator) with crisp hypotheses — ideal for a machine-checked verdict.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::5",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.97,
+        "reasoning": "Formalised the content-bearing per-problem combinatorial core of the estimator. Four theorems proved in Lean 4 / Mathlib v4.33.1, all compiling clean with no `sorry`. (A) For any $s, p$ finite sets with $p \\subseteq s$, the number of $k$-element subsets of $s$ disjoint from $p$ is $\\binom{|s| - |p|}{k}$ — proved by showing that collection equals the $k$-subsets of $s \\setminus p$. (B) Under $|s| = n$, $|p| = c$, $p \\subseteq s$, $k \\le n$: the fraction of $k$-element subsets of the $n$ candidates containing at least one passing candidate — i.e. the probability a uniformly random size-$k$ draw solves the problem — equals exactly the paper's bracketed quantity $1 - \\binom{n-c}{k}/\\binom{n}{k}$ over $\\mathbb{R}$. The denominator is nonzero because $k \\le n$ gives `Nat.choose_pos`. (C) The rearrangement $1 - \\binom{n-c}{k}/\\binom{n}{k} = (\\binom{n}{k} - \\binom{n-c}{k})/\\binom{n}{k}$ under $k \\le n$. HYPOTHESES ARE EXACTLY THE PAPER'S: $n \\ge k$ and $c \\le n$ (the latter following from $p \\subseteq s$, so it is carried rather than assumed away). No $c \\ge k$ or $n - c \\ge k$ was added. (D) The degenerate case $n - c < k$ was proved explicitly: `Nat.choose_eq_zero_of_lt` gives $\\binom{n-c}{k} = 0$ and the estimator is exactly $1$ — correct, since when fewer than $k$ candidates fail, every size-$k$ subset must contain a passing sample. Theorem (B) has no lower bound on $c$ at all, so it already subsumes that case. OBSERVATIONS on surrounding text, not defects in the formula: (i) \"unbiasedly\" is justified only under the sampling model where the $k$ reported samples are drawn uniformly **without replacement** from the $n$ generated candidates; under that model the estimator is exactly the probability a size-$k$ draw solves the problem, and averaging over problems is unbiased for the population pass@$k$. The paper does not state this model explicitly, delegating it to citation [3] — an under-specification of the metric's definition, not an arithmetic error. (ii) Later in the same subsection, \"For each test metric (pass@1, pass@5, and pass@10), the best result is chosen\" across four decoding temperatures: a maximum over decoding configurations is upward-biased for each individual configuration and for the best configuration's true value, so the **reported numbers** are not unbiased estimates of any single configuration's pass@$k$. That is a reporting-protocol concern (optimistic model selection), not a refutation of the formula, which is formally verified correct here.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__EQUATION__5_0021opus5.lean",
+          "formal_statement": "theorem card_powersetCard_filter_disjoint (s p : Finset α) (k : ℕ) (hp : p ⊆ s) :\n    #((s.powersetCard k).filter (fun t => Disjoint t p)) = (#s - #p).choose k := by\n  have hset : (s.powersetCard k).filter (fun t => Disjoint t p) = (s \\ p).powersetCard k := by\n    ext t\n    simp only [mem_filter, mem_powersetCard, Finset.subset_sdiff]\n    tauto\n  rw [hset, card_powersetCard, card_sdiff_of_subset hp]\n\ntheorem pass_at_k_eq (s p : Finset α) (n c k : ℕ)\n    (hs : #s = n) (hc : #p = c) (hp : p ⊆ s) (hkn : k ≤ n) :\n    (#((s.powersetCard k).filter (fun t => ¬ Disjoint t p)) : ℝ) / (#(s.powersetCard k) : ℝ)\n      = 1 - ((n - c).choose k : ℝ) / (n.choose k : ℝ) := by\n  have hB : #(s.powersetCard k) = n.choose k := by rw [card_powersetCard, hs]\n  have hD : #((s.powersetCard k).filter (fun t => Disjoint t p)) = (n - c).choose k := by\n    rw [card_powersetCard_filter_disjoint s p k hp, hs, hc]\n  have hsplit :\n      #((s.powersetCard k).filter (fun t => ¬ Disjoint t p))\n        + #((s.powersetCard k).filter (fun t => Disjoint t p))\n      = #(s.powersetCard k) := by\n    rw [Nat.add_comm]\n    exact Finset.card_filter_add_card_filter_not (s := s.powersetCard k)\n      (p := fun t => Disjoint t p)\n  have hBpos : (0 : ℝ) < (n.choose k : ℝ) := by exact_mod_cast Nat.choose_pos hkn\n  have hcast :\n      (#((s.powersetCard k).filter (fun t => ¬ Disjoint t p)) : ℝ)\n        = (n.choose k : ℝ) - ((n - c).choose k : ℝ) := by\n    have := hsplit\n    rw [hD, hB] at this\n    have : (#((s.powersetCard k).filter (fun t => ¬ Disjoint t p)) : ℝ)\n        + ((n - c).choose k : ℝ) = (n.choose k : ℝ) := by exact_mod_cast this\n    linarith\n  rw [hB, hcast]\n  field_simp\n\ntheorem pass_at_k_rearrange (n c k : ℕ) (hkn : k ≤ n) :\n    1 - ((n - c).choose k : ℝ) / (n.choose k : ℝ)\n      = ((n.choose k : ℝ) - ((n - c).choose k : ℝ)) / (n.choose k : ℝ) := by\n  have hBpos : (0 : ℝ) < (n.choose k : ℝ) := by exact_mod_cast Nat.choose_pos hkn\n  field_simp\n\ntheorem pass_at_k_eq_one_of_lt (n c k : ℕ) (_hkn : k ≤ n) (h : n - c < k) :\n    1 - ((n - c).choose k : ℝ) / (n.choose k : ℝ) = 1 := by\n  rw [Nat.choose_eq_zero_of_lt h]\n  simp",
+          "compiler_feedback": "",
+          "axioms": ["propext", "Classical.choice", "Quot.sound"],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.97
+    },
+    {
+      "snippet_id": "paper::EQUATION::6",
+      "snippet_type": "EQUATION",
+      "location": "4 EXPERIMENTAL EVALUATION / 4.2 (ablation on softmax normalisation)",
+      "content": "The baseline method[12] employ a softmax normalization for conditional log probability after Equation 1:\n\n$$ p'_k = \\frac{e^{p_k}}{\\sum_{i=1}^K e^{p_i}} \\qquad (13) $$\n\nWe conduct an ablation study to investigate its impact in iteration training. All other settings remain unchanged except for softmax normalization. From Figure 4, it can be observed that the pass@1 of the approach with softmax shows smoother variations across iterations, which may be caused by vanishing gradients brought by [softmax saturation].",
+      "route": "verify-math-lean",
+      "route_rationale": "A closed-form normalisation whose asserted properties (well-formedness, saturation, vanishing gradients) are crisp analytic claims Lean can discharge.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::6",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.95,
+        "reasoning": "FAITHFULNESS FRAMING: Equation 13 is a **definition** imported from the baseline [12], so it cannot be \"wrong\" in the sense of a derivation error — there is no antecedent for it to contradict. What is checkable, and what was formalised, is (A) that it is well-formed as a probability normalisation and (B) that the property the Section 4.2 ablation rests on — softmax saturation producing vanishing gradients — actually holds. Both were proved; Lean accepted everything with only the three standard Mathlib axioms. (A) With `softmax p k = Real.exp (p k) / ∑ i, Real.exp (p i)` and **no** sign restriction on the logits (the paper's $p_k \\le 0$ from Equation 1 is not needed and was deliberately not assumed, so the result is strictly more general than the paper's setting): the denominator is strictly positive, $0 < p'_k$, $p'_k \\le 1$ for all $K \\ge 1$, $p'_k < 1$ under $1 < K$, and $\\sum_k p'_k = 1$. The hypothesis split is exact: the non-strict upper bound holds for every $K \\ge 1$, the **strict** bound requires $1 < K$ (at $K = 1$ the single output is exactly $1$, so stating $< 1$ unconditionally would be unfaithful). For ITERTL's $K = 4$ both the strict bounds and sum-to-one apply. (B) Saturation was proved properly, not merely bounded: holding the other $K-1$ logits fixed, Equation 13 as a function of its own logit is exactly $t \\mapsto e^t/(e^t + C)$ with $C = \\sum_{i \\ne k} e^{p_i} > 0$ (proved via `Function.update`, so this is the genuine one-logit section of Equation 13, not a substituted toy function), and the full derivative identity $\\partial p'_k/\\partial p_k = p'_k(1 - p'_k)$ was proved via `HasDerivAt.div`. Together with $x(1-x) \\le 1/4$ this bounds the softmax sensitivity by $1/4$, and $\\varepsilon$-bounds plus the limits $x(1-x) \\to 0$ as $x \\to 0$ and $x \\to 1$ substantiate the saturation mechanism. So the paper's qualitative mechanism is formally confirmed; its **attribution** of the observed smoother pass@1 curve to that mechanism remains an empirical inference no proof can settle. OBSERVATIONS, not formalised: (1) CONFOUNDED ABLATION / SCALE MISMATCH — a genuine methodological concern. After softmax over $K = 4$, every $p'_k \\in (0,1)$ (formally proved), hence $|p'_k - p'_\\tau| < 1$: the entire attainable range of normalised score differences is the open unit interval, while Equation 2's margin is $\\alpha = 0.3$ — roughly a third of that whole range. In the un-normalised ITERTL variant the same $\\alpha = 0.3$ is applied to differences of average per-token log-probabilities, which are unbounded below and on a quite different scale. $\\alpha = 0.3$ and $\\beta = 0.2$ are reported once, in Section 4.1, with no indication of re-tuning for the softmax arm, and Section 4.2 explicitly asserts \"All other settings remain unchanged except for softmax normalization.\" Holding a fixed additive margin across two arms whose score scales differ that much means the ablation partly measures a margin/scale mismatch rather than the effect of softmax per se; the comparison as reported does not isolate softmax, and per-arm $\\alpha$ sensitivity is not reported. (2) PROSE CONSISTENCY — the two accounts of why softmax is discarded are in tension in emphasis, not in mathematics. Section 4.2 is hedged (\"**may** be caused by vanishing gradients\"); the conclusion is unhedged (\"we avoid softmax saturation. We choose to discard softmax to maximize performance\") and also allows that softmax \"can also be considered when a more stable and smooth training process is required\" — so the identical observed smoothness is presented once as the defect justifying removal and once as a benefit justifying retention.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__EQUATION__6_0021opus5.lean",
+          "formal_statement": "noncomputable def softmax {K : ℕ} (p : Fin K → ℝ) (k : Fin K) : ℝ :=\n  Real.exp (p k) / ∑ i, Real.exp (p i)\n\n-- (A) well-formedness\ntheorem denom_pos {K : ℕ} (hK : 0 < K) (p : Fin K → ℝ) : 0 < ∑ i, Real.exp (p i)\ntheorem softmax_pos {K : ℕ} (hK : 0 < K) (p : Fin K → ℝ) (k : Fin K) : 0 < softmax p k\ntheorem softmax_le_one {K : ℕ} (hK : 0 < K) (p : Fin K → ℝ) (k : Fin K) : softmax p k ≤ 1\ntheorem softmax_lt_one {K : ℕ} (hK : 1 < K) (p : Fin K → ℝ) (k : Fin K) : softmax p k < 1\ntheorem softmax_sum_eq_one {K : ℕ} (hK : 0 < K) (p : Fin K → ℝ) : ∑ k, softmax p k = 1\n\n-- (B) saturation\ntheorem softmax_section {K : ℕ} (p : Fin K → ℝ) (k : Fin K) (t : ℝ) :\n    softmax (Function.update p k t) k\n      = Real.exp t / (Real.exp t + ∑ i ∈ Finset.univ.erase k, Real.exp (p i))\ntheorem deriv_softmax_section {C : ℝ} (hC : 0 < C) (t : ℝ) :\n    deriv (fun s : ℝ => Real.exp s / (Real.exp s + C)) t\n      = (Real.exp t / (Real.exp t + C)) * (1 - Real.exp t / (Real.exp t + C))\ntheorem mul_one_sub_le_quarter (x : ℝ) : x * (1 - x) ≤ 1 / 4\ntheorem deriv_softmax_section_le_quarter {C : ℝ} (hC : 0 < C) (t : ℝ) :\n    deriv (fun s : ℝ => Real.exp s / (Real.exp s + C)) t ≤ 1 / 4\ntheorem saturation_low {x ε : ℝ} (h0 : 0 ≤ x) (hx : x ≤ ε) : x * (1 - x) ≤ ε\ntheorem saturation_high {x ε : ℝ} (h1 : x ≤ 1) (hx : 1 - ε ≤ x) : x * (1 - x) ≤ ε\ntheorem tendsto_grad_zero : Filter.Tendsto (fun x : ℝ => x * (1 - x)) (nhds 0) (nhds 0)\ntheorem tendsto_grad_one : Filter.Tendsto (fun x : ℝ => x * (1 - x)) (nhds 1) (nhds 0)\n\n-- main packaged result\ntheorem eq13_softmax_wellformed_and_saturating {K : ℕ} (hK : 1 < K) (p : Fin K → ℝ) :\n    ((0 < ∑ i, Real.exp (p i)) ∧\n      (∀ k, 0 < softmax p k ∧ softmax p k < 1) ∧ (∑ k, softmax p k = 1)) ∧\n    (∀ C : ℝ, 0 < C → ∀ t : ℝ,\n      deriv (fun s : ℝ => Real.exp s / (Real.exp s + C)) t\n        = (Real.exp t / (Real.exp t + C)) * (1 - Real.exp t / (Real.exp t + C))\n      ∧ deriv (fun s : ℝ => Real.exp s / (Real.exp s + C)) t ≤ 1 / 4) :=\n  ⟨eq13_wellformed hK p,\n    fun _ hC t => ⟨deriv_softmax_section hC t, deriv_softmax_section_le_quarter hC t⟩⟩",
+          "compiler_feedback": "",
+          "axioms": ["propext", "Classical.choice", "Quot.sound"],
+          "cycles_used": 4,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.95
+    }
+  ],
+  "findings": [
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::0",
+      "category": "Formally refuted",
+      "severity": "minor",
+      "confidence": 0.95,
+      "evidence": "Lean refuted the first asserted equality of Equation 6. Charitably reading the (mis-typed) denominator as $P_\\pi$, the step claims $-\\log P_\\pi = \\log(P_{teacher}/P_\\pi)$ for conditional probabilities in $(0,1]$. The compiling refutation instantiates $P_{teacher} = P_\\pi = 1/2$: the left side is $\\log 2 > 0$, the right side is $\\log 1 = 0$. Since $\\log(p/q) = \\log p - \\log q$, the equality holds **only** when $P_{teacher} = 1$. A companion theorem compiled clean to state what is actually true: $\\log(p/q) = (-\\log q) + \\log p$, i.e. the two objectives differ by the $\\pi$-independent constant $\\sum_j \\log P_{teacher}(a_j \\mid \\cdot)$.\n\nThe paper's own justification — \"The first equality holds because P_teacher is independent of π\" — legitimately establishes that the two objectives share the same **argmin** over $\\pi$, but not that they are equal, and not that their **minimum values** are equal. Severity is `minor` because the derivation's conclusion (that the naive distillation baseline optimises $\\sum_j \\mathrm{KL}$) survives under the intended argmin reading.\n\nTwo further independent defects in the same displayed chain:\n1. The denominator is printed as $\\log P_\\pi(a_j \\mid s, a_{<j})$ rather than $P_\\pi(a_j \\mid s, a_{<j})$ — a stray $\\log$. Since $P_\\pi \\in (0,1]$ gives $\\log P_\\pi \\le 0$, the ratio is negative (or a division by zero at $P_\\pi = 1$), so the right-hand side as printed is undefined over the reals.\n2. The **second** equality identifies the single-sample log-ratio with $\\sum_j \\mathrm{KL}(P_{teacher,j} \\| P_{\\pi,j})$ **exactly**, but a pointwise log-ratio equals a KL divergence only in expectation over $a_j \\sim P_{teacher,j}$. The paper attributes its law-of-large-numbers approximation to the **third** line only, so this step is left unjustified.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "min_π Σ_j -log P_π(a_j | s, a_{<j}) = min_π Σ_j log (P_teacher(a_j | s, a_{<j}) / log P_π(a_j | s, a_{<j}))"
+    },
+    {
+      "snippet_id": "paper::EQUATION::2",
+      "category": "Algebraic manipulation",
+      "severity": "minor",
+      "confidence": 0.85,
+      "evidence": "Equation 3 sums over $i$ while its summand is indexed exclusively by $j$: $L_{ce} = -\\sum_i \\log P_\\pi(a_{K,j} \\mid s, a_{K,<j})$. Read literally the expression is ill-formed — $i$ is a bound index appearing nowhere in the summand, so the sum degenerates to a count times a single term, while $j$ is a free variable never quantified, making $L_{ce}$ depend on an undetermined token position rather than on the whole sequence. The intended object is the standard token-level negative log-likelihood $L_{ce} = -\\sum_j \\log P_\\pi(a_{K,j} \\mid s, a_{K,<j})$, exactly as Equation 1 in the same subsection correctly writes $\\sum_j$ with a $j$-indexed summand. Severity is `minor`: the slip propagates into no derivation — Section 3.2 uses $L_{ce}$ only as a scalar whose stop-gradient value supplies $\\lambda$ in Equation 4. Correction: replace $\\sum_i$ with $\\sum_j$.",
+      "verifier": "verify-math",
+      "exact_quote": "L_ce = -Σ_i log P_π(a_{K,j} | s, a_{K,<j})                     (3)"
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::2",
+      "category": "Unsupported theoretical framing",
+      "severity": "minor",
+      "confidence": 0.7,
+      "evidence": "The equations are algebraically sound, but the \"generalized EM\" characterisation attached to them does not hold. EM maximises a marginal likelihood by constructing, via Jensen, an evidence lower bound that is **tight** at the current iterate, and it is exactly that touching-lower-bound property which yields monotone improvement; generalized EM weakens only the M-step while preserving monotonicity. Here there is no likelihood, no marginalised latent variable and no Jensen step: nothing establishes $\\mathbb{E}_{a \\sim \\pi_t}[r_\\pi] \\le \\mathbb{E}_{a \\sim \\pi}[r_\\pi]$ with equality at $\\pi = \\pi_t$, so the Equation 10 objective is neither a lower bound nor a majorant on the Equation 9 objective.\n\nWhat the scheme actually is: 2-block coordinate ascent on $F(\\pi_{samp}, \\pi_{rew}) = \\mathbb{E}_{s \\sim \\rho} \\mathbb{E}_{a \\sim \\pi_{samp}}[r_{\\pi_{rew}}(s,a)]$, whose diagonal $F(\\pi,\\pi)$ is the Equation 9 target. Blockwise ascent monotonically increases $F$, but that does **not** imply monotone increase of the diagonal restriction $F(\\pi,\\pi)$ — the actual objective. So the scheme carries no monotone-improvement or convergence guarantee, and the \"generalized EM\" label imports precisely the guarantee it lacks.\n\nThe degeneracy compounds this: setting $\\pi_{t+2} = \\pi_{t+1}$ deletes Equation 11, the only step distinguishing the procedure from Equation 8, leaving plain repetition of Equation 10 — so the EM framing is vacuous as applied. Separately, **Equation 10 is character-for-character identical to Equation 8** (verified byte-for-byte in the source), so re-numbering it as a new equation inflates the apparent derivation.\n\nSeverity is `minor`: the paragraph is explicitly hedged (\"From another perspective\", \"can also be regarded as\") and nothing downstream — method, training recipe or experiments — depends on it.",
+      "verifier": "verify-math",
+      "exact_quote": "From another perspective, our approach can also be regarded as a degenerate variant of the generalized Expectation-Maximization (EM) algorithm."
+    }
+  ],
+  "verdict": "MINOR_ERRORS",
+  "verdict_confidence": 0.78,
+  "summary": "**What was checked.** 11 self-contained mathematical objects were extracted from ITERTL: Equations 1–5 (the loss construction), the two derivation chains of Section 3.2 (Equations 6 and 7), the iterative update scheme (Equation 8), the EM-style reinterpretation (Equations 9–11), the pass@k estimator (Section 4.1) and the softmax normalisation (Equation 13). 7 were routed to informal review and 4 to formal Lean 4 verification. The Lean queue ran serially against the shared Mathlib project `MATH_VERIFICATION/Paper`; all 4 attempts settled — **2 PASSED, 2 REFUTED, 0 FAILED, 0 NOT_ATTEMPTED** — so no Step-5 informal fallbacks were owed and every `fallback_result` on a Lean-routed snippet is `null`. (The `fallback_result` field is used to carry the `verify-math` output for the 7 informally-routed snippets, which have no `lean_result`.)\n\n**What Lean settled.** Both of the paper's *metric* definitions are formally confirmed correct. The pass@k estimator $1 - \\binom{n-c}{k}/\\binom{n}{k}$ was proved to be exactly the probability that a uniformly random size-$k$ subset of the $n$ candidates contains a passing one, under the paper's own hypotheses ($n \\ge k$, $c \\le n$) and with the degenerate case $n - c < k$ proved separately to give exactly $1$. Equation 13 was proved a well-formed softmax ($0 < p'_k < 1$ for $K > 1$, $\\sum_k p'_k = 1$) over arbitrary real logits, and the saturation mechanism the §4.2 ablation invokes was substantiated by proving the derivative identity $\\partial p'_k/\\partial p_k = p'_k(1-p'_k)$ on the genuine one-logit section of Equation 13, together with the $1/4$ ceiling and the limits at $0$ and $1$.\n\nLean also **refuted** both derivation chains in Section 3.2, in each case as written rather than in substance:\n- *Equation 6* asserts $-\\log P_\\pi = \\log(P_{teacher}/P_\\pi)$; refuted at $P_{teacher} = P_\\pi = 1/2$. The paper's stated justification (\"P_teacher is independent of π\") buys argmin-equivalence, not equality. The same chain carries two further defects: a stray $\\log$ in the printed denominator that makes the right-hand side undefined over the reals, and an exact identification of a single-sample log-ratio with a KL divergence that holds only in expectation and is left unjustified.\n- *Equation 7* chains $\\min_\\pi$ to $\\max_\\pi$ of the negation, asserting $\\min f = \\max(-f)$ where $\\min f = -(\\max(-f))$ holds. Companion theorems confirming argmin/argmax equivalence and invariance under positive rescaling compiled clean, so the paper's optimisation conclusion survives. Because the paper hedges that step with $\\simeq$ rather than $=$, this was scored at confidence 0.6 and therefore recorded as an unsettled presentational defect in `results` but **not** promoted to `findings` (threshold 0.7).\n\n**No verifier disagreed with another.** On every snippet routed to Lean the Lean verdict stands alone, and no informal review contradicts a Lean result. The informal pass flagged one further defect — Equation 3's $\\sum_i$ over a $j$-indexed summand — and judged Equations 1, 2, 4, 5 and the Equation 8 update scheme sound.\n\n**Verdict and its limits.** `MINOR_ERRORS`: three confident findings, all `minor` under the test \"does the argument survive\". Each defect is a presentational or framing failure in Section 3.2 rather than an error that propagates into the method or the reported results — the training recipe, the loss actually implemented, and the metric definitions are all sound, with the latter two machine-checked. The aggregate pattern is nonetheless worth the authors' attention: the abstract advertises that \"Theoretical analyses are conducted to investigate the mechanism of the effectiveness\", and that section is where every defect sits — Equation 6 is wrong in three distinct ways as printed, Equation 10 is a byte-identical duplicate of Equation 8, the \"generalized EM\" label imports a monotone-improvement guarantee the scheme does not have, and \"we can formally reveal the superiority of our method\" is not matched by any theorem, inequality or bound (flagged as an overclaim on `paper::MATHEMATICAL_MODEL::0`, which was nonetheless scored `NO_ERROR` since the equation itself is sound and the \"effectively mitigates\" wording is correctly hedged).\n\n`verdict_confidence` is 0.78: coverage of the paper's mathematics is good and two main definitional claims carry machine-checked proofs, but the two refutations target literal readings of hedged derivation steps, so the gap between \"wrong as printed\" and \"wrong in substance\" is doing real work in the severity assignment.\n\n**Out of scope, noted for completeness.** Three issues fall outside mathematical verification and were not scored: (i) the reported pass@k numbers take \"the best result\" across four decoding temperatures, so they are upward-biased for any single configuration even though the estimator formula is correct; (ii) the §4.2 softmax ablation holds $\\alpha = 0.3$ fixed across two arms whose score scales differ substantially (normalised differences confined to $(-1,1)$ versus unbounded log-probability differences), so it does not cleanly isolate softmax; (iii) the abstract reports relative pass@1 improvements as \"16.9% and 12.5%\" while §4.2 gives \"12.5% and 16.9%\" — an apparent ordering swap between the two datasets that cannot be adjudicated here because Table 1 is embedded as a bitmap, not as text.",
+  "notes": {
+    "lean_project_lifecycle": "MATH_VERIFICATION/Paper was REUSED, not created by this run: it is the shared Mathlib project every `paper.md` in data/spot-workspace and data/paperaudit-workspace resolves to, and it held 308 saved proofs from other papers' runs before this run began. verify-math-lean's own deletion rule — \"If Step 0 reused an existing project rather than creating it ... it is not yours to remove\" — therefore overrides orchestrate-math's Step 4 instruction that the last Lean call deletes the project, so --keep-lean was passed on all 4 calls including the last and `lean_project_kept` is true. Deleting it would have destroyed 308 unrelated proofs and could have clobbered a concurrent run over a different manuscript. Per-snippet scratch (TMP.lean, claim.md) was removed; the 4 proofs from this run are saved as Paper/Verified/paper__{FORMULA_BLOCK__0,FORMULA_BLOCK__1,EQUATION__5,EQUATION__6}_0021opus5.lean, tagged with the workspace id and run tag so they stay distinguishable. Verified after the run: lakefile intact, 312 files in Paper/Verified/, no stray TMP.lean or claim.md, no git commit (HEAD still b3cf2cb), MATH_VERIFICATION untracked.",
+    "schema_note": "For the 7 snippets routed to verify-math, the informal verifier's JSON is carried in `fallback_result` and `lean_result` is null; for the 4 routed to verify-math-lean, `lean_result` holds the Lean JSON and `fallback_result` is null because no Lean run returned FAILED or NOT_ATTEMPTED. `totals.fallbacks_run` counts Step-5 retries of Lean failures only, hence 0."
+  }
+}

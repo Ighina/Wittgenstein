@@ -1,0 +1,537 @@
+{
+  "paper_name": "paper",
+  "paper_path": "/Users/iacopoghinassi/Documents/Github/Wittgenstein/data/spot-workspace/0029-CONDA_Condensed_Deep_Association_Learning_for_Co-Salient_Object_Detection/paper.md",
+  "tag": "opus5",
+  "lean_project": "MATH_VERIFICATION/Paper",
+  "lean_project_kept": true,
+  "totals": {
+    "snippets_extracted": 17,
+    "routed_to_math": 11,
+    "routed_to_lean": 6,
+    "lean_passed": 3,
+    "lean_refuted": 3,
+    "lean_failed": 0,
+    "fallbacks_run": 0,
+    "errors_detected": 3
+  },
+  "results": [
+    {
+      "snippet_id": "paper::EQUATION::0",
+      "snippet_type": "EQUATION",
+      "location": "3 Methodology — Overview (Eq. 1)",
+      "content": "\\[\n\\mathbb{F}^P = \\{F_{s,l} \\mid s \\in \\{3, \\cdots, 5\\}, l \\in \\{1, \\cdots, L_s\\}\\},\n\\]\n\\[\n\\mathbb{F}^D = \\{F_{s,L_s} \\mid s \\in \\{1, \\cdots, 5\\}\\},\n\\]\n\nwhere \\(\\mathbb{F}^P\\) and \\(\\mathbb{F}^D\\) are the feature collections for PAG and FPN decoder, respectively. \\(F_{s,l} \\in \\mathbb{R}^{N \\times H_s \\times W_s \\times C_s}\\) represents the VGG feature of the \\(l\\)-th layer in the \\(s\\)-th stage. There are in total \\(L_s\\) layers in the \\(s\\)-th stage. \\(H_s\\), \\(W_s\\) and \\(C_s\\) represent the height, width, and channel of the \\(s\\)-th stage, respectively. (Backbone: VGG-16; group of related images \\(\\{I_i\\}_{i=1}^N\\).)",
+      "route": "verify-math",
+      "route_rationale": "Set-builder and shape declarations; checkable by inspection against VGG-16.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.0,
+        "reasoning": "Both collections are well-formed set-builder definitions. The shape $F_{s,l}\\in\\mathbb{R}^{N\\times H_s\\times W_s\\times C_s}$ asserts that every layer within a stage shares one channel width $C_s$; this holds for VGG-16, whose blocks are (64,64), (128,128), (256,256,256), (512,512,512), (512,512,512), so $L_1=L_2=2$, $L_3=L_4=L_5=3$ and the per-stage channel count is constant. $\\mathbb{F}^D$ taking only the last layer of each stage, and $\\mathbb{F}^P$ only stages 3-5, are consistent with the stated use (FPN decoding vs. PAG). No algebraic, sign, or domain error. Noted for downstream snippets: $\\mathbb{F}^P$ contains no stage-2 feature, which Eq. (3) later relies on.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::EQUATION::1",
+      "snippet_type": "EQUATION",
+      "location": "3 Methodology — Overview (Eq. 2)",
+      "content": "\\[\nF_{s,L_s} = F_{s,L_s} + \\phi(F_s^A), \\quad s = 3, \\cdots, 5,\n\\]\n\\[\nF = \\text{Decoder}(\\{F_{s,L_s}\\}_{s=1}^5),\n\\]\n\nwhere \\(\\phi\\) is a convolution layer. \\(F \\in \\mathbb{R}^{N \\times H \\times W \\times C}\\) is the final feature for the final co-saliency prediction. We adopt BCE and IoU losses for supervision. Context: deep association features \\(\\{F_s^A \\in \\mathbb{R}^{N \\times H_s \\times W_s \\times C_s}\\}_{s=3}^5\\).",
+      "route": "verify-math",
+      "route_rationale": "Residual fusion plus a decoder call; the learned conv absorbs any width change.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::1",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.0,
+        "reasoning": "The first line uses assignment-style notation ($F_{s,L_s}$ on both sides), which is an in-place update rather than an equation; this is standard in architecture descriptions and not a mathematical error. Dimensionally it is sound: $\\phi$ is an explicit convolution layer, so it can map $F_s^A$ from $C_s$ channels to whatever $F_{s,L_s}$ needs, and the spatial sizes already agree (both at stage $s$). The decoder consumes all five stages while only stages 3-5 are modified, which matches $\\mathbb{F}^D$ in Eq. (1). No invalid algebra or domain violation.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.82
+    },
+    {
+      "snippet_id": "paper::EQUATION::2",
+      "snippet_type": "EQUATION",
+      "location": "3.1 Progressive Association Generation (Eq. 3)",
+      "content": "\\[\nA_s = \\mathrm{HAC}\\left(\\{\\hat{F}_{s,l}\\}_{l=1}^{L_s}\\right),\n\\]\n\\[\nF_s^A = \\mathrm{Agg}(A_s), \\tag{3}\n\\]\n\\[\n\\{\\hat{F}_{s-1,l}\\}_{l=1}^{L_{s-1}} = \\mathrm{Enh}\\left(\\{F_{s-1,l}\\}_{l=1}^{L_{s-1}}; F_s^A\\right),\n\\]\n\nwhere \\(s\\) ranges from 5 to 3 and \\(\\{\\hat{F}_{5,l}\\}_{l=1}^{L_5} = \\{F_{5,l}\\}_{l=1}^{L_5}\\). The HAC, Agg, and Enh represent the hyperassociation calculation, aggregation network, and association-induced feature enhancement, respectively. Context (Eq. 1): \\(\\mathbb{F}^P = \\{F_{s,l} \\mid s \\in \\{3, \\cdots, 5\\}, l \\in \\{1, \\cdots, L_s\\}\\}\\) is the only feature collection supplied to PAG.",
+      "route": "verify-math-lean",
+      "route_rationale": "The recursion's well-formedness is a crisp set-membership claim over stage indices.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::2",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.85,
+        "reasoning": "Formalised the single assumption that makes the Eq. (3) block well defined as written: for every iteration index $s$ over which the block is run ($s\\in\\{3,4,5\\}$, \"where $s$ ranges from 5 to 3\"), the third line's inputs $\\{F_{s-1,l}\\}_{l=1}^{L_{s-1}}$ must be supplied by $\\mathbb{F}^P$, i.e. $s-1\\in\\{3,4,5\\}$. Lean proved the negation: `eq3_wellformed_refuted` compiles clean with witness $s=3$, since $3-1=2\\notin\\{3,4,5\\}$. `eq3_valid_iterations` further shows the filtered set of admissible iterations is exactly $\\{4,5\\}$, so the third line is applicable for only two of the three values of $s$. No hypotheses beyond the paper's own Eq. (1) and the stated range were assumed. Axioms: propext, Classical.choice, Quot.sound — no sorryAx.",
+        "predicted_error_category": "Domain/Constraint violation",
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [
+          "Eq. (3), third line, at s = 3",
+          "Eq. (1), definition of F^P"
+        ],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean",
+          "formal_statement": "import Mathlib\n\nnamespace CondaEq3\n\n/-- Stage indices for which `𝔽^P` (Eq. 1) supplies VGG features. -/\ndef PAGStages : Finset ℕ := {3, 4, 5}\n\n/-- Stage indices over which the Eq. (3) block is iterated:\n    \"where `s` ranges from 5 to 3\". -/\ndef Eq3Range : Finset ℕ := {3, 4, 5}\n\n/-- The paper's implicit well-formedness assumption for Eq. (3): every iteration\n    `s` can read the stage-`(s-1)` features it enhances out of `𝔽^P`.\n    Lean refutes it. -/\ntheorem eq3_wellformed_refuted :\n    ¬ (∀ s ∈ Eq3Range, (s - 1) ∈ PAGStages) := by\n  intro h\n  have h3 : (3 - 1 : ℕ) ∈ PAGStages := h 3 (by decide)\n  simp [PAGStages] at h3\n\n/-- The explicit counterexample: at `s = 3`, the third line of Eq. (3) demands\n    stage-2 features, which `𝔽^P` does not contain. -/\ntheorem eq3_counterexample : 3 ∈ Eq3Range ∧ (3 - 1 : ℕ) ∉ PAGStages := by\n  refine ⟨by decide, by decide⟩\n\n/-- Exactly two of the three iterations have a well-defined enhancement target,\n    so Eq. (3)'s third line is applicable only for `s ∈ {4,5}`. -/\ntheorem eq3_valid_iterations :\n    Eq3Range.filter (fun s => (s - 1) ∈ PAGStages) = {4, 5} := by\n  decide\n\nend CondaEq3\n\n#print axioms CondaEq3.eq3_wellformed_refuted\n#print axioms CondaEq3.eq3_counterexample\n#print axioms CondaEq3.eq3_valid_iterations\n",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::EQUATION::3",
+      "snippet_type": "EQUATION",
+      "location": "3.1 Hyperassociation Calculation (Eq. 4)",
+      "content": "For each stage, we first compute the raw associations at each layer using the inner product between \\(l\\)-2 normalized association-enhanced features of \\(N\\) related images. After that, we stack the raw associations of all layers to form the final hyperassociation of this stage. The hyperassociation for the s-th stage, i.e. \\(A_s \\in \\mathbb{R}^{N \\times H_s \\times W_s \\times N \\times H_s \\times W_s \\times L_s}\\), can be calculated via:\n\n\\[\nA_s = \\mathrm{HAC}\\left(\\{\\hat{F}_{s,l}\\}_{l=1}^{L_s}\\right),\n\\]\n\\[\n= \\mathrm{Stack}\\left(\\left\\{\\mathrm{ReLU}\\left(\\frac{\\hat{F}_{s,l} \\cdot \\hat{F}_{s,l}^\\top}{\\|\\hat{F}_{s,l}\\|\\|\\hat{F}_{s,l}^{\\top}\\|}\\right)\\right\\}_{l=1}^{L_s}\\right), \\tag{4}\n\\]\n\nwhere \\(\\hat{F}_{s,l} \\cdot \\hat{F}_{s,l}^{\\top} \\in \\mathbb{R}^{N \\times H_s \\times W_s \\times N \\times H_s \\times W_s}\\). The \\(\\top\\) indicates transposing the last dimension and the first three dimensions. \\(\\|\\cdot\\|\\) represents the \\(l\\)-2 norm. We employ ReLU to suppress noisy association values.",
+      "route": "verify-math-lean",
+      "route_rationale": "Cauchy-Schwarz boundedness and the idempotence of the double L2 normalisation are formalisable.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::3",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "Formalised the two properties Eq. (4) must have for the surrounding argument to hold. (1) Domain: `assoc_mem_Icc` proves every entry $\\mathrm{ReLU}(\\langle u,v\\rangle/(\\|u\\|\\|v\\|))$ lies in $[0,1]$ for nonzero features, via `abs_real_inner_le_norm` (Cauchy-Schwarz) plus the ReLU clip — so $A_s$ is a well-scaled similarity, as the aggregation network and the Eq. (11) argmax require. (2) Consistency with the prose: the text states the features entering the inner product are already $l$-2 normalized, and `assoc_eq_relu_inner_of_unit` proves that on unit vectors the explicit division by $\\|u\\|\\|v\\|$ is the identity. The double normalisation is therefore redundant but idempotent, not contradictory, and `assoc_unit_mem_Icc` confirms the $[0,1]$ range survives. All three theorems compile clean with no sorry and only the standard Mathlib axioms. Separately noted (not a defect under verify-math's rules): the denominator is printed with whole-tensor norms $\\|\\hat F_{s,l}\\|\\|\\hat F_{s,l}^\\top\\|$ rather than per-pixel-pair norms; the per-pair reading is the only one consistent with calling the result a cosine similarity and is standard notation in this literature.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean",
+          "formal_statement": "import Mathlib\n\nnamespace CondaEq4\n\n/-- ReLU, as used in Eq. (4) to \"suppress noisy association values\". -/\nnoncomputable def relu (x : ℝ) : ℝ := max x 0\n\n/-- One entry of the Eq. (4) hyperassociation: the cosine-normalised inner\n    product between the layer-`l` feature of a source pixel (`u`) and of a\n    target pixel (`v`), passed through ReLU. -/\nnoncomputable def assoc {n : ℕ} (u v : EuclideanSpace ℝ (Fin n)) : ℝ :=\n  relu (inner ℝ u v / (‖u‖ * ‖v‖))\n\n/-- Claim 1 (domain): for nonzero features, every Eq. (4) entry lies in `[0,1]`. -/\ntheorem assoc_mem_Icc {n : ℕ} (u v : EuclideanSpace ℝ (Fin n))\n    (hu : u ≠ 0) (hv : v ≠ 0) : assoc u v ∈ Set.Icc (0 : ℝ) 1 := by\n  have hu' : (0 : ℝ) < ‖u‖ := norm_pos_iff.mpr hu\n  have hv' : (0 : ℝ) < ‖v‖ := norm_pos_iff.mpr hv\n  have hprod : (0 : ℝ) < ‖u‖ * ‖v‖ := mul_pos hu' hv'\n  have hcs : |inner ℝ u v| ≤ ‖u‖ * ‖v‖ := abs_real_inner_le_norm u v\n  have hle : inner ℝ u v / (‖u‖ * ‖v‖) ≤ 1 := by\n    rw [div_le_one hprod]\n    exact (abs_le.mp hcs).2\n  refine ⟨le_max_right _ _, ?_⟩\n  exact max_le hle zero_le_one\n\n/-- Claim 2 (consistency with the prose): the features entering Eq. (4) are\n    already l-2 normalised, so the explicit division by `‖u‖ * ‖v‖` is the\n    identity — the double normalisation is idempotent, not contradictory. -/\ntheorem assoc_eq_relu_inner_of_unit {n : ℕ} (u v : EuclideanSpace ℝ (Fin n))\n    (hu : ‖u‖ = 1) (hv : ‖v‖ = 1) : assoc u v = relu (inner ℝ u v) := by\n  simp [assoc, hu, hv]\n\n/-- And on unit features the entry is still in `[0,1]`: ReLU of a cosine. -/\ntheorem assoc_unit_mem_Icc {n : ℕ} (u v : EuclideanSpace ℝ (Fin n))\n    (hu : ‖u‖ = 1) (hv : ‖v‖ = 1) : assoc u v ∈ Set.Icc (0 : ℝ) 1 := by\n  have hcs : |inner ℝ u v| ≤ ‖u‖ * ‖v‖ := abs_real_inner_le_norm u v\n  rw [hu, hv] at hcs\n  rw [assoc_eq_relu_inner_of_unit u v hu hv]\n  refine ⟨le_max_right _ _, max_le ?_ zero_le_one⟩\n  simpa using (abs_le.mp hcs).2\n\nend CondaEq4\n\n#print axioms CondaEq4.assoc_mem_Icc\n#print axioms CondaEq4.assoc_eq_relu_inner_of_unit\n#print axioms CondaEq4.assoc_unit_mem_Icc\n",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::EQUATION::4",
+      "snippet_type": "EQUATION",
+      "location": "3.1 Aggregation Network (Eq. 5)",
+      "content": "This is implemented via context aggregations on \\( A_s \\) to squeeze these 4D tensors as \\( C_s \\)-dimensional vectors, formulated as:\n\n\\[\nN \\times H_s \\times W_s \\times N \\times H_s \\times W_s \\times L_s \\rightarrow N \\times H_s \\times W_s \\times C_s.\n\\]\n(5)",
+      "route": "verify-math",
+      "route_rationale": "A dimension-mapping statement; no derivation to check formally.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::4",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.0,
+        "reasoning": "Eq. (5) is a shape-transformation declaration, not an identity: it records that the aggregation network eliminates the target $N\\times H_s\\times W_s$ block and the layer axis $L_s$, and emits $C_s$ channels per source pixel. This is internally consistent with the $A_s$ shape declared in Eq. (4) and with the output shape $F_s^A\\in\\mathbb{R}^{N\\times H_s\\times W_s\\times C_s}$ stated in the overview. The source $N\\times H_s\\times W_s$ block is preserved on both sides, as it must be for the result to be a per-pixel feature map. No algebraic or domain error.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::EQUATION::5",
+      "snippet_type": "EQUATION",
+      "location": "3.1 Aggregation Network (Eq. 6)",
+      "content": "\\[\nA_s^1(i, h_i, w_i, j, :, :, :) = C_1(A_s(i, h_i, w_i, j, :, :, :)), \\quad j = 1, \\cdots, N,\n\\]\n(6)\n\nwhere \\( C_1 \\) is a \\( 3 \\times 3 \\) 2D convolution layer. Here, \\( j \\) is the index of other related images in the 4D tensor, and \\( A_s(i, h_i, w_i, j, :, :, :) \\in \\mathbb{R}^{H_s \\times W_s \\times L_s} \\) illustrates the associations between the pixel \\( (h_i, w_i) \\) in \\( I_i \\) and all pixels in image \\( I_j \\).",
+      "route": "verify-math",
+      "route_rationale": "Convolution shape bookkeeping, verifiable by inspection.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::5",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.0,
+        "reasoning": "The slice $A_s(i,h_i,w_i,j,:,:,:)\\in\\mathbb{R}^{H_s\\times W_s\\times L_s}$ is a valid input to a $3\\times3$ 2D convolution that treats $(H_s,W_s)$ as spatial and $L_s$ as channels, producing $H_s\\times W_s\\times C'_s$ — consistent with the $A_s^2$ shape asserted after Eq. (7). The operation is applied for each $j$, which together with the fixed $(i,h_i,w_i)$ covers the whole tensor. Minor terminology slip (not flaggable under this skill's rules): the prose calls each per-pixel object a \"4D tensor $(N\\times H_s\\times W_s\\times L_s)$\" while the slice the equation actually convolves is the 3D $H_s\\times W_s\\times L_s$ block for one $j$; the two descriptions agree once the $j$ loop is unrolled. No invalid algebra.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.78
+    },
+    {
+      "snippet_id": "paper::EQUATION::6",
+      "snippet_type": "EQUATION",
+      "location": "3.1 Aggregation Network (Eq. 7)",
+      "content": "Then, a downsampling operation \\( D \\), i.e. bilinear interpolation, is applied on \\( A_s^1 \\) to reduce the spatial dimension of the 4D tensor by a scaling factor:\n\n\\[\nA_s^2(i, h_i, w_i, j, :, :, :) = D(A_s^1(i, h_i, w_i, j, :, :, :)),\n\\]\n(7)\n\nwhere \\( A_s^2(i, h_i, w_i, j, :, :, :) \\in \\mathbb{R}^{H'_s \\times W'_s \\times C'_s}\\), \\( H'_s \\) and \\( W'_s \\) are downsampled height and width. \\( C'_s \\) is the channel number after convolution \\( C_1 \\).",
+      "route": "verify-math",
+      "route_rationale": "Downsampling shape bookkeeping, verifiable by inspection.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::6",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.0,
+        "reasoning": "Bilinear interpolation acts on the two target spatial axes and leaves the channel axis untouched, so $H_s\\times W_s\\times C'_s \\to H'_s\\times W'_s\\times C'_s$ is exactly right, and the stated $C'_s$ (\"the channel number after convolution $C_1$\") correctly carries over from Eq. (6). The source indices $(i,h_i,w_i)$ and the image index $j$ are untouched, as they must be for the subsequent source-dimension aggregation in Eq. (8). No error.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.82
+    },
+    {
+      "snippet_id": "paper::EQUATION::7",
+      "snippet_type": "EQUATION",
+      "location": "3.1 Aggregation Network (Eq. 8)",
+      "content": "Finally, we also aggregate context information in the source \\( H_s \\times W_s \\) dimension. Specifically, we extract the values along the source dimension and channel dimension in \\( A_s^2 \\) to form 4D tensors and apply a 2D convolution layer on them. For instance, \\( A_s^2(:, :, :, j, h_j, w_j, :) \\in \\mathbb{R}^{N \\times H_s \\times W_s \\times C'_s} \\) is such a 4D tensor, where \\( (h_j, w_j) \\) is a pixel position in the target dimension. This can be formulated as:\n\n\\[\nA_s^3(i, :, :, j, h_j, w_j, :) = C_2(A_s^2(i, :, :, j, h_j, w_j, :)), \\quad i = 1, \\cdots, N,\n\\]\n(8)\n\nwhere \\( C_2 \\) is a \\( 3 \\times 3 \\) 2D convolution layer. \\( i \\) is the related image index.",
+      "route": "verify-math",
+      "route_rationale": "Slice-shape vs. prose mismatch is settled by inspection; no theorem content.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::7",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.0,
+        "reasoning": "The convolution is dimensionally sound: $A_s^2(i,:,:,j,h_j,w_j,:)\\in\\mathbb{R}^{H_s\\times W_s\\times C'_s}$ is a valid $3\\times3$ 2D convolution input over the source spatial axes, and the source axes are legitimately still $H_s\\times W_s$ (Eq. (7) downsampled only the *target* axes). There is a real internal inconsistency in how the operand is described: the prose says the 2D convolution is applied to the 4D tensor $A_s^2(:,:,:,j,h_j,w_j,:)\\in\\mathbb{R}^{N\\times H_s\\times W_s\\times C'_s}$, whereas Eq. (8) fixes a single $i$ and loops $i=1,\\cdots,N$, making the operand the 3D $H_s\\times W_s\\times C'_s$ block. The two are equivalent in effect ($N$ acts as a batch axis for a 2D convolution), so this is a descriptive slip rather than a derivation-invalidating error, and this skill explicitly does not flag such slips. Not flagged.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.72
+    },
+    {
+      "snippet_id": "paper::EQUATION::8",
+      "snippet_type": "EQUATION",
+      "location": "3.1 Aggregation Network (Eq. 9)",
+      "content": "After several association aggregation layers, as shown in (6)-(8), we can achieve the aggregated association features with the target \\( H_s \\times W_s \\) dimension eliminated, denoted as \\( F_{s}^{A'} \\in \\mathbb{R}^{N \\times H_s \\times W_s \\times N \\times C} \\). Subsequently, we average \\( F_{s}^{A'} \\) on its second \\( N \\) dimension and obtain the final association features.\n\n$$F_s^A \\in \\mathbb{R}^{N \\times H_s \\times W_s \\times C},$$\n\n$$F_s^A = \\frac{1}{N} \\sum_{j=1}^N F_s^{A'}(:,:,:,j,:). \\tag{9}$$",
+      "route": "verify-math",
+      "route_rationale": "An arithmetic mean over one axis; correctness is immediate.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::8",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.0,
+        "reasoning": "The averaging is correct: summing $F_s^{A'}(:,:,:,j,:)$ over $j=1,\\dots,N$ and dividing by $N$ contracts exactly the second $N$ axis, taking $N\\times H_s\\times W_s\\times N\\times C$ to $N\\times H_s\\times W_s\\times C$ as asserted. The weights $1/N$ sum to one, so the result is a convex combination and inherits any bound on the aggregated features — no domain violation. Two observations that are not errors: (a) the mean includes the diagonal term $j=i$, i.e. each pixel's association to its own image, which dilutes the inter-image signal by a factor $(N-1)/N$ but is a modelling choice; (b) the channel count is written $C$ here while the overview writes $C_s$ for the same object — this notational conflict is examined under paper::EQUATION::9, where it has a dimensional consequence.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::EQUATION::9",
+      "snippet_type": "EQUATION",
+      "location": "3.1 Association-induced Feature Enhancement (Eq. 10)",
+      "content": "Once we have obtained association feature $F_s^A$ of the s-th stage, we will use it to enhance the VGG feature of the $(s-1)$-th stage, i.e. $\\{F_{s-1, l}\\}_{l=1}^{L_{s-1}}$. Specifically, we upsample $F_s^A$ to align the spatial size of features in the $(s-1)$-th stage, and then add it to $\\{F_{s-1, l}\\}_{l=1}^{L_{s-1}}$ followed by a convolution layer, formulated as:\n\n$$\\hat{F}_{s-1, l} = C_3(F_{s-1, l} + U(F_s^A)),$$\n\\tag{10}\n\nwhere $C_3$ and $U$ represent a 2D convolution layer and the bilinear upsampling operation, respectively.\n\nContext: $F_{s,l} \\in \\mathbb{R}^{N \\times H_s \\times W_s \\times C_s}$ with $C_s$ the channel of the $s$-th stage (VGG-16: 64, 128, 256, 512, 512); $\\{F_s^A \\in \\mathbb{R}^{N \\times H_s \\times W_s \\times C_s}\\}_{s=3}^5$ in the overview, restated as $F_s^A \\in \\mathbb{R}^{N \\times H_s \\times W_s \\times C}$ at Eq. (9).",
+      "route": "verify-math-lean",
+      "route_rationale": "Channel compatibility of the additive fusion is exact arithmetic over the declared VGG-16 widths.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::9",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.92,
+        "reasoning": "Formalised the well-typedness of the elementwise sum inside Eq. (10): the channel count of $U(F_s^A)$ must equal the channel count $C_{s-1}$ of $F_{s-1,l}$ at every stage where Eq. (10) runs ($s=5$ and $s=4$, per Eq. (3)). $U$ is declared to be bilinear upsampling, which changes spatial size only, and the convolution $C_3$ is applied *after* the sum so it cannot repair a mismatch. Lean refuted both readings the paper offers. Reading A ($F_s^A$ has $C_s$ channels): `eq10_stagewise_channels_refuted` shows $C_s=C_{s-1}$ fails, with witness $s=4$ where a 512-channel $F_4^A$ is added to a 256-channel $F_{3,l}$ (`eq10_witness`). Reading B ($F_s^A$ has a single stage-independent width $C$): `eq10_uniform_channel_refuted` shows no $C$ works, since $s=5$ forces $C=C_4=512$ and $s=4$ forces $C=C_3=256$. `eq10_valid_stages` isolates $s=5$ as the only well-typed step. Hypotheses are exactly the paper's declared shapes and the VGG-16 widths of ref. [32]; no extra assumptions. Axioms: propext, Classical.choice, Quot.sound — no sorryAx.",
+        "predicted_error_category": "Domain/Constraint violation",
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [
+          "Eq. (10), the sum F_{s-1,l} + U(F_s^A), at s = 4",
+          "Overview: F_s^A in R^{N x H_s x W_s x C_s}",
+          "Eq. (9): F_s^A in R^{N x H_s x W_s x C}"
+        ],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean",
+          "formal_statement": "import Mathlib\n\nnamespace CondaEq10\n\n/-- VGG-16 per-stage channel widths (Simonyan & Zisserman, ref. [32]):\n    64, 128, 256, 512, 512 for stages 1..5. -/\ndef C (s : ℕ) : ℕ :=\n  if s = 1 then 64 else if s = 2 then 128 else if s = 3 then 256\n  else if s = 4 then 512 else if s = 5 then 512 else 0\n\n/-- The stages at which Eq. (10) is applied: Eq. (3)'s enhancement step runs\n    for `s = 5` and `s = 4`, enhancing stages 4 and 3 respectively. -/\ndef Eq10Stages : Finset ℕ := {4, 5}\n\n/-- Reading A (`F_s^A ∈ ℝ^{N×H_s×W_s×C_s}`): the elementwise sum in Eq. (10)\n    needs `C s = C (s-1)`. Lean refutes it — it fails at `s = 4`. -/\ntheorem eq10_stagewise_channels_refuted :\n    ¬ (∀ s ∈ Eq10Stages, C s = C (s - 1)) := by decide\n\n/-- The explicit witness: enhancing stage 3 from `F_4^A` adds a 512-channel\n    tensor to a 256-channel tensor. -/\ntheorem eq10_witness : C 4 = 512 ∧ C 3 = 256 ∧ C 4 ≠ C 3 := by\n  refine ⟨by decide, by decide, by decide⟩\n\n/-- Reading B (`F_s^A ∈ ℝ^{N×H_s×W_s×C}`, one stage-independent width `C`):\n    no value of `C` makes Eq. (10) well typed at both `s = 5` and `s = 4`,\n    since that would force `C = C 4 = 512` and `C = C 3 = 256`. -/\ntheorem eq10_uniform_channel_refuted :\n    ¬ (∃ c : ℕ, ∀ s ∈ Eq10Stages, c = C (s - 1)) := by\n  rintro ⟨c, h⟩\n  have h5 : c = C 4 := h 5 (by decide)\n  have h4 : c = C 3 := h 4 (by decide)\n  rw [show C 4 = 512 from by decide] at h5\n  rw [show C 3 = 256 from by decide] at h4\n  omega\n\n/-- Only the `s = 5` step is well typed; `s = 4` is not. -/\ntheorem eq10_valid_stages :\n    Eq10Stages.filter (fun s => C s = C (s - 1)) = {5} := by decide\n\nend CondaEq10\n\n#print axioms CondaEq10.eq10_stagewise_channels_refuted\n#print axioms CondaEq10.eq10_witness\n#print axioms CondaEq10.eq10_uniform_channel_refuted\n#print axioms CondaEq10.eq10_valid_stages\n",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.92
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "3.2 Correspondence-induced Association Condensation",
+      "content": "Specifically, CAC opts to select $K \\times K$ ($K < H_s, K < W_s$) informative pixel associations from $a_s^j$ to form its condensed representation, i.e. $\\tilde{a}_s^j \\in \\mathbb{R}^{K \\times K \\times L_s}$. Thus, the entire condensed hyperassociation can be symbolized as $\\tilde{A}_s \\in \\mathbb{R}^{N \\times H_s \\times W_s \\times N \\times K \\times K \\times L_s}$.\n\nContext: full-pixel $A_s \\in \\mathbb{R}^{N \\times H_s \\times W_s \\times N \\times H_s \\times W_s \\times L_s}$; $(k_c, k_c)$ is the center position of the $K \\times K$ square; implementation uses $256 \\times 256$ input, VGG-16, PAG on stages $s = 3,4,5$, and \"The hyperparameter $K$ in CAC is set to 9\".",
+      "route": "verify-math-lean",
+      "route_rationale": "Feasibility and strict-reduction claims are exact arithmetic at the paper's configuration.",
+      "lean_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.88,
+        "reasoning": "Formalised the three properties the CAC condensation model needs at the paper's own configuration ($256\\times256$ input, VGG-16, $K=9$, $s\\in\\{3,4,5\\}$), with $H_s = 256/2^{s-1}$. `stage_sizes` fixes the resolutions CAC faces as $64, 32, 16$. (1) Feasibility: `cac_window_fits` proves $K < H_s$ and $K < W_s$ at every stage, so the stated $K\\times K$ window selection is possible — the binding case is stage 5, where $9 < 16$. (2) `K_odd` and `k_center` confirm $K=9$ is odd so the centre index $(k_c,k_c)$ of the square exists, at $k_c=5$ in 1-based indexing. (3) `cac_strict_reduction` proves $K\\cdot K < H_s\\cdot W_s$ at every stage, so $\\tilde A_s$ has strictly fewer entries than $A_s$ and the claimed computational reduction is real, tightest at stage 5 where $81 < 256$ (`cac_tightest_stage`). Note: a first formalisation attempt used $H_s = 256/2^{s}$ and Lean refuted `stage_sizes`, correctly catching the off-by-one in the stage-indexing convention; the corrected definition $H_s = 256/2^{s-1}$ matches VGG-16's blocks (256, 128, 64, 32, 16) and all claims then compile clean with no sorry and only standard Mathlib axioms.",
+        "predicted_error_category": null,
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean",
+          "formal_statement": "import Mathlib\n\nnamespace CondaCAC\n\n/-- Spatial side length of the `s`-th VGG-16 stage for a 256x256 input.\n    VGG-16 blocks run at 256, 128, 64, 32, 16 for s = 1..5. -/\ndef Hs (s : ℕ) : ℕ := 256 / 2 ^ (s - 1)\n\n/-- The hyperparameter of CAC: \"The hyperparameter `K` in CAC is set to 9\". -/\ndef K : ℕ := 9\n\n/-- Stages on which PAG/CAC operate. -/\ndef CACStages : Finset ℕ := {3, 4, 5}\n\n/-- The resolutions CAC actually faces: 64, 32, 16. -/\ntheorem stage_sizes : Hs 3 = 64 ∧ Hs 4 = 32 ∧ Hs 5 = 16 := by\n  refine ⟨by norm_num [Hs], by norm_num [Hs], by norm_num [Hs]⟩\n\n/-- Claim 1 (feasibility): `K < H_s` and `K < W_s` at every stage CAC runs on,\n    so selecting a `K × K` window is possible exactly as stated. -/\ntheorem cac_window_fits : ∀ s ∈ CACStages, K < Hs s ∧ K < Hs s := by decide\n\n/-- Claim 2: `K = 9` is odd, so the `K × K` square has a centre index `k_c`. -/\ntheorem K_odd : Odd K := ⟨4, by decide⟩\n\n/-- and that centre is `k_c = 5` in 1-based indexing. -/\ntheorem k_center : K / 2 + 1 = 5 := by decide\n\n/-- Claim 3 (strict reduction): the condensed target block `K * K` is strictly\n    smaller than the full-pixel target block `H_s * W_s` at every stage, so\n    `\\tilde A_s` has strictly fewer entries than `A_s`. -/\ntheorem cac_strict_reduction : ∀ s ∈ CACStages, K * K < Hs s * Hs s := by decide\n\n/-- The reduction is strict even at the coarsest stage, where it is tightest:\n    81 target associations instead of 256. -/\ntheorem cac_tightest_stage :\n    K * K = 81 ∧ Hs 5 * Hs 5 = 256 ∧ K * K < Hs 5 * Hs 5 := by\n  refine ⟨by decide, by norm_num [Hs], by decide⟩\n\n/-- The constraint is tight: `K` could not have been raised much. At stage 5 the\n    largest admissible odd window is `K = 15`, and `K = 9` leaves headroom. -/\ntheorem cac_headroom : K < Hs 5 ∧ Hs 5 = 16 := by\n  refine ⟨by decide, by norm_num [Hs]⟩\n\nend CondaCAC\n\n#print axioms CondaCAC.stage_sizes\n#print axioms CondaCAC.cac_window_fits\n#print axioms CondaCAC.K_odd\n#print axioms CondaCAC.k_center\n#print axioms CondaCAC.cac_strict_reduction\n#print axioms CondaCAC.cac_tightest_stage\n#print axioms CondaCAC.cac_headroom\n",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.88
+    },
+    {
+      "snippet_id": "paper::EQUATION::10",
+      "snippet_type": "EQUATION",
+      "location": "3.2 Correspondence Estimation (Eqs. 11-12)",
+      "content": "Specifically, we pick out (h^0_j, w^0_j) that has the largest feature similarity value with (hi, wi). Since we have calculated the feature similarities in a^j_s, the (h^0_j, w^0_j) can be obtained as follows:\n\n$$\n\\bar{a}^j_s = \\sum_{l=1}^{L_s} a^j_s(:,:,l),\n$$\n\n$$\n(h^0_j, w^0_j) = \\text{argmax}_{x,y}(\\bar{a}^j_s(x,y)),\n$$\n\nwhere $\\bar{a}^j_s \\in \\mathbb{R}^{H_s \\times W_s}$ is a similarity matrix obtained by eliminating the last dimension of $a^j_s \\in \\mathbb{R}^{H_s \\times W_s \\times L_s}$ through summation. argmax returns the coordinate of the maximum value.",
+      "route": "verify-math",
+      "route_rationale": "A sum-then-argmax reduction; no non-trivial argument to formalise.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::10",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.0,
+        "reasoning": "Both steps are sound. Summing over $l=1,\\dots,L_s$ contracts the layer axis and yields $\\bar a_s^j\\in\\mathbb{R}^{H_s\\times W_s}$ as stated. The argmax is well defined over a finite grid (ties aside, which are immaterial here), and since Eq. (4) guarantees every entry of $a_s^j$ is a non-negative ReLU'd cosine value, $\\bar a_s^j$ is a non-negative similarity map — so taking the maximum is a coherent \"most similar pixel\" rule. One imprecision that does not rise to an error: the prose says the selected pixel \"has the largest feature similarity value\", but the equation maximises the *sum across layers*, which need not coincide with the maximiser of any single layer's similarity. The paper's own definition of the similarity it uses is the layer sum, so the two are consistent as written. Non-differentiability of argmax is handled by the paper's offset-refinement design. No invalid algebra or domain violation.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.78
+    },
+    {
+      "snippet_id": "paper::EQUATION::11",
+      "snippet_type": "EQUATION",
+      "location": "3.2 Correspondence Estimation (Eq. 13)",
+      "content": "We utilize the feature of (hi, wi) to Ij, i.e. $F^{A'}_s(i, h_i, w_i, j, :) \\in \\mathbb{R}^{C_s}$, to predict the offsets for (hj, wj) via a linear layer, formulated as:\n\n$$\n\\Delta^j_s = O(F^{A'}_s(i, h_i, w_i, j, :)),\n$$\n\nwhere O is a linear layer for offset generation. $\\Delta^j_s \\in \\mathbb{R}^{K \\times K \\times 2}$ consists of K × K offsets, besides the center offset $\\Delta^j_s(k_c, k_c, :)$ for correspondence estimation, i.e. refining (h^0_j, w^0_j) as (hj, wj), we also generate other offsets for surrounding pixel selection.\n\nContext: initial aggregated association features $F^{A'}_s \\in \\mathbb{R}^{N \\times H_s \\times W_s \\times N \\times C_s}$.",
+      "route": "verify-math",
+      "route_rationale": "Linear-layer input/output shape; immediate by inspection.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::11",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.0,
+        "reasoning": "Dimensionally consistent: a linear layer $O:\\mathbb{R}^{C_s}\\to\\mathbb{R}^{2K^2}$ reshaped to $K\\times K\\times 2$ is exactly what is described, and at $K=9$ that is $162$ outputs per (source pixel, target image) pair. The input slice $F_s^{A'}(i,h_i,w_i,j,:)\\in\\mathbb{R}^{C_s}$ is a legitimate slice of the stated $N\\times H_s\\times W_s\\times N\\times C_s$ tensor. The offsets are unconstrained real numbers, which is consistent with their use as a refinement in the next equation. Noted: the same object is given width $C$ after Eq. (9) and $C_s$ here, the notational conflict tracked in paper::EQUATION::9. No algebraic error.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::EQUATION::12",
+      "snippet_type": "EQUATION",
+      "location": "3.2 Correspondence Estimation (correspondence refinement)",
+      "content": "Thus, the corresponding pixel (hj, wj) can be obtained by adding the offset to the initial pixel (h^0_j, w^0_j), formulated as:\n\n$$\n(h_j, w_j) = (h^0_j, w^0_j) + \\Delta^j_s(k_c, k_c, :),\n$$\n\nContext: $(h^0_j, w^0_j)$ is an integer pixel coordinate from the Eq. (12) argmax; $\\Delta^j_s \\in \\mathbb{R}^{K \\times K \\times 2}$ is the real-valued output of a linear layer.",
+      "route": "verify-math",
+      "route_rationale": "Vector addition on coordinates; the open question is integrality, not algebra.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::12",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.0,
+        "reasoning": "The addition itself is valid: a 2-vector offset added to a 2-vector coordinate. The substantive gap is that $\\Delta_s^j$ is declared real-valued ($\\mathbb{R}^{K\\times K\\times 2}$, the output of a linear layer) while $(h_j,w_j)$ is then used as a pixel index in Eqs. (14)-(15), so in general $(h_j,w_j)\\notin\\mathbb{Z}^2$ and the paper never states the rounding or bilinear-sampling rule that resolves it. Likewise nothing clamps the result to $[1,H_s]\\times[1,W_s]$. This is a specification omission about an unstated implementation detail — standard practice in deformable-sampling architectures — rather than a demonstrable mathematical error, so under this skill's rules it is not flagged. Recorded as an unsettled point rather than a finding.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.62
+    },
+    {
+      "snippet_id": "paper::EQUATION::13",
+      "snippet_type": "EQUATION",
+      "location": "3.2 Condensation Operation (Eq. 14)",
+      "content": "Given the estimated correspondence pixel $(h_j, w_j)$ and other offsets in $\\Delta_s^j$, we can obtain the surrounding pixels and combine them with $(h_j, w_j)$ to form $K \\times K$ pixel set. Their coordinates are stored in $n_s^j \\in \\mathbb{R}^{K\\times K\\times 2}$. This process can be formulated as:\n\n\\[\nn_s^j(x, y, :) = (h_j, w_j) + \\Delta_s^j(x, y, :), \\quad x, y \\in \\{1, \\cdots, K\\};\\ x, y \\neq k_c,\n\\]\n\\[\nn_s^j(k_c, k_c, :) = (h_j, w_j),\n\\tag{14}\n\\]\n\nwhere $(k_c, k_c)$ is the center position of $K \\times K$ square. Context: $K$ is set to 9, and Eq. (15) index-selects the whole array, $\\tilde{a}_s^j = a_s^j(n_s^j)$ with $\\tilde{a}_s^j \\in \\mathbb{R}^{K \\times K \\times L_s}$.",
+      "route": "verify-math-lean",
+      "route_rationale": "Whether Eq. (14) covers the whole K x K index grid is exactly formalisable.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::13",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.9,
+        "reasoning": "Formalised the totality of Eq. (14): since $n_s^j\\in\\mathbb{R}^{K\\times K\\times2}$ and Eq. (15) index-selects a full $K\\times K\\times L_s$ block, Eq. (14) must assign a coordinate at all $K^2$ grid positions. Read literally, the first line's guard \"$x, y \\neq k_c$\" means $x\\neq k_c \\wedge y\\neq k_c$, covering $(K-1)^2$ positions, and the second line adds only $(k_c,k_c)$. Lean refuted totality: `eq14_totality_refuted` compiles clean, `eq14_defined_card` gives $65$ assigned of $81$ at $K=9$, and `eq14_undefined_card` proves exactly $2K-2=16$ positions are left undefined. `eq14_undefined_set` identifies them as precisely the centre row and centre column minus their intersection, with `eq14_witness` exhibiting $(1,k_c)$ as a concrete grid position Eq. (14) assigns no coordinate. To keep the diagnosis honest I also formalised the charitable reading in which the guard is $(x,y)\\neq(k_c,k_c)$: `eq14_intended_is_total` proves that version *is* total, which localises the defect to the scope of the guard rather than to the construction. Axioms: propext, Classical.choice, Quot.sound — no sorryAx.",
+        "predicted_error_category": "Domain/Constraint violation",
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [
+          "Eq. (14), first line, guard 'x, y != k_c'",
+          "Eq. (14), second line, covers only (k_c, k_c)",
+          "Eq. (15), which index-selects a full K x K block"
+        ],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean",
+          "formal_statement": "import Mathlib\n\nnamespace CondaEq14\n\n/-- `K = 9` as configured in the paper. -/\ndef K : ℕ := 9\n\n/-- 1-based centre index of the `K × K` square: `k_c = 5`. -/\ndef kc : ℕ := 5\n\n/-- The `K × K` index grid that `n_s^j ∈ ℝ^{K×K×2}` must be defined on. -/\ndef Grid : Finset (ℕ × ℕ) := (Finset.Icc 1 K) ×ˢ (Finset.Icc 1 K)\n\n/-- Positions assigned by Eq. (14) read literally: the first line's guard\n    \"x, y ≠ k_c\" means `x ≠ k_c ∧ y ≠ k_c`; the second line adds `(k_c, k_c)`. -/\ndef DefinedLiteral : Finset (ℕ × ℕ) :=\n  insert (kc, kc) (Grid.filter (fun p => p.1 ≠ kc ∧ p.2 ≠ kc))\n\n/-- Positions assigned under the charitable reading, guard `(x,y) ≠ (k_c,k_c)`. -/\ndef DefinedIntended : Finset (ℕ × ℕ) :=\n  insert (kc, kc) (Grid.filter (fun p => p ≠ (kc, kc)))\n\ntheorem grid_card : Grid.card = K * K := by decide\n\n/-- Eq. (14) as written does NOT define `n_s^j` on the whole `K × K` grid. -/\ntheorem eq14_totality_refuted : DefinedLiteral ≠ Grid := by decide\n\n/-- It assigns only 65 of the 81 positions. -/\ntheorem eq14_defined_card : DefinedLiteral.card = 65 ∧ Grid.card = 81 := by\n  refine ⟨by decide, by decide⟩\n\n/-- Exactly `2K - 2 = 16` positions are left undefined: the centre row and the\n    centre column, minus their intersection. -/\ntheorem eq14_undefined_card : (Grid \\ DefinedLiteral).card = 2 * K - 2 := by decide\n\ntheorem eq14_undefined_set :\n    Grid \\ DefinedLiteral =\n      ((Finset.Icc 1 K).filter (fun x => x ≠ kc)).image (fun x => (x, kc)) ∪\n      ((Finset.Icc 1 K).filter (fun y => y ≠ kc)).image (fun y => (kc, y)) := by\n  decide\n\n/-- A concrete undefined position: `(1, k_c)` is in the grid but Eq. (14)\n    assigns it no coordinate. -/\ntheorem eq14_witness : (1, kc) ∈ Grid ∧ (1, kc) ∉ DefinedLiteral := by\n  refine ⟨by decide, by decide⟩\n\n/-- Under the charitable reading the definition is total, which identifies the\n    defect as the scope of the guard rather than the construction itself. -/\ntheorem eq14_intended_is_total : DefinedIntended = Grid := by decide\n\nend CondaEq14\n\n#print axioms CondaEq14.grid_card\n#print axioms CondaEq14.eq14_totality_refuted\n#print axioms CondaEq14.eq14_defined_card\n#print axioms CondaEq14.eq14_undefined_card\n#print axioms CondaEq14.eq14_undefined_set\n#print axioms CondaEq14.eq14_witness\n#print axioms CondaEq14.eq14_intended_is_total\n",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::EQUATION::14",
+      "snippet_type": "EQUATION",
+      "location": "3.2 Condensation Operation (Eq. 15)",
+      "content": "Finally, we can perform the condensation operation via the index selection on $a_s^j$, formulated as:\n\n\\[\n\\tilde{a}_s^j = a_s^j(n_s^j),\n\\tag{15}\n\\]\n\nwhere $\\tilde{a}_s^j$ is the condensed representation of $a_s^j$, i.e. pixel associations of $(h_i, w_i)$ to image $I_j$. ... By applying such a condensation process to all pixel associations, we can obtain the final condensed hyperassociation $\\tilde{A}_s$.\n\nContext: $a_s^j \\in \\mathbb{R}^{H_s \\times W_s \\times L_s}$, $n_s^j \\in \\mathbb{R}^{K\\times K\\times 2}$, $\\tilde{a}_s^j \\in \\mathbb{R}^{K \\times K \\times L_s}$.",
+      "route": "verify-math",
+      "route_rationale": "Index-selection shape claim; immediate by inspection.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::14",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.0,
+        "reasoning": "The shape claim is correct: gathering $a_s^j\\in\\mathbb{R}^{H_s\\times W_s\\times L_s}$ at the $K\\times K$ coordinate pairs stored in $n_s^j$ yields $K\\times K\\times L_s$, exactly as stated, and applying this per source pixel and per target image gives $\\tilde A_s\\in\\mathbb{R}^{N\\times H_s\\times W_s\\times N\\times K\\times K\\times L_s}$. Two preconditions are inherited rather than established here: the indices must be integral and in range (see paper::EQUATION::12), and $n_s^j$ must be defined at all $K^2$ positions — which Lean refuted for Eq. (14) as written (see paper::EQUATION::13). Eq. (15) itself introduces no new error.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.75
+    },
+    {
+      "snippet_id": "paper::EQUATION::15",
+      "snippet_type": "EQUATION",
+      "location": "3.3 Object-aware Cycle Consistency Loss (Eq. 16)",
+      "content": "we first warp the image $I_i^s$ (a resized $I_i$ to align the scales in the s-th stage) as $I_{i \\rightarrow j}^s$ using the $I_i^s \\rightarrow I_j^s$ correspondence estimations. Next, we warp $I_{i \\rightarrow j}^s$ backward to $I_{i \\rightarrow j \\rightarrow i}^s$ using $I_j^s \\rightarrow I_i^s$ correspondence estimations. Finally, we can utilize the SSIM loss between $I_i^s$ and $I_{i \\rightarrow j \\rightarrow i}^s$ to measure the cycle consistency for mutual correspondence pixels in $I_i^s$ and $I_j^s$. Moreover, to ensure the constraints are only conducted on co-salient objects, we mask the images with their ground truth masks, formulated as:\n\n\\[\n\\mathcal{L}_s^C = \\frac{1}{N^2} \\sum_{i=1}^N \\sum_{j=1}^N \\mathcal{L}_{SSIM}(I_i^s \\cdot G_i^s, I_{i \\rightarrow j \\rightarrow i}^s \\cdot G_i^s),\n\\tag{16}\n\\]\n\nwhere $G_i^s$ is the resized ground truth of image $I_i$. The total OCC loss $\\mathcal{L}^C$ is the sum of three stages, formulated as: $\\mathcal{L}^C = \\mathcal{L}_3^C + \\mathcal{L}_4^C + \\mathcal{L}_5^C$. Batch size is $N = 6$.",
+      "route": "verify-math-lean",
+      "route_rationale": "Averaging, boundedness and the diagonal/off-diagonal split are all formalisable.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::15",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.87,
+        "reasoning": "Formalised Eq. (16) as $\\mathcal{L}_s^C = \\frac{1}{N^2}\\sum_i\\sum_j f(i,j)$ over the $N^2$ ordered image pairs. (1) `weights_sum_one` proves the $N^2$ uniform weights $1/N^2$ sum to $1$, so Eq. (16) is a genuine average, not a mis-normalised sum. (2) `LC_mem_Icc` proves that if every per-pair masked SSIM loss lies in $[0,1]$ then $\\mathcal{L}_s^C\\in[0,1]$, hence $\\mathcal{L}^C=\\mathcal{L}_3^C+\\mathcal{L}_4^C+\\mathcal{L}_5^C\\in[0,3]$ — the loss is bounded and well-posed, with no domain violation. (3) `LC_split` and `offdiag_card` establish the exact decomposition into $N$ self-pairs and $N^2-N$ cross-image pairs, and `offdiag_weight` with `offdiag_weight_at_six` show the cross-image pairs — the only ones carrying an inter-image cycle constraint — receive total weight $(N-1)/N = 5/6$ at the paper's $N=6$. That is an observation about the normalisation's effective strength, not an error: the paper never claims Eq. (16) is a mean over cross-image pairs only, and the $i=j$ terms are not vacuous (they weakly push each image's self-correspondence toward an involution, since the warps use predicted rather than identity correspondences). All six theorems compile clean, no sorry, standard axioms only. Two initial compile errors were trailing `ring`/`omega` tactics after the goal had already closed; removing them gave a clean build.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean",
+          "formal_statement": "import Mathlib\n\nnamespace CondaEq16\n\nopen Finset\n\n/-- Eq. (16): the uniform average over all `N²` ordered image pairs of the\n    per-pair masked cycle-consistency SSIM loss `f i j`. -/\nnoncomputable def LC (N : ℕ) (f : Fin N → Fin N → ℝ) : ℝ :=\n  (1 / (N : ℝ) ^ 2) * ∑ i, ∑ j, f i j\n\n/-- Claim 1: Eq. (16)'s weights sum to one — it is a genuine average. -/\ntheorem weights_sum_one {N : ℕ} (hN : 0 < N) :\n    ∑ _i : Fin N, ∑ _j : Fin N, (1 / (N : ℝ) ^ 2) = 1 := by\n  have hN' : (N : ℝ) ≠ 0 := Nat.cast_ne_zero.mpr hN.ne'\n  simp [Finset.sum_const, Finset.card_univ]\n  field_simp\n\n/-- Claim 2: if every per-pair SSIM loss lies in `[0,1]`, so does `L_s^C`. -/\ntheorem LC_mem_Icc {N : ℕ} (hN : 0 < N) (f : Fin N → Fin N → ℝ)\n    (hf : ∀ i j, f i j ∈ Set.Icc (0 : ℝ) 1) : LC N f ∈ Set.Icc (0 : ℝ) 1 := by\n  have hN' : (0 : ℝ) < (N : ℝ) := Nat.cast_pos.mpr hN\n  have hsq : (0 : ℝ) < (N : ℝ) ^ 2 := by positivity\n  have hlow : (0 : ℝ) ≤ ∑ i : Fin N, ∑ j : Fin N, f i j :=\n    Finset.sum_nonneg fun i _ => Finset.sum_nonneg fun j _ => (hf i j).1\n  have hhigh : ∑ i : Fin N, ∑ j : Fin N, f i j ≤ (N : ℝ) ^ 2 := by\n    have : ∀ i : Fin N, ∑ j : Fin N, f i j ≤ (N : ℝ) := by\n      intro i\n      calc ∑ j : Fin N, f i j ≤ ∑ _j : Fin N, (1 : ℝ) :=\n            Finset.sum_le_sum fun j _ => (hf i j).2\n        _ = (N : ℝ) := by simp\n    calc ∑ i : Fin N, ∑ j : Fin N, f i j ≤ ∑ _i : Fin N, (N : ℝ) :=\n          Finset.sum_le_sum fun i _ => this i\n      _ = (N : ℝ) ^ 2 := by simp [sq]\n  refine ⟨?_, ?_⟩\n  · exact mul_nonneg (by positivity) hlow\n  · rw [LC, one_div, inv_mul_le_iff₀ hsq]\n    simpa using hhigh\n\n/-- Claim 3a: Eq. (16) splits into its `N` self-pairs and its `N² - N`\n    cross-image pairs. -/\ntheorem LC_split {N : ℕ} (f : Fin N → Fin N → ℝ) :\n    LC N f = (1 / (N : ℝ) ^ 2) *\n      ((∑ i, f i i) + ∑ i, ∑ j ∈ univ.erase i, f i j) := by\n  rw [LC, ← Finset.sum_add_distrib]\n  congr 1\n  refine Finset.sum_congr rfl fun i _ => ?_\n  exact (Finset.add_sum_erase univ (f i) (mem_univ i)).symm\n\n/-- Claim 3b: there are exactly `N² - N` cross-image pairs. -/\ntheorem offdiag_card {N : ℕ} :\n    ∑ i : Fin N, (univ.erase i).card = N ^ 2 - N := by\n  simp [Finset.card_erase_of_mem, Finset.card_univ, Finset.sum_const,\n    Nat.mul_sub_one, sq]\n\n/-- Claim 3c: under the uniform `1/N²` weighting the cross-image pairs — the\n    only ones carrying an inter-image cycle-consistency constraint — receive\n    total weight `(N-1)/N`. -/\ntheorem offdiag_weight {N : ℕ} (hN : 0 < N) :\n    ((N : ℝ) ^ 2 - (N : ℝ)) / (N : ℝ) ^ 2 = ((N : ℝ) - 1) / (N : ℝ) := by\n  have hN' : (N : ℝ) ≠ 0 := Nat.cast_ne_zero.mpr hN.ne'\n  field_simp\n\n/-- At the paper's batch size `N = 6` that weight is `5/6`. -/\ntheorem offdiag_weight_at_six :\n    ((6 : ℝ) ^ 2 - (6 : ℝ)) / (6 : ℝ) ^ 2 = 5 / 6 := by norm_num\n\nend CondaEq16\n\n#print axioms CondaEq16.weights_sum_one\n#print axioms CondaEq16.LC_mem_Icc\n#print axioms CondaEq16.LC_split\n#print axioms CondaEq16.offdiag_card\n#print axioms CondaEq16.offdiag_weight\n#print axioms CondaEq16.offdiag_weight_at_six\n",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.87
+    }
+  ],
+  "findings": [
+    {
+      "snippet_id": "paper::EQUATION::9",
+      "category": "Formally refuted",
+      "severity": "minor",
+      "confidence": 0.92,
+      "evidence": "Lean refuted the well-typedness of Eq. (10)'s additive fusion under **both** readings the paper gives for the width of $F_s^A$. $U$ is declared to be bilinear upsampling, so it changes spatial size only and preserves the channel count, and the convolution $C_3$ sits *outside* the sum, so it cannot repair a mismatch. Eq. (3) applies Eq. (10) at $s=5$ and $s=4$.\n\nReading A, $F_s^A \\in \\mathbb{R}^{N \\times H_s \\times W_s \\times C_s}$ (the overview), requires $C_s = C_{s-1}$ for $s \\in \\{4,5\\}$. With the VGG-16 widths $(C_1,\\dots,C_5) = (64,128,256,512,512)$ of ref. [32], this holds at $s=5$ ($C_5 = C_4 = 512$) but fails at $s=4$: enhancing stage 3 from $F_4^A$ adds a $512$-channel tensor to a $256$-channel tensor. Lean: `theorem eq10_stagewise_channels_refuted : ¬ (∀ s ∈ Eq10Stages, C s = C (s - 1)) := by decide`, with witness `eq10_witness : C 4 = 512 ∧ C 3 = 256 ∧ C 4 ≠ C 3`.\n\nReading B, $F_s^A \\in \\mathbb{R}^{N \\times H_s \\times W_s \\times C}$ with one stage-independent $C$ (as restated at Eq. (9)), fails too: $s=5$ forces $C = C_4 = 512$ while $s=4$ forces $C = C_3 = 256$. Lean: `theorem eq10_uniform_channel_refuted : ¬ (∃ c : ℕ, ∀ s ∈ Eq10Stages, c = C (s - 1))`. `eq10_valid_stages` isolates $s=5$ as the only well-typed step.\n\nSo Eq. (10) cannot be implemented as printed for the stage-4 $\\to$ stage-3 enhancement. The underlying design is repairable by a one-line channel projection on $F_s^A$ before the sum — exactly what Eq. (2) does with its explicit $\\phi$ — or by re-indexing the subscript so that $F_s^A$ carries $C_{s-1}$ channels. Severity is minor because no experimental claim depends on the printed width and the released implementation must already contain such a projection; but as written the central PAG recursion is dimensionally inconsistent. The conflicting notation for the same object ($C_s$ in the overview vs. $C$ at Eq. (9)) is the proximate cause.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "$$\\hat{F}_{s-1, l} = C_3(F_{s-1, l} + U(F_s^A)),$$"
+    },
+    {
+      "snippet_id": "paper::EQUATION::13",
+      "category": "Formally refuted",
+      "severity": "minor",
+      "confidence": 0.9,
+      "evidence": "Eq. (14) must define $n_s^j$ at all $K^2$ positions of the $K \\times K$ grid: it is declared as $n_s^j \\in \\mathbb{R}^{K \\times K \\times 2}$, and Eq. (15) index-selects with the whole array to produce $\\tilde{a}_s^j \\in \\mathbb{R}^{K \\times K \\times L_s}$. Read literally, the first line's guard \"$x, y \\neq k_c$\" means $x \\neq k_c$ **and** $y \\neq k_c$, which covers only the $(K-1)^2$ positions off the centre row and centre column; the second line then supplies the single position $(k_c, k_c)$.\n\nLean refuted totality: `theorem eq14_totality_refuted : DefinedLiteral ≠ Grid := by decide`. At the paper's $K = 9$ (so $k_c = 5$), `eq14_defined_card` gives $65$ positions assigned out of $81$, and `eq14_undefined_card` proves exactly $2K - 2 = 16$ are left undefined. `eq14_undefined_set` identifies them as precisely the centre row and centre column minus their intersection, and `eq14_witness` exhibits $(1, k_c)$ as a concrete grid position for which Eq. (14) assigns no coordinate — so the $K \\times K$ pixel set the text promises is not actually determined.\n\nThe defect is the scope of the guard, not the construction: formalising the charitable reading $(x, y) \\neq (k_c, k_c)$ gives `theorem eq14_intended_is_total : DefinedIntended = Grid := by decide`. Severity is minor — the intended meaning is recoverable and the surrounding argument survives — but as printed the condensation index array is under-specified on $16/81$ of its entries.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "n_s^j(x, y, :) = (h_j, w_j) + \\Delta_s^j(x, y, :), \\quad x, y \\in \\{1, \\cdots, K\\};\\ x, y \\neq k_c,"
+    },
+    {
+      "snippet_id": "paper::EQUATION::2",
+      "category": "Formally refuted",
+      "severity": "minor",
+      "confidence": 0.85,
+      "evidence": "Eq. (1) declares the *only* feature collection given to PAG as $\\mathbb{F}^P = \\{F_{s,l} \\mid s \\in \\{3, \\cdots, 5\\}, l \\in \\{1, \\cdots, L_s\\}\\}$, and Eq. (3) is run with \"$s$ ranges from 5 to 3\". Its third line reads $\\{\\hat{F}_{s-1,l}\\}_{l=1}^{L_{s-1}} = \\mathrm{Enh}(\\{F_{s-1,l}\\}_{l=1}^{L_{s-1}}; F_s^A)$, so well-formedness requires $s - 1 \\in \\{3,4,5\\}$ for every $s$ in the stated range.\n\nLean refuted that: `theorem eq3_wellformed_refuted : ¬ (∀ s ∈ Eq3Range, (s - 1) ∈ PAGStages)`, with witness $s = 3$, since $3 - 1 = 2 \\notin \\{3,4,5\\}$ (`eq3_counterexample`). `eq3_valid_iterations : Eq3Range.filter (fun s => (s - 1) ∈ PAGStages) = {4, 5}` shows the enhancement step is applicable for only two of the three values of $s$.\n\nConcretely, the last iteration of the Eq. (3) block demands stage-2 VGG features that the paper never collects, and the $\\{\\hat{F}_{2,l}\\}$ it would produce is never consumed — PAG emits association features for stages 5, 4, 3 only. Severity is minor: the recursion is merely over-specified by one iteration, and restricting the third line to $s \\in \\{5,4\\}$ fixes it with no change to the method or the results.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "where \\(s\\) ranges from 5 to 3 and \\(\\{\\hat{F}_{5,l}\\}_{l=1}^{L_5} = \\{F_{5,l}\\}_{l=1}^{L_5}\\)."
+    }
+  ],
+  "verdict": "MINOR_ERRORS",
+  "verdict_confidence": 0.8,
+  "summary": "**What was checked.** CONDA is an architecture paper for co-salient object detection; its mathematics is tensor-shape bookkeeping, similarity definitions, an index-selection scheme and one loss function, with no theorems or proofs. I extracted 17 self-contained mathematical objects (Eqs. 1-16 plus the CAC condensation model), routed 11 to informal review and 6 to Lean 4 formalisation. All 6 Lean snippets were settled by the compiler — 3 `PASSED`, 3 `REFUTED`, 0 `FAILED` and 0 `NOT_ATTEMPTED` — so no informal fallback pass was needed. Every proof compiles with exit 0, no severity-1 diagnostics, no `sorry`, and only the standard Mathlib axioms (`propext`, `Classical.choice`, `Quot.sound`); none depends on `sorryAx`.\n\n**What Lean settled against the paper (3 refutations, all specification-level).** (i) *Eq. (10)* — the additive fusion $F_{s-1,l} + U(F_s^A)$ is ill-typed as printed. $U$ is bilinear upsampling (spatial only) and $C_3$ is applied after the sum, so the channel counts must already agree; with VGG-16's widths $(64,128,256,512,512)$ this holds at $s=5$ but fails at $s=4$, where a $512$-channel $F_4^A$ meets a $256$-channel $F_{3,l}$. Lean refuted both of the paper's own readings of the width of $F_s^A$ ($C_s$ in the overview, $C$ at Eq. (9)) — no single $C$ works either, since $s=5$ forces $512$ and $s=4$ forces $256$. (ii) *Eq. (14)* — the guard \"$x, y \\neq k_c$\" excludes the whole centre row and column, so only $(K-1)^2 + 1 = 65$ of the $81$ positions of the $K \\times K$ index array are assigned at $K = 9$, leaving $2K - 2 = 16$ undefined, while Eq. (15) index-selects a full $K \\times K$ block. Formalising the charitable guard $(x,y) \\neq (k_c,k_c)$ yields a total definition, which localises the defect to the guard's scope. (iii) *Eq. (3)* — the stated range \"$s$ ranges from 5 to 3\" makes the last iteration's enhancement step read stage-2 features absent from $\\mathbb{F}^P$; the step is applicable only for $s \\in \\{5,4\\}$.\n\nAll three are defects in how the method is written down, not wrong mathematics: each is repaired by a channel projection, a corrected guard, or a narrowed loop range, with no consequence for the method or the reported results. Hence `MINOR_ERRORS` rather than `CRITICAL_ERRORS`.\n\n**What Lean confirmed (3 passes).** *Eq. (4)*: Cauchy-Schwarz plus the ReLU clip puts every hyperassociation entry in $[0,1]$, and on the $l$-2-normalised features the prose specifies, the explicit division by $\\|u\\|\\|v\\|$ is the identity — the double normalisation is redundant but idempotent, not contradictory. *CAC condensation model*: at the paper's configuration ($256 \\times 256$ input, VGG-16, $K = 9$, stages 3-5 at $64/32/16$) the constraint $K < H_s, W_s$ holds at every stage, $K$ is odd so the centre $(k_c,k_c)$ exists, and $K^2 < H_s W_s$ everywhere, so the claimed reduction is real — tightest at stage 5, $81 < 256$. Worth recording: a first formalisation used $H_s = 256/2^{s}$ and Lean refuted the resolution lemma, correctly catching my own off-by-one in the stage-indexing convention before it reached a verdict. *Eq. (16)*: the OCC loss is a well-formed average (weights sum to 1) and bounded, giving $\\mathcal{L}^C \\in [0,3]$ over the three stages.\n\n**Disagreements between verifiers.** None. The three Lean refutations fall on snippets the informal pass had not flagged (its threshold excludes notation and shape-declaration defects), and no snippet received both a Lean verdict and a conflicting informal one — the 11 informally reviewed snippets all came back `NO_ERROR` and none was contradicted by Lean.\n\n**Left unsettled.** Two points are recorded as observations rather than findings because neither is demonstrably an error. (a) Eq. (12)'s refined coordinate $(h_j,w_j) = (h_j^0,w_j^0) + \\Delta_s^j(k_c,k_c,:)$ is real-valued (a linear-layer output) but is used as a pixel index in Eqs. (14)-(15); the paper states neither a rounding/bilinear-sampling rule nor a clamp to $[1,H_s] \\times [1,W_s]$. This is a standard unstated detail in deformable-sampling architectures. (b) Eq. (16) weights all $N^2$ ordered pairs uniformly, so the $N^2 - N$ cross-image pairs that carry the inter-image cycle constraint receive total weight $(N-1)/N = 5/6$ at $N = 6$; Lean proved the split exactly, but it is a normalisation choice, not a mistake, and the $i = j$ terms are not vacuous since the warps use predicted rather than identity correspondences. Also note the markdown extraction is scrambled in places (Eq. (3)'s first line repeated at Eq. (4), Eq. (9) and its \"where\" clause displaced, a duplicated \"$(k_c,k_c)$ is the center position\" clause after Eq. (16)); I treated these as extraction artefacts, not paper defects, and did not report them.\n\n**Lean project.** `MATH_VERIFICATION/Paper` was reused, not created by this run — it is the shared project every `paper.md` resolves to and already holds 350 proofs from other manuscripts — so per `verify-math-lean`'s reuse rule it was kept rather than deleted. Only per-snippet scratch (`TMP.lean`, `claim.md`) was removed; the six proofs are saved under `MATH_VERIFICATION/Paper/Paper/Verified/paper__*_0029opus5.lean`."
+}

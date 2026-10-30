@@ -1,0 +1,296 @@
+{
+  "paper_name": "paper",
+  "paper_path": "/Users/iacopoghinassi/Documents/Github/Wittgenstein/data/spot-workspace/0047-HDRTransDC_High_Dynamic_Range_Image_Reconstruction_with_Transformer_Deformation_Convolution/paper.md",
+  "tag": "opus5",
+  "lean_project": "MATH_VERIFICATION/Paper",
+  "lean_project_kept": true,
+  "totals": {
+    "snippets_extracted": 10,
+    "routed_to_math": 7,
+    "routed_to_lean": 3,
+    "lean_passed": 3,
+    "lean_refuted": 0,
+    "lean_failed": 0,
+    "fallbacks_run": 0,
+    "errors_detected": 1
+  },
+  "results": [
+    {
+      "snippet_id": "paper::EQUATION::0",
+      "snippet_type": "EQUATION",
+      "location": "3 Method",
+      "content": "Following previous work [Kalantari et al., 2017; Yan et al., 2019], the medium exposure image L2 is regarded as the reference image and we transform {Li} to HDR domain {Hi} with gamma correction and exposure normalization:\n\n\\[\nH_i = \\frac{L_i^\\gamma}{t_i}, i = 1, 2, 3 \\tag{1}\n\\]\n\nwhere ti denotes the exposure time of LDR image Li, γ represents the gamma correction parameter, we set γ to 2.2.",
+      "route": "verify-math-lean",
+      "route_rationale": "A closed-form identity over the reals. The load-bearing content — that dividing the gamma-expanded LDR value by the exposure time really does put all three differently-exposed images on one common radiance scale — is a formalisable `Real.rpow` computation.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::0",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "Formalised the mathematical content of Eq. (1): under the standard camera model of this literature, an unsaturated pixel of the $i$-th LDR image with exposure time $t_i$ observing scene irradiance $E$ records $L_i = (E t_i)^{1/\\gamma}$, and Eq. (1) must then return $E$ exactly and independently of $i$ — that is precisely what \"exposure normalization\" means. Hypotheses assumed: $E \\ge 0$ (irradiance non-negative), $t > 0$ (physical exposure time, and what makes the division well-defined), $\\gamma > 0$ (the paper sets $\\gamma = 2.2$). Real exponentiation is `Real.rpow` throughout since $\\gamma$ is not an integer. No hypothesis was added that would make the identity true for free. Lean compiled the proof clean on the first cycle: `((E t)^{1/\\gamma})^{\\gamma} / t = (E t)^{(1/\\gamma)\\gamma} / t = (E t)^1 / t = E$. Equation (1) is correct as printed.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/0047-HDRTransDC__EQUATION__0_opus5.lean",
+          "formal_statement": "theorem hdrtransdc_eq1_exposure_normalization\n    (E t γ L : ℝ) (hE : 0 ≤ E) (ht : 0 < t) (hγ : 0 < γ)\n    (hL : L = (E * t) ^ (1 / γ)) :\n    L ^ γ / t = E := by\n  subst hL\n  rw [← Real.rpow_mul (by positivity), one_div_mul_cancel hγ.ne', Real.rpow_one,\n    mul_div_cancel_right₀ E ht.ne']",
+          "compiler_feedback": "",
+          "axioms": ["propext", "Classical.choice", "Quot.sound"],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::EQUATION::1",
+      "snippet_type": "EQUATION",
+      "location": "3.1 Transformer Deformation Convolution Alignment Module — Transformer Offset Estimator",
+      "content": "In order to maintain the structural consistency between the non-reference image and the reference image, we search for features similar to the reference image on the non-reference image. Hence, in both the local Transformer layer and global Transformer layer, we use the reference tokens Z_ref to generate query Q and use the non-reference tokens Z_non to generate the key K and the value V:\n\nQ = Z_ref W_q, K = Z_non W_k, V = Z_non W_v     (2)\n\nwhere W_q, W_k, W_v are the weights.",
+      "route": "verify-math",
+      "route_rationale": "Pure notation: three linear projections with unconstrained weight matrices. It asserts nothing that could be false, so there is nothing for Lean to settle.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::1",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "Standard query/key/value projections. $Q$ is projected from the reference tokens and $K, V$ from the non-reference tokens, which is the conventional asymmetric (cross-attention) assignment and is consistent with the stated goal of \"search[ing] for features similar to the reference image on the non-reference image\": the reference supplies what to look for, the non-reference supplies where to look. No algebraic, dimensional or logical defect. $W_q, W_k, W_v$ are left as free learnable weights, which is appropriate for a definition.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::EQUATION::2",
+      "snippet_type": "EQUATION",
+      "location": "3.1 Transformer Deformation Convolution Alignment Module — Transformer Offset Estimator",
+      "content": "The output of a Transformer layer can be calculated by:\n\nY′ = MSA(Q, K, V) + Z_non\nY = FFN(Y′) + Y′       (3)\n\nwhere MSA is the multi-headed self-attention and FFN denotes the feed-forward network. Here, the position and similarity of local and global information are captured through Transformer layers. Finally, a CNN-based block which consists of several convolution layers and the LeakyReLU activation function is used to generate the final offsets of similar features.",
+      "route": "verify-math",
+      "route_rationale": "The questionable content is the naming of the attention operator and the choice of residual branch — design and terminology questions resting on an unspecified `MSA`, not a formalisable assertion. Dimensional consistency is the only formal content and it holds.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::2",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.6,
+        "reasoning": "Two observations, neither rising to a derivation-invalidating error.\n\n1. `MSA` is glossed as \"multi-headed **self**-attention\", but by Eq. (2) the query comes from $Z_{ref}$ while key and value come from $Z_{non}$. An attention operator with distinct query and key/value sources is *cross*-attention, not self-attention. This is a terminology slip, which this verifier is instructed never to flag.\n\n2. The residual branch adds $Z_{non}$, whereas the usual convention adds the stream the query was projected from ($Z_{ref}$ here). Because the TOE must emit offsets that are applied to the non-reference feature $F_{non}$, keeping the residual in non-reference feature space is a defensible deliberate choice rather than a provable mistake.\n\nDimensionally the equation is sound: within a window the reference and non-reference token sets have equal cardinality, so $\\mathrm{MSA}(Q,K,V)$ has the same shape as $Z_{non}$ and the sum is well-formed. Confidence is held at $0.6$ because the snippet leaves `MSA` and `FFN` unspecified, so no stronger judgement is available from it.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.6
+    },
+    {
+      "snippet_id": "paper::EQUATION::3",
+      "snippet_type": "EQUATION",
+      "location": "3.1 Transformer Deformation Convolution Alignment Module — Deformable Convolution Layer",
+      "content": "Deformable Convolution Layer  Based on the accurate offsets ΔP predicted by TOE, deformable convolution is used to extract the matching features on the origin non-reference feature F_non:\n\nF^a_non(p) = ∑_{k=1}^{K} m_k · F_non(p + p_k + ΔP(p, k))      (4)\n\nwhere F^a_non denotes the aligned non-reference features and K, k are the number and index of kernel weights. m_k, p, p_k denote the k-th kernel weight, position of center and the k-th fixed offset respectively. The origin non-reference features are geometrically transformed via convolution extraction so that the misalignment is removed and the occluded content is compensated. K, the number of kernel weights, also can be adjusted to modify the number of relevant features that are captured by TOE.",
+      "route": "verify-math-lean",
+      "route_rationale": "A finite-sum sampling operator with crisp structural properties: the surrounding text asserts it is a convolution (hence must reduce to one when the offsets vanish) and composable with the surrounding CNN layers (hence must be linear in the sampled feature map). Both are formalisable.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::3",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "Formalised the two structural assertions the surrounding text makes about Eq. (4), which are what justify calling it \"convolution extraction\" and what let it stand in for the plain deformable-convolution layer used in ablation experiment (1):\n\n1. **Generalises ordinary convolution** — when the TOE-predicted offsets vanish, $\\Delta P(p,\\cdot) = 0$, Eq. (4) collapses exactly to $\\sum_k m_k F_{non}(p + p_k)$, so $p_k$ genuinely is the convolution kernel footprint the paper calls a \"fixed offset\".\n2. **Linear in the sampled feature map** — the kernel weights $m_k$ do not depend on $F_{non}$, so Eq. (4) is linear in $F_{non}$, which is what permits composition with the surrounding convolution layers.\n\nHypotheses: kernel index $k : \\mathrm{Fin}\\, K$ (the paper's $k = 1 \\ldots K$); positions in $\\mathbb{R} \\times \\mathbb{R}$, because the predicted offsets are real-valued rather than integral, with any interpolation needed to evaluate $F_{non}$ at a fractional position absorbed into $F_{non}$; arbitrary $m$, $p_k$ and $\\Delta P$ — no positivity, boundedness or continuity assumption was added. Lean compiled both parts clean on the first cycle. Equation (4) matches the standard deformable-convolution operator of the literature and is correct as printed. (The paper does not mention the bilinear interpolation that fractional offsets require, but eliding it is standard practice in this literature and is an omission rather than an error.)",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/0047-HDRTransDC__EQUATION__3_opus5.lean",
+          "formal_statement": "theorem hdrtransdc_eq4_deformable_conv {K : ℕ}\n    (m : Fin K → ℝ) (pk : Fin K → ℝ × ℝ) (dP : (ℝ × ℝ) → Fin K → ℝ × ℝ)\n    (F G : (ℝ × ℝ) → ℝ) (a b : ℝ) (p : ℝ × ℝ) :\n    (dP p = 0 →\n      ∑ k, m k * F (p + pk k + dP p k) = ∑ k, m k * F (p + pk k)) ∧\n    (∑ k, m k * (a * F (p + pk k + dP p k) + b * G (p + pk k + dP p k))\n      = a * (∑ k, m k * F (p + pk k + dP p k))\n        + b * (∑ k, m k * G (p + pk k + dP p k))) := by\n  refine ⟨fun h => Finset.sum_congr rfl fun k _ => ?_, ?_⟩\n  · rw [h]; simp\n  · rw [Finset.mul_sum, Finset.mul_sum, ← Finset.sum_add_distrib]\n    exact Finset.sum_congr rfl fun k _ => by ring",
+          "compiler_feedback": "",
+          "axioms": ["propext", "Classical.choice", "Quot.sound"],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::EQUATION::4",
+      "snippet_type": "EQUATION",
+      "location": "3.2 Dynamic Weight Fusion Block",
+      "content": "To be special, given the input feature x ∈ 𝑅^{H×W×D}, we first utilize the spatial attention mechanism to generate a dynamic weight Δw based on the content of the input multi-exposure features:\n\nΔw = φ(x)       (5)\n\nwhere φ is the attention block.",
+      "route": "verify-math",
+      "route_rationale": "An unconstrained function application naming an unspecified attention block. It asserts nothing that could be false; formalising it would require inventing $\\varphi$.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::4",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "Equation (5) is notation: it names the output of an unspecified attention block $\\varphi$ applied to the input feature $x$. There is no algebraic operation to get wrong and no bound to violate. The shape of $\\Delta w$ is not stated here, which is where the DWFB specification runs into trouble — but that is a property of the surrounding model description, recorded against `paper::MATHEMATICAL_MODEL::0`, not a defect in this equation.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::EQUATION::5",
+      "snippet_type": "EQUATION",
+      "location": "3.3 Loss Function",
+      "content": "In the HDR task, we jointly utilize the l1 loss and gradient loss to reconstruct satisfactory results. Given the predicted HDR image H and ground truth HDR image Hgt, the l1 loss is computed like previous methods [Yan et al., 2019; Niu et al., 2021]:\n\nL_{l1} = ||Γ(H) - Γ(H_{gt})||_1       (6)\n\nwhere Γ(·) stands for the tonemapping based on μ-law [Kalantari et al., 2017; Yan et al., 2019; Niu et al., 2021].",
+      "route": "verify-math",
+      "route_rationale": "A one-line definition of a standard $\\ell_1$ reconstruction loss in the tonemapped domain, checkable by inspection. Its formal properties are verified jointly with Eq. (8).",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::5",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "The standard tonemapped $\\ell_1$ reconstruction loss, matching the cited prior work. Applying the $\\mu$-law tonemap $\\Gamma$ before taking the difference is the correct and conventional choice for HDR regression — it compresses the radiance range so the loss is not dominated by the brightest pixels. $\\Gamma$ itself is not defined in the paper, only cited, but a definition located in cited work is not an error in this excerpt. No sign, norm or domain defect.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::EQUATION::6",
+      "snippet_type": "EQUATION",
+      "location": "3.3 Loss Function",
+      "content": "Considering that the l1 loss may result in the damage of high-frequency content in the reconstructed HDR images [Xu et al., 2020a], such as texture and edge, we use a gradient loss that is based on the Sobel operator to compensate for the l1 loss to retain the high-frequency content:\n\nL_{grad} = ||∇Γ(H) - ∇Γ(H_{gt})||_1      (7)\n\nwhere ∇ denotes the Sobel operator.",
+      "route": "verify-math",
+      "route_rationale": "A one-line definition of a gradient-domain $\\ell_1$ loss, checkable by inspection. Its formal properties are verified jointly with Eq. (8).",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::6",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "A well-formed gradient-domain $\\ell_1$ loss. Using $\\nabla$ for a discrete Sobel filter rather than a true gradient is an alternative valid notation, explicitly defined in the following clause, and is not flaggable. Taking the Sobel response of the tonemapped images (rather than tonemapping the gradients) is consistent with Eq. (6) and is the correct ordering. Because Sobel filtering is linear, $\\nabla\\Gamma(H) - \\nabla\\Gamma(H_{gt}) = \\nabla(\\Gamma(H) - \\Gamma(H_{gt}))$, so the loss is well defined either way. No defect.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::EQUATION::7",
+      "snippet_type": "EQUATION",
+      "location": "3.3 Loss Function",
+      "content": "Finally, the total loss L is defined as:\n\nL = L_{l1} + λ_g L_{grad}      (8)\n\nwhere λ_g is the trade-off coefficient, and we set it to 0.6.\n\nBased on the total loss, the proposed model is optimized to focus on both overall content and high-frequency regions, further promoting the generation of high-quality images with rich details.",
+      "route": "verify-math-lean",
+      "route_rationale": "The objective the network is actually minimised against. Whether it is a genuine loss — non-negative, vanishing only when both terms vanish, and vanishing exactly at the ground truth — is a crisp formalisable claim, and it is what the paper's closing sentence depends on.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::7",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "Formalised the composite objective of Eq. (8) together with Eqs. (6)-(7), checking the three properties the paper's closing sentence needs — that minimising $L$ makes the model \"focus on both overall content and high-frequency regions\":\n\n1. $L \\ge 0$ for every prediction, so there is a floor to descend towards;\n2. $L = 0 \\iff (L_{l1} = 0 \\wedge L_{grad} = 0)$, i.e. the two terms cannot be traded off against one another below zero — this is what makes the sum attend to *both* objectives;\n3. $L = 0 \\iff \\Gamma(H) = \\Gamma(H_{gt})$.\n\nAll three compiled clean on the first cycle, with $\\lambda_g > 0$ (the paper's $0.6$). Images are modelled as $P \\to \\mathbb{R}$ over a finite pixel index type with $\\|\\cdot\\|_1$ the sum of absolute values, which is the paper's $\\ell_1$ norm. The Sobel operator is assumed **only** to be linear — the one property a Sobel filter genuinely has that the argument needs — and deliberately *not* injective, so property 3 has to be carried by the $L_{l1}$ term rather than granted by hypothesis.\n\nA companion theorem closes the last gap: the $\\mu$-law tonemap $\\Gamma x = \\log(1 + \\mu x)/\\log(1 + \\mu)$ is injective on non-negative radiance for $\\mu > 0$, so $L = 0$ pins $H = H_{gt}$ itself and not merely a tonemapped equivalence class. Equation (8) is a sound objective exactly as printed, and the claim made about it is justified.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/0047-HDRTransDC__EQUATION__7_opus5.lean",
+          "formal_statement": "theorem hdrtransdc_eq8_total_loss {P : Type*} [Fintype P]\n    (sobel : (P → ℝ) →ₗ[ℝ] (P → ℝ)) (TH TG : P → ℝ) (lam : ℝ) (hlam : 0 < lam) :\n    0 ≤ (∑ i, |TH i - TG i|) + lam * ∑ i, |sobel TH i - sobel TG i| ∧\n    (((∑ i, |TH i - TG i|) + lam * ∑ i, |sobel TH i - sobel TG i| = 0) ↔\n      ((∑ i, |TH i - TG i|) = 0 ∧ (∑ i, |sobel TH i - sobel TG i|) = 0)) ∧\n    (((∑ i, |TH i - TG i|) + lam * ∑ i, |sobel TH i - sobel TG i| = 0) ↔ TH = TG)\n\ntheorem hdrtransdc_mulaw_injective (mu : ℝ) (hmu : 0 < mu) {x y : ℝ}\n    (hx : 0 ≤ x) (hy : 0 ≤ y)\n    (h : Real.log (1 + mu * x) / Real.log (1 + mu)\n        = Real.log (1 + mu * y) / Real.log (1 + mu)) :\n    x = y",
+          "compiler_feedback": "",
+          "axioms": ["propext", "Classical.choice", "Quot.sound"],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "3.2 Dynamic Weight Fusion Block",
+      "content": "Since convolutions share fusion weights across the entire feature, it is difficult for directly stacking convolutional layers to spatially and dynamically highlight the information of an appropriate image for an accurate result. Moreover, the traditional convolution gets more attention for the information of reference images and weakens the complement information of non-reference images, resulting in fusing distortions. To effectively fuse the multi-exposed features, we propose DWFB which spatially selects the useful information across frames, as shown in Fig. 5(a).\n\nTo be special, given the input feature x ∈ 𝑅^{H×W×D}, we first utilize the spatial attention mechanism to generate a dynamic weight Δw based on the content of the input multi-exposure features:\n\nΔw = φ(x)       (5)\n\nwhere φ is the attention block. The attention block generates the dynamic weight by sensing the exposure levels of multiple frames in different areas. The dynamic weight Δw adaptively selects the information of different frames, that is, the information in the well-exposed regions of the reference image is selected, and the supplementary content corresponding to the non-reference image is selected in the badly-exposed area of the reference image. Then, we use the weight Δw that is shared in spatial dimension and fully connected in channel dimension to fuse inter-channel information to merge the content of multi-exposed images.",
+      "route": "verify-math",
+      "route_rationale": "The defect is a mutual incompatibility between stated properties of an operator whose attention block $\\varphi$ is never pinned down. There is no faithful Lean statement — formalising it would require inventing $\\varphi$ — so this is an informal-review target.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.78,
+        "reasoning": "The DWFB specification asserts two properties of the dynamic weight $\\Delta w$ that cannot hold simultaneously.\n\n**Asserted (spatial adaptivity).** $\\Delta w$ is produced by \"the spatial attention mechanism\", \"by sensing the exposure levels of multiple frames in different areas\", and it \"adaptively selects the information of different frames, that is, the information in the well-exposed regions of the reference image is selected, and the supplementary content corresponding to the non-reference image is selected in the badly-exposed area of the reference image\". This requires $\\Delta w$ to take **different values at different spatial locations**: by construction it must select the reference frame at pixel $p$ and a non-reference frame at pixel $q$ whenever $p$ is well exposed and $q$ is not.\n\n**Asserted (spatial sharing).** \"Then, we use the weight $\\Delta w$ that is shared in spatial dimension and fully connected in channel dimension to fuse inter-channel information\". A weight shared in the spatial dimension is by definition **constant over space**: $\\Delta w(p) = \\Delta w(q)$ for all $p, q$. What is described is a channel-wise $1 \\times 1$ transform — i.e. channel attention — applied identically at every location.\n\nThe two are mutually exclusive. If $\\Delta w$ is spatially shared it cannot select different frames in different regions, and the mechanism that the paper's abstract and contribution list advertise — \"DWFB to spatially adaptively select useful information across frames\" — does not exist in the block as specified.\n\nThe contradiction is load-bearing rather than cosmetic, because it collapses DWFB into exactly the baseline the same paragraph rejects. The paper's stated motivation is that \"convolutions share fusion weights across the entire feature, [so] it is difficult for directly stacking convolutional layers to spatially and dynamically highlight the information of an appropriate image\". By the paper's own vocabulary, a weight \"shared in spatial dimension\" has the defect DWFB was introduced to remove, so as written the block cannot account for the ablation gain attributed to it in Table 3, experiment (2).\n\nConfidence is held at $0.78$ rather than higher because the residual possibility remains that \"shared in spatial dimension\" is loose wording for a scheme shared only *within a local window* — which would still be spatially varying across windows. The quoted clause pairs it with \"fully connected in channel dimension\", however, which describes the spatial/channel roles the exact way round that contradicts the spatial-attention claim.",
+        "predicted_error_category": "Domain/Constraint violation",
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": [
+          "3.2 Dynamic Weight Fusion Block — \"we first utilize the spatial attention mechanism to generate a dynamic weight Δw\"",
+          "3.2 Dynamic Weight Fusion Block — \"the weight Δw that is shared in spatial dimension and fully connected in channel dimension\""
+        ]
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.78
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::1",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "3.1 Transformer Deformation Convolution Alignment Module",
+      "content": "When LDR images contain long-distance motions, the neighbor information cannot be used to handle misalignment and fill occluded content accurately. Here, we propose the TDCAM to get the aligned non-reference features with the guidance of reference features. As shown in Figure 3, the proposed TDCAM uses the TOE to generate precise offsets of relevant features after searching for similar information on the entire feature map. Then, to get the aligned features, the deformable convolution extracts the matching information and performs the geometric transformation of the origin features based on the predicted offsets.\n\nBecause the final offsets represent the position difference between the extracted features and the generated feature, we add the learnable absolute positional encoding Pos ∈ ℝ^{H×W×C} on the non-reference features F_non ∈ ℝ^{H×W×C}. For the aligned regions, we use M local Transformer layers to localize the locally relevant features... For large motion regions, we use N global Transformer layers to capture the long-distance relevant features.\n\nThrough the combination of TOE and deformable convolution, the proposed TDCAM can extract long-distance features after being aware of the global information to generate more accurate and robust aligned non-reference features.",
+      "route": "verify-math",
+      "route_rationale": "Claims about what a trained module will learn to do (\"precise offsets\", \"recover the occluded regions\"). These rest on undefined domain objects and learned behaviour, so they are unformalisable; informal review is the only available check.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::1",
+        "verifier_name": "math-equations",
+        "status": "UNVERIFIABLE",
+        "error_detected": false,
+        "confidence": 0.5,
+        "reasoning": "The model as specified is internally coherent and dimensionally consistent: the positional encoding $Pos \\in \\mathbb{R}^{H \\times W \\times C}$ matches the non-reference feature $F_{non} \\in \\mathbb{R}^{H \\times W \\times C}$, so the addition is well formed; the local/global Transformer split and the hand-off of offsets $\\Delta P$ to the deformable convolution of Eq. (4) are consistent with Eqs. (2)-(4).\n\nThe substantive claims, however — that the TOE generates \"precise offsets\", that global attention lets TDCAM \"recover the occluded regions\", that the resulting features are \"more accurate and robust\" — are assertions about what a trained network learns. They are not mathematical consequences of anything stated and cannot be confirmed or refuted from the specification; they are properly supported or not by the ablation in Table 3, which is outside this verifier's remit. Recorded as UNVERIFIABLE rather than NO_ERROR to reflect that the claims were not settled, not that they are suspect. No mathematical defect was found in what is actually specified.",
+        "predicted_error_category": null,
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": []
+      },
+      "status": "UNVERIFIABLE",
+      "error_detected": false,
+      "confidence": 0.5
+    }
+  ],
+  "findings": [
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+      "category": "Self-contradictory model specification",
+      "severity": "critical",
+      "confidence": 0.78,
+      "evidence": "The DWFB specification requires the dynamic weight $\\Delta w$ to be simultaneously spatially varying and spatially constant.\n\nOne sentence requires $\\Delta w$ to vary over space: it is produced by \"the spatial attention mechanism\" \"by sensing the exposure levels of multiple frames in different areas\", and it must select \"the information in the well-exposed regions of the reference image\" while selecting \"the supplementary content corresponding to the non-reference image ... in the badly-exposed area of the reference image\". That forces $\\Delta w(p) \\neq \\Delta w(q)$ whenever pixel $p$ is well exposed and pixel $q$ is not.\n\nThe next sentence requires the opposite: $\\Delta w$ is \"shared in spatial dimension and fully connected in channel dimension\", i.e. $\\Delta w(p) = \\Delta w(q)$ for all $p, q$ — a channel-wise $1 \\times 1$ transform applied identically everywhere, which is channel attention, not spatial attention.\n\nThe contradiction is load-bearing, not cosmetic: it collapses DWFB into precisely the baseline the same paragraph rejects. The paper motivates DWFB by observing that \"convolutions share fusion weights across the entire feature, [so] it is difficult for directly stacking convolutional layers to spatially and dynamically highlight the information of an appropriate image\". By the paper's own vocabulary a weight \"shared in spatial dimension\" has exactly that defect, so the block as specified cannot deliver the spatial adaptivity claimed for it in the abstract and in contribution 2, nor account for the gain attributed to it in the Table 3 ablation.\n\nConfidence is $0.78$ rather than higher only because \"shared in spatial dimension\" could conceivably be loose wording for sharing *within a local window*; the pairing with \"fully connected in channel dimension\" assigns the spatial and channel roles the exact way round that contradicts the spatial-attention claim, which is why that reading is not the likely one.",
+      "verifier": "verify-math",
+      "exact_quote": "Then, we use the weight Δw that is shared in spatial dimension and fully connected in channel dimension to fuse inter-channel information to merge the content of multi-exposed images."
+    }
+  ],
+  "verdict": "CRITICAL_ERRORS",
+  "verdict_confidence": 0.58,
+  "summary": "Ten mathematically verifiable objects were extracted from HDRTransDC: the paper's eight numbered equations plus the two prose-specified models (TDCAM and DWFB). Three were routed to Lean 4 and seven to informal review. This is an architecture paper, so the mathematics is thin and largely definitional — there are no theorems, lemmas or derivations.\n\n**What Lean settled.** All three formalisations compiled clean on the first cycle, with no `sorry` and only the standard Mathlib axioms (`propext`, `Classical.choice`, `Quot.sound`):\n\n- **Eq. (1)**, $H_i = L_i^{\\gamma}/t_i$ — proved that under the standard camera model $L_i = (E t_i)^{1/\\gamma}$ this recovers the scene irradiance $E$ exactly and independently of $i$, so the equation does perform the \"exposure normalization\" it claims.\n- **Eq. (4)**, the deformable-convolution alignment operator — proved it reduces exactly to an ordinary convolution $\\sum_k m_k F_{non}(p + p_k)$ when the predicted offsets vanish, and that it is linear in the sampled feature map. Both properties are needed for the surrounding text's description to hold, and both do.\n- **Eq. (8)**, the total loss $L = L_{\\ell_1} + \\lambda_g L_{grad}$ — proved $L \\ge 0$, that $L = 0$ iff *both* terms vanish (so the two objectives cannot be traded off below zero), and that $L = 0$ iff $\\Gamma(H) = \\Gamma(H_{gt})$, with the Sobel operator assumed only linear and deliberately not injective. A companion theorem shows the $\\mu$-law tonemap is injective on non-negative radiance, so $L = 0$ pins $H = H_{gt}$ itself. The paper's claim that minimising Eq. (8) attends to both overall content and high-frequency structure is therefore justified.\n\nNo Lean run returned `FAILED`, `REFUTED` or `NOT_ATTEMPTED`, so no informal fallback was triggered.\n\n**What informal review found.** Equations (2), (3), (5), (6) and (7) are clean. One finding stands: the **DWFB specification is self-contradictory**. It requires the dynamic weight $\\Delta w$ to be spatially varying (generated by \"spatial attention\", \"sensing the exposure levels of multiple frames in different areas\", selecting the reference frame in well-exposed regions and non-reference frames in badly-exposed ones) and in the next sentence to be \"shared in spatial dimension\" — constant over space. These cannot both hold, and the second reading collapses DWFB into exactly the spatially-shared convolution the same paragraph rejects as inadequate, undercutting the abstract's claim that DWFB \"spatially adaptively select[s] useful information across frames\".\n\n**Caveats.** There were no verifier disagreements: Lean and informal review covered disjoint snippets. The verdict rests entirely on a single informal finding at confidence $0.78$, established by close reading of the paper's own wording rather than by formal refutation — hence the low `verdict_confidence` of $0.58$. Every formally checkable statement in the paper passed, so the finding concerns the *specification* of a component, not the correctness of any equation. `paper::MATHEMATICAL_MODEL::1` (TDCAM) is recorded as `UNVERIFIABLE`: its substantive claims are about what a trained network learns and are answerable only by the ablation experiments, not by mathematics. Two smaller observations were noted but not flagged, both being terminology rather than error: Eq. (3) calls the operator \"multi-headed self-attention\" though Eq. (2) makes it cross-attention, and its residual branch adds $Z_{non}$ rather than the query source $Z_{ref}$; and Eq. (4) does not mention the bilinear interpolation its fractional offsets require.\n\n**Lean project.** `MATH_VERIFICATION/Paper` was reused, not created by this run — it holds a prebuilt Mathlib (7.4 GB) and archived proofs from many other papers' runs — so per `verify-math-lean`'s deletion rule it was kept rather than removed. Per-snippet scratch (`TMP.lean`, `claim.md`) was deleted and the three proofs archived as `Paper/Verified/0047-HDRTransDC__EQUATION__{0,3,7}_opus5.lean`."
+}

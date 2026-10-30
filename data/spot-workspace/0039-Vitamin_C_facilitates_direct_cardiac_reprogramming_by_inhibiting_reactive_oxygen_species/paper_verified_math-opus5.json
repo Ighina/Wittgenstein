@@ -1,0 +1,216 @@
+{
+  "paper_name": "paper",
+  "paper_path": "/Users/iacopoghinassi/Documents/Github/Wittgenstein/data/spot-workspace/0039-Vitamin_C_facilitates_direct_cardiac_reprogramming_by_inhibiting_reactive_oxygen_species/paper.md",
+  "tag": "opus5",
+  "lean_project": "MATH_VERIFICATION/Paper",
+  "lean_project_kept": true,
+  "totals": {
+    "snippets_extracted": 7,
+    "routed_to_math": 6,
+    "routed_to_lean": 1,
+    "lean_passed": 0,
+    "lean_refuted": 1,
+    "lean_failed": 0,
+    "fallbacks_run": 0,
+    "errors_detected": 1
+  },
+  "results": [
+    {
+      "snippet_id": "paper::DEFINITION::0",
+      "snippet_type": "DEFINITION",
+      "location": "Methods — RNA sequencing and bioinformatic analysis",
+      "content": "The screening criteria for DEGs were P-value < 10⁻⁶ and Log2 fold change ≥ 0.5 and ≤ (−0.5).\n\n[Context, Results: \"In total, 622 genes were found to be differentially expressed between these two groups.\"]\n\nSymbols: a gene is admitted to the differentially-expressed-gene (DEG) set when its DESeq2 p-value $p$ and its $\\log_2$ fold change $f$ (Doxy + VitC vs. Doxy alone) satisfy the stated conditions, which are joined by \"and\".",
+      "route": "verify-math-lean",
+      "route_rationale": "The only snippet in the paper with crisp formal content: a conjunction of three real inequalities defining a selection set. Satisfiability is decidable, so Lean can settle it outright rather than by inspection.",
+      "lean_result": {
+        "snippet_id": "paper::DEFINITION::0",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.9,
+        "reasoning": "Formalised the DEG membership predicate exactly as printed — `isDEG p f := p < 10⁻⁶ ∧ 0.5 ≤ f ∧ f ≤ -0.5` — over `p f : ℝ`, with no added hypotheses (no positivity, boundedness or distributional assumption), so the rendering neither strengthens the antecedent nor weakens the conclusion. The paper's reported outcome (622 genes selected) presupposes this predicate is satisfiable. Lean proved the opposite: `isDEG_unsatisfiable : ∀ p f : ℝ, ¬ isDEG p f` and `not_exists_isDEG : ¬ ∃ p f : ℝ, isDEG p f` both compile clean from `linarith`, since $0.5 \\le f$ and $f \\le -0.5$ jointly give $0.5 \\le -0.5$. A third theorem, `intended_criterion_satisfiable`, shows that replacing the second \"and\" by \"or\" ($|f| \\ge 0.5$) restores satisfiability, which localises the defect in the logical connective rather than in the thresholds or the p-value cut-off. This is a compiling refutation of the criterion as written, not a stalled proof search.",
+        "predicted_error_category": "Domain/Constraint violation",
+        "snippet_type": "DEFINITION",
+        "contradiction_locations": [
+          "Methods — RNA sequencing: \"Log2 fold change ≥ 0.5 and ≤ (−0.5)\" vs. Results: \"In total, 622 genes were found to be differentially expressed between these two groups.\""
+        ],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/0039-VitaminCCardiacReprogramming__DEFINITION__0_opus5.lean",
+          "formal_statement": "def isDEG (p f : ℝ) : Prop := p < (10 : ℝ) ^ (-6 : ℤ) ∧ 0.5 ≤ f ∧ f ≤ -0.5\n\ntheorem isDEG_unsatisfiable : ∀ p f : ℝ, ¬ isDEG p f := by\n  rintro p f ⟨-, h1, h2⟩\n  linarith\n\ntheorem not_exists_isDEG : ¬ ∃ p f : ℝ, isDEG p f := by\n  rintro ⟨p, f, h⟩\n  exact isDEG_unsatisfiable p f h\n\ntheorem intended_criterion_satisfiable :\n    ∃ p f : ℝ, p < (10 : ℝ) ^ (-6 : ℤ) ∧ (0.5 ≤ f ∨ f ≤ -0.5) := by\n  refine ⟨0, 1, ?_, Or.inl (by norm_num)⟩\n  norm_num",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::DEFINITION::1",
+      "snippet_type": "DEFINITION",
+      "location": "Methods — Statistical analysis",
+      "content": "Data were analyzed with GraphPad Prism 9, and comparisons were performed with a t-test (non-parametric tests) and a two-way ANOVA. Data were presented as mean ± SEM. A value of p < 0.05 is considered as significantly different.\n\n[Context: figure legends report \"Mean values ± SEM of three independent experiments is shown (n = 3). Data were analyzed with two-way ANOVA.\"]",
+      "route": "verify-math",
+      "route_rationale": "A prose declaration of inferential machinery. There is no derivation to formalise — correctness turns on whether the named procedures are mutually consistent, which is a reading task.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::DEFINITION::1",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.65,
+        "reasoning": "The parenthetical \"(non-parametric tests)\" attached to \"a t-test\" is internally inconsistent in the strict sense: Student's $t$-test is a parametric procedure resting on an assumed normal sampling distribution, so a \"non-parametric t-test\" names no existing test. The intended reading is almost certainly either a Mann–Whitney/Wilcoxon rank test (the non-parametric analogue GraphPad groups beside the $t$-test) or a $t$-test with a non-parametric alternative offered in the same menu. This is a terminological slip in the Methods prose, not an algebraic, calculus-based or logical mistake in a derivation, and it is explicitly outside what this verifier may flag (\"typos in accompanying text\"). I also considered whether \"two-way ANOVA\" is defensible: several analyses are genuinely two-factor (treatment × duration in Fig. 3F, G; treatment × time point in Fig. 5F, G), so the choice is not mathematically impossible, though the single-factor dose–response comparison in Fig. 3C, D would ordinarily call for a one-way design. Neither point is a derivation-invalidating error, and the correct test family cannot be determined from the text alone. Reporting mean ± SEM with $n = 3$ and a $p < 0.05$ threshold is standard and arithmetically unobjectionable. Returning error_detected = false; the terminology contradiction is properly a statistical-reporting matter for verify-statistical.",
+        "predicted_error_category": null,
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": [
+          "Methods — Statistical analysis: \"a t-test (non-parametric tests)\""
+        ]
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.65
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "Methods — RNA isolation and quantitative real-time PCR",
+      "content": "β-actin was selected as the housekeeping gene and was used for the calculation of normalized gene expression levels (ΔCt).\n\n[Context: the figures built on this quantity are labelled \"Relative mRNA expression\" and carry values such as $1.5 \\times 10^{-2}$ (MEF2C), $5 \\times 10^{-5}$ (MYH6) and $8 \\times 10^{-3}$ (ACTN2).]",
+      "route": "verify-math",
+      "route_rationale": "Asserts a normalisation identity, but one whose correctness depends on a domain convention (qPCR $\\Delta C_t$ vs. $2^{-\\Delta\\Delta C_t}$) rather than on formalisable mathematics; a Lean statement would have to invent the convention it is meant to test.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.7,
+        "reasoning": "The standard normalisation is $\\Delta C_t = C_t^{\\text{target}} - C_t^{\\text{reference}}$, with relative expression recovered as $2^{-\\Delta C_t}$ (or $2^{-\\Delta\\Delta C_t}$ against a calibrator). Calling the normalised expression level itself \"($\\Delta C_t$)\" therefore conflates a cycle-threshold difference with its exponential transform. The reported quantities adjudicate the question: $\\Delta C_t$ values are cycle counts of order $1$–$30$, whereas the figures plot values of order $10^{-2}$ to $10^{-5}$, which are exactly the magnitudes $2^{-\\Delta C_t}$ produces for a target $6$ to $17$ cycles behind $\\beta$-actin. The arithmetic the paper actually performed is thus the conventional one, and the parenthetical is loose labelling rather than a computational error — no domain constraint is violated and no reported value is unreachable under the correct formula. Not flaggable under this verifier's criteria.",
+        "predicted_error_category": null,
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.7
+    },
+    {
+      "snippet_id": "paper::EQUATION::0",
+      "snippet_type": "EQUATION",
+      "location": "Results — Screening of small molecules enhancing cardiac reprogramming (Fig. 3A–D)",
+      "content": "approximately 25% GFP⁺ cells were observed 7 days after Doxy addition, whereas VitC (with a concentration of 10 μg/mL, 20 μg/mL and 40 μg/mL) can significantly increase the proportion of GFP⁺ cells to 32%, 46.4% and 36.4%, respectively, as compared to Doxy alone. The proportion of GFP⁺ cells decreased to 22.6% when treated with VitC at a concentration of 100 μg/mL (Fig. 3C, D)\n\n[Context, Fig. 2 legend: \"The GFP⁺ expression for each condition was normalized to the Doxy treated condition.\" The relative-ratio panel carries a $0.0$–$2.5$ axis; the percentage panel a $0$–$80$ axis.]",
+      "route": "verify-math",
+      "route_rationale": "Percentages and their implied normalisation to the Doxy baseline — arithmetic a careful reader checks by inspection, and experimental quantities rather than a theorem.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.8,
+        "reasoning": "Checked three things. (i) Domain: all five proportions ($25$, $32$, $46.4$, $36.4$, $22.6$ %) lie in $[0, 100]$, so no bound is violated. (ii) Normalisation consistency with the legend's \"normalized to the Doxy treated condition\": the induced relative ratios are $32/25 = 1.28$, $46.4/25 = 1.856$, $36.4/25 = 1.456$ and $22.6/25 = 0.904$, every one of which falls inside the $0.0$–$2.5$ range of the relative-ratio axis, and the largest percentage ($46.4$) fits the $0$–$80$ percentage axis. (iii) Monotonicity: the sequence rises to a maximum at $20$ μg/mL and falls at $100$ μg/mL to $0.904 < 1$, i.e. below the Doxy baseline — consistent, not contradictory, with the paper's own gloss that the drop is \"probably linked to increased cell death\". No algebraic, sign or domain error. error_detected = false.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::EQUATION::1",
+      "snippet_type": "EQUATION",
+      "location": "Results — VitC in a 3D MEF spheroid model (Fig. 5B, C as cited; MEF-spheroid FACS panel)",
+      "content": "VitC addition significantly increases the GFP+ population from 5.5 to 11.2% (Fig. 5B, C).\n\n[Context: the MEF-spheroid FACS panel in the converted manuscript carries gate labels \"P2(0.27%)\" (Control), \"P2(6.43%)\" (Doxy) and \"P2(18.76%)\" (Doxy+VitC), beside a bar graph with a $0$–$20$ axis.]",
+      "route": "verify-math",
+      "route_rationale": "A numeric consistency question between running text and the paper's own cytometry gates — experimental data, not a formalisable assertion.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::1",
+        "verifier_name": "math-equations",
+        "status": "UNVERIFIABLE",
+        "error_detected": false,
+        "confidence": 0.4,
+        "reasoning": "The text's pair ($5.5\\% \\to 11.2\\%$, a $2.04$-fold rise) does not match the gate labels visible on the corresponding FACS panel ($6.43\\% \\to 18.76\\%$, a $2.92$-fold rise), and the companion bar axis tops out at $20$, which accommodates $18.76$ more naturally than $11.2$. Two things block a verdict. First, the text cites \"Fig. 5B, C\" while in this markdown conversion the MEF-spheroid cytometry sits in the Fig. 4 block and Fig. 5 is the hFCF reprogramming figure, so figure numbering is demonstrably offset in the extracted file and I cannot be sure which panel the sentence points at. Second, FACS gate percentages are routinely drawn from a single representative replicate whereas the quoted figures are $n = 3$ means, so a legitimate discrepancy of this size is expected and is not an arithmetic claim the text makes. Both numbers are in $[0, 100]$ and the direction of effect agrees. No mathematical operation is performed here that could be invalid, so there is nothing for this verifier to refute; resolving it needs the original figure, which places it with verify-vision rather than here. Returning UNVERIFIABLE with error_detected = false.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [
+          "Results: \"from 5.5 to 11.2%\" vs. MEF-spheroid FACS gates \"P2(6.43%)\" / \"P2(18.76%)\""
+        ]
+      },
+      "status": "UNVERIFIABLE",
+      "error_detected": false,
+      "confidence": 0.4
+    },
+    {
+      "snippet_id": "paper::EQUATION::2",
+      "snippet_type": "EQUATION",
+      "location": "Results — VitC enhances reprogramming of human fetal cardiac fibroblasts (Fig. 6B–D)",
+      "content": "We observed that VitC administration significantly increased the α-actinin positive cells, enhancing the percentage from 13.5 to 25.5%, as detected by FACS (Fig. 6B, C). Furthermore, mRNA expression level of cardiac genes ACTN2 and MYH6 (Fig. 6D) was increased 3.6- and 5.3-fold, respectively.\n\n[Context, Fig. 6C/D bar values as rendered in the converted manuscript: α-actinin % — Control $\\approx 12$, Doxy $\\approx 18$, Doxy+VitC $\\approx 28$; ACTN2 relative expression — $\\approx 1$, $\\approx 3$, $\\approx 6$; MYH6 — $\\approx 1$, $\\approx 2$, $\\approx 5$.]",
+      "route": "verify-math",
+      "route_rationale": "Percentage and fold-change arithmetic against figure values — checkable by inspection, and empirical rather than theorem-like.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::2",
+        "verifier_name": "math-equations",
+        "status": "UNVERIFIABLE",
+        "error_detected": false,
+        "confidence": 0.45,
+        "reasoning": "The text's percentage step ($13.5 \\to 25.5$, ratio $1.89$) is in the same neighbourhood as the figure's Doxy $\\to$ Doxy+VitC bars ($\\approx 18 \\to \\approx 28$, ratio $1.56$) but not equal to them. The fold changes are the more interesting check: against the Doxy bar the figure implies $6/3 = 2.0$ for ACTN2 and $5/2 = 2.5$ for MYH6, whereas against the Control bar it implies $6/1 = 6$ and $5/1 = 5$. The quoted $3.6$-fold and $5.3$-fold match neither reference consistently — MYH6's $5.3$ sits close to the Control-referenced $5$, while ACTN2's $3.6$ falls between the two candidate denominators. That pattern is suggestive, but the bar heights available to me are explicitly approximate readings (\"$\\approx 1$\", \"$\\approx 3$\") recovered from an image description in the markdown conversion, not digitised values, and a $3.6$ vs. $6$ gap is within what such a reading can lose. The text never states which baseline the folds are referenced to, so no equation is asserted that could be shown false. All percentages lie in $[0, 100]$ and all folds are positive, so no domain constraint is breached. Verifying this requires the original Fig. 6D source data. UNVERIFIABLE, error_detected = false.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [
+          "Results: \"increased 3.6- and 5.3-fold, respectively\" vs. Fig. 6D bar values"
+        ]
+      },
+      "status": "UNVERIFIABLE",
+      "error_detected": false,
+      "confidence": 0.45
+    },
+    {
+      "snippet_id": "paper::EQUATION::3",
+      "snippet_type": "EQUATION",
+      "location": "Results — VitC in hFCF-derived spheroids (Fig. 6F, G)",
+      "content": "increasing the proportion of α-actinin+ positive cells from 13.9 to 26.7%.\n\n[Context, Fig. 6G bar values as rendered in the converted manuscript: α-actinin % — Control $\\approx 10$, Doxy $\\approx 15$, Doxy+VitC $\\approx 22$.]",
+      "route": "verify-math",
+      "route_rationale": "Percentage consistency against figure values; experimental quantities with no formal content.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::3",
+        "verifier_name": "math-equations",
+        "status": "UNVERIFIABLE",
+        "error_detected": false,
+        "confidence": 0.4,
+        "reasoning": "Text gives $13.9 \\to 26.7\\%$ (ratio $1.92$); the figure bars as rendered give $\\approx 15 \\to \\approx 22$ (ratio $1.47$). The discrepancy has the same character and the same cause as in paper::EQUATION::2 — the bar values are approximate reconstructions from an image description rather than reported numbers. Worth noting for coherence: this spheroid pair ($13.9 \\to 26.7$) tracks the 2D hFCF pair ($13.5 \\to 25.5$) closely, which is internally consistent with the paper's claim that the VitC effect carries over from 2D to 3D, and both values are in $[0, 100]$. No arithmetic operation is asserted that could be invalid. UNVERIFIABLE without the source figure data; error_detected = false.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "UNVERIFIABLE",
+      "error_detected": false,
+      "confidence": 0.4
+    }
+  ],
+  "findings": [
+    {
+      "snippet_id": "paper::DEFINITION::0",
+      "category": "Formally refuted",
+      "severity": "minor",
+      "confidence": 0.9,
+      "evidence": "Lean refuted the differential-expression selection rule exactly as printed. Formalising membership as `isDEG p f := p < 10⁻⁶ ∧ 0.5 ≤ f ∧ f ≤ -0.5` over $p, f \\in \\mathbb{R}$, with no added hypotheses, the kernel accepts `not_exists_isDEG : ¬ ∃ p f : ℝ, isDEG p f` on standard axioms only (`propext`, `Classical.choice`, `Quot.sound`; no `sorryAx`). The two $\\log_2$-fold-change conditions are jointly contradictory: $0.5 \\le f$ and $f \\le -0.5$ give $0.5 \\le -0.5$. So the criterion as written selects the **empty set**, which cannot have produced the 622 differentially expressed genes the Results report. A companion theorem, `intended_criterion_satisfiable`, compiles for the disjunctive reading $p < 10^{-6} \\wedge (f \\ge 0.5 \\vee f \\le -0.5)$, i.e. $|{\\log_2 \\text{FC}}| \\ge 0.5$ — pinning the defect on the connective \"and\", not on the thresholds or the p-value cut-off. Severity is **minor**: the intended two-sided criterion is unambiguous and standard, so the underlying analysis is almost certainly sound and no downstream biological conclusion depends on the misprint. What it does invalidate is the reproducibility of the Methods as stated — a reader following the printed rule literally recovers no genes at all.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "The screening criteria for DEGs were P-value < 10⁻⁶ and Log2 fold change ≥ 0.5 and ≤ (−0.5)."
+    }
+  ],
+  "verdict": "MINOR_ERRORS",
+  "verdict_confidence": 0.7,
+  "summary": "This is a wet-lab cell-biology paper on vitamin C and GMT-driven direct cardiac reprogramming. It contains **no display mathematics whatsoever** — no `$$…$$`, no `equation`/`align` environments, no theorems, lemmas or proofs. Seven mathematically checkable objects were extracted: one logically crisp selection criterion, two methodological definitions (statistics, qPCR normalisation), and four blocks of reported proportions and fold changes. Six went to informal review and one to Lean.\n\n**What Lean settled.** Exactly one snippet was formalisable, and Lean **refuted** it. The DEG screening rule — \"$P$-value $< 10^{-6}$ **and** $\\log_2$ fold change $\\ge 0.5$ **and** $\\le (-0.5)$\" — is unsatisfiable as printed, since $0.5 \\le f \\wedge f \\le -0.5$ forces $0.5 \\le -0.5$. `not_exists_isDEG` compiles clean on standard Mathlib axioms with no `sorryAx`, so the printed criterion provably selects the empty set and cannot have yielded the reported 622 genes. A second compiling theorem shows the disjunctive reading $|{\\log_2 \\text{FC}}| \\ge 0.5$ *is* satisfiable, which localises the error in the connective. Graded **minor**: the intended two-sided cut-off is the field standard and no biological conclusion turns on the misprint, but the Methods as written are not reproducible.\n\n**What informal review cleared.** The dose–response percentages in Fig. 3C, D are arithmetically coherent — $25\\% \\to 32\\%, 46.4\\%, 36.4\\%, 22.6\\%$ normalise to relative ratios $1.28$, $1.86$, $1.46$, $0.90$, all inside the $0.0$–$2.5$ axis, with the sub-unity value at $100$ μg/mL matching the paper's own cytotoxicity explanation. The $\\Delta C_t$ label on normalised expression is loose (relative expression is $2^{-\\Delta C_t}$, not $\\Delta C_t$), but the plotted magnitudes of $10^{-2}$–$10^{-5}$ show the conventional exponential transform was in fact applied, so the arithmetic is right and only the notation is careless. \"A $t$-test (non-parametric tests)\" names no existing procedure, but that is statistical terminology, not a derivation error, and belongs to verify-statistical.\n\n**What could not be settled.** Three snippets came back **UNVERIFIABLE**, all for the same reason: the running text reports percentages ($5.5 \\to 11.2\\%$ for MEF spheroids; $13.5 \\to 25.5\\%$ and $3.6$-/$5.3$-fold for 2D hFCFs; $13.9 \\to 26.7\\%$ for hFCF spheroids) that do not match the figure values recoverable from this markdown, and those figure values are approximate reconstructions from image descriptions rather than digitised data. The MEF-spheroid case is the most suggestive — text $5.5 \\to 11.2\\%$ against FACS gates of $6.43\\%$ and $18.76\\%$ — but figure numbering is demonstrably offset in the conversion (the spheroid cytometry sits in the Fig. 4 block while the text cites Fig. 5B, C), and gate labels are typically single representative replicates rather than $n = 3$ means. None of these are arithmetic assertions that could be refuted; settling them needs the original figures, i.e. verify-vision.\n\n**Disagreements.** None. Lean ran on only one snippet and no fallback was required: there were no `FAILED` or `NOT_ATTEMPTED` Lean results, so no snippet carries both a formal and an informal verdict to reconcile.\n\n**Verdict.** MINOR_ERRORS, at moderate confidence ($0.7$). Confidence in the finding itself is high — it is a machine-checked refutation of a one-line logical claim, about as airtight as this skill produces. Confidence in the *verdict* is held to $0.7$ because the verdict rests on a single minor, almost certainly editorial defect while the paper's substantive quantitative content lies in figures this skill could not read; a reviewer with the original figures could plausibly upgrade the three UNVERIFIABLE snippets in either direction.\n\n**Lean project.** `MATH_VERIFICATION/Paper` already existed and is shared across papers in this workspace, so per the skill's reuse rule it was treated as `--keep-lean` and **not** deleted. Per-snippet scratch (`TMP.lean`, `claim.md`) was removed and the proof archived at `Paper/Verified/0039-VitaminCCardiacReprogramming__DEFINITION__0_opus5.lean`."
+}

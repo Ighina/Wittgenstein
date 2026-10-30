@@ -1,0 +1,120 @@
+{
+  "paper_id": "0002-A_New_Radio_to_Overcome_Critical_Link_Budgets",
+  "title": "A New Radio to Overcome Critical Link Budgets",
+  "stage": "detector",
+  "candidates": [
+    {
+      "candidate_id": "0002-A_New_Radio_to_Overcome_Critical_Link_Budgets::CAND::0",
+      "error_location": "Section III (after Eq. (1) and Eq. (3)) and Section V, combining-gain comparison",
+      "exact_quote": "Despite its \\(N^2\\) entries, this matrix only contains \\(N\\) data symbols. Thus, coherent combining of \\(N^2\\) entries at the receiver to \\(N\\) data symbols can result in an \\(N\\)-fold gain in received power.",
+      "claim_content": "Setting: a transmitter with N antenna elements and a single-antenna receiver with channel vector h ∈ C^{1×N}. For transmit beamforming the space-time transmit matrix is T_b^BF = φ x_b, with φ ∈ C^{N×1} a vector of per-antenna phase shifts and x_b ∈ C^{1×N} a block of N data symbols; the matrix is N×N (rows = antennas, columns = time samples), i.e. N^2 entries carrying N data symbols. The paper asserts that coherently combining these N^2 entries onto N data symbols yields an 'N-fold gain in received power'. Claim to be checked: if each antenna radiates power P and the N copies of a given symbol arrive simultaneously and in phase, the received signal power is N^2 P|h|^2, i.e. an N^2-fold (not N-fold) increase relative to a single antenna radiating P; the gain is only N-fold if the *total* radiated power is held fixed at P (per-antenna power P/N). The normalization used is never stated.",
+      "suspected_defect": "The stated N-fold gain is only correct under a fixed-total-power normalization; under the fixed per-antenna power normalization that is implicitly used later (for the T-fold temporal gain) the beamforming gain is N^2. The paper's rule 'number of combined entries per symbol = power gain' (N^2/N = N, TN/N = T) conflates coherent spatial superposition (amplitude adds, noise does not) with temporal matched filtering (SNR adds).",
+      "check_kind": "general_claim",
+      "confidence": 0.45,
+      "severity": "critical"
+    },
+    {
+      "candidate_id": "0002-A_New_Radio_to_Overcome_Critical_Link_Budgets::CAND::1",
+      "error_location": "Section III, text after Eq. (3) / Eq. (4), and Abstract conclusion",
+      "exact_quote": "Under mild conditions on the matrix \\( \\mathbf{F}_b \\), it allows for a coherent superposition of the \\( TN \\) transmit signals onto \\( N \\) data symbols that results in a \\( T \\)-fold improvement of received power. For \\( T = N \\), the same combining gain as with transmit beamforming is achieved.",
+      "claim_content": "Setting: N transmit antennas, single-antenna receiver with channel h ∈ C^{1×N}. In MA-TISK the N×T transmit matrix is T_b = diag(x_b)F_b, so antenna n transmits only the data symbol x_{b,n} over T time samples via the waveform f_{b,n} (row n of F_b, entries of unit modulus, essentially a complex sinusoid). The received signal is h T_b = Σ_n h_n x_{b,n} f_{b,n}. In transmit beamforming (Eq. (1)) the same N symbols are transmitted in N time samples using all N antennas coherently. Claim: with each antenna radiating power P, the MA-TISK matched-filter SNR per symbol is P|h|^2 · T·T_s/N_0 (symbol energy from one antenna, accumulated over T samples), while beamforming gives N^2 P|h|^2 · T_s/N_0 per symbol (N coherent copies in one sample). Hence for T = N beamforming is N times better, and parity would require T = N^2, not T = N.",
+      "suspected_defect": "The claimed equivalence 'for T = N, the same combining gain as with transmit beamforming is achieved' appears to be off by a factor N: MA-TISK gives an incoherent (per-antenna) transmit power with only a temporal processing gain T, whereas beamforming adds the N antenna amplitudes coherently. Under any single consistent power normalization, beamforming exceeds MA-TISK by N^2/T (≈11.4 dB for the paper's N=16, T=18.375 example).",
+      "check_kind": "general_claim",
+      "confidence": 0.45,
+      "severity": "critical"
+    },
+    {
+      "candidate_id": "0002-A_New_Radio_to_Overcome_Critical_Link_Budgets::CAND::2",
+      "error_location": "Abstract / Section V (rectangular pulse example)",
+      "exact_quote": "There is no loss in link budget gain compared to spatial beamforming at the transmitter.",
+      "claim_content": "Concrete numbers from the paper: N = 16 transmit antennas, QPSK, per-subcarrier symbol rate 5 Msymbol/s (symbol period 200 ns), T = 18.375, subcarrier spacing 5.74 MHz, total rate 160 Mbit/s. Reported: 'The temporal combining gains of the two receive filters are 12.6 dB and 12.2 dB' and 'This compares favorably to the 12.0 dB combining gain of transmit beamforming with 16 antennas', with 10·log10(16) = 12.04 dB and 10·log10(18.375) = 12.64 dB. Claim to be checked: that the MA-TISK temporal combining gain (10 log10 T, obtained by matched filtering one antenna's symbol over T samples) can be directly compared with the beamforming array gain (10 log10 N, obtained by coherent superposition of N simultaneous antenna signals) so that no link-budget loss occurs. In MA-TISK each symbol is radiated by only one antenna (power P), giving received symbol energy P|h|^2·T_sym; in beamforming each symbol is radiated by all N antennas coherently (received power N^2 P|h|^2) over a symbol period that is shorter by factor T/N for the same bandwidth.",
+      "suspected_defect": "The two 'gains' are referenced to different baselines (one normalizes to total radiated power, the other to per-antenna power / per-sample SNR). Under a single consistent normalization at equal bandwidth, beamforming yields roughly N^2/T ≈ 13.9 (11.4 dB) more received energy per symbol, so the conclusion of 'no loss in link budget gain' does not follow from 12.6 dB vs 12.0 dB.",
+      "check_kind": "numeric",
+      "confidence": 0.4,
+      "severity": "critical"
+    },
+    {
+      "candidate_id": "0002-A_New_Radio_to_Overcome_Critical_Link_Budgets::CAND::3",
+      "error_location": "Section V, parameter choice (first example) vs. definitions in Section III",
+      "exact_quote": "In order to cope with the spectral mask, we set T = 18.375. This results in a subcarrier spacing of 5.74 MHz.",
+      "claim_content": "In Section III, T is introduced as a matrix dimension and as a number of discrete time samples: the transmit matrix is T_b = diag(x_b)F_b of size N×T with F_b ∈ C^{T×T}, each subcarrier waveform is f_{b,n} ∈ C^{1×T}, and its S-fold oversampled version is f^{(S)}_{b,n} ∈ C^{1×ST} with sample index s running over 0,…,ST−1, and constants L_s, L_e with L = L_s + L_e < ST. The numerical example sets T = 18.375 (non-integer) with N = 16, symbol period 200 ns, yielding subcarrier spacing T/(N·T_sym) = 18.375/(16·200 ns) = 5.742 MHz.",
+      "suspected_defect": "T is a matrix dimension / number of discrete-time samples per block and therefore must be a positive integer; T = 18.375 is inconsistent with F_b ∈ C^{T×T}, f_{b,n} ∈ C^{1×T} and with the index range 0 ≤ s < ST unless an unstated oversampling factor S that is a multiple of 8 is assumed. The second example uses the integer T = 46, highlighting the inconsistency.",
+      "check_kind": "general_claim",
+      "confidence": 0.4,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "0002-A_New_Radio_to_Overcome_Critical_Link_Budgets::CAND::4",
+      "error_location": "Section IV-A-1 (Power Amplifier) vs. Eq. (7)",
+      "exact_quote": "Obviously, during the sinusoidal phase, i.e. \\( L_s \\leq s < SN - L_e \\), we do not need D/A-conversion",
+      "claim_content": "Equation (7) defines the oversampled subcarrier waveform as f^{(S)}_{b,n,s} = exp(2πj s n /(S N)) for L_s ≤ s < ST − L_e, and q_{n,s,d} otherwise, where f^{(S)}_{b,n} ∈ C^{1×ST} (S = oversampling factor, T = number of time samples per block, N = number of antennas/subcarriers, L = L_s + L_e < ST). Section IV-A-1 later describes the same interval as L_s ≤ s < SN − L_e.",
+      "suspected_defect": "Index-range inconsistency: the sinusoidal interval ends at ST − L_e in Eq. (7) but is written as SN − L_e in Section IV-A-1. Since T ≠ N in all examples (T = 18.375 vs N = 16; T = 46 vs N = 32), these two statements are mutually inconsistent.",
+      "check_kind": "symbolic",
+      "confidence": 0.5,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "0002-A_New_Radio_to_Overcome_Critical_Link_Budgets::CAND::5",
+      "error_location": "Section III, sentence following Eq. (4)",
+      "exact_quote": "If the matrix \\( \\mathbf{F}_b \\) is unitary, the data symbols \\( x_{b,n} \\) can be recovered without crosstalk by the matched filters \\( f_{b,n}^\\dagger \\) that provide the \\( T \\)-fold improvement of SINR.",
+      "claim_content": "F_b ∈ C^{T×T} with rows f_{b,n}; the transmit matrix is T_b = diag(x_b)F_b and the received signal is h T_b = Σ_n h_n x_{b,n} f_{b,n}. The claim is that if F_b is unitary (F_b F_b^† = I, i.e. rows of unit Euclidean norm and mutually orthogonal) then matched filtering with f_{b,n}^† recovers x_{b,n} without crosstalk and provides a T-fold SINR improvement. Note that the waveforms actually used (Eq. (7)) have unit-modulus entries, so each row has squared norm ST (or T at symbol rate), i.e. F_b/√T is unitary rather than F_b.",
+      "suspected_defect": "Scaling inconsistency: a strictly unitary F_b has unit-norm rows, for which matched filtering gives no T-fold SNR gain; the T-fold gain requires rows of squared norm T (constant-modulus rows), i.e. F_b = √T · (unitary matrix). As written, the orthogonality condition and the claimed T-fold gain cannot both hold.",
+      "check_kind": "symbolic",
+      "confidence": 0.3,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "0002-A_New_Radio_to_Overcome_Critical_Link_Budgets::CAND::6",
+      "error_location": "Section IV-A-2 (Phase Transitions) and Section IV-A (VCO description)",
+      "exact_quote": "As frequency is the temporal derivative of the phase, the VCO is fed with the phase derivative, also known as the instantaneous frequency.",
+      "claim_content": "The paper states that frequency is the temporal derivative of phase, and later that 'the phase shift is the integral of the temporary deviation of the instantaneous frequency from the subcarrier frequency over the duration of the phase transition'. With phase φ(t) in radians and frequency f(t) in Hz, the correct relations are f(t) = (1/2π) dφ/dt and Δφ = 2π ∫ Δf(t) dt; only angular frequency ω = dφ/dt equals the phase derivative.",
+      "suspected_defect": "Missing factor 2π (or confusion of frequency with angular frequency) in the stated phase/frequency relation and in the phase-shift integral used to size the frequency deviation of the transitions.",
+      "check_kind": "symbolic",
+      "confidence": 0.3,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "0002-A_New_Radio_to_Overcome_Critical_Link_Budgets::CAND::7",
+      "error_location": "Section IV-B (receiver), multipath discussion",
+      "exact_quote": "Even for three or more separable propagation paths, two receiver chains are sufficient to equalize the resulting intersymbol interference.",
+      "claim_content": "Claim: in a receiver using analog beamforming per chain followed by A/D conversion and FFT, two receive chains suffice to equalize the intersymbol interference produced by three or more separable propagation paths, justified by the statement that 'these two receive chains span twice as many dimensions in signal space'. The number of spatial degrees of freedom available equals the number of receive chains (two), while the number of separable paths (three or more) exceeds it.",
+      "suspected_defect": "The degrees-of-freedom argument appears unsupported: two analog beams cannot in general capture or separate three or more spatially distinct paths, and 'twice as many dimensions' does not imply sufficiency for an arbitrary number of paths. The claim is stated without any condition on the number or geometry of the paths.",
+      "check_kind": "general_claim",
+      "confidence": 0.25,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "0002-A_New_Radio_to_Overcome_Critical_Link_Budgets::CAND::8",
+      "error_location": "Section V-2 (Squared Sine Wave Pulse Shape) vs. Section V-1",
+      "exact_quote": "the signal-to-interference-and-noise-ratio (SINR) is found as 9.7 dB and 20.9 dB for the average matched filter and the FFT-based receive filter, respectively. This is a minor improvement.",
+      "claim_content": "In the rectangular-pulse example the paper reports SIR values of 9.7 dB (average matched filter) and 18.3 dB (FFT-based filter) and explicitly states 'No Gaussian noise was added. Interference is solely due to crosstalk of subcarriers and intersymbol interference.' In the squared-sine example the same simulation setup (no noise mentioned as added) yields values labelled SINR of 9.7 dB and 20.9 dB, described as 'a minor improvement' relative to the earlier numbers.",
+      "suspected_defect": "Two issues: (i) the quantity is labelled SINR although no noise is present, so it is an SIR, contradicting the definition used earlier; (ii) the FFT-based value improves from 18.3 dB to 20.9 dB, i.e. by 2.6 dB (a factor ≈1.8 in interference power), which is inconsistent with calling it 'a minor improvement' given that the paper elsewhere treats 0.6 dB differences as meaningful.",
+      "check_kind": "numeric",
+      "confidence": 0.2,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "0002-A_New_Radio_to_Overcome_Critical_Link_Budgets::CAND::9",
+      "error_location": "Section II, item 6 (Reduced Diversity)",
+      "exact_quote": "This compromises the overall beamforming gain twice, at both transmitter and receiver. The combining of these paths at the receiver, however, brings back the lost beamforming gain only once, not twice.",
+      "claim_content": "Claim: when M beams are formed instead of one at both transmitter and receiver to exploit M distinct propagation paths, the beamforming gain is reduced by a factor M at the transmitter and by a factor M at the receiver (total M^2 loss), while coherent combining of the M paths at the receiver restores only a factor M, leaving a net loss of M in the link budget.",
+      "suspected_defect": "Quantitative gain-accounting claim stated without derivation; with per-element power constraints and maximum-ratio combining across M paths, the net array gain for an N_t × N_r array split into M beams is not obviously a factor-M loss, so the 'twice lost, once recovered' bookkeeping may be incorrect.",
+      "check_kind": "general_claim",
+      "confidence": 0.15,
+      "severity": "minor"
+    }
+  ],
+  "detector": {
+    "model": "claude-opus-5",
+    "provider": "anthropic",
+    "mode": "lenient-high-recall",
+    "paper_chars": 716780,
+    "truncated": true,
+    "usage": {
+      "input_tokens": 365332,
+      "output_tokens": 32131,
+      "cache_read_input_tokens": 0,
+      "cache_creation_input_tokens": 0
+    }
+  }
+}

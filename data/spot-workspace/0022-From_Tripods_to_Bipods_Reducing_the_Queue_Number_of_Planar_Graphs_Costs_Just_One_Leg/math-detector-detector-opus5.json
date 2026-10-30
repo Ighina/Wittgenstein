@@ -1,0 +1,120 @@
+{
+  "paper_id": "0022-From_Tripods_to_Bipods_Reducing_the_Queue_Number_of_Planar_Graphs_Costs_Just_One_Leg",
+  "title": "From Tripods to Bipods Reducing the Queue Number of Planar Graphs Costs Just One Leg",
+  "stage": "detector",
+  "candidates": [
+    {
+      "candidate_id": "0022-From_Tripods_to_Bipods_Reducing_the_Queue_Number_of_Planar_Graphs_Costs_Just_One_Leg::CAND::0",
+      "error_location": "Proof of Theorem 3.4, Iterative Step (triangular and quadrangular cases), use of Definition 3.2",
+      "exact_quote": "We introduce a new vertex \\(x_{k+1}\\) to \\(H\\) and define \\(B_{x_{k+1}}\\) as the subgraph induced by the vertices of \\(P_1\\) and \\(P_2\\) without \\(p_1\\) and \\(p_2\\). ... We first observe that \\(B_{x_{k+1}}\\) is a bipod. To this end, observe that each of the paths \\(P_1\\) and \\(P_2\\) contains at most one vertex of BFS-layer \\(L_i\\), i.e. they are a vertical path and \\(B_{x_{k+1}}\\) is a bipod.",
+      "claim_content": "Definition 3.2 of the paper: Let L = (L_0, L_1, ...) be a BFS-layering of a graph G = (V,E) (so L_i contains exactly the vertices at graph distance i from a fixed root r). G is called a *bipod* if (P1) |V ∩ L_i| ≤ 2 for all i ≥ 0, and (P2) there are two disjoint vertical paths P_1 = (u_{s_u}, u_{s_u+1}, ..., u_{t_u}) and P_2 = (v_{s_v}, v_{s_v+1}, ..., v_{t_v}) in G such that (a) u_i, v_i ∈ L_i (so indices equal layer numbers and s_u < t_u, s_v < t_v), (b) if both P_1 and P_2 are non-empty then (u_{s_u}, v_{s_v}) ∈ E, and (c) every vertex of G lies on P_1 or P_2. In the construction of Theorem 3.4, a BFS tree T of a plane triangulation G is fixed; the new bag B_{x_{k+1}} is obtained from an edge (v_1, v_2) ∈ E found inside a face, where P_1 is the T-path from v_1 up to an ancestor p_1 lying in an already-built bag, P_2 is the T-path from v_2 up to an ancestor p_2 in another already-built bag, and B_{x_{k+1}} := (V(P_1) ∪ V(P_2)) \\ {p_1, p_2}. Since p_1 is an ancestor of v_1 and p_2 an ancestor of v_2, the vertices v_1 and v_2 are the DEEPEST (largest layer index) vertices of the two paths. The claim at issue is that this set satisfies Definition 3.2, in particular property (P2)(b).",
+      "suspected_defect": "Property (P2)(b) of Definition 3.2 requires the edge between the two paths to join the vertices with the SMALLEST layer indices (u_{s_u}, v_{s_v}), i.e. the shallowest endpoints. In the construction the only guaranteed edge between the two paths is (v_1, v_2), which joins the DEEPEST endpoints (largest indices). Hence the constructed bag does not literally satisfy Definition 3.2(b); either the definition is stated with the wrong orientation or the construction does not produce bipods as defined. The proof only verifies (P1) and verticality, never (P2)(b).",
+      "check_kind": "proof_step",
+      "confidence": 0.4,
+      "severity": "critical"
+    },
+    {
+      "candidate_id": "0022-From_Tripods_to_Bipods_Reducing_the_Queue_Number_of_Planar_Graphs_Costs_Just_One_Leg::CAND::1",
+      "error_location": "Proof of Theorem 3.4, Iterative Step: application of Lemma 3.3",
+      "exact_quote": "By Lemma 3.3, we can further assume \\(B_{x_{k+1}}\\) to induce an acyclic bipod as otherwise we can select a subset of \\(B_{x_{k+1}}\\) that fulfills this property. In particular, such an acyclic bipod still induces a path that can be extended by \\(p_1\\) and \\(p_3\\) to obtain a path connecting \\(p_1\\) and \\(p_3\\).",
+      "claim_content": "Lemma 3.3 states: Let L = (L_0, L_1, ...) be a BFS-layering of a graph G = (V,E) that is a bipod with disjoint vertical paths P_1 = (u_{s_u}, u_{s_u+1}, ..., u_{t_u}) and P_2 = (v_{s_v}, ..., v_{t_v}) (u_i, v_i ∈ L_i). Then there exists a non-empty subgraph G' of G induced by the SUFFIXES P'_1 = (u_i, u_{i+1}, ..., u_{t_u}) and P'_2 = (v_j, ..., v_{t_v}) with i ≥ s_u and j ≥ s_v that is an acyclic bipod. (Its proof chooses i maximal, then j maximal, with (u_i, v_j) ∈ E, and keeps only the vertices of index ≥ i, respectively ≥ j, i.e. it deletes the vertices of smallest layer index.) In the proof of Theorem 3.4 this lemma is applied to the bag B_{x_{k+1}} = (V(P_1) ∪ V(P_2)) \\ {p_1, p_3}, where P_1 is the BFS-tree path from a vertex t_1 up to its ancestor p_1 (p_1 belongs to a previously built bag B_{x_1}) and P_3 is the path from t_3 up to its ancestor p_3 ∈ B_{x_3}. The vertices of B_{x_{k+1}} adjacent to p_1 and p_3 are exactly the SHALLOWEST vertices of the two paths (the children of p_1 and of p_3). The paper then claims that after applying Lemma 3.3 the resulting acyclic bipod still induces a path that can be extended by p_1 and p_3 to a path connecting p_1 and p_3.",
+      "suspected_defect": "Lemma 3.3 deletes exactly the vertices of smallest layer index (the shallow prefixes u_{s_u},...,u_{i-1} and v_{s_v},...,v_{j-1}). These are precisely the vertices adjacent to p_1 and p_3. Hence after trimming, the remaining bipod need no longer be adjacent to p_1 or p_3, so the asserted path through the trimmed bipod connecting p_1 and p_3 (used to maintain Invariants I3.4.2/I3.4.6 and the face structure) does not follow. The trimming direction of Lemma 3.3 appears incompatible with the way bipods are attached in Theorem 3.4.",
+      "check_kind": "proof_step",
+      "confidence": 0.4,
+      "severity": "critical"
+    },
+    {
+      "candidate_id": "0022-From_Tripods_to_Bipods_Reducing_the_Queue_Number_of_Planar_Graphs_Costs_Just_One_Leg::CAND::2",
+      "error_location": "Proof of Theorem 3.4, Degenerate Step",
+      "exact_quote": "By Invariant I3.4.5, we have \\( t_1 \\in L_{i_1}, t_2 \\in L_{i_2} \\) and \\( t_3 \\in L_{i_3} \\) such that \\( i_2 \\geq i_3 \\) and \\( i_2 \\geq i_1 \\).",
+      "claim_content": "Setting: G is a plane triangulation with BFS-layering L = (L_0, L_1, ...) and BFS-tree T (L_i = vertices at distance i from the root). Invariant I3.4.5 states that every vertex not yet assigned to a bag lies inside the cycle C_f of some face f of the current graph H and is part of a subtree of T rooted at a vertex of one of the bags bounding f. In the degenerate step, t = (t_1, t_2, t_3) is a triangle of G with (t_1,t_3) an edge whose endpoints lie in bags B_{x_1} and B_{x_3}, and t_2 is the third vertex (either unassigned or lying in B_{x_2} or B_{x_4}). The paper asserts that the layer indices satisfy i_2 ≥ i_3 and i_2 ≥ i_1, i.e. that t_2 lies on the deepest layer among the three triangle vertices, and justifies this by Invariant I3.4.5. This is then used to conclude 'since t is a triangle and t_1 the vertex of t on the lowest layer, we have i_2 − 1, i_3 − 1 ≤ i_1 ≤ i_2, i_3', and hence that the new vertex v_y, inserted inside t and attached to t_1 in T (so placed in layer L_{i_1+1}), has its edges (t_2, v_y) and (t_3, v_y) respecting the BFS-layering (span ≤ 1).",
+      "suspected_defect": "Invariant I3.4.5 says nothing about relative layer depths of the three vertices of the triangle; there appears to be no reason why t_2 must lie on a layer at least as deep as t_1 and t_3. If t_2 were strictly shallower than both t_1 and t_3 (i_2 = i_1 − 1 = i_3 − 1, which is consistent with all triangle edges having span ≤ 1), then placing v_y in layer L_{i_1+1} would give edge (t_2, v_y) span 2, violating the BFS-layering property that the construction relies on.",
+      "check_kind": "proof_step",
+      "confidence": 0.35,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "0022-From_Tripods_to_Bipods_Reducing_the_Queue_Number_of_Planar_Graphs_Costs_Just_One_Leg::CAND::3",
+      "error_location": "Proof of Claim 3.5 (inside proof of Theorem 3.4)",
+      "exact_quote": "Since the subgraph of G inside cycle Cf is internally triangulated, it follows that there exists a single edge (u′, v′) separating the vertices of V1 from all vertices of different colors, i.e., in particular from Bx₂ and Bx₃. This is only possible if both u′, v′ ∈ Bx₁. But then, Bx₁ is not acyclic, a contradiction to Invariant I3.4.2.",
+      "claim_content": "Setting: G is a plane triangulation. C_f is the cycle bounding the region of a triangular face f = (x_1, x_2, x_3) of the auxiliary graph H; C_f consists of three paths, one inside each of the bags B_{x_1}, B_{x_2}, B_{x_3}, each bag being an acyclic bipod (Invariant I3.4.2: each bag induces an acyclic bipod, i.e. two vertical paths joined by exactly one edge, hence a tree). Every vertex strictly inside C_f is colored i if it belongs to a subtree of the BFS tree rooted at a vertex of B_{x_i}. The claim under proof (Claim 3.5) is: there is an edge (u,v) of G with u strictly inside C_f such that u and v have different colors. The proof argues by contradiction: assuming no such bichromatic edge, the non-empty set V_1 of color-1 vertices strictly inside C_f has all its neighbours in V_1 ∪ B_{x_1}, and the paper then asserts that a SINGLE edge (u′,v′) separates V_1 from all differently colored vertices, concludes u′,v′ ∈ B_{x_1}, and deduces that B_{x_1} contains a cycle.",
+      "suspected_defect": "The assertion that a single edge separates V_1 from the rest is not justified: in an internally triangulated graph, the separator around a set of interior vertices is generally a cycle (or a path together with part of C_f), not a single edge. Moreover, even if u′,v′ ∈ B_{x_1} and (u′,v′) ∈ E, this alone does not contradict acyclicity of B_{x_1}: an acyclic bipod does contain edges (its path edges and its one cross edge). The intended argument (that the neighbourhood of V_1 contains a cycle inside B_{x_1}) is not the one written.",
+      "check_kind": "proof_step",
+      "confidence": 0.3,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "0022-From_Tripods_to_Bipods_Reducing_the_Queue_Number_of_Planar_Graphs_Costs_Just_One_Leg::CAND::4",
+      "error_location": "Proof of Theorem 3.4, Iterative Step, quadrangular face case (definition of e₂ and e₄)",
+      "exact_quote": "Moreover, if there is an edge \\( e_2 = (v_{k+1}, v_2) \\), where \\( v_{k+1} \\in B_{x_{k+1}} \\) and \\( v_2 \\in B_{x_3} \\), we also connect \\( x_{k+1} \\) to \\( x_2 \\). Similarly, if there is an edge \\( e_4 = (v_{k+1}, v_2) \\), where \\( v_{k+1} \\in B_{x_{k+1}} \\) and \\( v_2 \\in B_{x_3} \\), we also connect \\( x_{k+1} \\) to \\( x_2 \\).",
+      "claim_content": "In the quadrangular case of the iterative step of Theorem 3.4, f = (x_1, x_2, x_3, x_4) is a quadrangular face of the canonical embedding of H with bags B_{x_1}, B_{x_2}, B_{x_3}, B_{x_4}, and a new bag B_{x_{k+1}} is created, joined in H to x_1 and x_3 (the opposite corners). The two conditional edges are then described: e_2 should be an edge between B_{x_{k+1}} and B_{x_2} (prompting the addition of edge (x_{k+1}, x_2) in H), and e_4 should be an edge between B_{x_{k+1}} and B_{x_4} (prompting the addition of (x_{k+1}, x_4)). As written, both e_2 and e_4 are defined as edges to a vertex v_2 ∈ B_{x_3}, and in both cases x_{k+1} is connected to x_2.",
+      "suspected_defect": "Index error: the second condition must read 'if there is an edge e_4 = (v_{k+1}, v_4) with v_4 ∈ B_{x_4}, connect x_{k+1} to x_4', and the first must read 'v_2 ∈ B_{x_2}'. As stated, the construction never records adjacency to B_{x_4}, which is needed later when the proof refers to faces f_{14}, f_{43} and to edge e_4 cutting the cycle C_{143}. Also, edges to B_{x_3} are already guaranteed, so the stated condition is vacuous/incorrect.",
+      "check_kind": "proof_step",
+      "confidence": 0.45,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "0022-From_Tripods_to_Bipods_Reducing_the_Queue_Number_of_Planar_Graphs_Costs_Just_One_Leg::CAND::5",
+      "error_location": "Proof of Lemma 3.7",
+      "exact_quote": "Let \\( d \\) be chosen maximally so that \\( L_d \\neq \\emptyset \\) and let \\( P = (p_1, p_2, \\ldots, p_d) \\)",
+      "claim_content": "Lemma 3.7 claims: if G = (V_G, E_G) admits an H-partition (H, B) with layered width ℓ with respect to a BFS-layering L = (L_0, L_1, ..., L_d) (L_i = vertices at distance i from the root), then G is a subgraph of K_ℓ ⊠ P ⊠ H for a path P. The proof fixes d maximal with L_d ≠ ∅, sets P = (p_1, p_2, ..., p_d) (a path with d vertices), and then uses vertices ((v_a, p_i), x) for layers i ∈ {0, ..., d}, i.e. it refers to p_0 and to p_i for all i from 0 to d.",
+      "suspected_defect": "Off-by-one: the layers are L_0, ..., L_d, i.e. d+1 layers, so the path must have d+1 vertices (e.g. P = (p_0, p_1, ..., p_d)), yet P is defined with vertices p_1 through p_d only, while the construction explicitly uses p_i for i ∈ {0, ..., d} ('For a fixed layer i ∈ {0, ..., d}, K_ℓ ⊠ P contains an ℓ-clique on ((v_1, p_i), x), ...'). The index set of P does not match the index set of the layers.",
+      "check_kind": "proof_step",
+      "confidence": 0.3,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "0022-From_Tripods_to_Bipods_Reducing_the_Queue_Number_of_Planar_Graphs_Costs_Just_One_Leg::CAND::6",
+      "error_location": "Theorem 1.5 (and the derivation combining Theorems 1.2/1.3 and 1.4)",
+      "exact_quote": "▶ Theorem 1.5. Let G be a planar graph. Then qn(G) ≤ 38.",
+      "claim_content": "The paper proves (Theorem 1.3) that every planar graph G is a subgraph of K_2 ⊠ P ⊠ H, where P is a path and H is a planar quasi-4-tree, and (Theorem 1.4) that every planar quasi-4-tree H satisfies qn(H) ≤ 6. The standard lemma relating layered H-partitions to queue number (Dujmović, Joret, Micek, Morin, Ueckerdt, Wood) states: if G has a layered H-partition of layered width ℓ and qn(H) ≤ q, then qn(G) ≤ 3ℓq + ⌊3ℓ/2⌋. With the paper's parameters ℓ = 2 and q = 6 this gives 3·2·6 + ⌊6/2⌋ = 36 + 3 = 39, not 38. (Consistency check of the formula: the original result with ℓ = 3 and q = 5 gives 3·3·5 + ⌊9/2⌋ = 49, which matches the published bound of 49 for planar graphs.)",
+      "suspected_defect": "The stated constant 38 is one less than what the standard product-structure-to-queue-layout bound yields from the paper's own parameters (ℓ = 2, qn(H) ≤ 6), namely 39. Unless the paper proves a strictly stronger conversion lemma (e.g. exploiting that each bag induces an acyclic bipod so that intra-bag edges need only 2 queues instead of ⌊3ℓ/2⌋ = 3), the arithmetic does not follow.",
+      "check_kind": "numeric",
+      "confidence": 0.25,
+      "severity": "critical"
+    },
+    {
+      "candidate_id": "0022-From_Tripods_to_Bipods_Reducing_the_Queue_Number_of_Planar_Graphs_Costs_Just_One_Leg::CAND::7",
+      "error_location": "Theorem 1.7",
+      "exact_quote": "▶ Theorem 1.7. Let G be a planar bipartite graph. Then qn(G) ≤ 25.",
+      "claim_content": "From Theorem 1.6 the paper obtains, for every bipartite planar graph G, an H-partition of bichromatic layered width 2 (no intra-layer edges, at most 2 vertices of each bag per BFS layer) where H is a subgraph of a planar quasi-4-tree, and from Theorem 1.4 that qn(H) ≤ 6 for planar quasi-4-trees. The standard conversion for the bipartite case (no intra-layer edges) gives a bound of the form 2ℓ·qn(H) + c with ℓ = 2; with ℓ = 2 and qn(H) = 6 the 'edge part' is 2·2·6 = 24, so the stated total 25 allows only one additional queue for all intra-bag edges.",
+      "suspected_defect": "The constant 25 cannot be derived from the stated parameters (bichromatic layered width 2, qn(H) ≤ 6) using the known conversion lemmas; it would require that all intra-bag edges of all bipods fit into a single queue plus an exactly optimal assignment of the 24 inter-bag queues. Worth recomputing against the conversion lemma actually used.",
+      "check_kind": "numeric",
+      "confidence": 0.15,
+      "severity": "critical"
+    },
+    {
+      "candidate_id": "0022-From_Tripods_to_Bipods_Reducing_the_Queue_Number_of_Planar_Graphs_Costs_Just_One_Leg::CAND::8",
+      "error_location": "Proof of Lemma 4.1, quadrangular cases (third and fourth case)",
+      "exact_quote": "Third, if \\( \\ell(v) - \\ell(u) = 1 \\) and \\( f \\) is quadrangular, define \\( q_2 := v, q_1 := u \\) and the remaining vertices of \\( f \\) not belonging to \\( G_f \\) as \\( q_3 \\) and \\( q_4 \\), where \\( q_3 \\) is neighbor of \\( q_1 \\) and \\( q_4 \\) is neighbor of \\( q_2 \\).",
+      "claim_content": "In Definition 1.1 (Construction Rule CR2) a quadrangular face is written as (q_1, q_2, q_3, q_4), meaning the 4-cycle with edges q_1q_2, q_2q_3, q_3q_4, q_4q_1 (so q_1 and q_3 are opposite, as are q_2 and q_4). In the proof of Lemma 4.1 (layered drawing of an internally triangulated/quadrangulated outerplane graph in which every edge has small span), the quadrangular face f sharing the edge e_f = (u,v) with the already drawn part is labelled q_1 := u, q_2 := v, and the two new vertices are named q_3 (declared to be a neighbour of q_1) and q_4 (declared to be a neighbour of q_2). They are placed at ℓ(q_3) = ℓ(q_2) + 1 and ℓ(q_4) = ℓ(q_3) + 1 = ℓ(q_1) + 3. In the fourth case (ℓ(v) − ℓ(u) = 2) one sets q_3 := v, q_1 := u, with q_2 a neighbour of q_1 and q_4 a neighbour of q_3, so that (q_1,q_3) is an edge.",
+      "suspected_defect": "The vertex labels contradict the cyclic-order convention for quadrangular faces used in Definition 1.1: here q_3 is adjacent to q_1 (not to q_2 and q_4) and q_4 is adjacent to q_2, i.e. the face cycle is q_1q_2q_4q_3; and in the fourth case q_1q_3 is treated as an edge, although q_1 and q_3 are opposite corners in the CR2 convention. If the standard labelling (edges q_1q_2, q_2q_3, q_3q_4, q_4q_1) were used in the third case, the edge (q_4,q_1) would have span ℓ(q_4) − ℓ(q_1) = 3, violating the span bound the lemma is supposed to establish.",
+      "check_kind": "proof_step",
+      "confidence": 0.3,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "0022-From_Tripods_to_Bipods_Reducing_the_Queue_Number_of_Planar_Graphs_Costs_Just_One_Leg::CAND::9",
+      "error_location": "Proof of Theorem 3.4, Conclusion paragraph (termination/complexity claim)",
+      "exact_quote": "Since in the \\( k \\)-th non-degenerate step, at least one vertex of \\( v \\in V \\setminus \\{\\bigcup_{x\\in H} B_x\\} \\) is assigned to a new bipod \\( B_k \\), we conclude that our algorithm assigns all vertices in a linear number of iterations and the theorem follows.",
+      "claim_content": "The construction in Theorem 3.4 alternates non-degenerate steps (which assign at least one previously unassigned vertex of G to a new bag) and degenerate steps (which ADD a brand-new vertex v_y to the graph G, together with three edges, and give it its own bag). The paper concludes from the fact that each non-degenerate step assigns at least one unassigned vertex that the algorithm terminates after a linear number of iterations.",
+      "suspected_defect": "The counting argument ignores that degenerate steps increase the vertex set of G (each creates a new vertex v_y and a new bag), so the quantity 'number of unassigned vertices of V' is not monotonically decreasing over all steps, and no bound on the number of degenerate steps (or on how many new vertices they create overall) is actually derived; the claim of a linear number of iterations (and even of termination) is therefore not established by the stated argument.",
+      "check_kind": "proof_step",
+      "confidence": 0.3,
+      "severity": "minor"
+    }
+  ],
+  "detector": {
+    "model": "claude-opus-5",
+    "provider": "anthropic",
+    "mode": "lenient-high-recall",
+    "paper_chars": 569920,
+    "truncated": true,
+    "usage": {
+      "input_tokens": 355786,
+      "output_tokens": 40583,
+      "cache_read_input_tokens": 0,
+      "cache_creation_input_tokens": 0
+    }
+  }
+}

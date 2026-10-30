@@ -1,0 +1,140 @@
+{
+  "paper_id": "0004-A_Simple,_Nearly-Optimal_Algorithm_for_Differentially_Private_All-Pairs_Shortest_Distances",
+  "title": "A Simple, Nearly-Optimal Algorithm for Differentially Private All-Pairs Shortest Distances",
+  "stage": "detector",
+  "candidates": [
+    {
+      "candidate_id": "0004-A_Simple,_Nearly-Optimal_Algorithm_for_Differentially_Private_All-Pairs_Shortest_Distances::CAND::0",
+      "error_location": "Lemma 3.1 and its proof (Section 3), used in Theorems 3.1 and 3.2",
+      "exact_quote": "To achieve our upper bound for the accuracy, we note that each distance d̃_{G̃}^{(t)}(u, v) is the sum of a maximum of t edge weights, hence the total error in the estimate d̃^{(t)}(u, v) is the accumulation of at most t Laplace random variables.",
+      "claim_content": "Setting: G=(V,E,w) is an undirected weighted graph, n=|V|. Two graphs with the same topology are neighbouring if their weight vectors differ by at most 1 in l_1. Define d_G^{(t)}(u,v) as the minimum weight of a u-v path using at most t edges. The algorithm forms G̃=(V,E,w̃) where w̃_e = w_e + Y_e with Y_e i.i.d. Lap(1/ε), and outputs d̃^{(t)}(u,v) := d_{G̃}^{(t)}(u,v) (the at-most-t-hop shortest distance computed IN THE NOISY GRAPH). Lemma 3.1 claims: for t ∈ N, ε ∈ (0,1], γ ∈ (0,0.5], with probability 1-γ, max_{u,v} |d̃^{(t)}(u,v) - d_G^{(t)}(u,v)| ≤ O(√t · log(n/γ)/ε). The proof asserts the error is the sum of at most t i.i.d. Laplace variables, applies the concentration bound (sum of t Lap(b) variables is O(b√t log(1/γ)) w.p. 1-γ) with failure probability γ/n^2, and union bounds over the n^2 pairs. Question: is the two-sided bound O(√t log(n/γ)/ε) correct? Note the path realizing d_{G̃}^{(t)}(u,v) is chosen AFTER the noise is drawn, so it is not a fixed set of t Laplace variables; a union bound over all ≤t-hop paths (of which there can be exponentially many) would be required for the lower-bound direction d̃^{(t)} ≥ d_G^{(t)} - error. Suggested counterexample: a layered graph with t+1 layers, d = n/(t+1) vertices per layer, complete bipartite connections between consecutive layers, all edge weights equal to a large constant W, source u in the first layer and sink v in the last. All u-v paths have exactly t hops and true distance tW, but min over the d^{t-1} paths of the accumulated Laplace noise behaves like a branching random walk minimum, i.e. is -Θ(t/ε) with high probability, giving error Ω(t/ε), which exceeds O(√t log(n/γ)/ε) once t ≫ log^2 n.",
+      "suspected_defect": "The accuracy proof fixes a path before drawing the noise, but d_{G̃}^{(t)} minimizes over all ≤t-hop paths after noise is drawn; the minimizer is noise-dependent. The known Õ(t/ε) bound of prior work comes exactly from needing a uniform bound over all paths. If the √t claim fails, the main results (Theorem 3.1 with Õ(n^{1/3}/ε) and Theorem 3.2 with Õ(n^{1/4}/ε), where t = Θ((n/s)log n) is polynomially large) collapse, since the final estimate is a minimum that inherits the underestimate.",
+      "check_kind": "general_claim",
+      "confidence": 0.6,
+      "severity": "critical"
+    },
+    {
+      "candidate_id": "0004-A_Simple,_Nearly-Optimal_Algorithm_for_Differentially_Private_All-Pairs_Shortest_Distances::CAND::1",
+      "error_location": "Lemma 4.4 and its proof (Section 4.2)",
+      "exact_quote": "Lemma 4.4. $|A_{i}| \\geq (t/4) \\cdot n^{1-(i+1)/k}$ for all $i \\in [k-1]$ with probability at least $1 - 1/(2n^{2})$",
+      "claim_content": "Setting (Section 4.2 of the paper): n = |V|, k is an integer with 2 ≤ k ≤ ⌊log(n)/log(2)⌋, t := ⌈100 · n^{1/k} · log(n)⌉. For each r ∈ [t] a nested family A^r_{k-1} ⊆ ... ⊆ A^r_1 ⊆ V is sampled, with |A^r_i| = n^{1-(i+1)/k} (in particular |A^r_{k-1}| = 1), and A_i := ∪_{r∈[t]} A^r_i. Lemma 4.4 claims |A_i| ≥ (t/4)·n^{1-(i+1)/k} for all i ∈ [k-1] with probability ≥ 1 - 1/(2n^2). The proof shows E[X_i] = n(1-(1-|A^r_i|/n)^t) ≥ (t/(1+|A^r_i|t/n))·|A^r_i| and then asserts this is > (t/2)·|A^r_i|, justified by 'the last inequality follows from |A^r_i| · t ≤ n'. Check: for i = 1, |A^r_1| = n^{1-2/k} and t ≈ 100 n^{1/k} log n, so |A^r_1|·t ≈ 100 n^{1-1/k} log n, which exceeds n whenever n^{1/k} < 100 log n. Concretely take k = (1/2)log_2 n (so n^{1/k} = 4, and k ≤ ⌊log n/log 2⌋ holds): then |A^r_1| = n/16, t = ⌈400 log n⌉, |A^r_1|·t = 25 n log n ≫ n, and the asserted conclusion |A_1| ≥ (t/4)·n^{1-2/k} = 100 log(n)·n/16 = 6.25 n log n is impossible since |A_1| ≤ n.",
+      "suspected_defect": "The hypothesis |A^r_i|·t ≤ n used to pass from E[X_i] ≥ (t/(1+|A^r_i|t/n))|A^r_i| to E[X_i] > (t/2)|A^r_i| is false for large k, and in that regime the conclusion of Lemma 4.4 asserts |A_i| > n, which is impossible. Lemma 4.5 (and hence Theorem 4.3 / 4.4, stated for all k ∈ {2,...,⌊log n/log 2⌋}) depends on Lemma 4.4.",
+      "check_kind": "proof_step",
+      "confidence": 0.65,
+      "severity": "critical"
+    },
+    {
+      "candidate_id": "0004-A_Simple,_Nearly-Optimal_Algorithm_for_Differentially_Private_All-Pairs_Shortest_Distances::CAND::2",
+      "error_location": "Proof of Theorem 4.3, inequality (3)",
+      "exact_quote": "max_{u,v∈V} |d_T(u, v) − 𝑑̃_T(u, v)| ≤ O(k · n^{1/k} · log^{1.5}(n) · log(n · t · k/γ)/ε)\n= O(k · n^{1/k} · log^{2.5}(n) · log(k) · log(1/γ)/ε)",
+      "claim_content": "Setting: t := ⌈100 · n^{1/k} · log(n)⌉; the collection T contains one spanning tree per pair (i,r) with i ∈ [k-1], r ∈ [t], so |T| ≤ t·k = Θ(k·n^{1/k}·log n). Each tree's all-pairs distances are released with the ε/(t·k)-DP algorithm of Corollary 4.1, which states: for a tree on n vertices, ε' ∈ (0,1], γ' ∈ (0,0.5], there is an ε'-DP algorithm releasing all-pairs tree distances that is O(log^{1.5}(n)·log(n/γ')/ε')-accurate with probability 1-γ'. Taking ε' = ε/(t·k) and γ' = γ/(t·k) (union bound over t·k trees) gives per-tree error O(t·k·log^{1.5}(n)·log(n·t·k/γ)/ε) = O(k·n^{1/k}·log(n)·log^{1.5}(n)·log(n·t·k/γ)/ε) = O(k·n^{1/k}·log^{2.5}(n)·log(n·t·k/γ)/ε). Since log(n·t·k/γ) = O(log(n)·log(k)·log(1/γ)) for k ≥ 2, the resulting bound is O(k·n^{1/k}·log^{3.5}(n)·log(k)·log(1/γ)/ε), not the claimed O(k·n^{1/k}·log^{2.5}(n)·log(k)·log(1/γ)/ε).",
+      "suspected_defect": "The prefactor in the first line of (3) uses k·n^{1/k} instead of t·k = Θ(k·n^{1/k}·log n), dropping a factor of log n; the final stated additive error in Theorem 4.3 is therefore too small by one log n factor.",
+      "check_kind": "symbolic",
+      "confidence": 0.55,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "0004-A_Simple,_Nearly-Optimal_Algorithm_for_Differentially_Private_All-Pairs_Shortest_Distances::CAND::3",
+      "error_location": "Theorem 4.4 and its proof (Appendix D)",
+      "exact_quote": "max_{u,v \\in V} |d_{\\mathcal{T}}(u, v) - \\tilde{d}_{\\mathcal{T}}(u, v)| \\leq O(\\sqrt{k} \\cdot n^{1/(2k)} \\cdot \\log^{2.5}(n) \\cdot \\sqrt{\\log(2/\\delta)} \\cdot \\log(k) \\cdot \\log(1/\\gamma)/\\varepsilon)",
+      "claim_content": "Setting: t := ⌈100·n^{1/k}·log(n)⌉, |T| = t·k trees, each tree's all-pairs distances released by the ε/(2√(2·t·k·log(2/δ)))-DP algorithm of Corollary 4.1 (which is O(log^{1.5}(n)·log(n/γ')/ε')-accurate for an ε'-DP run with failure probability γ'), and advanced composition (k mechanisms each (ε/(2√(2k log(2/δ))), δ/2k)-DP give (ε,δ)-DP). The per-tree error is then O(√(t·k·log(2/δ))·log^{1.5}(n)·log(n·t·k/γ)/ε). Since √(t·k) = Θ(√k · n^{1/(2k)} · √(log n)), this equals Θ(√k·n^{1/(2k)}·log^{2}(n)·√(log(2/δ))·log(n·t·k/γ)/ε), and with log(n·t·k/γ) = O(log(n)log(k)log(1/γ)) the bound is Θ(√k·n^{1/(2k)}·log^{3}(n)·√(log(2/δ))·log(k)·log(1/γ)/ε), not the claimed log^{2.5}(n).",
+      "suspected_defect": "The √(log n) coming from t = Θ(n^{1/k} log n) inside √(t·k) is dropped, so the stated additive error in Theorem 4.4 is too small by a factor of √(log n).",
+      "check_kind": "symbolic",
+      "confidence": 0.45,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "0004-A_Simple,_Nearly-Optimal_Algorithm_for_Differentially_Private_All-Pairs_Shortest_Distances::CAND::4",
+      "error_location": "Theorem 4.1 (and Theorem 4.2) additive error expression",
+      "exact_quote": "there is an \\( \\epsilon \\)-DP algorithm to release all-pairs shortest distances that is \\( (O(k \\log \\log n), O(k \\cdot n^{1/k} \\cdot \\log^{2.5}(n) \\cdot \\log(k) \\cdot \\log(1/\\gamma)/\\epsilon)) \\)-accurate with probability \\( 1 - \\gamma \\).",
+      "claim_content": "Theorem 4.1 is stated for all k ∈ Z^+ (so k = 1 is allowed), γ ∈ (0,0.5], ε ∈ (0,1]. Its additive error term is O(k·n^{1/k}·log^{2.5}(n)·log(k)·log(1/γ)/ε). The proof derives the per-tree error O(k·n^{1/k}·log^{1.5}(n)·log(k·n^{1+1/k}/γ)/ε) and then claims this equals O(k·n^{1/k}·log^{2.5}(n)·log(k)·log(1/γ)/ε) 'by Proposition E.2' (Proposition E.2 states: for α ≥ 2, γ ∈ (0,0.5], λ > 0, log(α^{1+λ}/γ) = O(log(α/γ)) and log(α/γ) = O(log(α)log(1/γ))). For k = 1 the factor log(k) = 0, so the claimed additive error is identically 0, while the derived quantity k·n^{1/k}·log^{1.5}(n)·log(k n^{1+1/k}/γ)/ε = n·log^{1.5}(n)·log(n^2/γ)/ε > 0.",
+      "suspected_defect": "The multiplicative factor log(k) in the stated additive error vanishes at k = 1, making the bound trivially false for k = 1 even though the theorem quantifies over all k ∈ Z^+; the log(k) factor arises from an inapplicable use of Proposition E.2 part 2 (which requires the argument to be ≥ 2). The same applies to Theorem 4.2.",
+      "check_kind": "symbolic",
+      "confidence": 0.4,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "0004-A_Simple,_Nearly-Optimal_Algorithm_for_Differentially_Private_All-Pairs_Shortest_Distances::CAND::5",
+      "error_location": "Proof of Lemma 4.5 (Section 4.2), step bounding the failure probability over A_{i+1}",
+      "exact_quote": "P[d(u, p_{i+1}(u)) ≤ d(u, A^r_i - {w})] ≥ 1 - (1 - 1/(2|A^r_i|))^{|A_{i+1}|}",
+      "claim_content": "Setting: V = A_0 ⊇ A_1 ⊇ ... ⊇ A_{k-1}, with A_i = ∪_{r∈[t]} A^r_i, |A^r_i| = n^{1-(i+1)/k}, t = ⌈100 n^{1/k} log n⌉, and A^r_{i+1} ⊆ A^r_i by construction. p_{i+1}(u) is the vertex of A_{i+1} closest to u. O_u is the ordering of V by distance from u. The proof first shows that for a single v ∈ A_{i+1}, P[d(u,v) ≤ d(u, A^r_i − {w})] ≥ 1/(2|A^r_i|), by computing ∑_{j=1}^n (1−j/n)^{|A^r_i|−1}(1/n) and bounding below. It then concludes that the probability that at least one vertex of A_{i+1} precedes all of A^r_i − {w} in the ordering O_u is at least 1 − (1 − 1/(2|A^r_i|))^{|A_{i+1}|}, i.e. it treats these |A_{i+1}| events as mutually independent with success probability ≥ 1/(2|A^r_i|) each. However all these events are functions of the same random set A^r_i, and in addition A_{i+1} and A^r_i are not independent (A^r_{i+1} ⊆ A^r_i ⊆ A_i and A^r_{i+1} ⊆ A_{i+1}); moreover |A_{i+1}| is itself a random quantity being conditioned on.",
+      "suspected_defect": "The product form (1 − 1/(2|A^r_i|))^{|A_{i+1}|} presupposes independence of events that share the randomness of A^r_i (and are correlated with A_{i+1}); no negative-correlation or conditioning argument is given, so the exponential concentration claim 1 − n^{-7} is unjustified as written.",
+      "check_kind": "proof_step",
+      "confidence": 0.4,
+      "severity": "critical"
+    },
+    {
+      "candidate_id": "0004-A_Simple,_Nearly-Optimal_Algorithm_for_Differentially_Private_All-Pairs_Shortest_Distances::CAND::6",
+      "error_location": "Proof of Theorem 4.3, application of Lemma 4.5",
+      "exact_quote": "w ∈ B(u) implies d(w, u) < d(u, p_{i+1}(u)) ≤ d(u, A^r_i − {w}) with probability 1 − 1/n^2 by Lemma 4.5, and consequently u ∈ C^m(w).",
+      "claim_content": "Lemma 4.5 is stated as: 'For all i ∈ [k−2], r ∈ [t], u ∈ V, if w ∈ A^r_i is the closest to u in G, then d(u, p_{i+1}(u)) ≤ d(u, A^r_i − {w}) with probability at least 1 − 1/n^2.' In the proof of Theorem 4.3, w is the vertex produced by the Thorup–Zwick-style swapping procedure (w = p_l(u) ∈ A_l for some level l, with w ∈ B(u) and w ∈ B(v)), and w ∈ A^m_l for some m ∈ [t]. The theorem's proof applies Lemma 4.5 to conclude d(u, p_{l+1}(u)) ≤ d(u, A^m_l − {w}) without first establishing the lemma's hypothesis that w is the vertex of A^m_l closest to u in G. Here B(u) = {w ∈ V : d(w,u) < d(u, p_{i+1}(u))} and C^r(w) = {u ∈ V : d(w,u) < d(u, A^r_i − {w})}.",
+      "suspected_defect": "Lemma 4.5's hypothesis ('w ∈ A^r_i is the closest to u') is not verified before the lemma is invoked; the argument appears circular since closeness of w to u in A^m_l is essentially what is being derived. (A fix exists via contradiction, but it is not given.)",
+      "check_kind": "proof_step",
+      "confidence": 0.3,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "0004-A_Simple,_Nearly-Optimal_Algorithm_for_Differentially_Private_All-Pairs_Shortest_Distances::CAND::7",
+      "error_location": "Proof of Theorem 3.1, privacy argument",
+      "exact_quote": "In particular, we note that we do not release any shortest path trees themselves, hence no shortest path information is revealed.",
+      "claim_content": "The algorithm of Theorem 3.1 samples a hitting set S ⊆ V with |S| = s, and for each z ∈ S grows a shortest path tree T_z of G rooted at z (a structure that depends on the private edge weights w), then runs Sealfon's ε/(2s)-DP tree mechanism (Lemma 3.2) on T_z with the true weights to release d̃(z,u) for all u ∈ V; it also runs an ε/2-DP input-perturbation step. Privacy is claimed by basic composition. The issue: Lemma 3.2's ε'-DP guarantee holds for a FIXED tree; here the tree T_z is a function of the private weight vector w, and for two neighbouring weight vectors w, w' the combinatorial structure of T_z(w) and T_z(w') (and hence the hierarchical centroid decomposition and the correlation structure of the added Laplace noise across the released coordinates) can differ completely. The claim to be checked is whether the composite mechanism 'build shortest path tree from w, then run the tree mechanism on w' is ε-DP; the stated justification (that the tree itself is not output) does not establish differential privacy of the released distance vector.",
+      "suspected_defect": "The privacy analysis ignores the data dependence of the shortest path trees: a DP mechanism whose internal partition depends on the private data must account for that dependence (e.g. by building the tree from already-privatized data or via a selection mechanism). As stated, the ε-DP claim of Theorem 3.1 is not established.",
+      "check_kind": "proof_step",
+      "confidence": 0.35,
+      "severity": "critical"
+    },
+    {
+      "candidate_id": "0004-A_Simple,_Nearly-Optimal_Algorithm_for_Differentially_Private_All-Pairs_Shortest_Distances::CAND::8",
+      "error_location": "Section 4.2 / proof of Theorem 4.3, privacy argument",
+      "exact_quote": "By basic composition (Lemma 2.1), releasing all the private estimates is ε-DP.",
+      "claim_content": "In Construction 2 the collection T of spanning trees is built from clusters C^r(w) = {u ∈ V : d_G(w,u) < d_G(u, A^r_i − {w})} and shortest path trees spanning these clusters; both the clusters and the spanning trees are determined by the TRUE shortest path distances d_G, i.e. by the private edge weights w (the topology is public, the weights are private, and neighbouring graphs satisfy ||w − w'||_1 ≤ 1). The algorithm then runs, for each T ∈ T, the ε/(t·k)-DP tree mechanism of Corollary 4.1 on T using the true weights, and claims ε-DP by basic composition. Corollary 4.1's guarantee holds for a fixed tree; here the trees themselves are a function of the private data, and neighbouring weight vectors can produce different cluster decompositions and different spanning trees, changing the structure (not merely the mean) of the released noisy distance vector. For comparison, [CGK+23] used the exponential mechanism to privately select the bunches in their Thorup–Zwick-based construction.",
+      "suspected_defect": "The DP accounting does not cover the data-dependent construction of the trees/clusters; basic composition over per-tree mechanisms does not yield ε-DP when the trees depend on the private weights.",
+      "check_kind": "proof_step",
+      "confidence": 0.4,
+      "severity": "critical"
+    },
+    {
+      "candidate_id": "0004-A_Simple,_Nearly-Optimal_Algorithm_for_Differentially_Private_All-Pairs_Shortest_Distances::CAND::9",
+      "error_location": "Proof of Theorem 3.2 (Appendix B), privacy parameter / noise scale",
+      "exact_quote": "we run the ε/(4√2s log(2/δ))-DP algorithm from Lemma 3.2 to release the shortest path distances in each tree. Namely, in Lines 7 and 9 we sample the Laplacian noise from Lap(4√2|S| log(2/δ)·log(n)/ε)",
+      "claim_content": "Advanced composition (Lemma 2.2 of the paper): running k mechanisms each (ε/(2√(2k log(2/δ))), δ/2k)-DP yields (ε,δ)-DP. In Theorem 3.2 the paper composes s tree mechanisms to obtain (ε/2, δ)-DP, which requires each to be ε/(4√(2 s log(2/δ)))-DP, i.e. noise scale Lap(4√(2 s log(2/δ))·log(n)/ε) in Sealfon's tree algorithm. The text instead writes ε/(4√2 · s · log(2/δ)) and Lap(4√2·|S|·log(2/δ)·log(n)/ε), i.e. with s and log(2/δ) appearing OUTSIDE the square root. With the written noise scale the per-tree error would be Θ(s·log(2/δ)·log^{1.5}(n)·log(2sn/γ)/ε), whereas the subsequent accuracy bound (5) in the same proof uses O(√s·log^{1.5}(n)·√(log(2/δ))·log(2sn/γ)/ε).",
+      "suspected_defect": "Inconsistency between the stated per-mechanism privacy parameter/noise scale and the error bound (5) used immediately afterwards: the square root over s·log(2/δ) is missing. The same pattern appears in the proofs of Theorems 4.2 and 4.4 ('ε/(2√2(k n^{1/k}) log(2/δ))-DP').",
+      "check_kind": "symbolic",
+      "confidence": 0.3,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "0004-A_Simple,_Nearly-Optimal_Algorithm_for_Differentially_Private_All-Pairs_Shortest_Distances::CAND::10",
+      "error_location": "Proof of Lemma 4.4 (Section 4.2), distributional assumption",
+      "exact_quote": "Let $X_{i} \\sim \\text{Binomial}(n, p_{i})$ be the number of vertices in $A_{i}$.",
+      "claim_content": "Setting: A_i = ∪_{r∈[t]} A^r_i, where for each r the set A^r_i is a uniformly random subset of V of size |A^r_i| = n^{1-(i+1)/k} (sampling within an iteration is WITHOUT replacement, as the paper notes), and the t iterations are independent. The proof asserts that the number of vertices in A_i is distributed as Binomial(n, p_i) with p_i = 1-(1-|A^r_i|/n)^t, and then applies the Chernoff bound of Lemma 2.5 (P[X ≤ E[X]-λ] ≤ e^{-λ^2/(2E[X])}) to this binomial. The indicator variables 1{u ∈ A_i}, u ∈ V, are not independent (within each iteration the set has fixed size, so the indicators are negatively correlated and their sum is not binomial).",
+      "suspected_defect": "|A_i| is a sum of dependent indicators, so it is not Binomial(n,p_i); applying a binomial Chernoff bound requires an extra justification (e.g. negative association). The conclusion is plausible but the stated distributional identity is false.",
+      "check_kind": "proof_step",
+      "confidence": 0.3,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "0004-A_Simple,_Nearly-Optimal_Algorithm_for_Differentially_Private_All-Pairs_Shortest_Distances::CAND::11",
+      "error_location": "Proof of Lemma 3.2 (Appendix A), induction on number of released distances",
+      "exact_quote": "In the first iteration of the algorithm, the vertex sets V₀, V₁, ..., Vₜ are a partition of V. Hence, u ∈ Vᵢ for some i ∈ [t].",
+      "claim_content": "In the recursive tree mechanism, T_z is split at the centroid z*: z_1,...,z_t are the children of z* with subtrees T_1,...,T_t on vertex sets V_1,...,V_t, and T_0 is the subtree rooted at z with V_0 = V − (V_1 ∪ ... ∪ V_t). The induction claims that for every u ∈ V, d(z,u) is composed of at most 2log(n) noisy released distances, arguing 'u ∈ V_i for some i ∈ [t]' and then using d(z,z_i) = d(z,z*)+d(z*,z_i) plus 2log(n/2) distances inside T_i. The case u ∈ V_0 is not treated, and it also requires |V_0| ≤ n/2, which follows from the centroid property (the subtree rooted at z* has more than n/2 vertices so |V_0| = n − (|subtree(z*)|−1) < n/2 + 1) but is not argued.",
+      "suspected_defect": "The induction omits the case u ∈ V_0 (the index set should be {0,1,...,t}), and the bound |V_0| ≤ n/2 needed for the recursion depth log(n) is not established; this affects the claimed 2log(n) count of composed noisy distances and hence the O(log^{1.5}(n)log(n/γ)/ε) accuracy.",
+      "check_kind": "proof_step",
+      "confidence": 0.25,
+      "severity": "minor"
+    }
+  ],
+  "detector": {
+    "model": "claude-opus-5",
+    "provider": "anthropic",
+    "mode": "lenient-high-recall",
+    "paper_chars": 120522,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 81914,
+      "output_tokens": 45067,
+      "cache_read_input_tokens": 0,
+      "cache_creation_input_tokens": 0
+    }
+  }
+}

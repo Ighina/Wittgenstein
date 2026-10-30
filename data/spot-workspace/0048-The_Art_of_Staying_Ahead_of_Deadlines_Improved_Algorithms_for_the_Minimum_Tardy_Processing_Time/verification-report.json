@@ -1,0 +1,92 @@
+{
+  "paper_id": "0048-The_Art_of_Staying_Ahead_of_Deadlines",
+  "title": "The Art of Staying Ahead of Deadlines: Improved Algorithms for the Minimum Tardy Processing Time",
+  "paper_category": "cs.DS",
+  "predicted_errors": [
+    {
+      "error_category": "missing_references",
+      "error_location": "References section — bibliography lists only [9], [10], [11]",
+      "confidence": 1.0,
+      "supporting_evidence": "The text cites references [1]-[8] extensively throughout the paper (e.g., [2] Bringmann et al. in Related Work, [4] Chen et al. in Conclusion, [5] Fischer and Wennmann cited 13+ times as the central reference, [6,7] for dynamic strings in Lemma 3.1), but the bibliography contains only [9], [10], [11]. The original arXiv paper (2402.16847v1) has a full 11-entry bibliography. The central reference [5] (Fischer & Wennmann, arXiv:2402.13357), on which the entire algorithm depends, is absent.",
+      "verifier_name": "verify-citation",
+      "snippet_id": "SECTION::16"
+    },
+    {
+      "error_category": "summation_index_error",
+      "error_location": "Lemma 3.2: '∑_{i ∈ [n]} |\\widetilde{S}_j \\setminus S_{j-1}| ≤ d_max + 1'",
+      "confidence": 0.97,
+      "supporting_evidence": "The summation runs over i ∈ [n], but the summand |\\widetilde{S}_j \\setminus S_{j-1}| depends only on j — the index i does not appear in the summand. As written, the LHS equals n·|\\widetilde{S}_j \\setminus S_{j-1}| and the bound fails whenever the difference set is nonempty and n ≥ 2. The intended statement is ∑_{j ∈ [n]} |\\widetilde{S}_j \\setminus S_{j-1}| ≤ d_max + 1, mirroring Lemma 4.1 which correctly uses j as the summation index. The same i/j mismatch propagates through the entire proof (EQUATION::0, EQUATION::1, PROOF::0). The verifier confirmed the original source paper (arXiv 2402.16847) was withdrawn by the author because the runtime analysis in Section 3 is incorrect.",
+      "verifier_name": "verify-math",
+      "snippet_id": "LEMMA::1"
+    },
+    {
+      "error_category": "missing_definition",
+      "error_location": "Lawler and Moore's Algorithm section: 'one recursively defines the sets S0, ..., Sn ⊆ [0..P] as in the following:'",
+      "confidence": 0.95,
+      "supporting_evidence": "The text says 'as in the following:' but no recurrence equations are displayed. The paper then references 'Eq. (3c)' (in Fischer and Wennmann's Algorithm and Our Approach sections) and 'Eq. (3b)' (in Our Approach) — three references to equations that are never defined anywhere in the paper. This is a critical omission since the algorithm description in later sections depends on understanding what equations (3a)-(3c) define.",
+      "verifier_name": "verify-cross-section-consistency",
+      "snippet_id": "SECTION::7"
+    },
+    {
+      "error_category": "undefined_variable",
+      "error_location": "Earliest-Deadline-First section: '∑_{i∈J*:i≤j} pi ≤ dj for all j ∈ J'",
+      "confidence": 0.90,
+      "supporting_evidence": "The set J is never defined anywhere in the paper. Only J* (the selected subset of jobs) and [n] (all jobs) are defined. The deadline-feasibility condition should quantify over the selected jobs: 'for all j ∈ J*'. Using an undefined variable J makes the constraint ambiguous.",
+      "verifier_name": "verify-text",
+      "snippet_id": "SECTION::6"
+    },
+    {
+      "error_category": "index_error",
+      "error_location": "Our Approach section: 'we first split S_j into two parts w.r.t. to d_j - p_j'",
+      "confidence": 0.90,
+      "supporting_evidence": "The text says 'split S_j' but then immediately defines L_{j-1} := S_{j-1} ∩ [0..d_j - p_j] and R_{j-1} := S_{j-1} ∩ (d_j - p_j..d_j], using S_{j-1} as the object of the split. The invariant S_{j-1} ⊆ [0..d_{j-1}] stated just before also confirms the split operates on S_{j-1}. The implementation section confirms: 'to obtain L_{j-1}, we split x_{S_{j-1}} at position d_j - p_j'. The same S_j/S_{j-1} confusion appears earlier in the paragraph ('trim the current set S_j + {0, p_j}' — the object trimmed in Eq. (3c) is S_{j-1} + {0, p_j}).",
+      "verifier_name": "verify-text",
+      "snippet_id": "SECTION::9"
+    },
+    {
+      "error_category": "notation_inconsistency",
+      "error_location": "Conclusion: '1||∑p_i U_i' vs '1∥∑pjUj' elsewhere",
+      "confidence": 0.80,
+      "supporting_evidence": "The problem name is consistently written as '1∥∑pjUj' throughout the paper (abstract, introduction, multiple machines sections), but the conclusion changes to '1||∑p_i U_i' — different separator (|| vs ∥), different summation index (i vs j), and different spacing. This is an inconsistent rendering of the same problem name.",
+      "verifier_name": "verify-text",
+      "snippet_id": "SECTION::15"
+    },
+    {
+      "error_category": "notation_inconsistency",
+      "error_location": "Related Work: 'an Õ(min{P·D#, P+D})-time algorithm [2], where #D is the number of distinct deadlines'",
+      "confidence": 0.70,
+      "supporting_evidence": "The running-time bound uses 'D#' (with hash after D) but the definition immediately following it introduces '#D' (hash before D) for the number of distinct deadlines. As written, 'P·D#' involves an undefined quantity while '#D' is defined but unused in the formula.",
+      "verifier_name": "verify-text",
+      "snippet_id": "SECTION::3"
+    },
+    {
+      "error_category": "set_domain_error",
+      "error_location": "Dynamic String Implementation: 'We represent a set S ⊆ [n] by its corresponding indicator string x_S ∈ {0, 1}^u'",
+      "confidence": 0.70,
+      "supporting_evidence": "The sets represented (S_j, L_{j-1}, etc.) contain processing-time sums in [0..d_max], while [n] = {1,...,n} per the paper's notation section (1-based job indices). The string size is u = d_max + 1 (indexing positions 0..d_max). The domain 'S ⊆ [n]' conflicts with both the sets' actual range and the string length. Should be S ⊆ [0..d_max] or S ⊆ [u] (0-based).",
+      "verifier_name": "verify-text",
+      "snippet_id": "SECTION::11"
+    },
+    {
+      "error_category": "unsupported_claim",
+      "error_location": "Multi-machine extension: claim of 'Õ(n + d^m_max)-time algorithm'",
+      "confidence": 0.60,
+      "supporting_evidence": "Lemma 4.1 bounds only the number of insertions by (d_max + 1)^m, but the cost of the 'adapted multi-dimensional dynamic string data structure' is never analyzed. The text asserts 'The rest of the algorithm ... remains the same as in Fischer and Wennmann [5]' without deriving the per-operation costs (make_string, concat, split) for the m-dimensional setting. The claimed runtime is asserted rather than proven from the data structure primitives.",
+      "verifier_name": "verify-cross-section-consistency",
+      "snippet_id": "SECTION::14"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 25,
+    "snippets_verified": 25,
+    "errors_detected": 9,
+    "verifier_usage": {
+      "verify-math": 6,
+      "verify-text": 22,
+      "verify-citation": 1,
+      "verify-cross-section-consistency": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "The paper proposes an Õ(n + d_max)-time algorithm for the 1‖∑pjUj scheduling problem by refining Fischer and Wennmann's approach. Verification across four specialist verifiers (math, text, citation, cross-section consistency) in exhaustive/lenient mode identified 9 issues, including 5 high-confidence errors (≥0.85). The most critical findings are: (1) references [1]-[8] are cited throughout but missing from the bibliography, including the central Fischer & Wennmann [5] reference the entire paper builds upon (confidence 1.0); (2) Lemma 3.2 has a summation index mismatch (∑_{i ∈ [n]} of a j-indexed summand) that invalidates the stated bound as written — the arXiv version of this paper was withdrawn by the author due to an incorrect runtime analysis in Section 3 (confidence 0.97); (3) equations (3a)-(3c) are referenced three times but never defined in the text (confidence 0.95); (4) an undefined variable J is used in the Earliest-Deadline-First feasibility condition (confidence 0.90); (5) S_j is used where S_{j-1} is intended in the algorithm description (confidence 0.90). Additional lower-confidence issues include notation inconsistencies and an under-analyzed multi-machine runtime claim. The paper's cited references [9], [10], [11] were verified as real and accurately described. The combination of high-confidence errors — particularly the missing central reference, the index error known to have caused the author's withdrawal, and the missing equation definitions — warrants correction before publication."
+}

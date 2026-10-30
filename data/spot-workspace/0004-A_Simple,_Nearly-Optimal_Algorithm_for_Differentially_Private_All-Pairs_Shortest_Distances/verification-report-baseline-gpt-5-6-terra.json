@@ -1,0 +1,94 @@
+{
+  "paper_id": "0004-A_Simple,_Nearly-Optimal_Algorithm_for_Differentially_Private_All-Pairs_Shortest_Distances",
+  "title": "A Simple, Nearly-Optimal Algorithm for Differentially Private All-Pairs Shortest Distances",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Lemma 3.1 and its proof",
+      "confidence": 0.99,
+      "supporting_evidence": "The accuracy proof treats the shortest path selected after perturbation as if it were a fixed path: it asserts that each noisy shortest t-hop distance has error equal to “the accumulation of at most t Laplace random variables.” This is false because the minimizing path in the noisy graph is data/noise dependent. Uniform control requires bounding noise over all candidate t-hop paths, not merely one path per vertex pair. For example, a chain of diamond gadgets has exponentially many equal-weight paths; independently perturbed edge weights make the minimum select unusually negative noise at each gadget, causing linear-in-t downward bias, not O(sqrt(t) log(n/gamma)/epsilon). Thus the claimed Lemma 3.1, on which Theorems 3.1 and 3.2 depend, is not proved and is generally false as stated.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0004-A_Simple,_Nearly-Optimal_Algorithm_for_Differentially_Private_All-Pairs_Shortest_Distances::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Theorem 3.1 algorithm, specifically the shortest-path trees rooted at sampled vertices S",
+      "confidence": 0.98,
+      "supporting_evidence": "The construction forms shortest-path trees using the private edge weights and then applies Sealfon's private tree-release algorithm to those selected trees. The privacy analysis composes only the releases on the trees and says “we do not release any shortest path trees themselves, hence no shortest path information is revealed.” Nonrelease does not resolve the problem: the selected tree topology is a data-dependent input to the subsequent mechanism, and its dependence on weights can be revealed through the output. Sealfon's tree mechanism provides DP for a fixed tree, not for a shortest-path tree selected from private weights without a DP selection argument. No such argument is given, so the stated epsilon-DP guarantee is unsupported.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0004-A_Simple,_Nearly-Optimal_Algorithm_for_Differentially_Private_All-Pairs_Shortest_Distances::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Section 4, Theorems 4.1--4.4",
+      "confidence": 0.98,
+      "supporting_evidence": "The same unaccounted data-dependent preprocessing invalidates the privacy analyses in both multiplicative constructions. The tree-padding spanner, Thorup--Zwick sets/clusters, shortest-path cluster trees, and the added Kruskal edges are constructed from the private weighted graph before running DP tree mechanisms. The proofs then invoke composition as though the collection T were fixed/public. It is not. Applying a DP mechanism to structures selected from sensitive weights is not automatically DP, and post-processing applies only after a DP release, not before one. Consequently the claimed DP guarantees for the Section 4 algorithms do not follow.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0004-A_Simple,_Nearly-Optimal_Algorithm_for_Differentially_Private_All-Pairs_Shortest_Distances::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Section 4.2 definition of bunches B(u)",
+      "confidence": 0.99,
+      "supporting_evidence": "The paper defines “B(u) = {w ∈ V | d(w,u) < d(u,p_{i+1}(u))},” but i is free/unbound in this definition. Standard Thorup--Zwick bunches require a union over levels with level-dependent membership restrictions (typically w ∈ A_i \\ A_{i+1}). As written B(u) is not a well-defined set. Later claims such as “w ∈ B(v),” Lemma 4.6, the swapping algorithm, and the cluster-containment argument therefore have no precise meaning and cannot establish the stated stretch.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0004-A_Simple,_Nearly-Optimal_Algorithm_for_Differentially_Private_All-Pairs_Shortest_Distances::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Lemma 4.4 proof and the allowed range k ≤ floor(log(n)/log 2)",
+      "confidence": 0.99,
+      "supporting_evidence": "Lemma 4.4 claims |A_i| ≥ (t/4)n^{1-(i+1)/k}, with t = ceil(100 n^{1/k} log n), for all i. This is impossible in the stated allowed parameter range. Taking k = log_2 n and i = 1 gives n^{1/k}=2 and a purported lower bound approximately (200 log n/4)(n/4)=Θ(n log n), exceeding |A_i| ≤ n. The proof also relies on the assertion “|A_i^r| · t ≤ n,” which fails in this regime: for i=1 it is Θ(n^{1-1/k} log n), and at k=log_2 n is Θ(n log n). Thus the size lemma and downstream packing analysis are false for the theorem's advertised k range.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0004-A_Simple,_Nearly-Optimal_Algorithm_for_Differentially_Private_All-Pairs_Shortest_Distances::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Lemma 4.4 proof, treatment of X_i as Binomial; Lemma 4.5 probability calculation",
+      "confidence": 0.96,
+      "supporting_evidence": "The proof says “Let X_i ~ Binomial(n,p_i) be the number of vertices in A_i.” This is not true: A_i is a union of fixed-size samples without replacement, so membership indicators of different vertices are dependent and its cardinality is not binomial. The cited binomial Chernoff bound therefore cannot be applied as written. Likewise, Lemma 4.5 raises a single-vertex failure probability to |A_{i+1}|, implicitly treating events for vertices in A_{i+1} as independent, although A_{i+1} is itself a union of dependent samples and is related to A_i^r. No valid dependence or negative-association argument is supplied.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0004-A_Simple,_Nearly-Optimal_Algorithm_for_Differentially_Private_All-Pairs_Shortest_Distances::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Appendix B proof of Theorem 3.2; Appendix C proof of Theorem 4.2; Appendix D proof of Theorem 4.4",
+      "confidence": 0.97,
+      "supporting_evidence": "The approximate-DP proofs allocate per-mechanism privacy budgets proportional to 1/s rather than 1/sqrt(s), yet claim sqrt(s) accuracy. For example Appendix B states that each of s tree mechanisms is “ε/(4√2s log(2/δ))-DP” and samples Laplace noise with scale “4√2|S| log(2/δ)·log(n)/ε,” both linear in s. But Eq. (5) claims an error proportional to sqrt(s). The advanced-composition lemma stated earlier requires a per-mechanism epsilon of order ε/sqrt(s log(1/δ)), not ε/(s log(1/δ)). The analogous formulas in Appendices C and D use ε/(2√2 (number of trees) log(2/δ)) while claiming square-root dependence on the number of trees. Under the mechanisms actually specified, the claimed approximate-DP accuracy bounds do not follow.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0004-A_Simple,_Nearly-Optimal_Algorithm_for_Differentially_Private_All-Pairs_Shortest_Distances::baseline"
+    },
+    {
+      "error_category": "Figure / table error",
+      "error_location": "Section 4.2, Figure 0 and the surrounding proof text",
+      "confidence": 1.0,
+      "supporting_evidence": "The document contains a massive embedded JPEG/base64 image of unrelated material, labeled only “Figure 0,” inserted in the middle of the Thorup--Zwick proof. It interrupts the sentence describing the swapping algorithm and is unrelated to graph distances or the stated construction. The surrounding text is also visibly duplicated and out of order: a purported Lemma 4.4 proof begins, switches into an unlabeled probability argument, repeats that argument, then “Lemma 4.5” appears after its proof material. This corruption makes the algorithm/proofs nonreproducible and must be corrected.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0004-A_Simple,_Nearly-Optimal_Algorithm_for_Differentially_Private_All-Pairs_Shortest_Distances::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 8,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (gpt-5.6-terra, taxonomy=default): 8 error(s) reported.",
+  "baseline": {
+    "model": "gpt-5.6-terra",
+    "provider": "openai",
+    "taxonomy": "default",
+    "paper_chars": 120522,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 56973,
+      "output_tokens": 3805,
+      "cache_read_input_tokens": null,
+      "cache_creation_input_tokens": null
+    }
+  }
+}

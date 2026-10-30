@@ -1,0 +1,406 @@
+{
+  "paper_name": "paper",
+  "paper_path": "/Users/iacopoghinassi/Documents/Github/Wittgenstein/data/spot-workspace/0011-Every_Polish_group_has_a_non-trivial_topological_group_automorphism/paper.md",
+  "tag": "opus5",
+  "lean_project": "MATH_VERIFICATION/Paper",
+  "lean_project_kept": true,
+  "totals": {
+    "snippets_extracted": 13,
+    "routed_to_math": 9,
+    "routed_to_lean": 4,
+    "lean_passed": 2,
+    "lean_refuted": 2,
+    "lean_failed": 0,
+    "fallbacks_run": 0,
+    "errors_detected": 3
+  },
+  "results": [
+    {
+      "snippet_id": "paper::THEOREM::0",
+      "snippet_type": "THEOREM",
+      "location": "Introduction — Theorem 1.1",
+      "content": "Theorem 1.1. Every Polish group with more than two elements admits a non-trivial topological automorphism.",
+      "route": "verify-math",
+      "route_rationale": "Research-level theorem about all Polish groups; no faithful Lean proof is attainable in budget (Mathlib has no development of Boolean Polish groups of continuum cardinality), so it was reviewed informally.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::THEOREM::0",
+        "verifier_name": "math-equations",
+        "status": "UNVERIFIABLE",
+        "error_detected": false,
+        "confidence": 0.4,
+        "reasoning": "The *statement* contains no internal inconsistency: the hypothesis \"more than two elements\" is exactly what is needed to exclude $\\mathbb{Z}_2$, whose only topological automorphism is the identity, and the reduction chain (non-Boolean via Proposition 2.1; countable Boolean via $\\mathrm{GL}_n(\\mathbb{Z}_2)$ and $\\mathrm{Aut}(\\bigoplus_\\omega \\mathbb{Z}_2)$; Boolean of size $\\mathfrak{c}$ via Lemma 2.3 + Lemma 2.2) covers every case. No error is detectable in the statement itself. Its truth, however, is NOT established by this run: the paper's proof of it contains an invalid step (see `paper::PROOF_STEP::0`), and no independent argument was checked. Recorded as unsettled rather than clean.",
+        "predicted_error_category": null,
+        "snippet_type": "THEOREM",
+        "contradiction_locations": []
+      },
+      "status": "UNVERIFIABLE",
+      "error_detected": false,
+      "confidence": 0.4
+    },
+    {
+      "snippet_id": "paper::PROPOSITION::0",
+      "snippet_type": "PROPOSITION",
+      "location": "Section 2 — Proposition 2.1",
+      "content": "**Proposition 2.1.** Let \\( G \\) be a topological group. If \\( G \\) is not abelian or it has an\nelement of order greater than 2, then \\( G \\) has a non-trivial topological automorphism.",
+      "route": "verify-math-lean",
+      "route_rationale": "Crisp, elementary and fully formalisable topological-group claim; a machine-checked verdict was available.",
+      "lean_result": {
+        "snippet_id": "paper::PROPOSITION::0",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.95,
+        "reasoning": "Formalised Proposition 2.1 verbatim for an arbitrary topological group `G` (no Hausdorff/Polish hypothesis added), with the paper's own definition of a topological automorphism: a group automorphism that is also a self-homeomorphism, i.e. `φ : G ≃* G` with `Continuous φ`, `Continuous φ.symm`, and `φ ≠ MulEquiv.refl G`. \"$G$ has an element of order greater than $2$\" was rendered as `∃ x, x * x ≠ 1` rather than `2 < orderOf x`, because Mathlib encodes infinite order as `orderOf x = 0`, which would have wrongly excluded elements of infinite order — so the rendering is if anything weaker in hypothesis, never stronger. Lean proved it: conjugation by a non-commuting element in the non-abelian case, inversion in the abelian case. Note the proof genuinely needs the case split the paper performs (inversion is only a homomorphism when $G$ is abelian), and the paper's \"or\" handles this correctly.",
+        "predicted_error_category": null,
+        "snippet_type": "THEOREM",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean",
+          "formal_statement": "theorem prop_2_1 {G : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]\n    (h : (∃ a b : G, a * b ≠ b * a) ∨ (∃ x : G, x * x ≠ 1)) :\n    ∃ φ : G ≃* G, Continuous φ ∧ Continuous φ.symm ∧ φ ≠ MulEquiv.refl G := by ...",
+          "compiler_feedback": "`lake env lean Paper/TMP.lean` exit status 0; no severity-1 or severity-2 diagnostics. `#print axioms prop_2_1` -> \"'prop_2_1' depends on axioms: [propext, Classical.choice, Quot.sound]\" (no sorryAx).",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::PROOF::0",
+      "snippet_type": "PROOF",
+      "location": "Section 2 — proof of Proposition 2.1",
+      "content": "*Proof.* If \\( G \\) is not abelian, then there exist two non-trivial elements \\( g, h \\in G \\) for\nwhich \\( h \\neq ghg^{-1} \\). Consequently, by conjugating with \\( g \\) or \\( h \\) we get a non-trivial\ntopological automorphism that does not fix \\( h \\) or \\( g \\), respectively. On the other hand,\nif \\( G \\) is abelian but it has a non-trivial element \\( x \\) of order greater than 2, then the\ninversion of elements is a non-trivial topological automorphism of \\( G \\) because it does\nnot fix \\( x \\). □",
+      "route": "verify-math",
+      "route_rationale": "Two-line prose argument fully checkable by inspection; the statement it proves was separately machine-checked.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::PROOF::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "Both branches are sound. Non-abelian case: $h \\neq ghg^{-1}$ is equivalent to $gh \\neq hg$, which is in turn equivalent to $g \\neq hgh^{-1}$ — so the parenthetical \"by conjugating with $g$ or $h$ ... does not fix $h$ or $g$, respectively\" is correct, the two conditions being the same condition. Conjugation $x \\mapsto gxg^{-1}$ is a group automorphism and a self-homeomorphism in any topological group. Abelian case: $x^{-1} \\neq x$ is equivalent to $x^2 \\neq 1$, i.e. to $x$ having order greater than $2$, and inversion is a homomorphism precisely because $G$ is abelian — which the proof correctly arranges by splitting on abelianness rather than applying inversion in general. Verified formally: see `paper::PROPOSITION::0`.",
+        "predicted_error_category": null,
+        "snippet_type": "PROOF_STEP",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::0",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "Section 2 — reduction to Boolean groups",
+      "content": "In light of Proposition 2.1, we restrict our attention to non-trivial topological\nautomorphisms on topological Boolean groups. Given an abstract Boolean group\n\\( G \\), we endow it with its canonical structure as a vector space over the field of\ntwo elements \\( \\mathbb{Z}_2 \\). This vector space structure gives rise to a linear isomorphism\nbetween \\( G \\) and a direct sum of \\( \\kappa \\) copies of \\( \\mathbb{Z}_2 \\) for some cardinal \\( \\kappa \\). If additionally\n\\( G \\) admits a Polish group topology, either \\( G \\) is countable, and so \\( \\kappa \\leq \\omega \\), or \\( G \\) has\ncontinuum cardinality, in which case \\( \\kappa = \\mathfrak{c} \\). In the former case, \\( G \\) is discrete and\nwhen \\( \\kappa = n < \\omega \\), the automorphism group of \\( G \\) is precisely the general linear\ngroup \\( \\mathrm{GL}_n(\\mathbb{Z}_2) \\) because every group automorphism of a Boolean group is a linear\n\\( \\mathbb{Z}_2 \\)-automorphism. Such general linear group \\( \\mathrm{GL}_n(\\mathbb{Z}_2) \\) has order \\( (2^n-1)(2^n-2)\\cdots(2^n-2^{n-1}) \\). When \\( \\kappa = \\omega \\), the automorphism group \\( \\mathrm{Aut}(G) \\) carries a non-\ndiscrete Polish group topology under the pointwise-convergence topology, and thus\nits cardinality is \\( \\mathfrak{c} \\).",
+      "route": "verify-math",
+      "route_rationale": "Chain of cardinal-arithmetic and descriptive-set-theoretic facts resting on Polish-space structure theory; no cheap faithful Lean rendering.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.8,
+        "reasoning": "Every link checks out. (i) A Boolean group is a $\\mathbb{Z}_2$-vector space, hence $\\cong \\bigoplus_\\kappa \\mathbb{Z}_2$. (ii) A Polish space is countable or of size $\\mathfrak{c}$ (perfect set property), and $|\\bigoplus_\\kappa \\mathbb{Z}_2| = \\kappa$ for infinite $\\kappa$, so $|G| = \\mathfrak{c}$ forces $\\kappa = \\mathfrak{c}$. (iii) A countable Polish group is discrete: by Baire category a countable Polish space has an isolated point, and homogeneity of a topological group propagates it to every point. (iv) Group automorphisms of a Boolean group are exactly $\\mathbb{Z}_2$-linear automorphisms, so $\\mathrm{Aut}(G) = \\mathrm{GL}_n(\\mathbb{Z}_2)$ when $\\kappa = n < \\omega$. (v) For $\\kappa = \\omega$, $\\mathrm{Aut}(G)$ is a closed subgroup of $\\mathrm{Sym}(G) \\cong S_\\infty$, hence Polish, non-discrete, hence of cardinality $\\mathfrak{c}$. The order formula in (iv) was machine-checked separately (`paper::EQUATION::0`).",
+        "predicted_error_category": null,
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::EQUATION::0",
+      "snippet_type": "EQUATION",
+      "location": "Section 2 — order of the general linear group",
+      "content": "Such general linear group \\( \\mathrm{GL}_n(\\mathbb{Z}_2) \\) has order \\( (2^n-1)(2^n-2)\\cdots(2^n-2^{n-1}) \\).",
+      "route": "verify-math-lean",
+      "route_rationale": "Closed-form identity; Mathlib carries `Matrix.card_GL_field`, so the compiler can settle it outright.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::0",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.95,
+        "reasoning": "Formalised the printed order formula as `Nat.card (GL (Fin n) (ZMod 2)) = ∏ i : Fin n, (2 ^ n - 2 ^ (i : ℕ))` for arbitrary `n : ℕ` (no positivity hypothesis added), reading the printed ellipsis $(2^n-1)(2^n-2)\\cdots(2^n-2^{n-1})$ with general factor $2^n - 2^i$ — which is forced by its first factor $2^n - 2^0$, second factor $2^n - 2^1$ and last factor $2^n - 2^{n-1}$. Lean proved it from `Matrix.card_GL_field` with $q = |\\mathbb{Z}_2| = 2$. Two `decide` cross-checks against the printed product also compiled: $n = 2$ gives $(4-1)(4-2) = 6$ and $n = 3$ gives $(8-1)(8-2)(8-4) = 168$, the correct orders of $\\mathrm{GL}_2(\\mathbb{F}_2)$ and $\\mathrm{GL}_3(\\mathbb{F}_2)$.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean",
+          "formal_statement": "theorem order_GL_n_ZMod_two (n : ℕ) :\n    Nat.card (GL (Fin n) (ZMod 2)) = ∏ i : Fin n, (2 ^ n - 2 ^ (i : ℕ)) := by\n  have hq : Fintype.card (ZMod 2) = 2 := by simp\n  simpa [hq] using Matrix.card_GL_field (𝔽 := ZMod 2) n",
+          "compiler_feedback": "`lake env lean Paper/TMP.lean` exit status 0; no severity-1 or severity-2 diagnostics. `#print axioms order_GL_n_ZMod_two` -> \"'order_GL_n_ZMod_two' depends on axioms: [propext, Classical.choice, Quot.sound]\" (no sorryAx). The two `decide` sanity checks against the printed product (n = 2 -> 6, n = 3 -> 168) also compiled.",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::LEMMA::0",
+      "snippet_type": "LEMMA",
+      "location": "Section 2 — Lemma 2.2",
+      "content": "**Lemma 2.2.** Let \\( G \\) be a Polish group and \\( H \\) a dense subgroup of \\( G \\). Then every\ntopological automorphism of \\( H \\) extends uniquely to a topological automorphism of\n\\( G \\).",
+      "route": "verify-math",
+      "route_rationale": "Needs completion theory for the two-sided uniformity of a topological group; a faithful Lean proof is far outside the per-snippet budget.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::LEMMA::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.75,
+        "reasoning": "The lemma is correct. A continuous homomorphism $\\varphi : H \\to G$ is uniformly continuous for the two-sided (Raikov) uniformities — given a neighbourhood $V \\ni e_G$ pick $U \\ni e_H$ with $\\varphi(U) \\subseteq V$, then $x^{-1}y \\in U$ gives $\\varphi(x)^{-1}\\varphi(y) \\in V$, and symmetrically on the right. $H$ carries the restriction of $G$'s uniformity (it is a subgroup with the subspace topology), and a Polish group is Raikov-complete, so the unique uniformly continuous extension $\\overline{\\varphi} : G \\to G$ exists and is a homomorphism by density. Uniqueness of the extension is where \"unique\" in the statement comes from. The case the paper actually applies this to is abelian (Boolean), where left, right and two-sided uniformities coincide, so no subtlety arises there at all.",
+        "predicted_error_category": null,
+        "snippet_type": "THEOREM",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.75
+    },
+    {
+      "snippet_id": "paper::PROOF::1",
+      "snippet_type": "PROOF",
+      "location": "Section 2 — proof of Lemma 2.2",
+      "content": "*Proof.* Let \\( \\varphi \\) be a topological automorphism of \\( H \\). If we consider \\( \\varphi \\) to be a con-\ntinuous homomorphism from \\( H \\) to \\( G \\), then there exists a unique continuous ex-\ntension \\( \\overline{\\varphi} : G \\to G \\) of \\( \\varphi \\) by the density of \\( H \\) in \\( G \\) ([5, Page 6]). Extending anal-\nogously \\( \\varphi^{-1}: H \\to G \\) to a continuous homomorphism \\( \\overline{\\varphi^{-1}} : G \\to G \\), we see that\n\\( \\overline{\\varphi} \\circ \\overline{\\varphi^{-1}} = \\mathrm{Id}_G \\) and \\( \\overline{\\varphi^{-1}} \\circ \\overline{\\varphi} = \\mathrm{Id}_G \\) since the identity map of \\( G \\) as well as these\ncompositions extend the identity map of \\( H \\). It follows that the desired topological\nautomorphism of \\( G \\) extending \\( \\varphi \\) is \\( \\overline{\\varphi} \\). □",
+      "route": "verify-math",
+      "route_rationale": "Short density/uniqueness argument, checkable by inspection.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::PROOF::1",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.75,
+        "reasoning": "The argument is valid. Both $\\varphi$ and $\\varphi^{-1}$ extend continuously to $\\overline{\\varphi}, \\overline{\\varphi^{-1}} : G \\to G$ by density plus completeness. The identification $\\overline{\\varphi} \\circ \\overline{\\varphi^{-1}} = \\mathrm{Id}_G$ then follows from uniqueness of continuous extensions, since both that composition and $\\mathrm{Id}_G$ are continuous maps $G \\to G$ agreeing with $\\mathrm{Id}_H$ on the dense set $H$ — this is exactly the right use of uniqueness, and it is what makes $\\overline{\\varphi}$ bijective (hence a homeomorphism) rather than merely continuous. No gap found; the only step the snippet delegates (existence of the continuous extension, cited as [5, Page 6]) is a standard fact, discussed under `paper::LEMMA::0`.",
+        "predicted_error_category": null,
+        "snippet_type": "PROOF_STEP",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.75
+    },
+    {
+      "snippet_id": "paper::LEMMA::1",
+      "snippet_type": "LEMMA",
+      "location": "Section 2 — Lemma 2.3",
+      "content": "Lemma 2.3. Let (G, +, τ) be a Boolean Hausdorff topological group. For every finite collection {xi}i<n ⊆ G of Z₂-linearly independent elements, there exists an identity neighbourhood U such that\n\n(1) for every two distinct elements x, x' ∈ L := span{xi}i<n, (x + U) ∩ (x' + U) = ∅; and\n(2) FL := G \\ (L + U) has empty interior.",
+      "route": "verify-math",
+      "route_rationale": "Point-set topology plus Zorn's lemma over a family of open sets; not reachable in the Lean budget.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::LEMMA::1",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.75,
+        "reasoning": "The statement is coherent and, as far as can be checked, true. Both conclusions are exactly what the maximality argument in the proof delivers: (1) is membership of $U$ in the family $\\mathcal{P}$, and (2) says $L + U$ is dense, since $\\mathrm{int}(G \\setminus A) = \\emptyset$ is equivalent to $\\overline{A} = G$. The hypotheses used are only Boolean-ness ($x + x = 0_G$, needed for $x + (x + U) = U$) and Hausdorffness (needed to separate the finitely many points of $L$), both of which the statement assumes. No error detected.",
+        "predicted_error_category": null,
+        "snippet_type": "THEOREM",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.75
+    },
+    {
+      "snippet_id": "paper::PROOF::2",
+      "snippet_type": "PROOF",
+      "location": "Section 2 — proof of Lemma 2.3",
+      "content": "Proof. Consider the family\n\n𝒫 = {U ∈ τ : 0_G ∈ U ∧ ∀x, y ∈ L (x ≠ y ⇒ (x + U) ∩ (y + U) = ∅)}\n\nordered under inclusion. We will use the Kuratowski–Zorn lemma to show that (𝒫, ⊆) has a maximal element and then we will prove that any such maximal element fulfills items (1) and (2) above.\n\nTo verify that 𝒫 is not empty, first note that, since L is a finite set and G is a Hausdorff space, there exists a disjoint family of open sets {Ux}x∈L such that x ∈ Ux for every x ∈ L. Take any such family and notice that the identity neighbourhood U := ⋂_{x∈L} x + Ux ∈ 𝒫. Indeed, given any two different x, y ∈ L, (x + U) ∩ (y + U) ⊆ (x + x + Ux) ∩ (y + y + Uy) = Ux ∩ Uy = ∅.\n\nNow, if {Uα}α∈I ⊆ 𝒫 is a linearly ordered subset, then UI := ⋃_{α∈I} Uα is an upper bound of it since for any two different x, y ∈ L, if\n\n∅ ≠ (x + UI) ∩ (y + UI)\n = (x + ⋃ Uα) ∩ (y + ⋃ Uα)\n    α∈I      α∈I\n = (⋃ (x + Uα)) ∩ (⋃ (y + Uα)),\n  α∈I     α∈I\n\nthen certainly there would exist two α, β ∈ I for which (x + Uα) ∩ (y + Uβ) ≠ ∅, and thus by considering α ≥ β we would get that (x + Uα) ∩ (y + Uα) ≠ ∅, which would be a contradiction.\n\nLet U be a ⊆-maximal element of 𝒫. To see that FL := G \\ (L + U) has empty interior, we will proceed by contradiction. First note that if V := int(FL) ≠ ∅, then V + L ⊆ FL since if there were v ∈ V, u ∈ U and x₁, x₂ ∈ L such that v + x₁ = u + x₂, then v = (x₁ + x₂) + u ∈ (L + U) ∩ V, which is not possible. A consequence of this fact is that for any x ∈ L, x + V = V. Indeed, as V is the greatest open set contained in FL, certainly x + V ⊆ V for every x ∈ L. On the other hand, since any v ∈ V can be written as v = x + (x + v) and x + v ∈ x + V ⊆ V for every x ∈ L, we conclude that V ⊆ x + V for all x ∈ L.\n\nNow we construct a non-empty open subset V′ ⊆ V for which (x + V′) + (y + V′) = ∅ if x, y ∈ L are distinct. In order to do this, for any v ∈ V consider a disjoint family of open sets {Ux}x∈L in V such that v + x ∈ Ux for any x ∈ L. Then we can consider V′ as ⋂_{x∈L} x + Ux. Note that v ∈ V′ because for any x ∈ L, v = x + (x + v) ∈ x + Ux. Moreover, V′ ⊆ U_{0_G} ⊆ V and certainly for each two distinct x, y ∈ L, (x + V′) + (y + V′) ⊆ (x + x + Ux) ∩ (y + y + Uy) = ∅.\n\nWe claim that the identity neighbourhood \\( W := U \\cup V' \\in \\mathbb{P} \\). Indeed, note that for any two different \\( x, y \\in L \\),\n\n\\[\n(x+W) \\cap (y+W) = (x + (U \\cup V')) \\cap (y + (U \\cup V')) \\\\\n= ((x+U) \\cup (x+V')) \\cap ((y+U) \\cup (y+V')) \\\\\n= ((x+U) \\cap (y+U)) \\cup ((x+U) \\cap (y+V')) \\cup \\\\\n\\qquad ((x+V') \\cap (y+U)) \\cup ((x+V') \\cap (y+V')) \\\\\n= \\varnothing.\n\\]\n\nSince \\( V' \\neq \\varnothing \\), \\( W \\) is an element of \\( \\mathbb{P} \\) that strictly contains the maximal element \\( U \\). Hence we reach a contradiction by assuming that \\( F_L \\) has non-empty interior. \\(\\Box\\)",
+      "route": "verify-math",
+      "route_rationale": "Long Zorn-based topological argument; reviewed informally step by step.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::PROOF::2",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.7,
+        "reasoning": "Every step audits correctly. $\\mathcal{P} \\neq \\emptyset$: with $\\{U_x\\}_{x \\in L}$ disjoint open and $x \\in U_x$, the set $U := \\bigcap_{x \\in L}(x + U_x)$ is an open identity neighbourhood ($0_G \\in x + U_x$ since $x \\in U_x$) and $x + U \\subseteq U_x$ by $x + x = 0_G$, giving disjointness. Chains: the union works, and the displayed contradiction argument correctly reduces to a single $U_\\alpha$ by directedness. Maximal element: $V := \\mathrm{int}(F_L) \\neq \\emptyset$ gives $V + L \\subseteq F_L$ (else $v = (x_1+x_2)+u \\in (L+U) \\cap V$) and hence $x + V = V$ for $x \\in L$; the construction of $V'$ is legitimate, as $v + x \\in V$ for all $x \\in L$, these points are pairwise distinct, and $V$ is open, so Hausdorffness supplies the disjoint family inside $V$. $W := U \\cup V' \\in \\mathcal{P}$ holds because all four terms of the expansion vanish — the two cross terms because $x + U \\subseteq L + U$ while $y + V' \\subseteq y + V = V \\subseteq F_L$, which is disjoint from $L + U$; the paper asserts this without comment but it is true. Finally $V' \\cap U = \\emptyset$ (same reason), so $W \\supsetneq U$ and maximality is contradicted. Two purely presentational defects, deliberately NOT flagged under the rubric's exclusion of typos: the set operation in \"construct a non-empty open subset $V' \\subseteq V$ for which $(x + V') + (y + V') = \\emptyset$\" and in the subsequent \"$(x + V') + (y + V') \\subseteq (x + x + U_x) \\cap (y + y + U_y) = \\emptyset$\" should be $\\cap$, not $+$ (a sum of non-empty sets is never empty); and $\\mathcal{P}$ is typeset as $\\mathbb{P}$ in the $W \\in \\mathbb{P}$ claim. Neither affects the mathematics.",
+        "predicted_error_category": null,
+        "snippet_type": "PROOF_STEP",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.7
+    },
+    {
+      "snippet_id": "paper::EQUATION::1",
+      "snippet_type": "EQUATION",
+      "location": "Section 2 — proof of Lemma 2.3, displayed expansion",
+      "content": "\\[\n(x+W) \\cap (y+W) = (x + (U \\cup V')) \\cap (y + (U \\cup V')) \\\\\n= ((x+U) \\cup (x+V')) \\cap ((y+U) \\cup (y+V')) \\\\\n= ((x+U) \\cap (y+U)) \\cup ((x+U) \\cap (y+V')) \\cup \\\\\n\\qquad ((x+V') \\cap (y+U)) \\cup ((x+V') \\cap (y+V')) \\\\\n= \\varnothing.\n\\]",
+      "route": "verify-math",
+      "route_rationale": "Pure set algebra, verifiable by inspection.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::1",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.8,
+        "reasoning": "The algebra is right. $x + (U \\cup V') = (x+U) \\cup (x+V')$ because translation is a bijection, and intersection distributes over union, giving exactly the four displayed terms. Each vanishes: $(x+U) \\cap (y+U) = \\emptyset$ since $U \\in \\mathcal{P}$; $(x+V') \\cap (y+V') = \\emptyset$ by the construction of $V'$; and the two cross terms because $x + U \\subseteq L + U$ while $y + V' \\subseteq y + V = V \\subseteq F_L = G \\setminus (L+U)$. So the final \"$= \\varnothing$\" is correct, though the paper leaves the cross terms unjustified.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::PROOF::3",
+      "snippet_type": "PROOF",
+      "location": "Section 2 — Proof of Theorem 1.1",
+      "content": "Proof of Theorem 1.1. Let \\( G \\) be a Polish group with more than two elements. By the preceding remarks, the only case left to consider is when \\( G \\) is a Boolean group of continuum cardinality.\n\nLet \\( \\{x_i\\}_{i<n} \\subset G \\) be a finite collection with more than two elements of \\(\\mathbb{Z}_2\\)-linearly independent elements. Consider an identity neighbourhood \\( U \\subset G \\) as in Lemma 2.3 associated to \\( \\{x_i\\}_{i<n} \\). As \\( G \\) is necessarily non-discrete, the neighbourhood \\( U \\) is infinite. Since \\( U \\) does not contain non-trivial linear combinations of \\( \\{x_i\\}_{i<n} \\), every \\( t \\in U \\setminus \\{0_G\\} \\) is \\(\\mathbb{Z}_2\\)-linearly independent from \\( \\{x_i\\}_{i<n} \\).\n\nWith the Kuratowski–Zorn lemma we can construct a maximal \\(\\mathbb{Z}_2\\)-linearly independent subset \\( Y \\subseteq U \\). Note that \\( U \\subseteq \\text{span}(Y) \\) since if there were a \\( u \\in U \\setminus \\text{span}(Y) \\), then certainly \\( Y \\cup \\{u\\} \\) would be a linearly independent subset of \\( U \\) strictly larger than \\( Y \\), contradicting the maximality of the latter. Consequently, we can consider the subgroup \\( H \\subseteq G \\) generated by \\( Y \\) and \\( \\{x_i\\}_{i<n} \\). By item (2) of Lemma 2.3, \\( H \\) is dense in \\( G \\) since it contains the dense subset \\( U + \\text{span}\\{x_i\\}_{i<n} \\).\n\nAs a result, to construct the desired topological group automorphism we take any non-trivial automorphism \\( \\varphi \\) of \\( \\text{span}\\{x_i\\}_{i<n} \\) and extend it to a \\(\\mathbb{Z}_2\\)-automorphism of \\( H \\) by setting \\( \\varphi(y) = y \\) for \\( y \\in Y \\). Note that \\( \\varphi \\) is a homeomorphism since for any neighbourhood identity \\( V \\) of \\( 0_H \\), the identity neighbourhood \\( U \\cap V \\) is such that \\( \\varphi(U \\cap V) = U \\cap V \\subseteq V \\) and certainly the same happens with \\( \\varphi^{-1} \\). Consequently, by Lemma 2.2 we can extend \\( \\varphi \\) to a non-trivial topological automorphism of \\( G \\). \\(\\Box\\)",
+      "route": "verify-math",
+      "route_rationale": "Holistic informal review of the paper's main proof; its single load-bearing step was additionally routed to Lean as `paper::PROOF_STEP::0`.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::PROOF::3",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.85,
+        "reasoning": "Most of the proof is sound: $G$ is non-discrete (a discrete Polish space is countable, but $|G| = \\mathfrak{c}$), hence every identity neighbourhood is infinite; $U \\cap L = \\{0_G\\}$ follows from Lemma 2.3(1) applied to the pair $0_G \\neq x'$; $U \\subseteq \\mathrm{span}(Y)$ follows from maximality of $Y$; and $H \\supseteq U + \\mathrm{span}\\{x_i\\}$ is dense by Lemma 2.3(2). The proof then breaks at the construction of $\\varphi$, and it breaks in two linked ways.\n\n**(a) $\\varphi$ need not be well defined.** Defining $\\varphi$ to be a non-trivial automorphism on $L = \\mathrm{span}\\{x_i\\}_{i<n}$ and the identity on $Y$ determines a $\\mathbb{Z}_2$-automorphism of $H = \\mathrm{span}(Y) + L$ only if $Y \\cup \\{x_i\\}_{i<n}$ is linearly independent, i.e. only if $\\mathrm{span}(Y) \\cap L = \\{0_G\\}$. The paper establishes only the much weaker fact that each individual $t \\in U \\setminus \\{0_G\\}$ lies outside $L$. Lemma 2.3(1) does upgrade this to $(U + U) \\cap L = \\{0_G\\}$, but it says nothing about sums of three or more elements of $U$, and $\\mathrm{span}(Y) = \\mathrm{span}(U)$ is the open subgroup generated by $U$. The inference is invalid: see the machine-checked refutation in `paper::PROOF_STEP::0`.\n\n**(b) The two requirements on $Y$ are in tension.** The continuity argument that immediately follows — \"$\\varphi(U \\cap V) = U \\cap V \\subseteq V$\" — needs $\\varphi$ to fix $U$ pointwise, i.e. needs $U \\subseteq \\mathrm{span}(Y)$ and $\\varphi|_{\\mathrm{span}(Y)} = \\mathrm{id}$. So one cannot repair (a) by shrinking $Y$ to a set with $\\mathrm{span}(Y) \\cap L = \\{0_G\\}$ without also losing $U \\subseteq \\mathrm{span}(Y)$ and with it the proof of continuity. Concretely, whenever $\\mathrm{span}(U) = G$ — which happens for every identity neighbourhood $U$ of a *connected* Boolean Polish group, e.g. the measure algebra of $[0,1]$ under symmetric difference — one gets $L \\subseteq \\mathrm{span}(Y)$, so $\\varphi|_L = \\mathrm{id}$ is forced and no non-trivial $\\varphi$ of the stated form exists at all. The construction therefore does not cover the connected case, which is not excluded by any hypothesis of Theorem 1.1.\n\nThis invalidates the proof of the paper's main theorem. It is a gap in the argument, not a disproof of Theorem 1.1, which may well be true.",
+        "predicted_error_category": "Calculus/Proof error",
+        "snippet_type": "PROOF_STEP",
+        "contradiction_locations": []
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::PROOF_STEP::0",
+      "snippet_type": "PROOF_STEP",
+      "location": "Section 2 — Proof of Theorem 1.1, extension of the automorphism",
+      "content": "As a result, to construct the desired topological group automorphism we take any non-trivial automorphism \\( \\varphi \\) of \\( \\text{span}\\{x_i\\}_{i<n} \\) and extend it to a \\(\\mathbb{Z}_2\\)-automorphism of \\( H \\) by setting \\( \\varphi(y) = y \\) for \\( y \\in Y \\).",
+      "route": "verify-math-lean",
+      "route_rationale": "The single step the main proof's correctness turns on; stated as an inference it is refutable, so the compiler can settle it.",
+      "lean_result": {
+        "snippet_id": "paper::PROOF_STEP::0",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.92,
+        "reasoning": "Formalised the inference the step makes: *given* a $\\mathbb{Z}_2$-linearly independent $\\{x_i\\}_{i<n}$ with $L = \\mathrm{span}\\{x_i\\}$, an identity neighbourhood $U$ satisfying Lemma 2.3(1) and 2.3(2), the paper's stated reason that every $t \\in U \\setminus \\{0\\}$ lies outside $L$, and a maximal $\\mathbb{Z}_2$-linearly independent $Y \\subseteq U$ (hence $U \\subseteq \\mathrm{span}(Y)$), there exists a $\\mathbb{Z}_2$-automorphism of $H = \\mathrm{span}(Y \\cup L)$ that is the identity on $Y$ and non-trivial on $L$.\n\nLean compiled a counterexample in which **every** one of those hypotheses holds and the conclusion fails. Take $G = (\\mathbb{Z}_2)^3$ with the discrete topology — a Hausdorff Boolean topological group — with $n = 1$, $x_0 = (1,1,1)$, $U = \\{0, e_0, e_1, e_2\\}$ and $Y = \\{e_0, e_1, e_2\\}$. The compiler checked: $\\{x_0\\}$ independent and non-zero; $0 \\in U$; Lemma 2.3(1), i.e. $a + u \\neq b + u'$ for distinct $a, b \\in L$ and $u, u' \\in U$; Lemma 2.3(2) in the strongest possible form $L + U = G$, so $G \\setminus (L+U) = \\emptyset$ has empty interior; every $t \\in U \\setminus \\{0\\}$ outside $L$; $Y \\subseteq U$ injective, $\\mathbb{Z}_2$-linearly independent, with $U \\subseteq \\mathrm{span}(Y)$ — and then that **no** $\\varphi \\in \\mathrm{GL}(G)$ is the identity on $Y$ while moving some element of $L$, because $\\mathrm{span}(Y) = \\top \\ni x_0$ forces any linear map fixing $Y$ pointwise to be the identity.\n\nSo the reasons the paper gives do not entail well-definedness of $\\varphi$: what is actually needed, and never established, is that $Y \\cup \\{x_i\\}_{i<n}$ be linearly independent. The one standing hypothesis of Theorem 1.1 not reproduced in the counterexample is $|G| = \\mathfrak{c}$ (equivalently non-discreteness), which the proof invokes *only* to conclude that $U$ is infinite — never in the independence argument; and the obstruction persists for infinite $U$, indeed it is unavoidable whenever $\\mathrm{span}(U) = G$, as for a connected Boolean Polish group.",
+        "predicted_error_category": "Formally refuted",
+        "snippet_type": "PROOF_STEP",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean",
+          "formal_statement": "theorem thm_1_1_extension_step_refuted :\n    LinearIndependent (ZMod 2) (fun _ : Fin 1 => x0) ∧ x0 ≠ 0 ∧\n    (0 : V) ∈ U ∧\n    (∀ a ∈ L, ∀ b ∈ L, a ≠ b → ∀ u ∈ U, ∀ u' ∈ U, a + u ≠ b + u') ∧\n    (∀ v : V, ∃ a ∈ L, ∃ u ∈ U, v = a + u) ∧\n    (∀ t ∈ U, t ≠ 0 → t ∉ L) ∧\n    (Y = Set.range e ∧ Function.Injective e ∧ LinearIndependent (ZMod 2) e ∧\n      Y ⊆ U ∧ U ⊆ (span (ZMod 2) Y : Set V)) ∧\n    ¬ ∃ φ : V ≃ₗ[ZMod 2] V, (∀ y ∈ Y, φ y = y) ∧ ∃ v ∈ L, φ v ≠ v := by ...\n-- where  V := Fin 3 → ZMod 2,  e i := Pi.single i 1,  x0 := fun _ => 1,\n--        U := {0, e 0, e 1, e 2},  Y := Set.range e,  L := span (ZMod 2) {x0}",
+          "compiler_feedback": "`lake env lean Paper/TMP.lean` exit status 0. `lean_diagnostic_messages` returned a single severity-`info` item and no errors/warnings: \"'PaperStep.thm_1_1_extension_step_refuted' depends on axioms: [propext, Classical.choice, Quot.sound]\" (no sorryAx).",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 3,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.92
+    },
+    {
+      "snippet_id": "paper::THEOREM::1",
+      "snippet_type": "THEOREM",
+      "location": "Section 3 — Theorem 3.1",
+      "content": "Theorem 3.1. A non-trivial Polish group cannot be uniquely homogeneous.",
+      "route": "verify-math-lean",
+      "route_rationale": "On a two-element group the claim is finitely decidable, so a refutation attempt was cheap and conclusive.",
+      "lean_result": {
+        "snippet_id": "paper::THEOREM::1",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.9,
+        "reasoning": "Formalised Theorem 3.1 with the paper's own definition of unique homogeneity (§3: \"for any two points $p, q \\in X$ there is a unique homeomorphism carrying $p$ to $q$\") and the paper's own hypothesis, \"non-trivial\", i.e. more than one element.\n\nLean refuted it with $G = \\mathbb{Z}_2$. The compiler checked that `ZMod 2` is a non-trivial, separable, completely metrizable (`PolishSpace`) topological group, and proved `∀ p q : ZMod 2, ∃! h : ZMod 2 ≃ₜ ZMod 2, h p = q`: translation by $q - p$ works, and it is the only homeomorphism that does, because a homeomorphism of a two-point set is a bijection, so $h\\,p = q$ forces $h\\,x = q+1$ at the other point $x = p+1$. Hence $\\mathbb{Z}_2$ is a non-trivial uniquely homogeneous Polish group.\n\nThis is an internal inconsistency as much as an external counterexample: Theorem 1.1, from which Theorem 3.1 is derived, is explicitly restricted to Polish groups \"with more than two elements\" — exactly because $\\mathbb{Z}_2$ has no non-trivial automorphism — but Theorem 3.1 and the abstract's \"there are no uniquely homogeneous Polish groups\" drop that restriction to \"non-trivial\". The repair is to state Theorem 3.1 for Polish groups with more than two elements; the substance of Section 3 survives, so the severity is minor.",
+        "predicted_error_category": "Formally refuted",
+        "snippet_type": "THEOREM",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean",
+          "formal_statement": "theorem zmod_two_uniquely_homogeneous (p q : ZMod 2) :\n    ∃! h : ZMod 2 ≃ₜ ZMod 2, h p = q := by ...\n\ntheorem thm_3_1_refuted :\n    ¬ ∀ (G : Type) (_ : TopologicalSpace G) (_ : Group G),\n        Nontrivial G → PolishSpace G → IsTopologicalGroup G →\n        ¬ ∀ p q : G, ∃! h : G ≃ₜ G, h p = q := by ...",
+          "compiler_feedback": "`lake env lean Paper/TMP.lean` exit status 0; `lean_diagnostic_messages` with severity=error returned an empty list. \"'zmod_two_uniquely_homogeneous' depends on axioms: [propext, Classical.choice, Quot.sound]\" and \"'thm_3_1_refuted' depends on axioms: [propext, Classical.choice, Quot.sound]\" (no sorryAx). The instance checks `PolishSpace (ZMod 2)`, `IsTopologicalAddGroup (ZMod 2)`, `TopologicalSpace.SeparableSpace (ZMod 2)` and `Nontrivial (ZMod 2)` all elaborated.",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.9
+    }
+  ],
+  "findings": [
+    {
+      "snippet_id": "paper::PROOF_STEP::0",
+      "category": "Formally refuted",
+      "severity": "critical",
+      "confidence": 0.92,
+      "evidence": "The proof of Theorem 1.1 defines its automorphism by taking \"any non-trivial automorphism $\\varphi$ of $\\mathrm{span}\\{x_i\\}_{i<n}$\" and \"setting $\\varphi(y) = y$ for $y \\in Y$\". That is well defined only if $Y \\cup \\{x_i\\}_{i<n}$ is $\\mathbb{Z}_2$-linearly independent, i.e. $\\mathrm{span}(Y) \\cap \\mathrm{span}\\{x_i\\} = \\{0_G\\}$. The paper's justification establishes only that each **single** $t \\in U \\setminus \\{0_G\\}$ lies outside $\\mathrm{span}\\{x_i\\}$; Lemma 2.3(1) extends this to sums of two elements of $U$ but says nothing about longer sums, and $\\mathrm{span}(Y) = \\mathrm{span}(U)$ is the whole open subgroup generated by $U$.\n\nLean compiled a counterexample in which every hypothesis the step invokes holds and the conclusion fails. In $G = (\\mathbb{Z}_2)^3$ (discrete, so a Hausdorff Boolean topological group) with $n = 1$, $x_0 = (1,1,1)$, $U = \\{0, e_0, e_1, e_2\\}$, $Y = \\{e_0, e_1, e_2\\}$: $\\{x_0\\}$ is independent; $0_G \\in U$; Lemma 2.3(1) holds, $a + u \\neq b + u'$ for distinct $a,b \\in L$, $u,u' \\in U$; Lemma 2.3(2) holds in the strongest form $L + U = G$; every $t \\in U \\setminus \\{0_G\\}$ lies outside $L$; and $Y \\subseteq U$ is independent and maximal, so $U \\subseteq \\mathrm{span}(Y)$. Yet $\\mathrm{span}(Y) = G \\ni x_0$, so every $\\mathbb{Z}_2$-linear map fixing $Y$ pointwise is the identity and **no** automorphism of the required form exists.\n\nThe gap cannot be closed by shrinking $Y$ either: the continuity argument in the very next sentence, \"$\\varphi(U \\cap V) = U \\cap V \\subseteq V$\", needs $\\varphi$ to fix $U$ pointwise, hence needs $U \\subseteq \\mathrm{span}(Y)$ — the opposite requirement. Whenever $\\mathrm{span}(U) = G$, as for every identity neighbourhood of a *connected* Boolean Polish group (e.g. the measure algebra of $[0,1]$ under symmetric difference), one gets $\\mathrm{span}\\{x_i\\} \\subseteq \\mathrm{span}(Y)$, forcing $\\varphi|_L = \\mathrm{id}$, and the construction produces nothing. Theorem 1.1 is not thereby disproved — only its proof is invalid as written.\n\nLean file: `MATH_VERIFICATION/Paper/Paper/Verified/0011-PolishAut__PROOF_STEP__0_opus5.lean`, axioms `[propext, Classical.choice, Quot.sound]`, no `sorryAx`.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "As a result, to construct the desired topological group automorphism we take any non-trivial automorphism \\( \\varphi \\) of \\( \\text{span}\\{x_i\\}_{i<n} \\) and extend it to a \\(\\mathbb{Z}_2\\)-automorphism of \\( H \\) by setting \\( \\varphi(y) = y \\) for \\( y \\in Y \\)."
+    },
+    {
+      "snippet_id": "paper::THEOREM::1",
+      "category": "Formally refuted",
+      "severity": "minor",
+      "confidence": 0.9,
+      "evidence": "Theorem 3.1 is false as stated, and the abstract's corresponding claim — \"we prove that there are no uniquely homogeneous Polish groups\" — is false with it. $G = \\mathbb{Z}_2$ is a non-trivial Polish group which *is* uniquely homogeneous under the paper's own definition (§3: \"for any two points $p, q \\in X$ there is a unique homeomorphism carrying $p$ to $q$\").\n\nLean verified that `ZMod 2` is a non-trivial, separable, completely metrizable topological group and proved `∀ p q : ZMod 2, ∃! h : ZMod 2 ≃ₜ ZMod 2, h p = q`: translation by $q - p$ carries $p$ to $q$, and it is the unique such homeomorphism, since a self-homeomorphism of a two-point discrete space is a bijection and $h\\,p = q$ pins down $h\\,(p+1) = q+1$.\n\nThe defect is an omitted hypothesis, and it is visible inside the paper: Theorem 1.1, on which Theorem 3.1 rests, is stated for Polish groups \"with more than two elements\" — precisely because $\\mathbb{Z}_2$ admits only the identity automorphism — whereas Theorem 3.1 weakens this to \"non-trivial\". Restating Theorem 3.1 for Polish groups with more than two elements repairs it, so the surrounding argument survives.\n\nLean file: `MATH_VERIFICATION/Paper/Paper/Verified/0011-PolishAut__THEOREM__1_opus5.lean`, axioms `[propext, Classical.choice, Quot.sound]`, no `sorryAx`.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "Theorem 3.1. A non-trivial Polish group cannot be uniquely homogeneous."
+    },
+    {
+      "snippet_id": "paper::PROOF::3",
+      "category": "Calculus/Proof error",
+      "severity": "critical",
+      "confidence": 0.85,
+      "evidence": "Informal corroboration of the finding on `paper::PROOF_STEP::0`, at the level of the whole proof of Theorem 1.1. Everything up to the construction of $\\varphi$ checks out: $G$ is non-discrete since a discrete Polish space is countable while $|G| = \\mathfrak{c}$, so $U$ is infinite; $U \\cap \\mathrm{span}\\{x_i\\} = \\{0_G\\}$ follows from Lemma 2.3(1) with the pair $0_G \\neq x'$; $U \\subseteq \\mathrm{span}(Y)$ follows from maximality of $Y$; and $H$ is dense by Lemma 2.3(2), since $\\mathrm{int}(G \\setminus (L+U)) = \\emptyset$ is exactly density of $L + U$.\n\nThe proof then asserts two things about $\\varphi$ that cannot both hold. Well-definedness of \"$\\varphi$ non-trivial on $\\mathrm{span}\\{x_i\\}_{i<n}$, $\\varphi(y) = y$ on $Y$\" requires $\\mathrm{span}(Y) \\cap \\mathrm{span}\\{x_i\\} = \\{0_G\\}$, which is never established; the continuity argument requires $\\varphi|_U = \\mathrm{id}$, i.e. $U \\subseteq \\mathrm{span}(Y)$. Since $\\mathrm{span}(Y) = \\mathrm{span}(U)$, the two demands conflict exactly when the open subgroup generated by $U$ meets $\\mathrm{span}\\{x_i\\}$ non-trivially — and it equals $G$ whenever $G$ is connected, a case Theorem 1.1 does not exclude. No hypothesis of the theorem rules this out, so the proof does not establish Theorem 1.1 in full generality.",
+      "verifier": "verify-math",
+      "exact_quote": "As a result, to construct the desired topological group automorphism we take any non-trivial automorphism \\( \\varphi \\) of \\( \\text{span}\\{x_i\\}_{i<n} \\) and extend it to a \\(\\mathbb{Z}_2\\)-automorphism of \\( H \\) by setting \\( \\varphi(y) = y \\) for \\( y \\in Y \\)."
+    }
+  ],
+  "verdict": "CRITICAL_ERRORS",
+  "verdict_confidence": 0.85,
+  "summary": "Extracted 13 mathematical objects from this 4-page note on topological automorphisms of Polish groups and checked all of them: 9 by informal review (`verify-math`) and 4 by formalisation in Lean 4 (`verify-math-lean`), all pinned to the shared project `MATH_VERIFICATION/Paper`. The four Lean snippets all returned a decisive verdict — 2 `PASSED`, 2 `REFUTED`, 0 `FAILED`, 0 `NOT_ATTEMPTED` — so no Step-5 informal fallbacks were required and no snippet was left unsettled by a verifier failure.\n\n**What Lean settled.** Proposition 2.1 (a topological group that is non-abelian or has an element of order $> 2$ has a non-trivial topological automorphism) compiles as stated, for an arbitrary topological group and with the paper's own definition of topological automorphism; the case split the paper performs is genuinely needed, since inversion is a homomorphism only in the abelian case, and the paper gets it right. The order formula $|\\mathrm{GL}_n(\\mathbb{Z}_2)| = (2^n-1)(2^n-2)\\cdots(2^n-2^{n-1})$ compiles from `Matrix.card_GL_field`, with `decide` cross-checks at $n = 2$ ($6$) and $n = 3$ ($168$).\n\n**What Lean refuted.** Two things. First, and most seriously, the load-bearing step in the proof of Theorem 1.1: $\\varphi$ is defined to be a non-trivial automorphism of $\\mathrm{span}\\{x_i\\}_{i<n}$ and the identity on $Y$, which presupposes $\\mathrm{span}(Y) \\cap \\mathrm{span}\\{x_i\\} = \\{0_G\\}$, i.e. that $Y \\cup \\{x_i\\}_{i<n}$ is $\\mathbb{Z}_2$-linearly independent. The paper only shows that each *individual* $t \\in U \\setminus \\{0_G\\}$ lies outside $\\mathrm{span}\\{x_i\\}$. Lean compiled a counterexample — $G = (\\mathbb{Z}_2)^3$ discrete, $x_0 = (1,1,1)$, $U = \\{0, e_0, e_1, e_2\\}$, $Y = \\{e_0,e_1,e_2\\}$ — in which every hypothesis the step invokes holds (including both conclusions of Lemma 2.3, with $L + U = G$) and no automorphism of the required form exists. The gap is not repairable by shrinking $Y$, because the very next sentence's continuity argument needs the opposite inclusion $U \\subseteq \\mathrm{span}(Y)$; for a *connected* Boolean Polish group every identity neighbourhood generates all of $G$, so there the construction yields nothing at all. Second, Theorem 3.1 (\"a non-trivial Polish group cannot be uniquely homogeneous\") is false as stated: Lean verified that $\\mathbb{Z}_2$ is a non-trivial Polish group with exactly one homeomorphism carrying $p$ to $q$ for every pair $p, q$. This is an internal inconsistency — Theorem 1.1 is restricted to groups with *more than two* elements, and Theorem 3.1 and the abstract silently weaken that to \"non-trivial\".\n\n**No disagreement between verifiers.** The informal review of the full proof of Theorem 1.1 (`paper::PROOF::3`) reached the same conclusion as the Lean refutation of its key step, and every other informally reviewed snippet came back clean: Lemma 2.2 and its proof (correct — a continuous homomorphism is uniformly continuous for the two-sided uniformity and Polish groups are Raikov-complete), Lemma 2.3 and its long Zorn argument (correct, including the two cross terms the paper leaves unjustified in the $W = U \\cup V'$ expansion), the displayed $(x+W) \\cap (y+W)$ computation, the proof of Proposition 2.1, and the Boolean-group reduction paragraph. Two presentational defects in the proof of Lemma 2.3 are recorded but deliberately not raised as findings: \"$(x + V') + (y + V') = \\emptyset$\" (twice) should read $(x+V') \\cap (y+V') = \\emptyset$, and $\\mathcal{P}$ is typeset as $\\mathbb{P}$ once.\n\n**Verdict.** `CRITICAL_ERRORS`: the proof of the paper's main theorem contains a step whose governing inference Lean refuted, and the proof cannot be patched without breaking its own continuity argument. Theorem 1.1 itself is *not* disproved and may well be true — this run settles the proof, not the claim, and `paper::THEOREM::0` is recorded as `UNVERIFIABLE` for that reason. Theorem 3.1 is separately false as stated but repairable by importing Theorem 1.1's \"more than two elements\" hypothesis, hence `minor`.\n\n**Lean project lifecycle.** `MATH_VERIFICATION/Paper` already existed with a built Mathlib (~7.4 GB) and holds saved proofs from many other papers' runs, so per `verify-math-lean`'s deletion rule a reused project was not deleted; `lean_project_kept` is `true` and was checked against the filesystem. Only per-snippet scratch (`TMP.lean`, `claim.md`) was removed; the four proofs are saved as `Paper/Verified/0011-PolishAut__{PROPOSITION__0,EQUATION__0,PROOF_STEP__0,THEOREM__1}_opus5.lean`."
+}

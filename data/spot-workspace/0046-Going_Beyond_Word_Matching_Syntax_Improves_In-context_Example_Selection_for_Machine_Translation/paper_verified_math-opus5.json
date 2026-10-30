@@ -1,0 +1,141 @@
+{
+  "paper_name": "paper",
+  "paper_path": "/Users/iacopoghinassi/Documents/Github/Wittgenstein/data/spot-workspace/0046-Going_Beyond_Word_Matching_Syntax_Improves_In-context_Example_Selection_for_Machine_Translation/paper.md",
+  "tag": "opus5",
+  "lean_project": "MATH_VERIFICATION/Paper",
+  "lean_project_kept": true,
+  "totals": {
+    "snippets_extracted": 4,
+    "routed_to_math": 2,
+    "routed_to_lean": 2,
+    "lean_passed": 2,
+    "lean_refuted": 0,
+    "lean_failed": 0,
+    "fallbacks_run": 0,
+    "errors_detected": 0
+  },
+  "results": [
+    {
+      "snippet_id": "paper::EQUATION::0",
+      "snippet_type": "EQUATION",
+      "location": "Methodology — Polynomial Distance (para. 3–5); worked example in Appendix A",
+      "content": "Concretely, given d as the number of dependency labels, which indicate the grammatical relations between dependents and their heads, we transform dependency trees into polynomials recursively based on two variable sets: X = {x₁, x₂, ... x_d} and Y = {y₁, y₂, ... y_d}. Considering a node with Label l as nˡ, its corresponding polynomial is represented as:\n\n$$\nP(n^l) =\n\\begin{cases}\nx_l, & n^l \\text{ is leaf,} \\\\\ny_l + \\prod_{i=1}^k P(n_i), & n^l \\text{ is non-leaf,}\n\\end{cases}\n$$\n\nwhere n₁, ..., nₖ are all child nodes of nˡ if it is non-leaf. Then, given a root node r, we obtain the polynomial representing the whole tree by computing P(r). A detailed demonstration from Liu et al. (2022) can be found in Appendix A.",
+      "route": "verify-math-lean",
+      "route_rationale": "A recursive tree→polynomial construction. Well-definedness and agreement with the paper's own worked example (Appendix A, Figure 4) are crisp, formalisable claims.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::0",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.92,
+        "reasoning": "The recursion $P(n^l) = x_l$ (leaf) / $y_l + \\prod_{i=1}^{k} P(n_i)$ (non-leaf) was formalised over an explicit rose tree `DTree` with `ℕ` labels, into an arbitrary commutative ring with indeterminate families `x y : ℕ → R` (stating the identity over every commutative ring is equivalent to, and no weaker than, stating it in $\\mathbb{Z}[X \\cup Y]$). The labelled subtree drawn in Appendix A, Figure 4 was encoded node for node (node D: label 12 with leaf children 8, 26, 4; node C: label 26 with leaf 7 and node D; node B: label 1 with leaves 25 and 3; node A: label 27 with children B and C). Lean then proved that the recursion reproduces, exactly, all four polynomials the figure prints: $x_4x_8x_{26}+y_{12}$ at D, $x_4x_7x_8x_{26}+x_7y_{12}+y_{26}$ at C, $x_3x_{25}+y_1$ at B, and the full seven-term expansion $x_3x_4x_7x_8x_{25}x_{26} + x_4x_7x_8x_{26}y_1 + x_3x_7x_{25}y_{12} + x_3x_{25}y_{26} + x_7y_1y_{12} + y_1y_{26} + y_{27}$ at A. The file compiles with exit status 0, no severity-1 diagnostic, no `sorry`; `lean_verify` on `P_nA` reports axioms `[propext]` only. The equation is internally consistent with the paper's own demonstration.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/0046-SyntaxICL__EQUATION__0_opus5.lean",
+          "formal_statement": "inductive DTree where\n  | mk (label : ℕ) (children : List DTree) : DTree\n\nmutual\ndef P (x y : ℕ → R) : DTree → R\n  | .mk l [] => x l\n  | .mk l (c :: cs) => y l + Pprod x y (c :: cs)\ndef Pprod (x y : ℕ → R) : List DTree → R\n  | [] => 1\n  | c :: cs => P x y c * Pprod x y cs\nend\n\ndef nD : DTree := .mk 12 [.mk 8 [], .mk 26 [], .mk 4 []]\ndef nC : DTree := .mk 26 [.mk 7 [], nD]\ndef nB : DTree := .mk 1 [.mk 25 [], .mk 3 []]\ndef nA : DTree := .mk 27 [nB, nC]\n\ntheorem P_nA (x y : ℕ → R) :\n    P x y nA =\n      x 3 * x 4 * x 7 * x 8 * x 25 * x 26\n      + x 4 * x 7 * x 8 * x 26 * y 1\n      + x 3 * x 7 * x 25 * y 12\n      + x 3 * x 25 * y 26\n      + x 7 * y 1 * y 12\n      + y 1 * y 26\n      + y 27 := by\n  simp [nA, nB, nC, nD, P, Pprod]; ring\n\n-- plus P_nD, P_nC, P_nB for the three intermediate nodes printed in Figure 4.",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.92
+    },
+    {
+      "snippet_id": "paper::EQUATION::1",
+      "snippet_type": "EQUATION",
+      "location": "Methodology — Polynomial Distance (para. 6–7)",
+      "content": "Next, we compute the distance between polynomials. Note that the polynomial representing a dependency tree can be described term by term. For each term $c x_1^{e_{x1}} x_2^{e_{x2}} ... x_d^{e_{xd}} y_1^{e_{y1}} y_2^{e_{y2}} ... y_d^{e_{yd}}$ in the polynomial, where e_{xi}, e_{yi} and c are the exponent of variable xᵢ, yᵢ and the coefficient of the term respectively, we denote it as a term vector:\n\n$$\nt = [e_{x1}, e_{x2}, ..., e_{xd}, e_{y1}, e_{y2}, ..., e_{yd}, c]\n$$",
+      "route": "verify-math",
+      "route_rationale": "Pure encoding/notation: it only asserts that a monomial-with-coefficient can be written as a vector of its exponents plus its coefficient. Nothing here needs machine checking.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::1",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.88,
+        "reasoning": "The snippet encodes a single term $c\\,x_1^{e_{x1}}\\cdots x_d^{e_{xd}}\\,y_1^{e_{y1}}\\cdots y_d^{e_{yd}}$ as the vector $t = [e_{x1}, \\dots, e_{xd}, e_{y1}, \\dots, e_{yd}, c]$. The arity is consistent: $d$ exponents for the $X$ variables, $d$ for the $Y$ variables, one coefficient, so $t \\in \\mathbb{Z}^{2d+1}$, matching the $d$ dependency labels declared earlier. The map from terms to vectors is a bijection onto its image — a monomial over $X \\cup Y$ is determined exactly by its exponent multi-index, and the coefficient is carried separately — so the encoding is lossless and $V_P$ is a faithful representation of $P$. No algebraic, fractional, sign or domain error is present. Placing the coefficient $c$ in the same vector as the exponents means the subsequent $\\ell_1$ distance weights a unit change of coefficient the same as a unit change of exponent, but that is a modelling choice inherited from Liu et al. (2022), not a mathematical mistake.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.88
+    },
+    {
+      "snippet_id": "paper::EQUATION::2",
+      "snippet_type": "EQUATION",
+      "location": "Methodology — Polynomial Distance (para. 8–10)",
+      "content": "In this way, a polynomial P can be written as a set of term vectors V_P. Then, we compute the distance between two polynomials (P and Q) as:\n\n$$\nd(P, Q) = \\frac{\\sum_{s \\in V_P} \\min_{t \\in V_Q} \\| s - t \\|_1 + \\sum_{t \\in V_Q} \\min_{s \\in V_P} \\| s - t \\|_1}{|V_P| + |V_Q|}\n$$\n\nwhere ∥s − t∥₁ is the Manhattan distance (Craw, 2017) between term vector s and t.",
+      "route": "verify-math-lean",
+      "route_rationale": "A closed-form two-sided nearest-neighbour (Chamfer) distance. Non-negativity, symmetry, vanishing on identical inputs and identity of indiscernibles are exactly the kind of claims Lean settles.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::2",
+        "verifier_name": "math-lean",
+        "status": "PASSED",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "The formula was formalised with term vectors in $\\mathbb{R}^n$ (a weakening of the paper's integer exponent/coefficient lattice, so every property proved transfers), $\\ell_1$ as `l1 s t = ∑ i, |s i - t i|`, the inner minima as `Finset.inf'` over non-empty term-vector sets, and the denominator as $|V_P| + |V_Q|$. Lean proved `D_sound`: for all non-empty finite $V_P, V_Q$, (i) $d(P,Q) \\ge 0$, (ii) $d(P,Q) = d(Q,P)$, (iii) $d(P,P) = 0$, and (iv) $d(P,Q) = 0 \\Rightarrow V_P = V_Q$. Non-emptiness is not an added hypothesis — the paper's own $\\min_{t \\in V_Q}$ and the denominator $|V_P|+|V_Q|$ are undefined without it. Clean compile, exit 0, no severity-1 diagnostic, no `sorry`; axioms are the three standard Mathlib ones. Secondarily, Lean also proved `D_not_triangle`: the triangle inequality fails, witnessed in dimension 1 by $V_P = \\{(0)\\}$, $V_Q = \\{(0),(10)\\}$, $V_R = \\{(10)\\}$, where $d(P,R) = 10$ but $d(P,Q) + d(Q,R) = 10/3 + 10/3 = 20/3 < 10$. This is recorded as an observation about the terminology, not as an error: the paper never asserts the triangle inequality and its top-$k$ nearest-neighbour selection never uses it.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/0046-SyntaxICL__EQUATION__2_opus5.lean",
+          "formal_statement": "def l1 (s t : Fin n → ℝ) : ℝ := ∑ i, |s i - t i|\n\nnoncomputable def D (VP VQ : Finset (Fin n → ℝ)) (hP : VP.Nonempty) (hQ : VQ.Nonempty) : ℝ :=\n  (∑ s ∈ VP, VQ.inf' hQ (fun t => l1 s t) + ∑ t ∈ VQ, VP.inf' hP (fun s => l1 s t))\n    / ((VP.card : ℝ) + VQ.card)\n\ntheorem D_sound (VP VQ : Finset (Fin n → ℝ)) (hP : VP.Nonempty) (hQ : VQ.Nonempty) :\n    0 ≤ D VP VQ hP hQ ∧ D VP VQ hP hQ = D VQ VP hQ hP ∧ D VP VP hP hP = 0 ∧\n      (D VP VQ hP hQ = 0 → VP = VQ) :=\n  ⟨D_nonneg VP VQ hP hQ, D_comm VP VQ hP hQ, D_self VP hP, D_eq_zero VP VQ hP hQ⟩\n\n-- secondary, also compiled clean:\ntheorem D_not_triangle :\n    ¬ (∀ (m : ℕ) (VP VQ VR : Finset (Fin m → ℝ)) (hP : VP.Nonempty) (hQ : VQ.Nonempty)\n        (hR : VR.Nonempty), D VP VR hP hR ≤ D VP VQ hP hQ + D VQ VR hQ hR)",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::DEFINITION::0",
+      "snippet_type": "DEFINITION",
+      "location": "Methodology — Polynomial Distance (para. 2, 8–10) and Experimental setup (para. 14)",
+      "content": "Compared to other algorithms mentioned above, Polynomial Distance (Liu et al., 2022) is convenient to implement and relatively time-saving to run. So, in this work, we adopt Polynomial Distance between dependency trees to measure the syntactic similarity. [...] Then, we compute the distance between two polynomials (P and Q) as: $$\nd(P, Q) = \\frac{\\sum_{s \\in V_P} \\min_{t \\in V_Q} \\| s - t \\|_1 + \\sum_{t \\in V_Q} \\min_{s \\in V_P} \\| s - t \\|_1}{|V_P| + |V_Q|}\n$$ [...] For each test sample, we compute its Polynomial Distance from each instance of the example database on the source side, and then select the top-k most similar examples.",
+      "route": "verify-math",
+      "route_rationale": "Whether naming $d$ a \"distance\" commits the paper to the metric axioms is a question about how the text is read, not a formal claim; the formal side of it was already settled under EQUATION::2.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::DEFINITION::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.78,
+        "reasoning": "The paper calls $d(P,Q)$ a \"Polynomial Distance\" and uses it to rank candidate examples, taking the top-$k$ most similar. Strictly, $d$ is not a metric: the Lean run under `paper::EQUATION::2` compiled a counterexample showing the triangle inequality fails ($d(P,R) = 10 > 20/3 = d(P,Q) + d(Q,R)$ for $V_P = \\{(0)\\}$, $V_Q = \\{(0),(10)\\}$, $V_R = \\{(10)\\}$). That is not an erratum-worthy error, for two reasons. First, the paper never asserts the triangle inequality or any metric axiom; the name \"Polynomial Distance\" is inherited verbatim from Liu et al. (2022) and \"distance\" is routinely used for dissimilarity measures that are not metrics (Chamfer and earth-mover-style matchings among them). Second, nothing in the method depends on metricity: selection is a direct top-$k$ scan of $d$ against the test source, with no metric-tree indexing, no triangle-inequality pruning, and no clustering that would require it. The properties the method does rely on — non-negativity, symmetry, and $d = 0$ exactly on identical polynomials — were all machine-checked and hold. No invalid algebra, no domain violation.",
+        "predicted_error_category": null,
+        "snippet_type": "DEFINITION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.78
+    }
+  ],
+  "findings": [],
+  "verdict": "NO_ERRORS",
+  "verdict_confidence": 0.82,
+  "summary": "**What was checked.** The manuscript's mathematical content is confined to one block in the methodology (the Polynomial Distance construction): three display equations plus the implicit claim that the resulting quantity is a distance. Four snippets were extracted; two were routed to Lean 4 and two to informal review. Everything in the paper beyond this block is experimental (COMET/BLEU tables, selection strategies, prompt design) and outside this skill's remit.\n\n**What Lean settled.** Both Lean snippets compiled clean (exit 0, no severity-1 diagnostic, no `sorry`, no `sorryAx`).\n\n1. `paper::EQUATION::0` — the recursion $P(n^l) = x_l$ for a leaf and $P(n^l) = y_l + \\prod_{i=1}^{k} P(n_i)$ for a non-leaf was formalised over an explicit rose tree in an arbitrary commutative ring, and checked against the paper's own worked example in Appendix A, Figure 4. It reproduces all four printed polynomials exactly, including the full seven-term expansion $x_3x_4x_7x_8x_{25}x_{26} + x_4x_7x_8x_{26}y_1 + x_3x_7x_{25}y_{12} + x_3x_{25}y_{26} + x_7y_1y_{12} + y_1y_{26} + y_{27}$ at the root of that subtree. Axioms: `[propext]`.\n2. `paper::EQUATION::2` — the distance $d(P,Q)$ was proved non-negative, symmetric, zero on identical term-vector sets, and zero *only* on identical term-vector sets, for all non-empty finite $V_P, V_Q$.\n\n**What Lean could not settle — and one thing it settled that is not a finding.** No Lean run FAILED, so no informal fallbacks were triggered and nothing is left unsettled on the formal side. A second compiled theorem shows the triangle inequality *fails* for $d$: with $V_P = \\{(0)\\}$, $V_Q = \\{(0),(10)\\}$, $V_R = \\{(10)\\}$ one gets $d(P,R) = 10$ while $d(P,Q) + d(Q,R) = 20/3$. This is deliberately **not** reported as a finding. The paper never claims the triangle inequality, the name \"Polynomial Distance\" is inherited from Liu et al. (2022), and the method — a top-$k$ scan of $d$ — uses no metric structure, so the shortfall has no consequence for any claim the paper makes.\n\n**Disagreements.** None. The two verifiers were applied to disjoint snippets and neither flagged an error; the one place they touch the same object (the metric status of $d$) they agree — Lean supplies the counterexample, the informal pass supplies the reading under which it is harmless.\n\n**Out of scope / unchecked.** The quantitative claims (\"outperforming Random by 1.58 points and BM25 by 3.53 points\", \"highest COMET scores on 11 out of 12 translation directions\") could not be arithmetically cross-checked: Tables 1 and 2 are absent from `paper.md`, and these are empirical results rather than mathematical derivations in any case. The counts themselves are internally consistent (6 languages × 2 directions = 12; 3 language pairs × 2 = 6), and the abstract, introduction and conclusion all state the same 11-of-12 figure.\n\n**Lean project.** `MATH_VERIFICATION/Paper` was **reused, not created**, by this run — it is a shared project holding hundreds of proofs from other papers' runs (every manuscript in the workspace is stored as `paper.md`, so they all derive the same project name). Per `verify-math-lean`'s deletion rule, a reused project is not this run's to remove, so the final Lean call kept it; only the per-snippet scratch (`TMP.lean`, `claim.md`) was deleted. The two proofs are archived as `Paper/Verified/0046-SyntaxICL__EQUATION__0_opus5.lean` and `...__EQUATION__2_opus5.lean`."
+}

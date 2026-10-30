@@ -1,0 +1,78 @@
+{
+  "paper_id": "0021-ITERTL_An_Iterative_Framework_for_Fine-tuning_LLMs_for_RTL_Code_Generation",
+  "title": "ITERTL An Iterative Framework for Fine-tuning LLMs for RTL Code Generation",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Section 3.2, derivation preceding Equation 6 (knowledge-distillation reward analysis)",
+      "confidence": 0.65,
+      "supporting_evidence": "The derivation writes: 'min_π Σ_j -log P_π(a_j|s,a_{<j}) = min_π Σ_j log (P_teacher(a_j|s,a_{<j}) / log P_π(a_j|s,a_{<j}))'. The denominator inside the ratio incorrectly contains 'log P_π' instead of simply 'P_π'. The valid algebraic step (adding the π-independent constant log P_teacher to -log P_π) requires log(P_teacher/P_π), not log(P_teacher/log P_π); as written the expression is dimensionally and algebraically invalid, breaking the chain of equalities that leads to Equation 6.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0021-ITERTL_An_Iterative_Framework_for_Fine-tuning_LLMs_for_RTL_Code_Generation::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Section 3.2, line 2 of the derivation preceding Equation 6",
+      "confidence": 0.55,
+      "supporting_evidence": "The paper equates 'Σ_j log(P_teacher(a_j|s,a_{<j})/P_π(a_j|s,a_{<j}))', a sum of log-ratios evaluated at the single realized token sequence a (sampled from π_teacher), directly to 'Σ_j KL(P_teacher,j || P_π,j)' using an exact '=' sign. True KL divergence is defined as an expectation over the full output distribution at each position, not the log-ratio evaluated at one sampled token. The paper itself notes that the subsequent step (turning this into an expectation over s and a) is only an approximation justified by the law of large numbers, which means the preceding line cannot simultaneously be an exact equality to the population-level KL divergence; the labeling of the sample-level quantity as 'KL' one line too early is a logical/notational error in the proof chain.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0021-ITERTL_An_Iterative_Framework_for_Fine-tuning_LLMs_for_RTL_Code_Generation::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 2.1 (Background) vs. Section 4.1 (Benchmark)",
+      "confidence": 0.55,
+      "supporting_evidence": "Section 2.1 states: 'VerilogEval[10] has released an open-source evaluation dataset, including 156 questions along with their corresponding golden solutions.' However, Section 4.1 describes VerilogEval as consisting of two separate sets: 'VerilogEval-machine, containing 143 samples' and 'VerilogEval-human, comprising 156 samples', i.e., 299 total questions. The earlier claim that the dataset includes '156 questions' materially understates and contradicts the later, more detailed description of the benchmark's actual size.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0021-ITERTL_An_Iterative_Framework_for_Fine-tuning_LLMs_for_RTL_Code_Generation::baseline"
+    },
+    {
+      "error_category": "Citation / attribution",
+      "error_location": "Paper header/footer metadata (self-citation block and received/revised/accepted dates)",
+      "confidence": 0.4,
+      "supporting_evidence": "The paper's own citation reads 'Peiyang Wu ... 2018. ITERTL: An Iterative Framework for Fine-tuning LLMs for RTL Code Generation', and the footer states 'Received 20 February 2007; revised 12 March 2009; accepted 5 June 2009.' These dates (2007-2009, 2018) are temporally impossible given that the paper discusses DeepSeek-Coder-Instruct-6.7B, GPT-4, RTLCoder, and other 2023-2024 technologies, creating an internal inconsistency between the claimed publication timeline and the content described.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0021-ITERTL_An_Iterative_Framework_for_Fine-tuning_LLMs_for_RTL_Code_Generation::baseline"
+    },
+    {
+      "error_category": "Experiment setup",
+      "error_location": "Section 4.1, 'Decoding Strategy' paragraph",
+      "confidence": 0.55,
+      "supporting_evidence": "The paper states: 'the model is prompted to generate responses with temperature = {0 (greedy decoding), 0.2, 0.5, 0.8} and top_p = 0.95. For each test metric (pass@1, pass@5, and pass@10), the best result is chosen.' Selecting the maximum score across multiple decoding temperatures directly on the test benchmark (rather than fixing decoding hyperparameters a priori or tuning on a held-out validation set) constitutes test-set hyperparameter selection, which can inflate reported performance and is a methodologically questionable evaluation protocol.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0021-ITERTL_An_Iterative_Framework_for_Fine-tuning_LLMs_for_RTL_Code_Generation::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Section 4.1 Training Details vs. Section 4.2 discussion of Figure 2",
+      "confidence": 0.35,
+      "supporting_evidence": "Training Details specify 'The total number of iterations is set to 7,' implying the final/reported model is the iteration-7 checkpoint. However, the Figure 2 discussion states that pass@1 peaks at iteration 5 and 'gradually decreases' from iteration 5 to 7, and separately claims 'with 5 iterations and only 10k reference data, our model beats the baseline model with 27k reference data.' This leaves it unclear whether the headline SOTA results in Table 1 (42.9%/62.2%) come from the degraded iteration-7 model (consistent with the stated 7-iteration training protocol) or the better-performing iteration-5 checkpoint, an internal inconsistency in which checkpoint underlies the reported results.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0021-ITERTL_An_Iterative_Framework_for_Fine-tuning_LLMs_for_RTL_Code_Generation::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 6,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (claude-sonnet-5, taxonomy=default): 6 error(s) reported.",
+  "baseline": {
+    "model": "claude-sonnet-5",
+    "provider": "anthropic",
+    "taxonomy": "default",
+    "paper_chars": 141160,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 118164,
+      "output_tokens": 26188,
+      "cache_read_input_tokens": 0,
+      "cache_creation_input_tokens": 0
+    }
+  }
+}

@@ -1,0 +1,683 @@
+{
+  "skill": "orchestrate-math-v3",
+  "tag": "orchestrate-math-v3-v3",
+  "paper_name": "paper",
+  "paper_path": "/Users/iacopoghinassi/Documents/Github/Wittgenstein/data/spot-workspace/0001-A_missing_theorem_on_dual_spaces/paper.md",
+  "lean_project": "MATH_VERIFICATION/Paper",
+  "lean_project_kept": true,
+  "detector": {
+    "available": true,
+    "mode": "self",
+    "model": "agent",
+    "report_path": "data/spot-workspace/0001-A_missing_theorem_on_dual_spaces/math-detector-detector.json",
+    "n_candidates": 16,
+    "n_merged": 0,
+    "mean_confidence": 0.2969
+  },
+  "routing": {
+    "policy": "TOOL_ROUTING_POLICY.md",
+    "python": 3,
+    "lean": 1,
+    "hybrid": 2,
+    "informal": 10,
+    "none": 0,
+    "overruled_hints": 4
+  },
+  "totals": {
+    "candidates_detected": 16,
+    "candidates_routed": 16,
+    "candidates_verified": 16,
+    "confirmed_by_verifier": 2,
+    "cleared_by_verifier": 5,
+    "unsettled_kept": 0,
+    "unsettled_dropped": 9,
+    "unroutable": 0,
+    "merged": 0,
+    "errors_detected": 2,
+    "lean_passed": 2,
+    "lean_refuted": 0,
+    "lean_failed": 0,
+    "python_confirmed": 3,
+    "python_refuted": 1,
+    "python_inconclusive": 0
+  },
+  "results": [
+    {
+      "snippet_id": "0001-A_missing_theorem_on_dual_spaces::CAND::0",
+      "snippet_type": "PROOF_STEP",
+      "location": "Proof of Theorem 3.3 (1)",
+      "content": "Setting. $X$ is a real Banach (operator) space whose real dual $X^{\\dagger}$ carries a complex Banach-space structure; write $Y=X^{\\dagger}$ with that complex structure, and let $L_i:Y\\to Y$ be multiplication by the complex scalar $i$ on $Y$, so $L_i\\circ L_i=L_{i^2}=-\\mathrm{Id}_Y$. Assume $L_i$ is weak* ($\\sigma(Y,X)$) continuous, so it is the adjoint of a bounded real-linear map $J:X\\to X$, i.e. $J^{\\dagger}=J^{*}=L_i$. The paper also uses the standing criterion stated in Section 1: a map $J:X\\to X$ on a real Banach space corresponds isometrically to a complex Banach space structure on $X$ (with $ix=Jx$) if and only if $J^2=-I$ and $x\\mapsto sx+tJ(x)$ is an isometry whenever $s=\\cos\\theta$, $t=\\sin\\theta$, i.e. whenever $s^2+t^2=1$.\n\nClaim under test: from $(J^2)^{*}=-I$ the paper concludes $J^2=I$, and then invokes the criterion above to conclude that $X$ has isometric complex structure. Two sub-questions: (a) does $(J^2)^{*}=(J^{*})^{2}=(L_i)^2=-I$ force $J^2=I$ or $J^2=-I$? (b) is the value of $J^2$ stated in the text the one the quoted criterion requires, and the one needed for the paper's own very next computation that $sI+tJ$ has inverse $sI-tJ$ when $s^2+t^2=1$?",
+      "exact_quote": "It is easy to see by duality theory that J² = I (since (J²)* = -I).",
+      "suspected_defect": "Sign error in a load-bearing step. Taking adjoints is injective on bounded operators and $(-I)^{*}=-I$, so $(J^2)^{*}=-I$ gives $J^2=-I$, not $J^2=I$ as written. Moreover $J^2=I$ would break the stated criterion for complex structure (which demands $J^2=-I$) and would contradict the paper's own next sentence, since $(sI+tJ)(sI-tJ)=s^2I-t^2J^2$ equals $I$ when $s^2+t^2=1$ only if $J^2=-I$; with $J^2=I$ it equals $(s^2-t^2)I$.",
+      "detector_confidence": 0.85,
+      "route": "hybrid",
+      "route_gate": "2",
+      "route_rationale": "Gate 2: the load-bearing content is the general algebraic implication '(J^2)^*=-I implies J^2=-I' plus the identity (sI+tJ)(sI-tJ)=s^2 I-t^2 J^2, both quantified over all operators and all s,t with s^2+t^2=1 (policy triggers: universal quantification, equality that must hold in general) — and the instance space is cheaply probeable with small real matrices, so Python searches first and Lean proves the survivor. Detector hint 'proof_step' overruled: the step reduces to a clean general identity.",
+      "verifier_result": {
+        "snippet_id": "0001-A_missing_theorem_on_dual_spaces::CAND::0",
+        "verifier_name": "math-hybrid",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.95,
+        "reasoning": "Step 1 formal target: (T1) if a bounded operator $A$ satisfies $A^{*}=-I$ then $A=-I$ — applied to $A=J^2$, whose dual is $(J^{*})^{2}=L_i^2=-I$; and (T2) for real $s,t$ with $s^2+t^2=1$, $t\\neq0$, $(sI+tJ)(sI-tJ)=I$ iff $J^2=-I$. Stage A searched real matrices (the finite-dimensional model in which the dual map is transposition): all real $2\\times2$ $J$ with $J^2=+I$ in closed form, 60000 random real $J$ at $n=2,4,6$, all 81 matrices over $\\{-1,0,1\\}^{2\\times2}$, and 400 angles $\\theta$ per candidate. It produced an exact witness satisfying every hypothesis of the paper's step and falsifying its conclusion: $X=\\mathbb{R}^2$, $L_i=\\begin{pmatrix}0&-1\\\\1&0\\end{pmatrix}$ (multiplication by $i$ on $\\mathbb{C}\\cong\\mathbb{R}^2$), $J=L_i^{\\mathsf T}$, so $(J^2)^{*}=(-I)^{\\mathsf T}=-I$ holds and yet $J^2=-I\\neq I$. Conversely no $J$ with $J^2=+I$ makes $(sI+tJ)(sI-tJ)=I$ for any $t\\neq0$: that product is $(s^2-t^2)I$, which equals $I$ only at $t=0$. Per the hybrid stop rule a found counterexample ends the run, so Lean was not escalated to. The witness is exact integer arithmetic.",
+        "predicted_error_category": "Sign/Arithmetic error",
+        "snippet_type": "PROOF_STEP",
+        "contradiction_locations": [],
+        "hybrid": {
+          "hybrid_status": "REFUTED_EMPIRICAL",
+          "escalated": false,
+          "escalation_gate": "E1",
+          "escalation_note": "Stage A returned an exact counterexample, and the hybrid skill's stop rule forbids escalating after a witness.",
+          "formal_target": "For a real normed space $X$ and a bounded operator $J$ on $X$ with $(J^2)^{*}=-I$, $J^2=-I$; and for real $s,t$ with $s^2+t^2=1$, $t\\neq0$, $(sI+tJ)(sI-tJ)=I$ iff $J^2=-I$."
+        },
+        "python": {
+          "python_status": "REFUTED",
+          "approach": "exhaustive_search",
+          "script": "see $WORK_DIR/check.py: closed-form enumeration of all real 2x2 J with J^2=+I via sympy (J = +-I, or tr J = 0 and det J = -1), symbolic evaluation of (sI+tJ)(sI-tJ) under s^2 = 1-t^2, a 60000-draw random sweep at n=2,4,6, and an exhaustive pass over {-1,0,1}^(2x2)",
+          "stdout": "(a) all real 2x2 J with J^2 = +I: ... (sI+tJ)(sI-tJ) = [[1 - 2*t**2, 0], [0, 1 - 2*t**2]] ... equals I only for t in: [{t: 0}]\n(b) J = [[0,-1],[1,0]]   J^2 = [[-1, 0], [0, -1]]  (J^2)^T = [[-1, 0], [0, -1]]\n    (sI+tJ)(sI-tJ) = [[1, 0], [0, 1]]  -> equals I for every t  (since s^2+t^2=1)\n(c) analytic: transposition is a linear bijection with (-I)^T = -I, so (J^2)^T = -I <=> J^2 = -I. Hence C1 is unsatisfiable whenever n >= 1, because -I != +I.\n(d) C1 hits: 0   C2 hits: 0\nC1 found: NONE\nC2 found: NONE\nsearched: 60084 instances\nVERDICT: COUNTEREXAMPLE to the printed step",
+          "stderr": "",
+          "witness": "$X=\\mathbb{R}^2$, $L_i=\\begin{pmatrix}0&-1\\\\1&0\\end{pmatrix}$, $J=L_i^{\\mathsf T}=\\begin{pmatrix}0&1\\\\-1&0\\end{pmatrix}$: the premise $(J^2)^{*}=-I$ holds and $J^2=-I\\neq I$. Also $(sI+tJ)(sI-tJ)=(s^2-t^2)I\\neq I$ for $t\\neq0$ when $J^2=+I$.",
+          "search_space": "all real 2x2 J with J^2 = +I (closed form), 60000 random real J at n = 2,4,6, all 81 matrices over {-1,0,1}^(2x2), 400 angles theta per candidate",
+          "tolerance": "exact (sympy) for the closed-form and symbolic parts; 1e-6 on the random sweep",
+          "revisions": 0
+        },
+        "lean": null
+      },
+      "adjudication": {
+        "rule": "verifier_confirmed",
+        "cleared_by": null,
+        "note": "Hybrid Stage A returned an exact counterexample ($J=\\begin{pmatrix}0&1\\\\-1&0\\end{pmatrix}$ satisfies $(J^2)^{*}=-I$ with $J^2=-I\\neq I$), so the printed step is refuted empirically."
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.95,
+      "source": "hybrid-empirical"
+    },
+    {
+      "snippet_id": "0001-A_missing_theorem_on_dual_spaces::CAND::1",
+      "snippet_type": "PROOF_STEP",
+      "location": "Remark 1 after Lemma 1.3 (vs. proof of Lemma 1.3 and proof of Lemma 3.2)",
+      "content": "In Lemma 1.3, $Y$ is a complex Banach space, $E=Y_r$ is $Y$ regarded as a real Banach space, $X^{\\dagger}$ denotes a real dual and $X^{*}$ a complex dual. The proof of Lemma 1.3 constructs $j_Y:Y^{*}\\to E^{\\dagger}$, $\\varphi\\mapsto\\mathrm{Re}\\,\\varphi$, and then defines $\\mu=((j_Y)^{\\dagger})^{-1}\\circ j_{Y^{*}}$, where $j_{Y^{*}}:Y^{**}\\to (Y^{*})^{\\dagger}$ and $(j_Y)^{\\dagger}:E^{\\dagger\\dagger}\\to (Y^{*})^{\\dagger}$. Remark 1 then says that the unique weak*-continuous real-linear contraction $\\rho:E^{\\dagger\\dagger}\\to Y^{**}$ extending $x\\mapsto i_Y(x)$ 'is the isometry $\\mu$ in the proof'. The proof of Lemma 3.2 instead says that '$\\mu^{-1}$ is the unique weak* continuous real linear extension $\\rho$'.\n\nClaim under test: compute the domain and codomain of $\\mu=((j_Y)^{\\dagger})^{-1}\\circ j_{Y^{*}}$ from the stated domains and codomains of its two factors, and decide whether the map $\\rho:E^{\\dagger\\dagger}\\to Y^{**}$ can equal $\\mu$, or whether it must equal $\\mu^{-1}$.",
+      "exact_quote": "By uniqueness this is the isometry \\( \\mu \\) in the proof, and we will need this fact later.",
+      "suspected_defect": "Composition of the two displayed factors gives $\\mu:Y^{**}\\to E^{\\dagger\\dagger}$, so a map $\\rho:E^{\\dagger\\dagger}\\to Y^{**}$ cannot be $\\mu$; it must be $\\mu^{-1}$. Remark 1 and the proof of Lemma 3.2 therefore assert opposite directions for the same identification, and Remark 1 is the one that disagrees with the construction in Lemma 1.3's proof.",
+      "detector_confidence": 0.45,
+      "route": "informal",
+      "route_gate": "4",
+      "route_rationale": "Gate 4: the defect is an internal inconsistency between Remark 1 after Lemma 1.3 and the proof of Lemma 3.2 about the direction of the same identification; settling it means reading the composition mu = ((j_Y)^dagger)^{-1} o j_{Y^*} against the surrounding text, not computing or formalising real duals of complex Banach spaces (no Mathlib counterpart for E = Y_r and j_Y).",
+      "verifier_result": {
+        "snippet_id": "0001-A_missing_theorem_on_dual_spaces::CAND::1",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.0,
+        "reasoning": "The composition given in Lemma 1.3's proof, $\\mu=((j_Y)^{\\dagger})^{-1}\\circ j_{Y^{*}}$ with $j_{Y^{*}}:Y^{**}\\to(Y^{*})^{\\dagger}$ and $(j_Y)^{\\dagger}:E^{\\dagger\\dagger}\\to(Y^{*})^{\\dagger}$, does run $Y^{**}\\to E^{\\dagger\\dagger}$, so Remark 1's $\\rho:E^{\\dagger\\dagger}\\to Y^{**}$ is $\\mu^{-1}$ and the proof of Lemma 3.2 has it right where Remark 1 does not. But $\\mu$ is a bijective isometry and both remarks use only that the identification is the canonical one; nothing downstream depends on which of $\\mu,\\mu^{-1}$ carries the name. This is an inverse-versus-map naming slip, not a derivation-invalidating error, and this verifier does not flag notation.",
+        "predicted_error_category": null,
+        "snippet_type": "PROOF_STEP",
+        "contradiction_locations": []
+      },
+      "adjudication": {
+        "rule": "unsettled_dropped",
+        "cleared_by": null,
+        "note": "Informal review returned NO_ERROR, which does not settle the claim; the suspicion is specific but the detector held it at 0.45, below the 0.5 bar of rule 5b."
+      },
+      "status": "UNVERIFIABLE",
+      "error_detected": false,
+      "confidence": 0.0,
+      "source": "informal"
+    },
+    {
+      "snippet_id": "0001-A_missing_theorem_on_dual_spaces::CAND::2",
+      "snippet_type": "LEMMA",
+      "location": "Lemma 3.2, statement (last clause)",
+      "content": "Lemma 3.2 reads: let $E$ be a complex operator space and $F=E_r$ its underlying real operator space; then $E^{**}\\cong F^{\\dagger\\dagger}$ real linearly completely isometrically, where $E^{**}$ is the complex operator space bidual and $F^{\\dagger\\dagger}$ the real operator space bidual; this isomorphism is a weak* homeomorphism 'and takes $i_F(x)$ to $i_{F^{\\dagger\\dagger}}(x)$ for $x\\in X$'. Here $i_Z:Z\\to Z^{**}$ (resp. $Z\\to Z^{\\dagger\\dagger}$) denotes the canonical embedding of a space into its bidual. The corresponding clause of Lemma 1.3, for the Banach-space case, reads 'takes $i_Y(y)$ to $i_E(y)$ for $y\\in Y$', and the proof of Lemma 3.2 produces a map 'taking $[i_E(x_{ij})]$ to $[i_F(x_{ij})]$'.\n\nClaim under test: is the clause as stated well-typed? Specifically, (a) is $i_{F^{\\dagger\\dagger}}$ a map out of $F$ or out of $F^{\\dagger\\dagger}$, and can its value lie in the codomain $F^{\\dagger\\dagger}$ of the isomorphism; (b) is the source of $x$ the space $X$, which is not a symbol introduced anywhere in Lemma 3.2; (c) should the clause read 'takes $i_E(x)$ to $i_F(x)$ for $x\\in E$', matching Lemma 1.3 and the lemma's own proof?",
+      "exact_quote": "This isomorphism is a homeomorphism for the two weak* topologies, and takes i_{F}(x) to i_{F††}(x) for x ∈ X.",
+      "suspected_defect": "The clause appears ill-typed. The isomorphism goes $E^{**}\\to F^{\\dagger\\dagger}$, so its argument should be $i_E(x)$, not $i_F(x)$; and $i_{F^{\\dagger\\dagger}}$ would be the embedding of $F^{\\dagger\\dagger}$ into its own bidual $F^{\\dagger\\dagger\\dagger\\dagger}$, not an element of $F^{\\dagger\\dagger}$. The quantifier range '$x\\in X$' also refers to a space not defined in the lemma. The proof delivers 'takes $i_E(x)$ to $i_F(x)$', which is what the statement should say.",
+      "detector_confidence": 0.4,
+      "route": "informal",
+      "route_gate": "4",
+      "route_rationale": "Gate 4: the question is whether a clause of a lemma statement is well-typed and matches what the lemma's own proof delivers — a structural reading of the paper, with no computation and no faithful Lean statement available for canonical embeddings into real versus complex biduals of operator spaces.",
+      "verifier_result": {
+        "snippet_id": "0001-A_missing_theorem_on_dual_spaces::CAND::2",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.0,
+        "reasoning": "The clause as printed is indeed ill-typed: the isomorphism runs $E^{**}\\to F^{\\dagger\\dagger}$ so its argument must be $i_E(x)$, and $i_{F^{\\dagger\\dagger}}$ would embed $F^{\\dagger\\dagger}$ into its own bidual; '$x\\in X$' names a space the lemma never introduces. But the lemma's own proof delivers the correct clause ('taking $[i_E(x_{ij})]$ to $[i_F(x_{ij})]$'), matching Lemma 1.3's 'takes $i_Y(y)$ to $i_E(y)$', so the intended statement is unambiguous and nothing is derived from the garbled form. A mis-set subscript in a statement is a typo, not a mathematical error.",
+        "predicted_error_category": null,
+        "snippet_type": "PROOF_STEP",
+        "contradiction_locations": []
+      },
+      "adjudication": {
+        "rule": "unsettled_dropped",
+        "cleared_by": null,
+        "note": "Informal review returned NO_ERROR, which does not settle the claim; specific, but detector confidence 0.40 < 0.5."
+      },
+      "status": "UNVERIFIABLE",
+      "error_detected": false,
+      "confidence": 0.0,
+      "source": "informal"
+    },
+    {
+      "snippet_id": "0001-A_missing_theorem_on_dual_spaces::CAND::3",
+      "snippet_type": "PROOF_STEP",
+      "location": "Proof of Proposition 2.3, second sentence",
+      "content": "Setting. $X$ and $Y$ are complex Banach spaces and $T:X\\to Y$ is a continuous real-linear map with $\\|T\\|\\le 1$. For a Banach space $Z$ over $\\mathbb{F}\\in\\{\\mathbb{R},\\mathbb{C}\\}$, $\\mathrm{Min}_{\\mathbb{F}}(Z)$ is the minimal operator space structure, whose matrix norm on $M_n(Z)$ is defined in the paper as $\\|[z_{ij}]\\|=\\sup\\{\\,\\|[\\psi(z_{ij})]\\|_{M_n(\\mathbb{F})} : \\psi \\text{ a contractive } \\mathbb{F}\\text{-linear functional on } Z\\,\\}$. $Y^{\\dagger}$ is the real dual of $Y$, so $\\varphi\\in \\mathrm{Ball}(Y^{\\dagger})$ is a contractive $\\mathbb{R}$-linear, $\\mathbb{R}$-valued functional.\n\nClaim under test: does the stated fact that $\\varphi\\circ T$ is a contractive real functional on $X$ for every $\\varphi\\in \\mathrm{Ball}(Y^{\\dagger})$ suffice to conclude that $T:\\mathrm{Min}_{\\mathbb{R}}(X)\\to \\mathrm{Min}_{\\mathbb{C}}(Y)$ is a complete contraction, i.e. that $\\|[T x_{ij}]\\|_{M_n(\\mathrm{Min}_{\\mathbb{C}}(Y))}\\le \\|[x_{ij}]\\|_{M_n(\\mathrm{Min}_{\\mathbb{R}}(X))}$ for all $n$ and all $[x_{ij}]\\in M_n(X)$?",
+      "exact_quote": "Since φ ∘ T is a contractive real functional for all φ ∈ Ball(Y†), it is clear that T : Min_R(X) → Min_C(Y) is a complete contraction.",
+      "suspected_defect": "The supplied evidence controls real functionals, hence the matrix norms of $\\mathrm{Min}_{\\mathbb{R}}(Y)$, whereas the asserted codomain is $\\mathrm{Min}_{\\mathbb{C}}(Y)$, whose matrix norms are suprema over contractive $\\mathbb{C}$-linear functionals $\\psi$ and are in general strictly larger (for a complex $Z$, $\\|\\cdot\\|_{\\mathrm{Min}_{\\mathbb{R}}}\\le\\|\\cdot\\|_{\\mathrm{Min}_{\\mathbb{C}}}$, with inequality possible — compare Example 2 of the paper, where the real and complex operator space structures on a one-dimensional complex space differ). For $\\psi$ complex, $\\psi\\circ T$ is complex-valued but only real-linear, so it is not a member of $\\mathrm{Ball}(X^{*})$ and the quoted one-line justification does not reach the asserted conclusion.",
+      "detector_confidence": 0.35,
+      "route": "informal",
+      "route_gate": "4",
+      "route_rationale": "Gate 4: the gap is that evidence about real functionals is used to bound a Min_C matrix norm; Min_R / Min_C operator space structures have no Mathlib counterpart and no finite instance space the detector pinned down, so the escalation condition of the policy fails and close reading is the only route left.",
+      "verifier_result": {
+        "snippet_id": "0001-A_missing_theorem_on_dual_spaces::CAND::3",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.85,
+        "reasoning": "The step asserts that $T:\\mathrm{Min}_{\\mathbb{R}}(X)\\to\\mathrm{Min}_{\\mathbb{C}}(Y)$ is a complete contraction, justified only by '$\\varphi\\circ T$ is a contractive real functional for all $\\varphi\\in\\mathrm{Ball}(Y^{\\dagger})$'. By the paper's own definition of Min (the matrix norm on $M_n(Z)$ is the supremum of $\\|[\\psi(z_{ij})]\\|$ over contractive $\\mathbb{F}$-linear functionals $\\psi$), real functionals compute the matrix norms of $\\mathrm{Min}_{\\mathbb{R}}(Y_r)$, not of $\\mathrm{Min}_{\\mathbb{C}}(Y)$, and the two differ. Take $Y=\\mathbb{C}$. Then $\\|[z_{ij}]\\|_{\\mathrm{Min}_{\\mathbb{C}}(\\mathbb{C})}=\\|[z_{ij}]\\|_{M_n(\\mathbb{C})}$, while $\\|[z_{ij}]\\|_{\\mathrm{Min}_{\\mathbb{R}}(\\mathbb{C}_r)}=\\sup_{\\theta}\\|\\mathrm{Re}(e^{i\\theta}[z_{ij}])\\|_{M_n(\\mathbb{R})}$. For $[z_{ij}]=\\begin{pmatrix}1&1\\\\0&i\\end{pmatrix}$ these are $\\tfrac{1+\\sqrt5}{2}\\approx1.618$ and $\\sqrt2\\approx1.414$ respectively (exactly: $A^{*}A=\\begin{pmatrix}1&1\\\\1&2\\end{pmatrix}$ has largest eigenvalue $\\tfrac{3+\\sqrt5}{2}$, and the real supremum is attained at $\\theta=0$ on $\\begin{pmatrix}1&1\\\\0&0\\end{pmatrix}$). So with $X=Y=\\mathbb{C}$ and $T=\\mathrm{id}$ — a continuous real-linear contraction between complex Banach spaces, exactly the hypothesis the proof is under — the asserted map $T:\\mathrm{Min}_{\\mathbb{R}}(X)\\to\\mathrm{Min}_{\\mathbb{C}}(Y)$ has complete-bound at least $\\tfrac{1+\\sqrt5}{2\\sqrt2}\\approx1.144>1$ and is not a complete contraction. A random sweep over 4000 complex matrices of sizes $2$–$4$ found ratios as low as $0.62$, so the gap is generic rather than incidental. This refutes the quoted intermediate step. It does NOT refute Proposition 2.3 itself: the composite $\\mathrm{Min}_{\\mathbb{C}}(X)\\to\\mathrm{Min}_{\\mathbb{R}}(X)\\to\\mathrm{Min}_{\\mathbb{C}}(Y)$ can still be completely contractive (for $T=\\mathrm{id}$ it is the identity), and whether the proposition survives by another route was not settled here.",
+        "predicted_error_category": "Calculus/Proof error",
+        "snippet_type": "PROOF_STEP",
+        "contradiction_locations": []
+      },
+      "adjudication": {
+        "rule": "verifier_confirmed",
+        "cleared_by": null,
+        "note": "Informal review refuted the quoted step with an explicit witness: $\\mathrm{Min}_{\\mathbb{R}}(\\mathbb{C}_r)$ and $\\mathrm{Min}_{\\mathbb{C}}(\\mathbb{C})$ give $\\sqrt2$ and $\\tfrac{1+\\sqrt5}{2}$ on the same $2\\times2$ element, so the asserted complete contraction fails at $T=\\mathrm{id}$."
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.85,
+      "source": "informal"
+    },
+    {
+      "snippet_id": "0001-A_missing_theorem_on_dual_spaces::CAND::4",
+      "snippet_type": "PROOF_STEP",
+      "location": "Proof of Theorem 3.3 (3), sentence after the first displayed inequality",
+      "content": "Claim: for every $n,m\\in\\mathbb{N}$ and every pair of real $m n\\times m n$ (equivalently, arbitrary rectangular real) matrices $\\alpha,\\beta$ of the same size, the operator norm (the norm as an operator between Euclidean/Hilbert spaces, i.e. the largest singular value) satisfies $\\|\\alpha\\|\\le\\|\\alpha+i\\beta\\|$, where $\\alpha+i\\beta$ is regarded as a complex matrix and the norm on the right is the complex operator norm. In the paper, $\\alpha=[\\varphi_{ij}(x_{kl})]$ and $\\beta=-[\\varphi_{ij}(\\iota x_{kl})]$ are real matrices built from real-valued functionals $\\varphi_{ij}$ on a real Banach space $X$, and the inequality is used to justify $\\|[\\varphi_{ij}(x_{kl})]\\|\\le\\|[\\varphi_{ij}(x_{kl})-\\iota\\varphi_{ij}(\\iota x_{kl})]\\|$.",
+      "exact_quote": "We also used the fact that for real matrices $\\alpha, \\beta$ we have $\\|\\alpha\\| \\leq \\|\\alpha + i\\beta\\|$.",
+      "suspected_defect": "The inequality is asserted without proof and its direction is exactly what the argument needs; if it were false, or true only up to a constant, the two-sided estimate $\\|[x_{kl}]\\|_{M_n(X)}\\le\\|[x_{kl}]\\|_{M_n(W)}\\le 2\\|[x_{kl}]\\|_{M_n(X)}$ would fail on its left-hand side. Worth checking whether $\\|\\alpha\\|\\le\\|\\alpha+i\\beta\\|$ really holds for all real $\\alpha,\\beta$ in the operator norm, and whether it also holds in whatever matrix norm the operator space structure on $M_n(X)$ induces.",
+      "detector_confidence": 0.15,
+      "route": "hybrid",
+      "route_gate": "2",
+      "route_rationale": "Gate 2: the claim '||alpha|| <= ||alpha + i*beta|| for all real matrices alpha, beta' is universally quantified over an instance space that is cheap to sample (small real matrices), which is exactly the policy's hybrid workflow — probe for a counterexample first, formalise the survivor (policy triggers: 'for all', an inequality that must hold in general).",
+      "verifier_result": {
+        "snippet_id": "0001-A_missing_theorem_on_dual_spaces::CAND::4",
+        "verifier_name": "math-hybrid",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.0,
+        "reasoning": "Step 1 formal target: for all $n,m$ and all real $n\\times m$ matrices $\\alpha,\\beta$, $\\|\\alpha\\|\\le\\|\\alpha+i\\beta\\|$ in the operator (spectral) norm. Stage A searched 474685 pairs — ten structural families at $n=1..6$ ($\\beta=0$, $\\alpha=0$, $\\beta=\\pm\\alpha$, $\\beta=10^6\\alpha$, rank-one, identity, nilpotent, orthogonal, ill-conditioned), 24000 rectangular pairs up to $5\\times7$, 60000 random square pairs at scales $10^{-3}$–$10^{3}$, and ALL 390625 integer $2\\times2$ pairs over $\\{-2,\\dots,2\\}$ — with falsification condition $\\|\\alpha\\|>\\|\\alpha+i\\beta\\|+10^{-9}$. No counterexample: the minimum gap was $-8.9\\times10^{-16}$ (float noise at $\\beta=0$), and an exact sympy recheck of the minimiser gave gap exactly $0$. Escalation gates E1 (not refuted), E2 (formalises unambiguously with Mathlib's $\\ell^2$ operator norm on matrices) and E3 (the claim ranges over all $n,m$, far beyond the searched space) all passed, so Stage B ran. Lean proved it: writing $M=\\alpha+i\\beta$, the entrywise conjugate satisfies $\\|\\bar M\\|\\le\\|M\\|$ (conjugation commutes with $\\ast_{\\mathrm v}$ up to conjugating the test vector, which is a Euclidean isometry), and $\\alpha=\\tfrac12(M+\\bar M)$, so $\\|\\alpha\\|\\le\\tfrac12(\\|M\\|+\\|\\bar M\\|)\\le\\|M\\|$. The paper's step is correct, empirically and formally.",
+        "predicted_error_category": null,
+        "snippet_type": "PROOF_STEP",
+        "contradiction_locations": [],
+        "hybrid": {
+          "hybrid_status": "CONFIRMED_BOTH",
+          "escalated": true,
+          "escalation_gate": null,
+          "escalation_note": "E1, E2 and E3 all passed: the search was clean, the claim renders unambiguously with Mathlib's Matrix l2 operator norm, and it is quantified over all matrix sizes.",
+          "formal_target": "For all $n,m$ and all real $n\\times m$ matrices $\\alpha,\\beta$, $\\|\\alpha\\|\\le\\|\\alpha+i\\beta\\|$ in the $\\ell^2$ operator norm, $\\alpha+i\\beta$ being read as a complex matrix."
+        },
+        "python": {
+          "python_status": "CONFIRMED",
+          "approach": "exhaustive_search",
+          "script": "see $WORK_DIR/check.py: numpy spectral norms over ten structural families, rectangular and random sweeps, and an exhaustive integer 2x2 pass, with an exact sympy singular-value recheck of the minimiser",
+          "stdout": "n=2 beta = 0  gap = 0.000000e+00 ; alpha = 0  gap = 2.477848e+00 ; beta = alpha  gap = 4.218919e-01 ; beta = -alpha  gap = 4.218919e-01 ; beta = 1e6*alpha  gap = 1.018536e+06 ; rank-one 2.105549e+00 ; alpha = I 1.752013e+00 ; nilpotent 1.677122e+00 ; orthogonal 1.784716e+00 ; ill-cond 1.664868e+00\nexhaustive 2x2 over {-2..2}: pairs with gap < -1e-09: 0\nminimum gap over everything searched: -8.881784e-16   (n=6 beta = 0)\nexact recheck of the minimiser: ||alpha|| = 3.49289911243, ||alpha+i*beta|| = 3.49289911243, gap = 0\nsearched: 474685 (alpha, beta) pairs\nVERDICT: NO COUNTEREXAMPLE FOUND  (claim survived the search)",
+          "stderr": "",
+          "witness": null,
+          "search_space": "10 structural families at n=1..6, 24000 rectangular pairs up to 5x7, 60000 random square pairs at scales 1e-3..1e3, ALL 390625 integer 2x2 pairs over {-2..2}",
+          "tolerance": "1e-9 on float spectral norms; the minimiser re-checked exactly with sympy",
+          "revisions": 0
+        },
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/0001-MissingThmDualSpaces__CAND4__v3-v3.lean",
+          "formal_statement": "import Mathlib\n\nopen scoped Matrix.Norms.L2Operator\nopen scoped Matrix\n\n/-- Entrywise complex conjugation does not increase the `L2` operator norm of a matrix. -/\nlemma l2_opNorm_map_conj_le {m n : Type*} [Fintype m] [Fintype n] [DecidableEq n]\n    (M : Matrix m n ℂ) : ‖M.map (starRingEnd ℂ)‖ ≤ ‖M‖ := by\n  rw [Matrix.l2_opNorm_def]\n  refine ContinuousLinearMap.opNorm_le_bound _ (norm_nonneg M) fun x => ?_\n  set y : EuclideanSpace ℂ n := WithLp.toLp 2 (fun j => (starRingEnd ℂ) (x.ofLp j)) with hy\n  have hyn : ‖y‖ = ‖x‖ := by\n    simp [EuclideanSpace.norm_eq, hy]\n  have hmul : ((M.map (starRingEnd ℂ)) *ᵥ x.ofLp)\n      = fun i => (starRingEnd ℂ) ((M *ᵥ y.ofLp) i) := by\n    funext i\n    simp [Matrix.mulVec, dotProduct, hy, map_sum]\n  have key := M.l2_opNorm_mulVec y\n  rw [hyn] at key\n  refine le_trans (le_of_eq ?_) key\n  change ‖(EuclideanSpace.equiv m ℂ).symm ((M.map (starRingEnd ℂ)) *ᵥ x.ofLp)‖\n      = ‖(EuclideanSpace.equiv m ℂ).symm (M *ᵥ y.ofLp)‖\n  rw [hmul]\n  simp [EuclideanSpace.norm_eq]\n\n/-- CAND::4 — the paper's step \"for real matrices α, β we have ‖α‖ ≤ ‖α + iβ‖\". -/\ntheorem paper_cand4 {m n : Type*} [Fintype m] [Fintype n] [DecidableEq n]\n    (α β : Matrix m n ℝ) :\n    ‖α.map ((↑) : ℝ → ℂ)‖ ≤ ‖α.map ((↑) : ℝ → ℂ) + Complex.I • β.map ((↑) : ℝ → ℂ)‖ := by\n  set A := α.map ((↑) : ℝ → ℂ) with hA\n  set B := β.map ((↑) : ℝ → ℂ) with hB\n  set M := A + Complex.I • B with hM\n  have hconj : M.map (starRingEnd ℂ) = A - Complex.I • B := by\n    ext i j\n    simp [hM, hA, hB, Matrix.map_apply, Complex.ext_iff]\n  have hhalf : A = (2 : ℂ)⁻¹ • (M + M.map (starRingEnd ℂ)) := by\n    rw [hconj]\n    ext i j\n    simp [hM]\n    ring\n  have h2 : ‖(2 : ℂ)⁻¹‖ = (2 : ℝ)⁻¹ := by norm_num\n  calc ‖A‖ = ‖(2 : ℂ)⁻¹ • (M + M.map (starRingEnd ℂ))‖ := by rw [← hhalf]\n    _ ≤ (2 : ℝ)⁻¹ * (‖M‖ + ‖M.map (starRingEnd ℂ)‖) := by\n        rw [norm_smul, h2]\n        exact mul_le_mul_of_nonneg_left (norm_add_le _ _) (by norm_num)\n    _ ≤ (2 : ℝ)⁻¹ * (‖M‖ + ‖M‖) := by\n        exact mul_le_mul_of_nonneg_left\n          (by linarith [l2_opNorm_map_conj_le M]) (by norm_num)\n    _ = ‖M‖ := by ring\n",
+          "compiler_feedback": "lake env lean Paper/TMP.lean -> exit 0, stdout: \"'paper_cand4' depends on axioms: [propext, Classical.choice, Quot.sound]\"; lean_diagnostic_messages: success true, zero severity-1 items, no `sorry` warning; lean_verify paper_cand4 -> {\"axioms\":[\"propext\",\"Classical.choice\",\"Quot.sound\"],\"non_standard_axioms\":[]}",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 4,
+          "project_kept": true
+        }
+      },
+      "adjudication": {
+        "rule": "verifier_cleared",
+        "cleared_by": "hybrid",
+        "note": "A clean 474685-instance search found no counterexample and Lean then PROVED the inequality for all matrix sizes with only the standard Mathlib axioms."
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.0,
+      "source": "hybrid"
+    },
+    {
+      "snippet_id": "0001-A_missing_theorem_on_dual_spaces::CAND::5",
+      "snippet_type": "PROOF_STEP",
+      "location": "Proof of Theorem 3.3 (3), justification of the first displayed inequality",
+      "content": "Setting. $X$ is a real operator space whose real operator space dual $X^{\\dagger}$ carries a complex operator space structure; $Y=X^{\\dagger}$ with that structure; $L_i$ is multiplication by $i$ on $Y$, shown to be weak* continuous, and $J:X\\to X$ is its predual map, so $J^{\\dagger}=L_i$. $W$ denotes $X$ equipped with the operator space structure making $i_W:W\\to Y^{*}$ a complete isometry. Example 2 of the same paper exhibits a real operator space $E$ (namely the real operator space dual of $\\mathbb{C}$) such that $E^{\\dagger}$ has complex operator space structure completely isometrically while $E$ does not.\n\nClaim under test: that $J:X\\to X$, $Jx=\\iota x$, is **completely** isometric for the ORIGINAL operator space structure of $X$ (not that of $W$), i.e. $\\|[Jx_{kl}]\\|_{M_n(X)}=\\|[x_{kl}]\\|_{M_n(X)}$ for all $n$ and $[x_{kl}]\\in M_n(X)$. Is this consistent with Example 2's conclusion that $X$ need not have complex operator space structure completely isometrically, and is it actually established by the cited earlier part of the proof?",
+      "exact_quote": "Here we used the fact that $Jx = \\iota x$ is completely isometric on $X$ (see e.g. the proof of (2) above).",
+      "suspected_defect": "The step asserts complete isometry of multiplication by $i$ on $X$ with its own matrix norms, yet Example 2 of the paper is designed to show that $X$ need not carry complex operator space structure completely isometrically — and the whole point of part (3) is that $W$ and $X$ are only completely boundedly isomorphic, with constant $2$. Either the cited fact is weaker than stated (complete isometry of $J$ alone does not give complex operator space structure) or the step is overclaiming. The internal cross-reference 'the proof of (2) above' also points at a part of Theorem 3.3 whose statement is not reproduced, so the justification cannot be checked where it stands.",
+      "detector_confidence": 0.3,
+      "route": "informal",
+      "route_gate": "4",
+      "route_rationale": "Gate 4: the suspicion is that a step asserting complete isometry of multiplication by i on X's own matrix norms sits in tension with the paper's Example 2 and with part (3)'s factor-of-2 conclusion — a dependency/consistency question between results in the same paper, which is precisely what Gate 4 is for.",
+      "verifier_result": {
+        "snippet_id": "0001-A_missing_theorem_on_dual_spaces::CAND::5",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.0,
+        "reasoning": "The step is correct as stated. $J^{\\dagger}=L_i$ is a surjective complete isometry of $Y=X^{\\dagger}$, and since $X\\subset X^{\\dagger\\dagger}$ completely isometrically, $\\|[Jx_{kl}]\\|_{M_n(X)}=\\sup\\{\\|[\\varphi_{ij}(Jx_{kl})]\\|\\}=\\sup\\{\\|[(J^{\\dagger}\\varphi_{ij})(x_{kl})]\\|\\}=\\|[x_{kl}]\\|_{M_n(X)}$, the last equality because $J^{\\dagger}=L_i$ maps $\\mathrm{Ball}(M_m(X^{\\dagger}))$ onto itself. There is no tension with Example 2: complex OPERATOR SPACE structure requires the matrix norms on $M_n(\\mathbb{C})\\otimes X$, which is strictly more than a completely isometric $J$ with $J^2=-I$ — and that gap is precisely why part (3) gets only a factor-2 equivalence between $W$ and $X$.",
+        "predicted_error_category": null,
+        "snippet_type": "PROOF_STEP",
+        "contradiction_locations": []
+      },
+      "adjudication": {
+        "rule": "unsettled_dropped",
+        "cleared_by": null,
+        "note": "Informal review returned NO_ERROR (and explained why Example 2 is not in tension with the step); detector confidence 0.30 < 0.5."
+      },
+      "status": "UNVERIFIABLE",
+      "error_detected": false,
+      "confidence": 0.0,
+      "source": "informal"
+    },
+    {
+      "snippet_id": "0001-A_missing_theorem_on_dual_spaces::CAND::6",
+      "snippet_type": "EQUATION",
+      "location": "Paragraph before Problem 3 (Ferenczi's isomorphic criterion, ℓ₁ example)",
+      "content": "Criterion as stated in the paper: a bounded map $J:X\\to X$ on a real Banach space corresponds isomorphically to a complex Banach space structure on $X$ (with $ix=Jx$) if and only if $J^2=-I$ and $J$ is an isomorphism. Proposed instance: $X=\\ell_1(\\mathbb{N},\\mathbb{R})$ and $J(\\alpha_1,\\alpha_2,\\alpha_3,\\alpha_4,\\dots)=(-\\alpha_2,\\alpha_1,-\\alpha_4,\\alpha_3,\\dots)$, i.e. $J$ acts on each consecutive coordinate pair $(\\alpha_{2k-1},\\alpha_{2k})$ by $(\\alpha_{2k-1},\\alpha_{2k})\\mapsto(-\\alpha_{2k},\\alpha_{2k-1})$.\n\nClaim under test: (a) $J$ as defined satisfies $J\\circ J=-\\mathrm{Id}$ on $\\ell_1$; (b) $J$ is a bounded invertible map on $\\ell_1$; and (c) is the extra requirement '$J$ is an isomorphism' in the criterion independent of '$J^2=-I$ and $J$ bounded', or is it automatic (note $J\\circ(-J)=-J^2=I$)?",
+      "exact_quote": "Thus for example, by this criterion (real) ℓ₁ has isomorphic complex structure using J(α) = (−α₂, α₁, −α₄, α₃, ···).",
+      "suspected_defect": "Two things to settle. First, whether the explicit $J$ really squares to $-I$ with the sign pattern as printed (the pattern $(-\\alpha_2,\\alpha_1,-\\alpha_4,\\alpha_3,\\dots)$ must be applied twice and compared coordinatewise to $-\\alpha$). Second, the criterion as stated looks redundant: a bounded $J$ with $J^2=-I$ automatically has the bounded inverse $-J$, so 'and $J$ is an isomorphism' adds nothing, which suggests the criterion is misstated relative to its intended content.",
+      "detector_confidence": 0.15,
+      "route": "python",
+      "route_gate": "1",
+      "route_rationale": "Gate 1: a single concrete computation settles it — apply the explicit coordinate map J twice and compare with -alpha, and check whether -J inverts J. The witness is already written down in claim_content; no proof obligation remains once the composition is evaluated.",
+      "verifier_result": {
+        "snippet_id": "0001-A_missing_theorem_on_dual_spaces::CAND::6",
+        "verifier_name": "math-python",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.0,
+        "reasoning": "Falsification condition set first: a coordinate at which $J\\circ J\\neq-\\mathrm{Id}$, or $-J$ failing to invert $J$, or $\\|J\\|_{\\ell_1}\\neq1$. Exact symbolic check on generic vectors in $\\mathbb{R}^{2N}$ for $N=1,\\dots,5$: $J(a_1,a_2,a_3,a_4,\\dots)=(-a_2,a_1,-a_4,a_3,\\dots)$ gives $J(J a)=(-a_1,-a_2,-a_3,-a_4,\\dots)=-a$ identically, so $J^2=-I$; the $\\ell_1$ operator norm (max absolute column sum) is $1$, so $J$ is an $\\ell_1$-isometry; and $J\\cdot(-J)=I$. The example is correct. On the candidate's second half: sympy confirms that for every real $2\\times2$ $J$ with $J^2=-I$, $J\\cdot(-J)-I=0$, so a bounded $J$ with $J^2=-I$ is automatically an isomorphism with bounded inverse $-J$ — the criterion's clause 'and $J$ is an isomorphism' is redundant, which is stylistic redundancy and not a mathematical error. Exact arithmetic throughout; the check is over truncations $\\mathbb{R}^{2N}$, $N\\le5$, and the block structure makes the extension to $\\ell_1$ immediate.",
+        "predicted_error_category": null,
+        "snippet_type": "PROOF_STEP",
+        "contradiction_locations": [],
+        "python": {
+          "python_status": "CONFIRMED",
+          "approach": "symbolic",
+          "script": "see $WORK_DIR/check.py for 0001-A_missing_theorem_on_dual_spaces::CAND::6 (single self-contained sympy/numpy file, run with python3 -I)",
+          "stdout": "N=1 J*a = [-a2, a1]; J*(J*a) = [-a1, -a2] = -a;  l1 op-norm(J) = 1; J*(-J) == I: True\nN=2..5 (dim 4,6,8,10): J^2 + I == 0 ? True ; J*(-J) == I ? True ; l1 op-norm(J) = 1\ngeneric real 2x2 J with J^2 = -I: J*(-J) - I = [[0, 0], [0, 0]]\nF1/F2/F3 fired: False False False\nVERDICT: MATCH  (J^2 = -I exactly; J is an l1-isometry; -J is its inverse)",
+          "stderr": "",
+          "witness": null,
+          "search_space": "exact symbolic check on generic vectors in R^(2N), N = 1..5; all real 2x2 J with J^2 = -I symbolically",
+          "tolerance": "exact (sympy / integer arithmetic)",
+          "revisions": 0
+        }
+      },
+      "adjudication": {
+        "rule": "verifier_cleared",
+        "cleared_by": "python",
+        "note": "An exact symbolic computation reproduced $J^2=-I$, $\\|J\\|_{\\ell_1}=1$ and $J^{-1}=-J$ on generic vectors; the example is correct."
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.0,
+      "source": "python"
+    },
+    {
+      "snippet_id": "0001-A_missing_theorem_on_dual_spaces::CAND::7",
+      "snippet_type": "PROOF_STEP",
+      "location": "Example 1 (Ferenczi), parenthetical computation",
+      "content": "Setting. $X$ is an infinite-dimensional real Banach space on which every bounded operator has the form $aI+k$ with $a\\in\\mathbb{R}$ and $k$ compact (e.g. an Argyros-Haydon-type space). Suppose $X$ were isomorphic to a complex Banach space; then by the criterion quoted in the paper there is a bounded invertible $J:X\\to X$ with $J^2=-I$. Writing $J=aI+k$ with $a\\in\\mathbb{R}$ and $k$ compact, the paper asserts that $(aI+k)^2=-I$ yields the contradiction $a^2=-1$.\n\nClaim under test: expand $(aI+k)^2=a^2 I+2ak+k^2$ and decide whether $(aI+k)^2=-I$ forces $a^2=-1$. The intended reasoning is that $(a^2+1)I=-(2ak+k^2)$ is compact, and that the identity operator on an infinite-dimensional Banach space is not compact, so $a^2+1=0$. Is the expansion correct (note $k$ and $aI$ commute, so no cross-term is lost), and is the conclusion $a^2=-1$ rather than, say, $a^2=1$ or $a^2+1$ merely being a compact perturbation?",
+      "exact_quote": "(For J² = (aI + k)² = −I, for k compact and a real, gives the contradiction a² = −1.)",
+      "suspected_defect": "The parenthetical compresses an expansion, a compactness argument and a scalar conclusion into one line. Worth checking that $a^2+1=0$ (not some other relation) is what falls out, and that the compactness of $2ak+k^2$ is enough — in particular that the case $a=0$, where $2ak+k^2=k^2$ is compact and $(a^2+1)I=I$, is covered.",
+      "detector_confidence": 0.15,
+      "route": "python",
+      "route_gate": "1",
+      "route_rationale": "Gate 1: the step is an algebraic expansion, (a*I+k)^2 = a^2*I + 2*a*k + k^2, followed by isolating (a^2+1)*I; a symbolic expansion in a noncommutative-but-here-commuting setting reproduces it line to line and decides whether a^2 = -1 is what falls out, including the a = 0 case.",
+      "verifier_result": {
+        "snippet_id": "0001-A_missing_theorem_on_dual_spaces::CAND::7",
+        "verifier_name": "math-python",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.0,
+        "reasoning": "Falsification condition set first: the expansion differing from $a^2I+2ak+k^2$, the scalar part giving something other than $a^2+1=0$, or the $a=0$ branch escaping the argument. sympy expands $(aI+k)^2=a^2I^2+2aIk+k^2$, matching the printed form exactly (no cross term is lost because $aI$ is central). Setting it equal to $-I$ and collecting the identity part gives $(a^2+1)I=-(2ak+k^2)$, compact; since the identity on an infinite-dimensional space is not compact, $a^2+1=0$, i.e. $a^2=-1$, with no real solutions — exactly the printed contradiction. The $a=0$ branch is covered by the same computation: $(a^2+1)I=I$ there, still non-compact. Exact symbolic arithmetic in the commutative subalgebra generated by $I$ and $k$. Not checked computationally: non-compactness of the identity on an infinite-dimensional Banach space, which is standard (Riesz).",
+        "predicted_error_category": null,
+        "snippet_type": "PROOF_STEP",
+        "contradiction_locations": [],
+        "python": {
+          "python_status": "CONFIRMED",
+          "approach": "symbolic",
+          "script": "see $WORK_DIR/check.py for 0001-A_missing_theorem_on_dual_spaces::CAND::7 (single self-contained sympy/numpy file, run with python3 -I)",
+          "stdout": "(a*I + k)^2 expanded      : I_op**2*a**2 + 2*I_op*a*k + k**2\na^2*I + 2*a*k + k^2       : I_op**2*a**2 + 2*I_op*a*k + k**2\nF1 (expansion disagrees)  : False\nequation forced on the scalar part: a^2 + 1 = 0  ->  a^2 = -1\nreal solutions for a       : []\na = 0 branch: J = k, J^2 = k**2 = -I  =>  I = -k^2 is compact ... NOT compact -> contradiction, case covered\nVERDICT: MATCH",
+          "stderr": "",
+          "witness": null,
+          "search_space": "exact symbolic expansion in the commutative subalgebra generated by I and k, plus the a = 0 branch",
+          "tolerance": "exact (sympy / integer arithmetic)",
+          "revisions": 0
+        }
+      },
+      "adjudication": {
+        "rule": "verifier_cleared",
+        "cleared_by": "python",
+        "note": "An exact symbolic expansion reproduced $(aI+k)^2=a^2I+2ak+k^2$ and the forced relation $a^2+1=0$, including the $a=0$ branch."
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.0,
+      "source": "python"
+    },
+    {
+      "snippet_id": "0001-A_missing_theorem_on_dual_spaces::CAND::8",
+      "snippet_type": "PROOF_STEP",
+      "location": "Remark 3 after Theorem 4.1 (no complex structure on C(K,ℝ))",
+      "content": "Setting. $K$ is a compact Hausdorff space and $C(K,\\mathbb{R})$ the real Banach space of continuous real-valued functions with the sup norm. Suppose $C(K,\\mathbb{R})$ had isometric complex structure, i.e. there is $J:C(K,\\mathbb{R})\\to C(K,\\mathbb{R})$ with $J^2=-I$ and such that $f\\mapsto sf+tJ(f)$ is an isometry whenever $s^2+t^2=1$ (the criterion stated in Section 1 of the paper). Taking $s=t=1/\\sqrt{2}$, $J$ is in particular a surjective linear isometry, so by the Banach-Stone theorem $J(f)=u\\cdot(f\\circ\\tau)$ for a homeomorphism $\\tau$ of $K$ and a unimodular $u\\in C(K,\\mathbb{R})$, i.e. $u(k)\\in\\{+1,-1\\}$ for every $k\\in K$.\n\nClaims under test, in order: (a) that $\\|\\tfrac{1}{\\sqrt2}f+\\tfrac{1}{\\sqrt2}J(f)\\|_\\infty\\le1$ for all $f$ in the unit ball — applied to $f=1$, giving $|\\tfrac{1}{\\sqrt2}+\\tfrac{1}{\\sqrt2}u(k)|\\le1$ for all $k$ — forces $u\\equiv-1$; and (b) that $J^2(\\mathbf{1})=-\\mathbf{1}$ gives $u\\cdot(u\\circ\\tau)=-1$, which contradicts $u\\equiv-1$ because then $u\\cdot(u\\circ\\tau)\\equiv(-1)(-1)=+1$.",
+      "exact_quote": "We also need |1/√2 + 1/√2 u(·)| ≤ 1, which forces u = −1. Since J²(1) = −1 we have u·(u∘τ) = −1, a contradiction.",
+      "suspected_defect": "A short chain of sign/arithmetic steps carrying a whole sub-result. Step (a) needs $|1+u(k)|\\le\\sqrt2$ with $u(k)=\\pm1$ to exclude $u(k)=+1$ (since $|1+1|=2>\\sqrt2$) — check the arithmetic. Step (b) computes $J(\\mathbf{1})=u$ and $J^2(\\mathbf{1})=J(u)=u\\cdot(u\\circ\\tau)$ — check that this is the right composition and that substituting $u\\equiv-1$ really yields $+1$ and hence the contradiction with $-1$. If either sign is off, Remark 3's conclusion that $A^{\\dagger\\dagger}$ is $L^\\infty(\\Omega,\\mathbb{C})$ does not follow.",
+      "detector_confidence": 0.25,
+      "route": "python",
+      "route_gate": "1",
+      "route_rationale": "Gate 1: both steps are arithmetic over a two-element instance space. Evaluate |1/sqrt(2) + u/sqrt(2)| for u in {+1,-1} against the bound 1, and then evaluate u*(u o tau) under u == -1 against the required value -1. A single computation exhibits the contradiction or its absence.",
+      "verifier_result": {
+        "snippet_id": "0001-A_missing_theorem_on_dual_spaces::CAND::8",
+        "verifier_name": "math-python",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.0,
+        "reasoning": "Falsification condition set first: some $u(x)=+1$ surviving the bound, some $u(x)=-1$ being excluded by it, $u\\cdot(u\\circ\\tau)$ equalling $-1$ under $u\\equiv-1$, or $J(\\mathbf1)$/$J^2(\\mathbf1)$ being miscomputed. Exhaustive over the full instance space: $u(x)\\in\\{+1,-1\\}$ exactly, and all permutations $\\tau$ of finite models of $K$ with $|K|=1,\\dots,5$ (720 maps in total). Exact arithmetic, no tolerance. Step (a): $|1/\\sqrt2+u/\\sqrt2|$ is $\\sqrt2>1$ at $u=+1$ and $0\\le1$ at $u=-1$, so the bound does force $u\\equiv-1$. Step (b): $J(\\mathbf1)=u$ and $J^2(\\mathbf1)=J(u)=u\\cdot(u\\circ\\tau)$, which under $u\\equiv-1$ equals $(-1)(-1)=+1$ for every $\\tau$ checked, against the $-1$ that $J^2=-I$ demands — the stated contradiction. Both steps hold. Not checked: the Banach-Stone representation $J(f)=u\\cdot(f\\circ\\tau)$ itself, which the candidate supplies as a hypothesis.",
+        "predicted_error_category": null,
+        "snippet_type": "PROOF_STEP",
+        "contradiction_locations": [],
+        "python": {
+          "python_status": "CONFIRMED",
+          "approach": "exhaustive_search",
+          "script": "see $WORK_DIR/check.py for 0001-A_missing_theorem_on_dual_spaces::CAND::8 (single self-contained sympy/numpy file, run with python3 -I)",
+          "stdout": "u = +1:  |1/sqrt2 + u/sqrt2| = sqrt(2) = 1.414213562   <= 1 ? False\nu = -1:  |1/sqrt2 + u/sqrt2| = 0 = 0   <= 1 ? True\nallowed values of u: [-1] -> forces u = -1 ? True\n|K| = 1..5: all permutations tau checked; u*(u o tau) == +1 everywhere: True\nrequired by J^2 = -I:  u*(u o tau) = -1\nactual with u == -1 :  (-1)*(-1) = +1  !=  -1   -> contradiction, as the paper says\nF1/F2/F3/F4 fired: False False False False\nVERDICT: MATCH",
+          "stderr": "",
+          "witness": null,
+          "search_space": "both values of u exactly; all permutations tau of finite models of K with |K| = 1..5 (720 maps)",
+          "tolerance": "exact (sympy / integer arithmetic)",
+          "revisions": 0
+        }
+      },
+      "adjudication": {
+        "rule": "verifier_cleared",
+        "cleared_by": "python",
+        "note": "Exhaustive over the entire instance space ($u\\in\\{\\pm1\\}$ and all 720 permutations $\\tau$ for $|K|\\le5$) in exact arithmetic: both steps hold and the contradiction is real."
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.0,
+      "source": "python"
+    },
+    {
+      "snippet_id": "0001-A_missing_theorem_on_dual_spaces::CAND::9",
+      "snippet_type": "PROOF_STEP",
+      "location": "Proof of Theorem 1.2 (after Corollary 4.4's Remark)",
+      "content": "Setting. $X$ is a real operator space whose real operator space bidual $X^{\\dagger\\dagger}$ has complex operator space structure. By Theorem 4.1 applied twice, $X$ is a complex Banach space; $i_X:X\\to X^{\\dagger\\dagger}$ is the canonical embedding; $\\iota$ denotes the complex scalar $i$, and $L_\\iota$ multiplication by $\\iota$, so that $X^{\\dagger\\dagger}$ carries the operator $L_\\iota$ coming from its complex structure. The paper asserts $(L_i)^{\\dagger\\dagger}=L_i$ and then the displayed inclusion, and concludes 'So $X$ is a complex operator subspace of $X^{**}$'.\n\nClaim under test: the intended statement appears to be $\\iota\\cdot i_X(X)\\subset i_X(X)$ inside $X^{\\dagger\\dagger}$, i.e. that the copy of $X$ in its real bidual is invariant under multiplication by $\\iota$. Does the asserted inclusion follow from $(L_\\iota)^{\\dagger\\dagger}=L_\\iota$ together with $(L_\\iota)^{\\dagger\\dagger}\\circ i_X=i_X\\circ L_\\iota$? And is the final space named correctly — $X^{**}$ (complex bidual) or $X^{\\dagger\\dagger}$ (real bidual), given that the two are only identified via Lemma 3.2?",
+      "exact_quote": "It is easy to see that ι_{i_X}(X) ⊂ i_X(X) in X^††.",
+      "suspected_defect": "The displayed inclusion is written as $\\iota_{i_X}(X)\\subset i_X(X)$, which is not a well-formed expression — $\\iota_{i_X}$ is not a defined operator — so the step cannot be checked as printed; and the conclusion switches from $X^{\\dagger\\dagger}$ to $X^{**}$ in the same breath, which are different objects until Lemma 3.2 is invoked. The inclusion itself is asserted as 'a pleasant exercise' with no argument, yet it is what makes $X$ a complex operator subspace.",
+      "detector_confidence": 0.3,
+      "route": "informal",
+      "route_gate": "4",
+      "route_rationale": "Gate 4: the printed expression iota_{i_X}(X) is not a well-formed operator and the step is left as an exercise, so there is nothing to compute and no unambiguous proposition to formalise; whether the intended inclusion follows from (L_iota)^{dagger dagger} = L_iota is a reading question about the proof's structure.",
+      "verifier_result": {
+        "snippet_id": "0001-A_missing_theorem_on_dual_spaces::CAND::9",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.0,
+        "reasoning": "The printed '$\\iota_{i_X}(X)\\subset i_X(X)$' is a mis-set subscript for $\\iota\\cdot i_X(X)\\subset i_X(X)$, i.e. invariance of $i_X(X)$ under multiplication by $\\iota$, which does follow from $(L_\\iota)^{\\dagger\\dagger}=L_\\iota$ together with $(L_\\iota)^{\\dagger\\dagger}\\circ i_X=i_X\\circ L_\\iota$. The subsequent switch from $X^{\\dagger\\dagger}$ to $X^{**}$ is licensed by Lemma 3.2, which the very next sentence cites. Typography and a compressed citation, not a derivation error.",
+        "predicted_error_category": null,
+        "snippet_type": "PROOF_STEP",
+        "contradiction_locations": []
+      },
+      "adjudication": {
+        "rule": "unsettled_dropped",
+        "cleared_by": null,
+        "note": "Informal review returned NO_ERROR, reading the printed expression as a mis-set subscript whose intended content follows; detector confidence 0.30 < 0.5."
+      },
+      "status": "UNVERIFIABLE",
+      "error_detected": false,
+      "confidence": 0.0,
+      "source": "informal"
+    },
+    {
+      "snippet_id": "0001-A_missing_theorem_on_dual_spaces::CAND::10",
+      "snippet_type": "THEOREM",
+      "location": "Paragraph after Theorem 1.1 (equivalence with Problem 1)",
+      "content": "Problem 1 (affirmative solution): if $Y$ is a complex Banach space possessing a real predual $X$ — equivalently, if $X$ is a real Banach space whose real dual $X^{\\dagger}$ has isometric complex structure — then $X$ has isometric complex structure. Theorem 1.1: if $X$ is a real Banach space such that its real bidual $X^{\\dagger\\dagger}$ has isometric complex structure, then $X$ has isometric complex structure. Standing fact from the paper's first paragraph: the real dual $Z^{\\dagger}$ of a complex Banach space $Z$ is itself a complex Banach space (Murray's $\\varphi(x)-i\\varphi(ix)$ trick).\n\nClaim under test: the two statements are equivalent. The forward direction given in the paper is: if $X^{\\dagger}$ has complex structure then its real dual $X^{\\dagger\\dagger}$ has complex structure by the standing fact, so Theorem 1.1 applies to $X$. The paper then says 'the converse is trivial'. Is the converse (an affirmative solution to Problem 1 implies Theorem 1.1) a single application of Problem 1, or does it require applying Problem 1 twice — first to $X^{\\dagger}$ (whose real dual $X^{\\dagger\\dagger}$ has complex structure) to get complex structure on $X^{\\dagger}$, and then to $X$?",
+      "exact_quote": "Thus \\( X \\) is isometrically a complex Banach space by the theorem. The converse is trivial.",
+      "suspected_defect": "The converse is asserted to be trivial but, read literally, Problem 1's statement applied to $X$ requires complex structure on $X^{\\dagger}$, not on $X^{\\dagger\\dagger}$; getting from the bidual hypothesis of Theorem 1.1 to that requires a second application of Problem 1 to the space $X^{\\dagger}$. If that extra step is not available the claimed equivalence is one-directional.",
+      "detector_confidence": 0.2,
+      "route": "lean",
+      "route_gate": "3",
+      "route_rationale": "Gate 3: once the Banach-space content is abstracted away, the question is purely a derivation in first-order logic — from the universally quantified implication P(Z): 'dual(Z) has complex structure -> Z has complex structure' and the fact F: 'Z has complex structure -> dual(Z) has complex structure', does 'dual(dual(X)) has complex structure -> X has complex structure' follow, and in how many applications of P? Policy triggers: universal quantification, an implication that must hold in general, and a claimed equivalence of two theorem statements. It formalises unambiguously over an abstract type with an abstract predicate and an abstract dual operation, with no invented hypotheses. Detector hint 'proof_step' overruled: the load is logical, not analytic. No practical instance space to probe, so bare lean rather than hybrid.",
+      "verifier_result": {
+        "snippet_id": "0001-A_missing_theorem_on_dual_spaces::CAND::10",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.0,
+        "reasoning": "Formalised the logical skeleton of the asserted equivalence over an arbitrary type $S$ with an arbitrary dual operation $d$ and predicate $C$ ('has isometric complex structure'): (P) Problem 1 affirmative, $\\forall Z,\\ C(dZ)\\to C Z$; (T) Theorem 1.1, $\\forall X,\\ C(d(dX))\\to C X$; (F) the paper's standing fact, $\\forall Z,\\ C Z\\to C(dZ)$. Lean proved both directions with no axioms at all: $P\\to T$ is $\\lambda X\\,h.\\;P\\,X\\,(P\\,(d\\,X)\\,h)$ and $T\\to P$ (with F) is $\\lambda X\\,h.\\;T\\,X\\,(F\\,(d\\,X)\\,h)$. So the equivalence holds, and the proof term makes the candidate's question explicit: the converse direction does take TWO applications of Problem 1, not one — but that is what 'trivial' means here, and nothing is overstated. No extra hypotheses were invented; equally, nothing analytic was verified, only the logical structure the candidate questioned.",
+        "predicted_error_category": null,
+        "snippet_type": "THEOREM",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/0001-MissingThmDualSpaces__CAND10__v3-v3.lean",
+          "formal_statement": "import Mathlib\n\n/-!\nCAND::10 — the logical skeleton of the equivalence asserted after Theorem 1.1\nof \"A missing theorem on dual spaces\".\n\n`S` = spaces, `d` = the real-dual operation, `C Z` = \"Z has isometric complex\nstructure\".  (P) is an affirmative solution to Problem 1, (T) is Theorem 1.1,\n(F) is the paper's standing fact that the real dual of a complex Banach space\nis a complex Banach space.\n-/\n\nsection\nvariable {S : Type*} (d : S → S) (C : S → Prop)\n\n/-- Problem 1 (affirmative) implies Theorem 1.1. -/\ntheorem problem1_implies_thm11 (P : ∀ Z, C (d Z) → C Z) :\n    ∀ X, C (d (d X)) → C X :=\n  fun X h => P X (P (d X) h)\n\n/-- Theorem 1.1, together with the standing fact (F), implies Problem 1. -/\ntheorem thm11_implies_problem1 (F : ∀ Z, C Z → C (d Z))\n    (T : ∀ X, C (d (d X)) → C X) :\n    ∀ X, C (d X) → C X :=\n  fun X h => T X (F (d X) h)\n\n/-- The full equivalence asserted by the paper. -/\ntheorem paper_cand10 (F : ∀ Z, C Z → C (d Z)) :\n    (∀ Z, C (d Z) → C Z) ↔ (∀ X, C (d (d X)) → C X) :=\n  ⟨problem1_implies_thm11 d C, fun T => thm11_implies_problem1 d C F T⟩\n\nend\n\n",
+          "compiler_feedback": "lake env lean Paper/TMP.lean -> exit 0, stdout: \"'paper_cand10' does not depend on any axioms\"; lean_diagnostic_messages: success true, zero severity-1 items, no `sorry` warning",
+          "axioms": [],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "adjudication": {
+        "rule": "verifier_cleared",
+        "cleared_by": "lean",
+        "note": "Lean proved both directions of the claimed equivalence with no axioms whatsoever; the converse needs two applications of Problem 1, which is still trivial."
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.0,
+      "source": "lean"
+    },
+    {
+      "snippet_id": "0001-A_missing_theorem_on_dual_spaces::CAND::11",
+      "snippet_type": "PROOF_STEP",
+      "location": "Introduction, paragraph establishing 'the claim' (Bourgain example)",
+      "content": "Setting and conventions from the paper: for a complex Banach space $Z$, $Z^{*}$ denotes the complex dual, $Z^{\\dagger}$ the real dual, $Z_r$ is $Z$ viewed as a real Banach space, and $\\bar Z$ is the complex conjugate space (same underlying real space, scalar multiplication $\\lambda\\cdot_{\\bar Z} z=\\bar\\lambda z$). Standing fact: for complex $Z$, $(Z_r)^{\\dagger}\\cong (Z^{*})_r$ real-linearly isometrically via $\\varphi\\mapsto\\varphi(\\cdot)-i\\varphi(i\\,\\cdot)$. '$E$ is a complex predual of $V$' means $E^{*}\\cong V$ complex isometrically; '$E$ is a real predual of $V$' means $(E_r)^{\\dagger}\\cong V_r$ real isometrically. Let $Y$ be a complex dual Banach space that is not complex isometric to $\\bar Y$.\n\nClaims under test: (a) if $E^{*}\\cong\\bar Y$ complex isometrically then $(E_r)^{\\dagger}\\cong Y_r$ real isometrically, i.e. $E$ is a real predual of $Y$; (b) $(\\bar E)^{*}\\cong \\overline{E^{*}}\\cong\\overline{\\bar Y}= Y$, i.e. $\\bar E$ is a complex predual of $Y$; (c) $E$ and $\\bar E$ are real isometrically isomorphic but not complex isometrically so; (d) $E$ is not a complex predual of $Y$.",
+      "exact_quote": "If \\( E \\) is a complex predual of \\( \\bar{Y} \\) then \\( E \\) is a real predual of \\( Y \\) and \\( \\bar{E} \\) is a complex predual of \\( Y \\).",
+      "suspected_defect": "Step (a) is the one to check: it needs $(\\bar Y)_r=Y_r$, i.e. that conjugation does not change the underlying real Banach space, and the standing real-dual fact. If instead $(E_r)^{\\dagger}$ were real isometric to $\\bar Y_r$ in a way that does not coincide with $Y_r$, the whole construction establishing 'the claim' (that a complex real-predual need not be a complex predual) collapses, and with it the paper's assertion that Problem 2 does not follow immediately from Problem 1.",
+      "detector_confidence": 0.2,
+      "route": "informal",
+      "route_gate": "4",
+      "route_rationale": "Gate 4: the chain concerns complex-conjugate Banach spaces, complex versus real duals and complex versus real isometric preduals; none of these has a Mathlib counterpart, a faithful Lean statement would have to invent the conjugate-space construction, and there is no finite instance space, so the escalation guard downgrades the general_claim hint to close reading.",
+      "verifier_result": {
+        "snippet_id": "0001-A_missing_theorem_on_dual_spaces::CAND::11",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.0,
+        "reasoning": "The chain checks out. Conjugation does not change the underlying real Banach space, so $(\\bar Y)_r=Y_r$; from $E^{*}\\cong\\bar Y$ complex isometrically and the standing fact $(E_r)^{\\dagger}\\cong(E^{*})_r$ one gets $(E_r)^{\\dagger}\\cong Y_r$, so $E$ is a real predual of $Y$. Also $(\\bar E)^{*}\\cong\\overline{E^{*}}\\cong\\overline{\\bar Y}=Y$, so $\\bar E$ is a complex predual of $Y$; $E\\cong\\bar E$ really but not complexly, since $E\\cong\\bar E$ complexly would give $\\bar Y\\cong Y$; and $E^{*}=\\bar Y\\not\\cong Y$, so $E$ is not a complex predual of $Y$. Every step of the construction establishing 'the claim' is sound.",
+        "predicted_error_category": null,
+        "snippet_type": "PROOF_STEP",
+        "contradiction_locations": []
+      },
+      "adjudication": {
+        "rule": "unsettled_dropped",
+        "cleared_by": null,
+        "note": "Informal review returned NO_ERROR after checking every link of the conjugate-predual chain; detector confidence 0.20 < 0.5."
+      },
+      "status": "UNVERIFIABLE",
+      "error_detected": false,
+      "confidence": 0.0,
+      "source": "informal"
+    },
+    {
+      "snippet_id": "0001-A_missing_theorem_on_dual_spaces::CAND::12",
+      "snippet_type": "PROOF_STEP",
+      "location": "Proof of Corollary 4.4, converse direction",
+      "content": "Corollary 4.4: let $A$ be a complex $C^{*}$-algebra; then $A$ is a complex von Neumann algebra if and only if it has a real Banach space predual. Available results: Theorem 4.1 — if the real dual $Y$ of a real Banach space $X$ has isometric complex Banach space structure, then $X$ has isometric complex structure and there is a canonical complex structure on $X$ whose complex dual is $Y$ complex isometrically and weak* homeomorphically. Remark 2 after Lemma 1.3 — any complex Banach space $Y$ with an isometric complex predual $X$ has an isometric real predual, since $(X_r)^{\\dagger}\\cong X^{*}\\cong Y$. Sakai's theorem — a complex $C^{*}$-algebra with a (complex) Banach space predual is a von Neumann algebra.\n\nClaim under test: the converse direction as written, namely that 'if $A$ has a real predual then it has a complex predual by Theorem 4.1 (or by Remark 2 above)'. Does Remark 2 supply this implication, or does Remark 2 state the opposite implication (complex predual $\\Rightarrow$ real predual), so that only Theorem 4.1 can be used here?",
+      "exact_quote": "Conversely, if A has a real predual then it has a complex predual by Theorem 4.1 (or by Remark 2 above), and hence it is a von Neumann algebra by Sakai's theorem (characterizing von Neumann algebras).",
+      "suspected_defect": "The parenthetical alternative looks like it points the wrong way: Remark 2 after Lemma 1.3 goes from a complex predual to a real predual, which is the direction already used in the forward half of the proof, not the converse direction being argued. If so, the only justification actually available for the converse is Theorem 4.1, and offering Remark 2 as an alternative is a logical slip in the proof.",
+      "detector_confidence": 0.3,
+      "route": "informal",
+      "route_gate": "4",
+      "route_rationale": "Gate 4: the suspicion is that a cited result is invoked in the wrong direction inside a proof — a lemma used outside the conditions under which it was stated, which Gate 4 names explicitly and which no computation or formalisation reaches.",
+      "verifier_result": {
+        "snippet_id": "0001-A_missing_theorem_on_dual_spaces::CAND::12",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.0,
+        "reasoning": "The observation is correct — Remark 2 after Lemma 1.3 runs from a complex predual to a real predual, which is the forward half of Corollary 4.4, not the converse being argued — so the parenthetical '(or by Remark 2 above)' points the wrong way. But Theorem 4.1 is cited first in the same sentence and supplies the implication in full, so no step of the proof rests on the parenthetical. A redundant and misdirected aside is not a derivation-invalidating error.",
+        "predicted_error_category": null,
+        "snippet_type": "PROOF_STEP",
+        "contradiction_locations": []
+      },
+      "adjudication": {
+        "rule": "unsettled_dropped",
+        "cleared_by": null,
+        "note": "Informal review returned NO_ERROR: the parenthetical does point the wrong way, but Theorem 4.1 is cited in the same sentence and carries the step; detector confidence 0.30 < 0.5."
+      },
+      "status": "UNVERIFIABLE",
+      "error_detected": false,
+      "confidence": 0.0,
+      "source": "informal"
+    },
+    {
+      "snippet_id": "0001-A_missing_theorem_on_dual_spaces::CAND::13",
+      "snippet_type": "PROOF_STEP",
+      "location": "Proof of Theorem 3.3 (1), second sentence",
+      "content": "Setting. $X$ is a REAL operator space; the paper uses $X^{\\dagger}$ for the real dual and $X^{*}$ for the complex dual, and says explicitly 'We usually will write $X^{\\dagger}$ for the real dual and $X^{*}$ for the complex dual'. In Theorem 3.3, $Y$ is defined as $X^{\\dagger}$ equipped with a complex operator space structure, and $L_i$ is multiplication by $i$ on $Y$. $\\mathcal{M}_\\ell(Z)$ denotes the left multiplier operator algebra of an operator space $Z$, with $\\mathcal{M}^{\\mathbb{R}}$ and $\\mathcal{M}^{\\mathbb{C}}$ the real and complex versions. A related claim at the end of the paper reads '$L_i\\in Z_{\\mathbb{R}}(X)=Z_{\\mathbb{C}}(X)$ for operator space centralizers [4, Theorem 4.5]'.\n\nClaims under test: (a) for a real operator space $X$, is '$(X^{*})_r$' a defined object, and is the space on which $L_i$ is asserted to be a real operator space multiplier $Y_r=(X^{\\dagger})_r$ rather than $(X^{*})_r$? (b) is the cited Theorem 4.5 of [4] a statement about multiplier algebras $\\mathcal{M}^{\\mathbb{R}}=\\mathcal{M}^{\\mathbb{C}}$, as used here, or about centralizers $Z_{\\mathbb{R}}=Z_{\\mathbb{C}}$, as used in the Closing Remark?",
+      "exact_quote": "Since ℳ^ℝ(Y) = ℳ^ℂ(Y) (this is Theorem 4.5 in [4]), the operator L_i is a real operator space multiplier on (X*)_r.",
+      "suspected_defect": "$X$ is a real operator space, so its complex dual $X^{*}$ is not defined under the paper's own conventions; the space intended is almost certainly $Y_r=(X^{\\dagger})_r$. The same misidentification recurs a few lines later ('$y^\\lambda_{ij}\\to y_{ij}$ in $\\sigma(X^{*},X)$'). Separately, the same citation [4, Theorem 4.5] is used for two different statements (multipliers here, centralizers in the Closing Remark), so at most one of the two uses can be faithful.",
+      "detector_confidence": 0.2,
+      "route": "informal",
+      "route_gate": "4",
+      "route_rationale": "Gate 4: the mathematical half (whether X^* is a defined object when X is a real operator space, under the paper's own stated conventions) is a consistency reading of the paper's notation contract; the other half is a citation-reuse concern, which is out of mathematical scope and should not drive the verdict. Not Gate 0, because the first half is a checkable claim about the paper's own definitions.",
+      "verifier_result": {
+        "snippet_id": "0001-A_missing_theorem_on_dual_spaces::CAND::13",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.0,
+        "reasoning": "Under the paper's own convention ('$X^{\\dagger}$ for the real dual and $X^{*}$ for the complex dual') the symbol $X^{*}$ is indeed undefined for a real operator space $X$, and both '$(X^{*})_r$' and '$\\sigma(X^{*},X)$' in this proof should read $(X^{\\dagger})_r=Y_r$ and $\\sigma(X^{\\dagger},X)$. The intended objects are unambiguous and the argument reads correctly with the substitution. The second half of the candidate — the same citation [4, Theorem 4.5] used for multipliers here and centralizers in the Closing Remark — is a citation question, outside mathematical scope.",
+        "predicted_error_category": null,
+        "snippet_type": "PROOF_STEP",
+        "contradiction_locations": []
+      },
+      "adjudication": {
+        "rule": "unsettled_dropped",
+        "cleared_by": null,
+        "note": "Informal review returned NO_ERROR, treating $(X^{*})_r$ as a notation slip for $(X^{\\dagger})_r$ and the citation half as out of scope; detector confidence 0.20 < 0.5."
+      },
+      "status": "UNVERIFIABLE",
+      "error_detected": false,
+      "confidence": 0.0,
+      "source": "informal"
+    },
+    {
+      "snippet_id": "0001-A_missing_theorem_on_dual_spaces::CAND::14",
+      "snippet_type": "EXAMPLE",
+      "location": "Example 2, second sentence",
+      "content": "Setting. $X$ is the real operator space dual of $\\mathbb{C}$ (so $X$ is two-dimensional over $\\mathbb{R}$). The argument asserts: if $X$ had complex operator space structure completely isometrically, then $X$ would be a one-dimensional complex operator space, hence complex-linearly completely isometric to $\\mathbb{C}$ (with its unique operator space structure as a one-dimensional $C^{*}$-algebra); but by [35, Proposition 2.8] the real operator space dual of $\\mathbb{C}$ is NOT completely isometric to $\\mathbb{C}$, a contradiction.\n\nClaim under test: is it true that every one-dimensional complex operator space is complex-linearly completely isometric to $\\mathbb{C}$ — i.e. that the operator space structure on a one-dimensional complex space is unique? And does the cited non-complete-isometry of $X$ with $\\mathbb{C}$ concern complete isometry as REAL operator spaces, which is what is needed to contradict a COMPLEX-linear complete isometry $X\\cong\\mathbb{C}$?",
+      "exact_quote": "Indeed if it did it would be a one dimensional complex operator space, hence is complex linearly completely isometric to $\\mathbb{C}$.",
+      "suspected_defect": "Two steps are compressed. The uniqueness of the operator space structure on a one-dimensional complex space is used without citation. More importantly, the contradiction mixes levels: the hypothesis produces a complex-linear complete isometry $X\\cong\\mathbb{C}$, while [35, Proposition 2.8] is a statement about real operator spaces; the argument needs the implication 'complex-linearly completely isometric $\\Rightarrow$ really completely isometric', which is true but unstated.",
+      "detector_confidence": 0.2,
+      "route": "informal",
+      "route_gate": "4",
+      "route_rationale": "Gate 4: uniqueness of the operator space structure on a one-dimensional complex space, and the step from a complex-linear complete isometry to a real one, are statements about operator spaces with no Mathlib counterpart and no probeable instance space; the escalation guard downgrades the general_claim hint to informal.",
+      "verifier_result": {
+        "snippet_id": "0001-A_missing_theorem_on_dual_spaces::CAND::14",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.0,
+        "reasoning": "Both compressed steps are sound. The operator space structure on a one-dimensional complex space is unique up to complete isometry (it is forced by Ruan's axioms together with $M_n(\\mathbb{C})\\otimes\\mathbb{C}=M_n(\\mathbb{C})$), so a one-dimensional complex operator space is complex-linearly completely isometric to $\\mathbb{C}$. And a complex-linear complete isometry restricts to the real matrix levels, so it is in particular a real complete isometry — which is what contradicts [35, Proposition 2.8]. Omitted but valid intermediate steps are not flagged.",
+        "predicted_error_category": null,
+        "snippet_type": "PROOF_STEP",
+        "contradiction_locations": []
+      },
+      "adjudication": {
+        "rule": "unsettled_dropped",
+        "cleared_by": null,
+        "note": "Informal review returned NO_ERROR: both compressed steps of Example 2 are valid; detector confidence 0.20 < 0.5."
+      },
+      "status": "UNVERIFIABLE",
+      "error_detected": false,
+      "confidence": 0.0,
+      "source": "informal"
+    },
+    {
+      "snippet_id": "0001-A_missing_theorem_on_dual_spaces::CAND::15",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "Proof of Corollary 3.4, final displayed inequality",
+      "content": "Setting. $X$ is a complex operator space with complex operator space dual $X^{*}=Y$. $W$ is $X$ equipped with the operator space structure making $i_X:W\\to Y^{\\dagger}$ a complete isometry, where $X\\subset Y^{\\dagger}$ via the real duality pairing $\\langle\\varphi,x\\rangle=\\operatorname{Re}\\varphi(x)$ for $\\varphi\\in Y$, $x\\in X$. Hence $\\|[x_{kl}]\\|_{M_n(W)}=\\sup\\{\\|[\\operatorname{Re}\\varphi_{ij}(x_{kl})]\\| : [\\varphi_{ij}]\\in \\mathrm{Ball}(M_m(Y)),\\ m\\in\\mathbb{N}\\}$.\n\nClaim under test: for all $n,m$, all $[\\varphi_{ij}]\\in \\mathrm{Ball}(M_m(Y))$ and all $[x_{kl}]\\in M_n(X)$, $\\|[\\varphi_{ij}(x_{kl})]\\|\\le\\|[\\operatorname{Re}\\varphi_{ij}(x_{kl})]\\|+\\|[\\operatorname{Re}\\varphi_{ij}(i x_{kl})]\\|\\le 2\\|[x_{kl}]\\|_{M_n(W)}$. The first inequality uses $\\varphi(x)=\\operatorname{Re}\\varphi(x)-i\\operatorname{Re}\\varphi(ix)$ and the triangle inequality for matrix norms; the second needs $\\|[\\operatorname{Re}\\varphi_{ij}(i x_{kl})]\\|\\le\\|[x_{kl}]\\|_{M_n(W)}$, i.e. $\\|[i x_{kl}]\\|_{M_n(W)}=\\|[x_{kl}]\\|_{M_n(W)}$ — that multiplication by $i$ is completely isometric for the $W$ structure, which the proof never states.",
+      "exact_quote": "\\|[\\varphi_{ij}(x_{kl})]\\| \\leq \\|[\\mathrm{Re}\\, \\varphi_{ij}(x_{kl})]\\| + \\|[\\mathrm{Re}\\, \\varphi_{ij}(i x_{kl})]\\| \\leq 2\\|[x_{kl}]\\|_{M_n(W)},",
+      "suspected_defect": "The second inequality silently assumes that multiplication by $i$ is completely isometric on $W$, whose operator space structure is the one inherited from the REAL dual $Y^{\\dagger}$ and is explicitly NOT the structure of $X$ (the corollary's whole point is that $W$ is only completely boundedly isomorphic to $X$). Without that unstated step the constant $2$, and hence the claim that $\\mathrm{Id}^{-1}$ is completely bounded, is not established.",
+      "detector_confidence": 0.3,
+      "route": "informal",
+      "route_gate": "4",
+      "route_rationale": "Gate 4: the defect is an unstated intermediate step (complete isometry of multiplication by i for the W structure inherited from the real dual) inside an operator space estimate; the gap is structural, the objects are infinite-dimensional operator spaces, and no witness or faithful formalisation is available.",
+      "verifier_result": {
+        "snippet_id": "0001-A_missing_theorem_on_dual_spaces::CAND::15",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.0,
+        "reasoning": "The omitted step is true. For $\\varphi\\in Y=X^{*}$ and $x\\in X$, $\\mathrm{Re}\\,\\varphi(ix)=\\mathrm{Re}(i\\varphi(x))=\\mathrm{Re}((i\\varphi)(x))$, so the $W$-pairing of $[ix_{kl}]$ with $[\\varphi_{ij}]$ equals that of $[x_{kl}]$ with $[i\\varphi_{ij}]$; and $[\\varphi_{ij}]\\in\\mathrm{Ball}(M_m(Y))$ iff $[i\\varphi_{ij}]\\in\\mathrm{Ball}(M_m(Y))$, because multiplication by $i$ is a complete isometry of the complex operator space $Y$. Hence $\\|[ix_{kl}]\\|_{M_n(W)}=\\|[x_{kl}]\\|_{M_n(W)}$ and the constant $2$ follows. A sound step left implicit is not an error.",
+        "predicted_error_category": null,
+        "snippet_type": "PROOF_STEP",
+        "contradiction_locations": []
+      },
+      "adjudication": {
+        "rule": "unsettled_dropped",
+        "cleared_by": null,
+        "note": "Informal review returned NO_ERROR: the omitted step $\\|[ix]\\|_{M_n(W)}=\\|[x]\\|_{M_n(W)}$ is true, so the constant 2 stands; detector confidence 0.30 < 0.5."
+      },
+      "status": "UNVERIFIABLE",
+      "error_detected": false,
+      "confidence": 0.0,
+      "source": "informal"
+    }
+  ],
+  "findings": [
+    {
+      "snippet_id": "0001-A_missing_theorem_on_dual_spaces::CAND::0",
+      "candidate_ids": [
+        "0001-A_missing_theorem_on_dual_spaces::CAND::0"
+      ],
+      "category": "Empirically refuted (counterexample)",
+      "severity": "critical",
+      "confidence": 0.95,
+      "evidence": "The proof of Theorem 3.3 (1) states $J^2 = I$ and gives as its reason $(J^2)^{*} = -I$. Taking adjoints is injective and $(-I)^{*} = -I$, so the stated premise forces $J^2 = -I$, the opposite sign. The hybrid verifier's Python stage produced an exact counterexample satisfying every hypothesis of the step: on $X = \\mathbb{R}^2$ with $L_i = \\begin{pmatrix}0&-1\\\\1&0\\end{pmatrix}$ (multiplication by $i$ on $\\mathbb{C}\\cong\\mathbb{R}^2$) and $J = L_i^{\\mathsf T}$, the premise $(J^2)^{*} = -I$ holds and $J^2 = -I \\neq I$. The paper's own two neighbouring claims need $J^2 = -I$, not $+I$: the Section-1 criterion for isometric complex structure demands $J^2 = -I$, and the next sentence's assertion that $sI + tJ$ has inverse $sI - tJ$ requires $(sI+tJ)(sI-tJ) = s^2 I - t^2 J^2 = I$, which with $J^2 = +I$ is $(s^2-t^2)I$ and equals $I$ only at $t = 0$ — an exhaustive closed-form pass over all real $2\\times2$ $J$ with $J^2 = +I$ confirms this. So as printed the step does not deliver the complex structure it is invoked for; the sign $J^2 = -I$ is the one the surrounding argument uses. This matters beyond Theorem 3.3 because Theorem 4.1 reaches its first assertion 'by the ideas in the proof of Theorem 3.3 (1)'.",
+      "verifier": "orchestrate-math-v3:hybrid",
+      "source": "hybrid-empirical",
+      "exact_quote": "It is easy to see by duality theory that J² = I (since (J²)* = -I)."
+    },
+    {
+      "snippet_id": "0001-A_missing_theorem_on_dual_spaces::CAND::3",
+      "candidate_ids": [
+        "0001-A_missing_theorem_on_dual_spaces::CAND::3"
+      ],
+      "category": "Invalid proof step",
+      "severity": "minor",
+      "confidence": 0.85,
+      "evidence": "The proof of Proposition 2.3 asserts that $T : \\mathrm{Min}_{\\mathbb{R}}(X) \\to \\mathrm{Min}_{\\mathbb{C}}(Y)$ is a complete contraction, on the sole ground that $\\varphi \\circ T$ is a contractive real functional for every $\\varphi \\in \\mathrm{Ball}(Y^{\\dagger})$. By the paper's own definition of Min, real functionals compute the matrix norms of $\\mathrm{Min}_{\\mathbb{R}}(Y_r)$, and those are strictly smaller than the matrix norms of $\\mathrm{Min}_{\\mathbb{C}}(Y)$. Witness with $Y = \\mathbb{C}$ and $[z_{ij}] = \\begin{pmatrix}1&1\\\\0&i\\end{pmatrix} \\in M_2(\\mathbb{C})$: $\\|[z_{ij}]\\|_{\\mathrm{Min}_{\\mathbb{C}}(\\mathbb{C})} = \\|[z_{ij}]\\|_{M_2(\\mathbb{C})} = \\tfrac{1+\\sqrt5}{2} \\approx 1.618$ (since $A^{*}A = \\begin{pmatrix}1&1\\\\1&2\\end{pmatrix}$ has largest eigenvalue $\\tfrac{3+\\sqrt5}{2}$), whereas $\\|[z_{ij}]\\|_{\\mathrm{Min}_{\\mathbb{R}}(\\mathbb{C}_r)} = \\sup_\\theta \\|\\mathrm{Re}(e^{i\\theta}[z_{ij}])\\|_{M_2(\\mathbb{R})} = \\sqrt2 \\approx 1.414$, attained at $\\theta = 0$. Hence with $X = Y = \\mathbb{C}$ and $T = \\mathrm{id}$ — a continuous real-linear contraction between complex Banach spaces, exactly the hypothesis in force — the asserted map has complete bound at least $\\tfrac{1+\\sqrt5}{2\\sqrt2} \\approx 1.144 > 1$ and is not a complete contraction. A sweep over 4000 random complex matrices of sizes $2$–$4$ found ratios down to $0.62$, so the gap is generic. Severity is minor because Proposition 2.3's own statement is not refuted by this: for $T = \\mathrm{id}$ the composite $\\mathrm{Min}_{\\mathbb{C}}(X) \\to \\mathrm{Min}_{\\mathbb{R}}(X) \\to \\mathrm{Min}_{\\mathbb{C}}(Y)$ is still the identity. What fails is the factorisation the proof uses, and Theorem 4.1 cites Proposition 2.3 for the complete contractivity of $q$, so the result needs another argument.",
+      "verifier": "orchestrate-math-v3:informal",
+      "source": "informal",
+      "exact_quote": "Since φ ∘ T is a contractive real functional for all φ ∈ Ball(Y†), it is clear that T : Min_R(X) → Min_C(Y) is a complete contraction."
+    }
+  ],
+  "verdict": "CRITICAL_ERRORS",
+  "verdict_confidence": 0.8,
+  "summary": "The detector proposed 16 candidates over the whole manuscript (mean confidence 0.29), all 16 routable: 3 to Python, 2 to hybrid, 1 to Lean, 10 to informal, none unroutable at Gate 0. The verifiers confirmed 2 and decisively cleared 5, a cleared-to-confirmed ratio of 5:2 — the verifier stage did real filtering rather than rubber-stamping the detector, and it also overturned the detector on both directions: it cleared 5 candidates the detector suspected and it upgraded one 0.35-confidence candidate to a refuted step. **Confirmed.** (i) In the proof of Theorem 3.3 (1) the paper writes $J^2 = I$ from the premise $(J^2)^{*} = -I$; since adjoints are injective and $(-I)^{*} = -I$, the premise forces $J^2 = -I$, and the hybrid verifier produced an exact counterexample ($X = \\mathbb{R}^2$, $J = L_i^{\\mathsf T}$) satisfying the hypothesis with $J^2 = -I \\neq I$. Both neighbouring claims — the Section-1 criterion and the inverse $sI - tJ$ of $sI + tJ$ — need $J^2 = -I$, so the printed sign is the outlier. (ii) In the proof of Proposition 2.3 the step '$T : \\mathrm{Min}_{\\mathbb{R}}(X) \\to \\mathrm{Min}_{\\mathbb{C}}(Y)$ is a complete contraction', justified by real functionals alone, fails at $X = Y = \\mathbb{C}$, $T = \\mathrm{id}$: the element $\\begin{pmatrix}1&1\\\\0&i\\end{pmatrix}$ has $\\mathrm{Min}_{\\mathbb{R}}$ norm $\\sqrt2$ against $\\mathrm{Min}_{\\mathbb{C}}$ norm $\\tfrac{1+\\sqrt5}{2}$. **Cleared.** Lean PASSED twice — the inequality $\\|\\alpha\\| \\le \\|\\alpha + i\\beta\\|$ for all real matrices (after a clean 474685-instance search, so CONFIRMED_BOTH), and the logical equivalence of Theorem 1.1 with an affirmative Problem 1 (axiom-free; the converse does take two applications, which is still trivial). Python CONFIRMED three exactly: the $\\ell_1$ map $J$ with $J^2 = -I$, the expansion $(aI+k)^2 = -I \\Rightarrow a^2 = -1$ of Example 1, and the $u \\equiv -1$ contradiction of Remark 3 (exhaustive over $u \\in \\{\\pm1\\}$ and all 720 permutations for $|K| \\le 5$). **Unsettled.** The remaining 9 informal candidates all came back NO_ERROR, which settles nothing formally; every one was held by the detector below the 0.5 bar of rule 5b (0.20–0.45) and so was dropped rather than kept, with its reasoning recorded in results[]. None of them is a finding, and no finding here rests on detector suspicion alone. The one Python refutation counted in totals is CAND::0's hybrid Stage A, not a bare python route. The verdict is CRITICAL_ERRORS on the strength of the Theorem 3.3 (1) sign error, which is referenced by the main theorem's proof; verdict_confidence is 0.8 rather than higher because the $J^2 = I$ step reads as a typographical sign slip that the surrounding lines silently correct, so a reader may judge the argument to survive it, and because the second finding refutes a proof step without settling whether Proposition 2.3 itself is true."
+}

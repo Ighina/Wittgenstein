@@ -1,0 +1,94 @@
+{
+  "paper_id": "0031-A_Strongly_Subcubic_Combinatorial_Algorithm_for_Triangle_Detection_with_Applications",
+  "title": "A Strongly Subcubic Combinatorial Algorithm for Triangle Detection with Applications",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Proof of Theorem 2, Case 2.1 (“Then b and c appear on the next level... the triangle {a,b,c} is detected while scanning the adjacency list of b”)",
+      "confidence": 0.99,
+      "supporting_evidence": "The inference is invalid: vertices b and c can be placed on BFS level 2 by previously processed level-1 vertices other than a, rather than as children of a. For example, let s be adjacent to d,e,a; let d-b, e-c, a-b, a-c, and b-c be edges, with BFS processing d,e before a. Then a is the only vertex of triangle {a,b,c} on level 1, while b and c are already discovered at level 2 before a is scanned. When b's adjacency list reaches c, the fact that b and c are on the same BFS level does not establish a triangle with a or with any common BFS parent. Detecting whether b and c have a common neighbor would require an additional intersection/common-neighbor computation not accounted for by the claimed O(m) BFS+ cost. Thus the case analysis does not prove that a sampled s in N+({a,b,c}) causes detection.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0031-A_Strongly_Subcubic_Combinatorial_Algorithm_for_Triangle_Detection_with_Applications::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Definition and use of BFS+(s) in TRIANGLE-DETECTION-1, lines 7–8 and the preceding intuition",
+      "confidence": 0.98,
+      "supporting_evidence": "The paper relies critically on a “modified BFS”/BFS+ and specifically refers to “Step 12 of the modified BFS procedure,” but no BFS+ pseudocode or precise detection rule is provided in the text. Ordinary BFS cannot infer a triangle merely from an edge joining two vertices on the same level: such an edge need not have a common neighbor with those vertices. A rule capable of validating the missing common-neighbor condition is not specified, and the asserted O(m) cost of each BFS+ is therefore unsupported. This omission is substantive because it is exactly the unproved operation needed for Theorem 2.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0031-A_Strongly_Subcubic_Combinatorial_Algorithm_for_Triangle_Detection_with_Applications::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Theorem 2; abstract and introductory claims of an O(n^(7/3)) / O(m^(4/3)) triangle algorithm",
+      "confidence": 0.99,
+      "supporting_evidence": "The claimed subcubic algorithm rests on the invalid BFS argument in Case 2.1. The sampling calculation only shows that a sampled vertex lands in the closed neighborhood of a fixed triangle; it does not establish that the claimed BFS procedure can find that triangle in linear time. Consequently the stated theorem, its claimed one-sided correctness guarantee, and the paper's headline claim of a strongly subcubic combinatorial triangle-detection algorithm are not proved.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0031-A_Strongly_Subcubic_Combinatorial_Algorithm_for_Triangle_Detection_with_Applications::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Proof of Theorem 4, auxiliary-graph equivalence claim: “G contains a k-clique if and only if the auxiliary graph contains a triangle”",
+      "confidence": 0.99,
+      "supporting_evidence": "The construction does not enforce that the three ℓ-cliques represented by an auxiliary triangle are disjoint. Pairwise adjacency only says that each pair has a 2ℓ-clique union. Three overlapping ℓ-cliques can be pairwise compatible while their total union has fewer than 3ℓ=k vertices. For example, a graph containing K_(3ℓ−1), but no K_(3ℓ), has many distinct ℓ-subsets; any three such subsets form an auxiliary triangle because every pair has a clique union, yet the original graph has no k-clique. Standard clique-to-triangle reductions need additional partitioning/coloring or disjointness machinery, absent here. Therefore Theorem 4's reduction and runtime claim are invalid as written.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0031-A_Strongly_Subcubic_Combinatorial_Algorithm_for_Triangle_Detection_with_Applications::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Theorem 3 and surrounding BMM conclusions",
+      "confidence": 0.97,
+      "supporting_evidence": "The claimed O(n^(25/9) log n) Boolean matrix multiplication algorithm is derived solely by applying the Williams–Williams reduction to the unproved O(n^(7/3)) triangle algorithm. Since Theorem 2 is not established, the claimed first truly subcubic combinatorial BMM algorithm, including the witness-matrix conclusion, does not follow.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0031-A_Strongly_Subcubic_Combinatorial_Algorithm_for_Triangle_Detection_with_Applications::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Applications depending on Theorem 2: Max-Cut Theorem 5; K4/K6/K9/K10 claims; segment-intersection-graph claim; and claimed consequences for triangle listing and Boolean-product verification",
+      "confidence": 0.97,
+      "supporting_evidence": "Each of these results is presented as a black-box use of Theorem 2 or of the claimed BMM consequence. Because the central triangle-detection theorem is not proved, none of the claimed improved running times or claimed randomized combinatorial algorithms is supported by the paper's arguments.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0031-A_Strongly_Subcubic_Combinatorial_Algorithm_for_Triangle_Detection_with_Applications::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Theorem 2 time analysis, statements that O(1) edge tests use “the adjacency matrix of G,” and the claimed O(m^(4/3)) bound",
+      "confidence": 0.94,
+      "supporting_evidence": "The analysis repeatedly assumes an adjacency matrix for O(1) edge queries but does not include its O(n^2) construction time or space. This is harmless only for the coarse O(n^(7/3)) bound, but it invalidates the stated sparse O(m^(4/3)) implementation if the algorithm is actually implemented as described: for connected sparse graphs, n=Theta(m), so constructing the matrix costs Theta(m^2), exceeding O(m^(4/3)). The paper would need a different stated data structure, such as a suitable hash/dictionary with an explicitly analyzed randomized or deterministic query guarantee, to support the sparse bound.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0031-A_Strongly_Subcubic_Combinatorial_Algorithm_for_Triangle_Detection_with_Applications::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (figure-text)",
+      "error_location": "Figures 0–3 and references to “Fig. 1(i)”, “Fig. 1(ii)”, “Fig. 1(iii)”, and “Fig. 1(iv)” in the proof of Theorem 2",
+      "confidence": 0.91,
+      "supporting_evidence": "The document contains four separate raster figures labeled Figure 0 through Figure 3, with no captions or visible subpanel labels corresponding to Fig. 1(i)–(iv). The text, however, relies on a single Figure 1 with four specified BFS cases. As supplied, the figures do not identify those cases or document the algorithmic behavior claimed in the proof, making the figure references incorrect and preventing verification of the purported BFS+ procedure.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0031-A_Strongly_Subcubic_Combinatorial_Algorithm_for_Triangle_Detection_with_Applications::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 8,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (gpt-5.6-terra, taxonomy=default): 8 error(s) reported.",
+  "baseline": {
+    "model": "gpt-5.6-terra",
+    "provider": "openai",
+    "taxonomy": "default",
+    "paper_chars": 70941,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 3,
+      "output_tokens": 4522,
+      "cache_read_input_tokens": 34043,
+      "cache_creation_input_tokens": null
+    }
+  }
+}

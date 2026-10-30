@@ -948,7 +948,17 @@ def main() -> None:
     headline_system = args.headline_system or (
         f"orchestrate-math:{args.tag}" if args.tag else "orchestrate-math"
     )
-    headline = load_headline_recall(Path(args.headline_csv), headline_system)
+    # evaluate_math_systems.py writes math_systems[_<tag>]_per_paper.csv.
+    # Prefer this run's tagged file; fall back to the untagged name so CSVs
+    # written before the tag was added to the stem still resolve.
+    headline_path = Path(args.headline_csv)
+    if args.tag:
+        tagged = headline_path.with_name(
+            headline_path.name.replace("math_systems_", f"math_systems_{args.tag}_", 1)
+        )
+        if tagged.exists():
+            headline_path = tagged
+    headline = load_headline_recall(headline_path, headline_system)
     all_rungs: List[Dict[str, Any]] = []
     for label, rs in subsets:
         if rs:

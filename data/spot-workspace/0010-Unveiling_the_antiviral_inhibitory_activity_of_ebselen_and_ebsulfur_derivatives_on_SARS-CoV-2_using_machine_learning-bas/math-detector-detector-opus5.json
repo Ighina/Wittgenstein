@@ -1,0 +1,120 @@
+{
+  "paper_id": "0010-Unveiling_the_antiviral_inhibitory_activity_of_ebselen_and_ebsulfur_derivatives_on_SARS-CoV-2_using_machine_learning-bas",
+  "title": "Unveiling the antiviral inhibitory activity of ebselen and ebsulfur derivatives on SARS-CoV-2 using machine learning-bas",
+  "stage": "detector",
+  "candidates": [
+    {
+      "candidate_id": "0010-Unveiling_the_antiviral_inhibitory_activity_of_ebselen_and_ebsulfur_derivatives_on_SARS-CoV-2_using_machine_learning-bas::CAND::0",
+      "error_location": "Eq. (1), Methods (data set preparation)",
+      "exact_quote": "pIC₅₀ = (1 / IC₅₀ (M)) (1)",
+      "claim_content": "The paper states that the half-maximal inhibitory concentrations (IC50, expressed in molar units, M) of 27 ebselen/ebsulfur derivatives against SARS-CoV-2 main protease were converted into the modelling response variable pIC50 using the formula pIC50 = 1 / IC50(M). Here pIC50 is the dependent variable used as the response in all subsequent QSAR models (MLR, RF, ANN), and IC50(M) is the measured inhibitory concentration in mol/L. Question: is pIC50 = 1/IC50(M) the correct definition of pIC50?",
+      "suspected_defect": "The standard, universally used definition is pIC50 = -log10(IC50 in M) = log10(1/IC50). Taking the plain reciprocal 1/IC50 (units M^-1) gives numbers on a completely different scale (e.g. IC50 = 1 µM gives pIC50 = 6 by the correct definition but 10^6 by the stated one), and would be dimensionally inconsistent with a dimensionless 'p' quantity. All reported pIC50 values and regression coefficients (e.g. the intercept 2.897 in Eq. 6) are consistent with the logarithmic definition, so Eq. (1) as written is incorrect and inconsistent with the rest of the paper.",
+      "check_kind": "symbolic",
+      "confidence": 0.9,
+      "severity": "critical"
+    },
+    {
+      "candidate_id": "0010-Unveiling_the_antiviral_inhibitory_activity_of_ebselen_and_ebsulfur_derivatives_on_SARS-CoV-2_using_machine_learning-bas::CAND::1",
+      "error_location": "Abstract vs. Results (MLR and ANN R² values)",
+      "exact_quote": "the R² values of MLR, RF, and ANN models for the training set were 0.83, 0.82, and 0.92, respectively",
+      "claim_content": "The Abstract reports training-set coefficients of determination R² = 0.83 (multiple linear regression, MLR), 0.82 (random forest, RF) and 0.92 (artificial neural network, ANN) for QSAR models of SARS-CoV-2 M^Pro inhibitory activity (pIC50) built on 21 training compounds. The Results section instead reports for the same MLR model: 'The model validation parameters of Eq. (6): R² of the training set = 0.69', and for the same ANN model: 'R² of 0.89 for the training set'; the Discussion repeats 'the ANN model had the highest R², which was 0.89'. Only the RF value (0.82) agrees between the two places. Question: are these mutually consistent numbers for the same quantity?",
+      "suspected_defect": "Internal numerical contradiction: the same training-set R² is quoted as 0.83 and 0.69 for MLR, and as 0.92 and 0.89 for ANN. At most one value per model can be correct, so at least two reported statistics are wrong.",
+      "check_kind": "numeric",
+      "confidence": 0.85,
+      "severity": "critical"
+    },
+    {
+      "candidate_id": "0010-Unveiling_the_antiviral_inhibitory_activity_of_ebselen_and_ebsulfur_derivatives_on_SARS-CoV-2_using_machine_learning-bas::CAND::2",
+      "error_location": "Abstract vs. Results (test-set RMSE values)",
+      "exact_quote": "The RMSE values of the test were considered for model evaluation, and the results were 0.27, 0.18, and 0.09 for MLR, RF, and ANN models, respectively.",
+      "claim_content": "The Abstract reports test-set root-mean-square errors RMSE = 0.27 (MLR), 0.18 (RF) and 0.09 (ANN) for QSAR models predicting pIC50 against SARS-CoV-2 M^Pro, with RMSE defined as sqrt( Σ (y_exp − y_pred)² / n ). The Results section reports for the same MLR model: 'RMSE of the training set = 0.16, and RMSE of the test set = 0.56', and for the same ANN model: 'RMSE of 0.05 for the test set'; the Discussion repeats 'the lowest RMSE of the test set was 0.05'. Only the RF test RMSE (0.18) agrees. Question: are these mutually consistent values for the same quantity?",
+      "suspected_defect": "Internal numerical contradiction: the MLR test RMSE is quoted as 0.27 in the Abstract and 0.56 in Results; the ANN test RMSE is quoted as 0.09 in the Abstract and 0.05 in Results and Discussion. The model-selection conclusion rests on these numbers, so at least two of the reported statistics are wrong.",
+      "check_kind": "numeric",
+      "confidence": 0.85,
+      "severity": "critical"
+    },
+    {
+      "candidate_id": "0010-Unveiling_the_antiviral_inhibitory_activity_of_ebselen_and_ebsulfur_derivatives_on_SARS-CoV-2_using_machine_learning-bas::CAND::3",
+      "error_location": "Eq. (4), 'Model evaluation statistical terms'",
+      "exact_quote": "R^2 = \\frac{\\sum_{i=1}^n (y_{pred.} - \\overline{y})^2}{\\sum_{i=1}^n (y_{exp.} - \\overline{y})^2}",
+      "claim_content": "The paper defines the coefficient of determination used to validate the QSAR models (MLR, RF, ANN) as R² = Σ_i (y_pred,i − ȳ)² / Σ_i (y_exp,i − ȳ)², where y_pred are the model-predicted pIC50 values, y_exp are the experimental pIC50 values, and ȳ is the mean of the (experimental) values. The paper states R² 'being a measure of the fit model's quality, which should be greater than 0.6'. Question: is this ratio of explained sum of squares to total sum of squares equal to the standard coefficient of determination R² = 1 − Σ(y_exp − y_pred)²/Σ(y_exp − ȳ)², and is it bounded in [0,1], for the nonlinear models (random forest and artificial neural network) to which the paper applies it?",
+      "suspected_defect": "The identity ESS/TSS = 1 − RSS/TSS holds only when the residuals are orthogonal to the fitted values (ordinary least squares with an intercept). For random-forest and neural-network predictions this decomposition fails, so the quoted formula is not the coefficient of determination and can exceed 1 or disagree arbitrarily with 1 − RSS/TSS. The reported R² values for RF and ANN therefore may not be the quantity claimed.",
+      "check_kind": "general_claim",
+      "confidence": 0.55,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "0010-Unveiling_the_antiviral_inhibitory_activity_of_ebselen_and_ebsulfur_derivatives_on_SARS-CoV-2_using_machine_learning-bas::CAND::4",
+      "error_location": "Methods, description of Gini importance (feature selection for RF and ANN)",
+      "exact_quote": "Gini importance varies between 0 and 1, with 0 representing the lowest and best possible importance. A higher Gini importance indicates greater.",
+      "claim_content": "The paper states, concerning the Gini (mean decrease in impurity) feature-importance measure used to select descriptors for the random-forest and neural-network QSAR models: 'The features with the highest Gini importance values indicate that compound structures significantly impact potency and bioactivity. Gini importance varies between 0 and 1, with 0 representing the lowest and best possible importance. A higher Gini importance indicates greater.' Question: is the characterization of a Gini importance of 0 as simultaneously the 'lowest' and the 'best possible' importance self-consistent, given that the same paragraph says higher values indicate greater importance and that the highest values were used to select descriptors?",
+      "suspected_defect": "Self-contradictory definition: a value of 0 denotes the least important feature, so it cannot also be the 'best possible' importance, especially when the selection criterion used is the highest Gini importance. The statement appears to confuse Gini impurity (lower is better for node purity) with Gini feature importance (higher is more important).",
+      "check_kind": "general_claim",
+      "confidence": 0.7,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "0010-Unveiling_the_antiviral_inhibitory_activity_of_ebselen_and_ebsulfur_derivatives_on_SARS-CoV-2_using_machine_learning-bas::CAND::5",
+      "error_location": "Table 1(a), hyperparameter grid for random forest",
+      "exact_quote": "| Min samples split             | 1, 2, 3                      |",
+      "claim_content": "Table 1(a) lists the hyperparameter grid searched for the random-forest QSAR model: n_estimators ∈ {30, 50, 70, 90}; Max depth ∈ {8, 9, 10, 11, 12}; Min samples split ∈ {1, 2, 3}; Min samples leaf ∈ {1, 2, 3}. The paper defines min_samples_split as 'the minimum number of data points placed in a node before the node is split'. Question: is min_samples_split = 1 an admissible value?",
+      "suspected_defect": "A node containing a single sample cannot be split into two non-empty children, so min_samples_split = 1 is mathematically meaningless (and is rejected as invalid by standard implementations, which require an integer ≥ 2). The listed grid therefore contains an infeasible value.",
+      "check_kind": "numeric",
+      "confidence": 0.6,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "0010-Unveiling_the_antiviral_inhibitory_activity_of_ebselen_and_ebsulfur_derivatives_on_SARS-CoV-2_using_machine_learning-bas::CAND::6",
+      "error_location": "Methods (RF hyperparameters) vs. Table 1(a) and Results (best RF model)",
+      "exact_quote": "The best RF model was constructed by conditions consisting of a max depth of 10, a max feature of 4, a min_sample_leaf of 2, and a min_samples_split of 2.",
+      "claim_content": "The Methods state that the RF hyperparameter search varied four parameters: '(1) Max feature ... (2) Min_sample_leaf ... (3) Min_samples_split ... and (4) The number of estimators', and that 'The optimized hyperparameter of the RF model is shown in Table 1(a)'. Table 1(a) actually lists: n_estimators {30,50,70,90}; Max depth {8,9,10,11,12}; Min samples split {1,2,3}; Min samples leaf {1,2,3} — i.e. it contains Max depth but not Max feature. The Results then report the selected optimum as 'max depth of 10, a max feature of 4, a min_sample_leaf of 2, and a min_samples_split of 2', with 30 estimators. Question: is the reported optimum consistent with the search grid actually specified?",
+      "suspected_defect": "The reported optimal value 'max feature = 4' corresponds to a hyperparameter that does not appear in the stated search grid (Table 1a), while 'max depth', which does appear in the grid, is not listed among the four parameters said to have been varied. The grid search as described cannot have produced the reported optimum.",
+      "check_kind": "numeric",
+      "confidence": 0.5,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "0010-Unveiling_the_antiviral_inhibitory_activity_of_ebselen_and_ebsulfur_derivatives_on_SARS-CoV-2_using_machine_learning-bas::CAND::7",
+      "error_location": "Methods, ANN hyperparameter optimization vs. Table 1(b)",
+      "exact_quote": "The range of metrics for the grid search, where the five hyperparameters of the ANN model are examined, is presented in Table 1(b).",
+      "claim_content": "The paper states that 'Hyperparameter optimization for the ANN includes determining the number of hidden layers, the number of neurons, the maximum number of iterations (max_iter), the learning rate, and the batch size' — five hyperparameters — and that the grid for these five hyperparameters is presented in Table 1(b). Table 1(b) lists only four: Number of hidden layers {1,2,3}; Number of neurons {2,3,4,5,6,7,8}; Learning rate {0.01, 0.05, 0.1}; Batch size {1,3,7}. Question: does the table contain the stated five hyperparameters?",
+      "suspected_defect": "Count mismatch: five hyperparameters are claimed to be examined but only four appear in the referenced table; max_iter has no grid values, so the described search is not fully specified.",
+      "check_kind": "numeric",
+      "confidence": 0.6,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "0010-Unveiling_the_antiviral_inhibitory_activity_of_ebselen_and_ebsulfur_derivatives_on_SARS-CoV-2_using_machine_learning-bas::CAND::8",
+      "error_location": "Results, MLR model validation (after Eq. 6)",
+      "exact_quote": "R² of the training set = 0.69, RMSE of the training set = 0.16, and RMSE of the test set = 0.56, indicating that the model was predictively accurate and acceptable",
+      "claim_content": "The MLR QSAR model given by Eq. (6), pIC50 = −0.507·(Molecular flexibility) + 0.036·(Zagreb index) − 0.057·(S_aaCH) − 0.015·(S_dO) + 0.336·(Shadow length LY) + 2.897, was fitted on 21 training compounds and evaluated on 6 test compounds, giving training R² = 0.69, training RMSE = 0.16 and test RMSE = 0.56 (RMSE = sqrt(Σ(y_exp − y_pred)²/n) in pIC50 units). The paper concludes from these numbers that 'the model was predictively accurate and acceptable', and separately states that the predicted pIC50 values 'show residue values less than 1'. Question: does a test RMSE of 0.56, 3.5 times the training RMSE of 0.16, support the conclusion of predictive accuracy?",
+      "suspected_defect": "The inference is not supported: a test-set RMSE 3.5× larger than the training-set RMSE indicates substantial overfitting/poor external prediction; moreover a test RMSE of 0.56 in pIC50 units corresponds to a ~4-fold error in IC50, inconsistent with the claim of accuracy and with the elsewhere-quoted MLR test RMSE of 0.27.",
+      "check_kind": "prose",
+      "confidence": 0.4,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "0010-Unveiling_the_antiviral_inhibitory_activity_of_ebselen_and_ebsulfur_derivatives_on_SARS-CoV-2_using_machine_learning-bas::CAND::9",
+      "error_location": "Methods, Eq. (3) and surrounding text (VIF)",
+      "exact_quote": "The variance inflation factor (VIF) indicates collinearity between descriptors in multiple regression models, indicating statistical significance⁴⁸–⁵⁰ as determined by Eq. (3).",
+      "claim_content": "The paper defines VIF = 1/(1 − R²) (Eq. 3) and asserts that it 'indicates collinearity between descriptors in multiple regression models, indicating statistical significance'. In the standard definition, R² in this formula is the coefficient of determination obtained by regressing one descriptor on all the other descriptors (not the R² of the QSAR model fit to pIC50). Question: (i) does the paper's Eq. (3) specify which R² is meant, and (ii) is VIF a measure of statistical significance?",
+      "suspected_defect": "The formula is stated without identifying R² as the auxiliary-regression coefficient of determination for the descriptor in question; as written it could be read as the model R² reported in Eq. (4), which would make VIF a single number rather than one per descriptor (the paper reports a VIF per descriptor). Additionally, VIF quantifies variance inflation due to multicollinearity, not statistical significance.",
+      "check_kind": "symbolic",
+      "confidence": 0.35,
+      "severity": "minor"
+    }
+  ],
+  "detector": {
+    "model": "claude-opus-5",
+    "provider": "anthropic",
+    "mode": "lenient-high-recall",
+    "paper_chars": 612849,
+    "truncated": true,
+    "usage": {
+      "input_tokens": 363127,
+      "output_tokens": 10176,
+      "cache_read_input_tokens": 0,
+      "cache_creation_input_tokens": 0
+    }
+  }
+}

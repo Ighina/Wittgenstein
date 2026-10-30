@@ -1,0 +1,396 @@
+{
+  "paper_id": "0047-HDRTransDC",
+  "title": "HDRTransDC: High Dynamic Range Image Reconstruction with Transformer Deformation Convolution",
+  "paper_category": "cs.CV",
+  "total_snippets": 38,
+  "snippets": [
+    {
+      "snippet_id": "0047-HDRTransDC::FIGURE::0",
+      "snippet_type": "FIGURE",
+      "location": "Preamble",
+      "content": "[IMAGE: Figure 0]",
+      "content_length": 17,
+      "metadata": {
+        "caption": "Figure 0"
+      }
+    },
+    {
+      "snippet_id": "0047-HDRTransDC::SECTION::0",
+      "snippet_type": "SECTION",
+      "location": "Preamble",
+      "content": "High Dynamic Range (HDR) imaging aims to generate an artifact-free HDR image with realistic details by fusing multi-exposure Low Dynamic Range (LDR) images. Caused by large motion and severe under-/over-exposure among input LDR images, HDR imaging suffers from ghosting artifacts and fusion distortions. To address these critical issues, we propose an HDR Transformer Deformation Convolution (HDRTransDC) network to generate high-quality HDR images, which consists of the Transformer Deformable Convolution Alignment Module (TDCAM) and the Dynamic Weight Fusion Block (DWFB). To solve the ghosting artifacts, the proposed TDCAM extracts long-distance content similar to the reference feature in the entire non-reference features, which can accurately remove misalignment and fill the content occluded by moving objects. For the purpose of eliminating fusion distortions, we propose DWFB to spatially adaptively select useful information across frames to effectively fuse multi-exposed features. Extensive experiments show that our method quantitatively and qualitatively achieves state-of-the-art performance.\n\nThe limited range of most digital photography sensors causes under-/over-exposed regions to appear in Low Dynamic Range (LDR) images, which can not reflect the human ability to see content in an actual scene. To generate an image with a broad illuminance range, High Dynamic Range (HDR) imaging has been developed in recent years. The most common HDR imaging methods [Debevec and Malik, 2008; Granados et al., 2010; Reinhard et al., 2010; Mertens et al., 2007; Ma et al., 2017; Kalantari et al., 2017] usually merge several LDR images with different exposures to get a high-quality HDR image. However, misalignment usually appears in LDR images due to the motions of the camera and foreground objects. When the misaligned LDR images with different exposures are fused, ghosting artifacts often appear in the HDR results [Myszkowski et al., 2008; Zimmer et al., 2011]. Such a problem is challenging to overcome since it is difficult to compensate for the misalignment and occluded content caused by moving objects.\n\nTo address the above problems, several traditional methods are proposed, including alignment-based methods [Bogoni, 2000; Kang et al., 2003; Zimmer et al., 2011; Sen et al., 2012] and rejection-based methods [Zhang and Cham, 2011; Granados et al., 2013; Lee et al., 2014; Oh et al., 2014]. The alignment-based methods employ optical flow or homographies to explicitly align the motion regions, but they are error-prone and cause ghosts when LDRs contain motion and saturation. The rejection-based methods attempt to remove the misaligned components before fusion, but they suffer from insufficient information recovery in other regions.\n\nWith the rise of Deep Neural Networks (DNNs), recent methods reconstruct an HDR image using Convolution Neural Networks (CNNs). Some non-end-to-end methods [Kalantari et al., 2017; Wu et al., 2018] first explicitly align the LDRs by opt",
+      "content_length": 6049,
+      "metadata": {
+        "heading_level": 1
+      }
+    },
+    {
+      "snippet_id": "0047-HDRTransDC::SECTION::1",
+      "snippet_type": "SECTION",
+      "location": "2 Related Work",
+      "content": "Several methods have been proposed to alleviate the ghosting artifacts in HDR imaging, and these methods can be generalized into two categories: the traditional methods and the CNN-based methods.",
+      "content_length": 195,
+      "metadata": {
+        "heading_level": 1
+      }
+    },
+    {
+      "snippet_id": "0047-HDRTransDC::SECTION::2",
+      "snippet_type": "SECTION",
+      "location": "Motion alignment methods",
+      "content": "These methods focus on aligning the non-reference LDRs to reference one before fusing them by using optical flow or searching for the best matching region. For example, some works adopt the optical flow in the image domain [Bogoni, 2000; Zimmer et al., 2011] or luminance domain [Kang et al., 2003] to align the LDR images. [Sen et al., 2012] utilizes a patch-based energy-minimization formulation that integrates alignment and reconstruction in a joint optimization. However, these methods are nearly ineffective for large motions since the accurate alignment is challenging, producing visible ghosting artifacts.",
+      "content_length": 614,
+      "metadata": {
+        "heading_level": 1
+      }
+    },
+    {
+      "snippet_id": "0047-HDRTransDC::SECTION::3",
+      "snippet_type": "SECTION",
+      "location": "Motion rejection methods",
+      "content": "These methods aim to detect motion areas between the reference and non-reference images and exclude these pixels during fusion. For instance, [Zhang and Cham, 2011] finds the misaligned regions with the guidance of gradient-based quality assessment and generates the motion weighting map. [Granados et al., 2013] uses a Markov random field prior and the color difference of inputs for detection and generation. [Lee et al., 2014] and Oh [Oh et al., 2014] have also proposed rank minimization to detect motion and synthesize HDR images. However, these methods heavily depend on the effectiveness of motion detection and lose the content of moving objects, which is not sufficient for recovering information.",
+      "content_length": 706,
+      "metadata": {
+        "heading_level": 1
+      }
+    },
+    {
+      "snippet_id": "0047-HDRTransDC::SECTION::4",
+      "snippet_type": "SECTION",
+      "location": "2.2 CNN-based methods",
+      "content": "With the great success of deep learning in vision tasks, several CNN-based methods have been proposed to reconstruct ghost-free high-quality HDR images. [Kalantari et al., 2017] proposed the first CNN-based method that uses a CNN to merge the LDR images that were aligned explicitly by optical flow. DeepHDR [Wu et al., 2018] formulated HDR imaging as an image translation problem, and used homography to align the camera motion and a CNN to fuse them. However, the optical flow and homography are unreliable in the presence of occlusion and saturation, which results in artifacts and color distortions. Instead of aligning LDRs in the image domain, AHDRNet [Yan et al., 2019] employed spatial attention to suppress the motion regions between the LDR images for ghost-free HDR images and improved the performance. [Prabhakar et al., 2020] proposed the bilateral guided upsampler and motion compensation based on CNN for HDR deghosting. HDR-GAN [Niu et al., 2021] first introduced the Generative Adversarial Networks (GAN) framework to generate the missing content. Although the CNN-based methods can alleviate the ghosts in the weak motion regions and retain reasonable local details, the ghosting artifacts are still severe when LDR images contain large motions and saturation. The main reason lies in the limited receptive field of CNN, which cannot capture long-distance similar features to align the large motion and fill the occluded regions.",
+      "content_length": 1447,
+      "metadata": {
+        "heading_level": 1
+      }
+    },
+    {
+      "snippet_id": "0047-HDRTransDC::EQUATION::0",
+      "snippet_type": "EQUATION",
+      "location": "3 Method",
+      "content": "\\[\nH_i = \\frac{L_i^\\gamma}{t_i}, i = 1, 2, 3 \\tag{1}\n\\]",
+      "content_length": 55,
+      "metadata": {
+        "label": "1",
+        "display_mode": true
+      }
+    },
+    {
+      "snippet_id": "0047-HDRTransDC::SECTION::5",
+      "snippet_type": "SECTION",
+      "location": "3 Method",
+      "content": "In this section, we present the HDRTransDC network that compensates for large motion and fuses the useful content\n\nbetween multi-exposed features to generate ghost-free high-quality HDR images. Given three LDR images {Li|i = 1, 2, 3} (sorted by their exposure time), our goal is to merge them to obtain an HDR image. The estimated HDR image contains the similar structure as the reference image. Following previous work [Kalantari et al., 2017; Yan et al., 2019], the medium exposure image L2 is regarded as the reference image and we transform {Li} to HDR domain {Hi} with gamma correction and exposure normalization:\n\n\nwhere ti denotes the exposure time of LDR image Li, \u03b3 represents the gamma correction parameter, we set \u03b3 to 2.2. It is confirmed that the LDR images are effective in detecting saturated and noisy regions and HDR domains are effective in detecting moving objects. Hence, we concatenate the Li and Hi along the channel to get a 6-channel input Xi.\n\nAs shown in Figure 2, the entire network consists of the feature extraction network and feature merging network. Since the input LDR images are captured from different exposure domains, in the feature extraction network, we first use three Residual Blocks (RBs) to extract the domain-specific features that are beneficial for detecting moving objects. Each RB consists of two convolution layers and a LeakyReLU activation function. The large motion causes severe misalignment and occluded content in non-reference images so that the saturated regions of reference images cannot be filled with reasonable non-reference image information, resulting in ghosting artifacts. Here, we utilize stacked TDCAM to adaptively capture the long-range relevant information to compensate for the moving objects and occluded content, aligning the multi-exposed features.\n\nIn the under-/over-exposed regions where seriously miss the information, inaccurate information recovery leads to fusion distortions such as blurring and halos in the results. In the feature merging network, we use a series of Residual Dynamic Weight Fusion Blocks (RDWFBs) to fuse the extracted alignment features and get the final satisfactory HDR image. The RDWFB uses the proposed DWFB as the basic unit which spatially and adaptively selects useful information across frames to effectively restore the saturated region content while maintaining well-exposed regions of the reference image to effectively fuse multi-exposed features, further alleviating the fusion distortions.",
+      "content_length": 2506,
+      "metadata": {
+        "heading_level": 1
+      }
+    },
+    {
+      "snippet_id": "0047-HDRTransDC::FIGURE::1",
+      "snippet_type": "FIGURE",
+      "location": "3.1 Transformer Deformation Convolution Alignment Module",
+      "content": "[IMAGE: Figure 1]",
+      "content_length": 17,
+      "metadata": {
+        "caption": "Figure 1"
+      }
+    },
+    {
+      "snippet_id": "0047-HDRTransDC::FIGURE::2",
+      "snippet_type": "FIGURE",
+      "location": "3.1 Transformer Deformation Convolution Alignment Module",
+      "content": "[IMAGE: Figure 2]",
+      "content_length": 17,
+      "metadata": {
+        "caption": "Figure 2"
+      }
+    },
+    {
+      "snippet_id": "0047-HDRTransDC::EQUATION::1",
+      "snippet_type": "EQUATION",
+      "location": "3.1 Transformer Deformation Convolution Alignment Module",
+      "content": "Q = Z_ref W_q, K = Z_non W_k, V = Z_non W_v     (2)",
+      "content_length": 51,
+      "metadata": {
+        "label": "Equation 2",
+        "display_mode": true
+      }
+    },
+    {
+      "snippet_id": "0047-HDRTransDC::EQUATION::2",
+      "snippet_type": "EQUATION",
+      "location": "3.1 Transformer Deformation Convolution Alignment Module",
+      "content": "Y = FFN(Y\u2032) + Y\u2032       (3)",
+      "content_length": 26,
+      "metadata": {
+        "label": "Equation 3",
+        "display_mode": true
+      }
+    },
+    {
+      "snippet_id": "0047-HDRTransDC::EQUATION::3",
+      "snippet_type": "EQUATION",
+      "location": "3.1 Transformer Deformation Convolution Alignment Module",
+      "content": "F^a_non(p) = \u2211_{k=1}^{K} m_k \u00b7 F_non(p + p_k + \u0394P(p, k))      (4)",
+      "content_length": 65,
+      "metadata": {
+        "label": "Equation 4",
+        "display_mode": true
+      }
+    },
+    {
+      "snippet_id": "0047-HDRTransDC::FIGURE::3",
+      "snippet_type": "FIGURE",
+      "location": "3.1 Transformer Deformation Convolution Alignment Module",
+      "content": "[IMAGE: Figure 3]",
+      "content_length": 17,
+      "metadata": {
+        "caption": "Figure 3"
+      }
+    },
+    {
+      "snippet_id": "0047-HDRTransDC::FIGURE::4",
+      "snippet_type": "FIGURE",
+      "location": "3.1 Transformer Deformation Convolution Alignment Module",
+      "content": "[IMAGE: Figure 4]",
+      "content_length": 17,
+      "metadata": {
+        "caption": "Figure 4"
+      }
+    },
+    {
+      "snippet_id": "0047-HDRTransDC::FIGURE::5",
+      "snippet_type": "FIGURE",
+      "location": "3.1 Transformer Deformation Convolution Alignment Module",
+      "content": "[IMAGE: Figure 5]",
+      "content_length": 17,
+      "metadata": {
+        "caption": "Figure 5"
+      }
+    },
+    {
+      "snippet_id": "0047-HDRTransDC::FIGURE::6",
+      "snippet_type": "FIGURE",
+      "location": "3.1 Transformer Deformation Convolution Alignment Module",
+      "content": "[IMAGE: Figure 6]",
+      "content_length": 17,
+      "metadata": {
+        "caption": "Figure 6"
+      }
+    },
+    {
+      "snippet_id": "0047-HDRTransDC::FIGURE::7",
+      "snippet_type": "FIGURE",
+      "location": "3.1 Transformer Deformation Convolution Alignment Module",
+      "content": "[IMAGE: Figure 7]",
+      "content_length": 17,
+      "metadata": {
+        "caption": "Figure 7"
+      }
+    },
+    {
+      "snippet_id": "0047-HDRTransDC::FIGURE::8",
+      "snippet_type": "FIGURE",
+      "location": "3.1 Transformer Deformation Convolution Alignment Module",
+      "content": "[IMAGE: Figure 8]",
+      "content_length": 17,
+      "metadata": {
+        "caption": "Figure 8"
+      }
+    },
+    {
+      "snippet_id": "0047-HDRTransDC::FIGURE::9",
+      "snippet_type": "FIGURE",
+      "location": "3.1 Transformer Deformation Convolution Alignment Module",
+      "content": "[IMAGE: Figure 9]",
+      "content_length": 17,
+      "metadata": {
+        "caption": "Figure 9"
+      }
+    },
+    {
+      "snippet_id": "0047-HDRTransDC::FIGURE::10",
+      "snippet_type": "FIGURE",
+      "location": "3.1 Transformer Deformation Convolution Alignment Module",
+      "content": "[IMAGE: Figure 10]",
+      "content_length": 18,
+      "metadata": {
+        "caption": "Figure 10"
+      }
+    },
+    {
+      "snippet_id": "0047-HDRTransDC::FIGURE::11",
+      "snippet_type": "FIGURE",
+      "location": "3.1 Transformer Deformation Convolution Alignment Module",
+      "content": "[IMAGE: Figure 11]",
+      "content_length": 18,
+      "metadata": {
+        "caption": "Figure 11"
+      }
+    },
+    {
+      "snippet_id": "0047-HDRTransDC::FIGURE::12",
+      "snippet_type": "FIGURE",
+      "location": "3.1 Transformer Deformation Convolution Alignment Module",
+      "content": "[IMAGE: Figure 12]",
+      "content_length": 18,
+      "metadata": {
+        "caption": "Figure 12"
+      }
+    },
+    {
+      "snippet_id": "0047-HDRTransDC::FIGURE::13",
+      "snippet_type": "FIGURE",
+      "location": "3.1 Transformer Deformation Convolution Alignment Module",
+      "content": "[IMAGE: Figure 13]",
+      "content_length": 18,
+      "metadata": {
+        "caption": "Figure 13"
+      }
+    },
+    {
+      "snippet_id": "0047-HDRTransDC::FIGURE::14",
+      "snippet_type": "FIGURE",
+      "location": "3.1 Transformer Deformation Convolution Alignment Module",
+      "content": "[IMAGE: Figure 14]",
+      "content_length": 18,
+      "metadata": {
+        "caption": "Figure 14"
+      }
+    },
+    {
+      "snippet_id": "0047-HDRTransDC::EQUATION::4",
+      "snippet_type": "EQUATION",
+      "location": "3.1 Transformer Deformation Convolution Alignment Module",
+      "content": "\u0394w = \u03c6(x)       (5)",
+      "content_length": 19,
+      "metadata": {
+        "label": "Equation 5",
+        "display_mode": true
+      }
+    },
+    {
+      "snippet_id": "0047-HDRTransDC::EQUATION::5",
+      "snippet_type": "EQUATION",
+      "location": "3.1 Transformer Deformation Convolution Alignment Module",
+      "content": "L_{l1} = ||\u0393(H) - \u0393(H_{gt})||_1       (6)",
+      "content_length": 41,
+      "metadata": {
+        "label": "Equation 6",
+        "display_mode": true
+      }
+    },
+    {
+      "snippet_id": "0047-HDRTransDC::EQUATION::6",
+      "snippet_type": "EQUATION",
+      "location": "3.1 Transformer Deformation Convolution Alignment Module",
+      "content": "L_{grad} = ||\u2207\u0393(H) - \u2207\u0393(H_{gt})||_1      (7)",
+      "content_length": 44,
+      "metadata": {
+        "label": "Equation 7",
+        "display_mode": true
+      }
+    },
+    {
+      "snippet_id": "0047-HDRTransDC::EQUATION::7",
+      "snippet_type": "EQUATION",
+      "location": "3.1 Transformer Deformation Convolution Alignment Module",
+      "content": "L = L_{l1} + \u03bb_g L_{grad}      (8)",
+      "content_length": 34,
+      "metadata": {
+        "label": "Equation 8",
+        "display_mode": true
+      }
+    },
+    {
+      "snippet_id": "0047-HDRTransDC::FIGURE::15",
+      "snippet_type": "FIGURE",
+      "location": "3.1 Transformer Deformation Convolution Alignment Module",
+      "content": "[IMAGE: Figure 15]",
+      "content_length": 18,
+      "metadata": {
+        "caption": "Figure 15"
+      }
+    },
+    {
+      "snippet_id": "0047-HDRTransDC::FIGURE::16",
+      "snippet_type": "FIGURE",
+      "location": "3.1 Transformer Deformation Convolution Alignment Module",
+      "content": "[IMAGE: Figure 16]",
+      "content_length": 18,
+      "metadata": {
+        "caption": "Figure 16"
+      }
+    },
+    {
+      "snippet_id": "0047-HDRTransDC::FIGURE::17",
+      "snippet_type": "FIGURE",
+      "location": "3.1 Transformer Deformation Convolution Alignment Module",
+      "content": "[IMAGE: Figure 17]",
+      "content_length": 18,
+      "metadata": {
+        "caption": "Figure 17"
+      }
+    },
+    {
+      "snippet_id": "0047-HDRTransDC::FIGURE::18",
+      "snippet_type": "FIGURE",
+      "location": "3.1 Transformer Deformation Convolution Alignment Module",
+      "content": "[IMAGE: Figure 18]",
+      "content_length": 18,
+      "metadata": {
+        "caption": "Figure 18"
+      }
+    },
+    {
+      "snippet_id": "0047-HDRTransDC::FIGURE::19",
+      "snippet_type": "FIGURE",
+      "location": "3.1 Transformer Deformation Convolution Alignment Module",
+      "content": "[IMAGE: Figure 19]",
+      "content_length": 18,
+      "metadata": {
+        "caption": "Figure 19"
+      }
+    },
+    {
+      "snippet_id": "0047-HDRTransDC::FIGURE::20",
+      "snippet_type": "FIGURE",
+      "location": "3.1 Transformer Deformation Convolution Alignment Module",
+      "content": "[IMAGE: Figure 20]",
+      "content_length": 18,
+      "metadata": {
+        "caption": "Figure 20"
+      }
+    },
+    {
+      "snippet_id": "0047-HDRTransDC::FIGURE::21",
+      "snippet_type": "FIGURE",
+      "location": "3.1 Transformer Deformation Convolution Alignment Module",
+      "content": "[IMAGE: Figure 21]",
+      "content_length": 18,
+      "metadata": {
+        "caption": "Figure 21"
+      }
+    },
+    {
+      "snippet_id": "0047-HDRTransDC::FIGURE::22",
+      "snippet_type": "FIGURE",
+      "location": "3.1 Transformer Deformation Convolution Alignment Module",
+      "content": "[IMAGE: Figure 22]",
+      "content_length": 18,
+      "metadata": {
+        "caption": "Figure 22"
+      }
+    },
+    {
+      "snippet_id": "0047-HDRTransDC::SECTION::6",
+      "snippet_type": "SECTION",
+      "location": "3.1 Transformer Deformation Convolution Alignment Module",
+      "content": "When LDR images contain long-distance motions, the neighbor information cannot be used to handle misalignment and fill occluded content accurately. Here, we propose the TDCAM to get the aligned non-reference features with the guidance of reference features. As shown in Figure 3, the proposed TDCAM uses the TOE to generate precise offsets of relevant features after searching for similar information on the entire feature map. Then, to get the aligned features, the deformable convolution extracts the matching information and performs the geometric transformation of the origin features based on the predicted offsets.\n\n**Transformer Offset Estimator** Considering that LDR images contain both aligned and misaligned regions, TOE utilizes local Transformers and global Transformers to capture the position of the most relevant features, respectively. Because the final offsets represent the position difference between the extracted features and the generated feature, we add the learnable absolute positional encoding \\( Pos \\in \\mathbb{R}^{H \\times W \\times C} \\) on the non-reference features \\( F_{non} \\in \\mathbb{R}^{H \\times W \\times C} \\).\n\nFor the aligned regions, we use M local Transformer layers.\n\n\n\n\n\n\n\nto localize the locally relevant features. In each local Transformer layer, we divided the non-reference feature maps into several windows, and the similarity of features is calculated inside the windows. Hence, the details in the aligned regions are enhanced by the information in a window. For large motion regions, we use N global Transformer layers to capture the long-distance relevant features. The global feature similarity is computed to be aware of the global information and search for the content that is used to compensate for the misalignment and occluded content.\n\nIn order to maintain the structural consistency between the non-reference image and the reference image, we search for features similar to the reference image on the non-reference image. Hence, in both the local Transformer layer and global Transformer layer, we use the reference tokens Z_ref to generate query Q and use the non-reference tokens Z_non to generate the key K and the value V:\n\n\nwhere W_q, W_k, W_v are the weights. The output of a Transformer layer can be calculated by:\n\nY\u2032 = MSA(Q, K, V) + Z_non\n\nwhere MSA is the multi-headed self-attention and FFN denotes the feed-forward network. Here, the position and similarity of local and global information are captured through Transformer layers. Finally, a CNN-based block which consists of several convolution layers and the LeakyReLU activation function is used to generate the final offsets of similar features.\n\nDeformable Convolution Layer  Based on the accurate offsets \u0394P predicted by TOE, deformable convolution is used to extract the matching features on the origin non-reference feature F_non:\n\n\nwhere F^a_non denotes the aligned non-reference features and K, k are the number and index of kernel weights. m_k, p, p_k denote the k",
+      "content_length": 20540,
+      "metadata": {
+        "heading_level": 1
+      }
+    }
+  ]
+}

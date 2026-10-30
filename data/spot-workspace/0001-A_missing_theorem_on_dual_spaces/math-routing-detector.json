@@ -1,0 +1,189 @@
+{
+  "policy": "TOOL_ROUTING_POLICY.md",
+  "routes": [
+    {
+      "candidate_id": "0001-A_missing_theorem_on_dual_spaces::CAND::0",
+      "route": "hybrid",
+      "status": "ROUTED",
+      "gate": "2",
+      "detector_hint": "proof_step",
+      "overruled_hint": true,
+      "rationale": "Gate 2: the load-bearing content is the general algebraic implication '(J^2)^*=-I implies J^2=-I' plus the identity (sI+tJ)(sI-tJ)=s^2 I-t^2 J^2, both quantified over all operators and all s,t with s^2+t^2=1 (policy triggers: universal quantification, equality that must hold in general) — and the instance space is cheaply probeable with small real matrices, so Python searches first and Lean proves the survivor. Detector hint 'proof_step' overruled: the step reduces to a clean general identity.",
+      "probe_plan": "In numpy/sympy over real 2x2 and 4x4 matrices J: (a) verify that transposition (the finite-dimensional stand-in for taking adjoints) is injective, so (J@J).T == -I forces J@J == -I, and search for any J with (J@J).T == -I but J@J == +I; (b) for s=cos(theta), t=sin(theta) over a grid of theta, evaluate (s*I+t*J)@(s*I-t*J) for J with J@J=-I and for J with J@J=+I, and report which hypothesis makes the product equal I.",
+      "formal_target": "For a real normed space X and a bounded operator J on X whose dual map satisfies (J^2)^* = -I, we have J^2 = -I; and for real s,t with s^2+t^2=1 and t != 0, (s*I+t*J)*(s*I-t*J) = I holds if and only if J^2 = -I."
+    },
+    {
+      "candidate_id": "0001-A_missing_theorem_on_dual_spaces::CAND::1",
+      "route": "informal",
+      "status": "ROUTED",
+      "gate": "4",
+      "detector_hint": "proof_step",
+      "overruled_hint": false,
+      "rationale": "Gate 4: the defect is an internal inconsistency between Remark 1 after Lemma 1.3 and the proof of Lemma 3.2 about the direction of the same identification; settling it means reading the composition mu = ((j_Y)^dagger)^{-1} o j_{Y^*} against the surrounding text, not computing or formalising real duals of complex Banach spaces (no Mathlib counterpart for E = Y_r and j_Y).",
+      "probe_plan": null,
+      "formal_target": null
+    },
+    {
+      "candidate_id": "0001-A_missing_theorem_on_dual_spaces::CAND::2",
+      "route": "informal",
+      "status": "ROUTED",
+      "gate": "4",
+      "detector_hint": "proof_step",
+      "overruled_hint": false,
+      "rationale": "Gate 4: the question is whether a clause of a lemma statement is well-typed and matches what the lemma's own proof delivers — a structural reading of the paper, with no computation and no faithful Lean statement available for canonical embeddings into real versus complex biduals of operator spaces.",
+      "probe_plan": null,
+      "formal_target": null
+    },
+    {
+      "candidate_id": "0001-A_missing_theorem_on_dual_spaces::CAND::3",
+      "route": "informal",
+      "status": "ROUTED",
+      "gate": "4",
+      "detector_hint": "proof_step",
+      "overruled_hint": false,
+      "rationale": "Gate 4: the gap is that evidence about real functionals is used to bound a Min_C matrix norm; Min_R / Min_C operator space structures have no Mathlib counterpart and no finite instance space the detector pinned down, so the escalation condition of the policy fails and close reading is the only route left.",
+      "probe_plan": null,
+      "formal_target": null
+    },
+    {
+      "candidate_id": "0001-A_missing_theorem_on_dual_spaces::CAND::4",
+      "route": "hybrid",
+      "status": "ROUTED",
+      "gate": "2",
+      "detector_hint": "general_claim",
+      "overruled_hint": false,
+      "rationale": "Gate 2: the claim '||alpha|| <= ||alpha + i*beta|| for all real matrices alpha, beta' is universally quantified over an instance space that is cheap to sample (small real matrices), which is exactly the policy's hybrid workflow — probe for a counterexample first, formalise the survivor (policy triggers: 'for all', an inequality that must hold in general).",
+      "probe_plan": "With numpy, draw many random real matrices alpha, beta of sizes 1x1 up to 6x6 (including rectangular and structured ones: zero, rank-one, orthogonal, highly skewed) and compare the spectral norm ||alpha||_2 against ||alpha + 1j*beta||_2; report the minimum of ||alpha+i*beta|| - ||alpha|| found, and search specifically for any instance where it is negative.",
+      "formal_target": "For all n, m and all real n-by-m matrices alpha and beta, the operator (spectral) norm satisfies ||alpha|| <= ||alpha + i*beta||, where alpha + i*beta is regarded as a complex matrix."
+    },
+    {
+      "candidate_id": "0001-A_missing_theorem_on_dual_spaces::CAND::5",
+      "route": "informal",
+      "status": "ROUTED",
+      "gate": "4",
+      "detector_hint": "proof_step",
+      "overruled_hint": false,
+      "rationale": "Gate 4: the suspicion is that a step asserting complete isometry of multiplication by i on X's own matrix norms sits in tension with the paper's Example 2 and with part (3)'s factor-of-2 conclusion — a dependency/consistency question between results in the same paper, which is precisely what Gate 4 is for.",
+      "probe_plan": null,
+      "formal_target": null
+    },
+    {
+      "candidate_id": "0001-A_missing_theorem_on_dual_spaces::CAND::6",
+      "route": "python",
+      "status": "ROUTED",
+      "gate": "1",
+      "detector_hint": "symbolic",
+      "overruled_hint": false,
+      "rationale": "Gate 1: a single concrete computation settles it — apply the explicit coordinate map J twice and compare with -alpha, and check whether -J inverts J. The witness is already written down in claim_content; no proof obligation remains once the composition is evaluated.",
+      "probe_plan": "In sympy/numpy, build J on R^(2N) for N = 1..5 as the block-diagonal map (a_{2k-1}, a_{2k}) -> (-a_{2k}, a_{2k-1}), i.e. the matrix with 2x2 blocks [[0,-1],[1,0]]; compute J@J and compare entrywise with -I; compute J@(-J) and compare with I; and check the l1 operator norm of J to confirm boundedness on l1.",
+      "formal_target": null
+    },
+    {
+      "candidate_id": "0001-A_missing_theorem_on_dual_spaces::CAND::7",
+      "route": "python",
+      "status": "ROUTED",
+      "gate": "1",
+      "detector_hint": "symbolic",
+      "overruled_hint": false,
+      "rationale": "Gate 1: the step is an algebraic expansion, (a*I+k)^2 = a^2*I + 2*a*k + k^2, followed by isolating (a^2+1)*I; a symbolic expansion in a noncommutative-but-here-commuting setting reproduces it line to line and decides whether a^2 = -1 is what falls out, including the a = 0 case.",
+      "probe_plan": "In sympy, expand (a*I + k)**2 with a a real symbol and k a symbol commuting with I, set it equal to -I, and solve for the coefficient of I; verify the residual 2*a*k + k**2 is a compact-operator expression and that the scalar part gives a**2 + 1 = 0. Separately check a = 0: confirm (a**2+1)*I = I is then a non-compact operator on an infinite-dimensional space, so the argument still closes.",
+      "formal_target": null
+    },
+    {
+      "candidate_id": "0001-A_missing_theorem_on_dual_spaces::CAND::8",
+      "route": "python",
+      "status": "ROUTED",
+      "gate": "1",
+      "detector_hint": "numeric",
+      "overruled_hint": false,
+      "rationale": "Gate 1: both steps are arithmetic over a two-element instance space. Evaluate |1/sqrt(2) + u/sqrt(2)| for u in {+1,-1} against the bound 1, and then evaluate u*(u o tau) under u == -1 against the required value -1. A single computation exhibits the contradiction or its absence.",
+      "probe_plan": "In Python: (a) for u in {+1,-1} compute abs(1/sqrt(2) + u/sqrt(2)) and report which values satisfy <= 1 (expect |1+1|/sqrt(2) = sqrt(2) > 1 excluding u=+1, and 0 <= 1 allowing u=-1); (b) with u the constant function -1 on a finite model of K and tau any permutation of that model, compute the pointwise product u*(u o tau) and compare it with the required constant -1, reporting whether a contradiction arises.",
+      "formal_target": null
+    },
+    {
+      "candidate_id": "0001-A_missing_theorem_on_dual_spaces::CAND::9",
+      "route": "informal",
+      "status": "ROUTED",
+      "gate": "4",
+      "detector_hint": "proof_step",
+      "overruled_hint": false,
+      "rationale": "Gate 4: the printed expression iota_{i_X}(X) is not a well-formed operator and the step is left as an exercise, so there is nothing to compute and no unambiguous proposition to formalise; whether the intended inclusion follows from (L_iota)^{dagger dagger} = L_iota is a reading question about the proof's structure.",
+      "probe_plan": null,
+      "formal_target": null
+    },
+    {
+      "candidate_id": "0001-A_missing_theorem_on_dual_spaces::CAND::10",
+      "route": "lean",
+      "status": "ROUTED",
+      "gate": "3",
+      "detector_hint": "proof_step",
+      "overruled_hint": true,
+      "rationale": "Gate 3: once the Banach-space content is abstracted away, the question is purely a derivation in first-order logic — from the universally quantified implication P(Z): 'dual(Z) has complex structure -> Z has complex structure' and the fact F: 'Z has complex structure -> dual(Z) has complex structure', does 'dual(dual(X)) has complex structure -> X has complex structure' follow, and in how many applications of P? Policy triggers: universal quantification, an implication that must hold in general, and a claimed equivalence of two theorem statements. It formalises unambiguously over an abstract type with an abstract predicate and an abstract dual operation, with no invented hypotheses. Detector hint 'proof_step' overruled: the load is logical, not analytic. No practical instance space to probe, so bare lean rather than hybrid.",
+      "probe_plan": null,
+      "formal_target": "Let S be a type, d : S -> S, and C : S -> Prop. Assume (F) for all Z, C Z -> C (d Z), and (P) for all Z, C (d Z) -> C Z. Then for all X, C (d (d X)) -> C X; and conversely, assuming (F) and (T) for all X, C (d (d X)) -> C X, it follows that for all X, C (d X) -> C X."
+    },
+    {
+      "candidate_id": "0001-A_missing_theorem_on_dual_spaces::CAND::11",
+      "route": "informal",
+      "status": "ROUTED",
+      "gate": "4",
+      "detector_hint": "general_claim",
+      "overruled_hint": true,
+      "rationale": "Gate 4: the chain concerns complex-conjugate Banach spaces, complex versus real duals and complex versus real isometric preduals; none of these has a Mathlib counterpart, a faithful Lean statement would have to invent the conjugate-space construction, and there is no finite instance space, so the escalation guard downgrades the general_claim hint to close reading.",
+      "probe_plan": null,
+      "formal_target": null
+    },
+    {
+      "candidate_id": "0001-A_missing_theorem_on_dual_spaces::CAND::12",
+      "route": "informal",
+      "status": "ROUTED",
+      "gate": "4",
+      "detector_hint": "proof_step",
+      "overruled_hint": false,
+      "rationale": "Gate 4: the suspicion is that a cited result is invoked in the wrong direction inside a proof — a lemma used outside the conditions under which it was stated, which Gate 4 names explicitly and which no computation or formalisation reaches.",
+      "probe_plan": null,
+      "formal_target": null
+    },
+    {
+      "candidate_id": "0001-A_missing_theorem_on_dual_spaces::CAND::13",
+      "route": "informal",
+      "status": "ROUTED",
+      "gate": "4",
+      "detector_hint": "proof_step",
+      "overruled_hint": false,
+      "rationale": "Gate 4: the mathematical half (whether X^* is a defined object when X is a real operator space, under the paper's own stated conventions) is a consistency reading of the paper's notation contract; the other half is a citation-reuse concern, which is out of mathematical scope and should not drive the verdict. Not Gate 0, because the first half is a checkable claim about the paper's own definitions.",
+      "probe_plan": null,
+      "formal_target": null
+    },
+    {
+      "candidate_id": "0001-A_missing_theorem_on_dual_spaces::CAND::14",
+      "route": "informal",
+      "status": "ROUTED",
+      "gate": "4",
+      "detector_hint": "general_claim",
+      "overruled_hint": true,
+      "rationale": "Gate 4: uniqueness of the operator space structure on a one-dimensional complex space, and the step from a complex-linear complete isometry to a real one, are statements about operator spaces with no Mathlib counterpart and no probeable instance space; the escalation guard downgrades the general_claim hint to informal.",
+      "probe_plan": null,
+      "formal_target": null
+    },
+    {
+      "candidate_id": "0001-A_missing_theorem_on_dual_spaces::CAND::15",
+      "route": "informal",
+      "status": "ROUTED",
+      "gate": "4",
+      "detector_hint": "proof_step",
+      "overruled_hint": false,
+      "rationale": "Gate 4: the defect is an unstated intermediate step (complete isometry of multiplication by i for the W structure inherited from the real dual) inside an operator space estimate; the gap is structural, the objects are infinite-dimensional operator spaces, and no witness or faithful formalisation is available.",
+      "probe_plan": null,
+      "formal_target": null
+    }
+  ],
+  "totals": {
+    "python": 3,
+    "lean": 1,
+    "hybrid": 2,
+    "informal": 10,
+    "none": 0
+  },
+  "policy_conflicts": []
+}

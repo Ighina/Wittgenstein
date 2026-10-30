@@ -1,0 +1,140 @@
+{
+  "paper_id": "0006-Efficient_Fault-Tolerant_Single_Qubit_Gate_Approximation_And_Universal_Quantum_Computation_Without_Using_The_Solovay-Kit",
+  "title": "Efficient Fault-Tolerant Single Qubit Gate Approximation And Universal Quantum Computation Without Using The Solovay-Kit",
+  "stage": "detector",
+  "candidates": [
+    {
+      "candidate_id": "0006-Efficient_Fault-Tolerant_Single_Qubit_Gate_Approximation_And_Universal_Quantum_Computation_Without_Using_The_Solovay-Kit::CAND::0",
+      "error_location": "Eq. (6)",
+      "exact_quote": "P(α)_L = P(−α) ⊗ P(α) ⊗ 1^⊗4 ⊗ P(α).            (6)",
+      "claim_content": "Definitions: the single-qubit phase gate is P(α) = |0⟩⟨0| + e^{iα}|1⟩⟨1|. Steane's seven-qubit code is defined (paper's Eq. (5)) by the logical basis states, for ℓ = 0,1,\n|ℓ⟩_L = (1/(2√2)) Σ_{a,b,c=0}^{1} |ℓ+a+b+c, ℓ+a+b, ℓ+a+c⟩ ⊗ |ℓ+a, ℓ+b+c, ℓ+b, ℓ+c⟩,\nwhere all bit sums are modulo 2, so the seven physical qubit values are (x1,...,x7) = (ℓ+a+b+c, ℓ+a+b, ℓ+a+c, ℓ+a, ℓ+b+c, ℓ+b, ℓ+c) mod 2.\nClaim to check: the transversal operator P(−α) ⊗ P(α) ⊗ 1 ⊗ 1 ⊗ 1 ⊗ 1 ⊗ P(α) (i.e. the vector v = (−1,+1,0,0,0,0,+1) acting as ⊗_j P(α v_j)) implements the logical phase gate P(α)_L, i.e. it maps |0⟩_L ↦ |0⟩_L and |1⟩_L ↦ e^{iα}|1⟩_L for all real α.\nThe operator multiplies each computational basis state by exp(iα(−x1 + x2 + x7)); the claim requires −x1 + x2 + x7 = ℓ (as an integer, for every a,b,c ∈ {0,1}).",
+      "suspected_defect": "Direct counterexample: take ℓ = 0, a = 1, b = 0, c = 1. Then x1 = 0+1+0+1 = 0 (mod 2), x2 = 0+1+0 = 1, x7 = 0+1 = 1, so −x1 + x2 + x7 = 2, giving a phase e^{2iα} instead of 1. Similarly for ℓ = 1, a = 1, b = 0, c = 1 one gets x1 = 1, x2 = 0, x7 = 0, phase e^{−iα} instead of e^{iα}. Moreover, solving the full system (v·c = 0 for all eight codewords c of the even subcode C = span{1111000,1100110,1010101} and Σ_j v_j = 1) is inconsistent over ℝ, so NO real vector v gives a transversal logical P(α) for the Steane code — consistent with the Eastin–Knill theorem. Hence Eq. (6) is false.",
+      "check_kind": "symbolic",
+      "confidence": 0.85,
+      "severity": "critical"
+    },
+    {
+      "candidate_id": "0006-Efficient_Fault-Tolerant_Single_Qubit_Gate_Approximation_And_Universal_Quantum_Computation_Without_Using_The_Solovay-Kit::CAND::1",
+      "error_location": "Eq. (4) and the paragraph deriving it",
+      "exact_quote": "P(α)_L = ⊗_{j=1}^n P(α v_j).    (4)",
+      "claim_content": "Setup: C is a classical self-orthogonal binary [n,k,d] code (C ⊆ C^⊥) with generator matrix G and parity-check matrix H, written H = [L | G], where the n−2k rows L are representatives of the logical operations of the resulting CSS (Steane-like) code whose logical states are |ℓ⟩_L = |C|^{-1/2} Σ_{a∈C} |ℓ + a⟩ for ℓ ∈ C^⊥/C. The paper argues: H has full row rank over F_2, hence also over ℝ; therefore for any w ∈ ℝ^{n−k} the real equation Hv = w has a solution v ∈ ℝ^n; and setting w_j = δ_{jℓ} for a fixed ℓ ∈ {1,...,n−2k}, ANY such real solution v yields the logical phase gate on the ℓth logical qubit via the transversal operator P(α)_L = ⊗_{j=1}^n P(α v_j), where P(β) = |0⟩⟨0| + e^{iβ}|1⟩⟨1|.",
+      "suspected_defect": "The inference from 'Hv = w over ℝ' to 'the transversal product implements logical P(α)' is invalid: the physical bit strings appearing in |ℓ⟩_L are sums modulo 2 of codewords, while the phase accumulated by ⊗_j P(α v_j) is exp(iα Σ_j v_j x_j) with x_j the mod-2 reduced bits; v·(u ⊕ w) ≠ v·u + v·w in general. In fact for the Steane code the required linear system (v·c = 0 for all codewords c ∈ C as 0/1 integer vectors, Σ_j v_j = 1) is inconsistent over ℝ, so no such v exists. More generally, a continuous one-parameter family of transversal logical gates on a distance ≥ 2 code is forbidden by the Eastin–Knill theorem, so Eq. (4) cannot hold for all α.",
+      "check_kind": "general_claim",
+      "confidence": 0.8,
+      "severity": "critical"
+    },
+    {
+      "candidate_id": "0006-Efficient_Fault-Tolerant_Single_Qubit_Gate_Approximation_And_Universal_Quantum_Computation_Without_Using_The_Solovay-Kit::CAND::2",
+      "error_location": "Conclusions, first sentence",
+      "exact_quote": "to approximate a phase gate P(α) (with 0 < α < 2π) to a precision of at least ϵ, one simply finds non-negative integers m, ℓ such that |α − πℓ/2^m| < δ",
+      "claim_content": "The paper's recursive construction is stated to produce gates P(πℓ/2^m) only for integers m, ℓ with ℓ < 2^m (stated as 'any P(πℓ/2^m) gate in a FT manner with m, ℓ ∈ Z^+ and ℓ < 2^m'). The conclusion then asserts that for any α with 0 < α < 2π one can find integers m, ℓ with |α − πℓ/2^m| < δ for arbitrarily small δ > 0.",
+      "suspected_defect": "With the stated restriction ℓ < 2^m, the available angles πℓ/2^m lie in [0, π), so any target angle α ∈ (π, 2π) cannot be approximated to accuracy δ < α − π. The range of ℓ should be ℓ < 2^{m+1} (or angles taken mod 2π). Also 'non-negative integers' here conflicts with the earlier requirement m, ℓ ∈ Z^+.",
+      "check_kind": "general_claim",
+      "confidence": 0.55,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "0006-Efficient_Fault-Tolerant_Single_Qubit_Gate_Approximation_And_Universal_Quantum_Computation_Without_Using_The_Solovay-Kit::CAND::3",
+      "error_location": "Conclusions, gate set specification",
+      "exact_quote": "the gates needed are drawn from the set {H, P(πℓ/2^m) : m, ℓ ∈ Z^+, ℓ < 2^m} where m = ⌈ϵ/ [log_2(1/ϵ) log_2 log_2(1/ϵ)···]⌉",
+      "claim_content": "The paper requires a dyadic angle πℓ/2^m with |α − πℓ/2^m| < δ, where δ ≤ ϵ/⌈log_2(1/ϵ)⌉ and ϵ ∈ (0,1]. It then states that the required resolution index is m = ⌈ϵ/[log_2(1/ϵ) log_2 log_2(1/ϵ)···]⌉.",
+      "suspected_defect": "To resolve angles to within δ one needs m ≈ log_2(π/δ) = log_2(1/ϵ) + log_2 log_2(1/ϵ) + O(1), i.e. m grows like log(1/ϵ). The stated formula m = ⌈ϵ/[log_2(1/ϵ)···]⌉ is a ratio whose value is strictly between 0 and 1 for all ϵ ∈ (0,1), so its ceiling equals 1 — giving only the gate set {H, P(π/2)}, which is manifestly insufficient. The formula appears to have the logarithms in the wrong place (reciprocal/log inverted).",
+      "check_kind": "numeric",
+      "confidence": 0.75,
+      "severity": "critical"
+    },
+    {
+      "candidate_id": "0006-Efficient_Fault-Tolerant_Single_Qubit_Gate_Approximation_And_Universal_Quantum_Computation_Without_Using_The_Solovay-Kit::CAND::4",
+      "error_location": "Conclusions, second sentence",
+      "exact_quote": "apply FT implementation to each phase gate with angle of rotation accurate to ϵ log_2(1/ϵ) log_2 log_2(1/ϵ) ··· until log_2 log_2 ··· log_2(1/ϵ) becomes O(1)",
+      "claim_content": "In the preceding sentence the paper fixes the per-phase-gate angular accuracy as δ ≤ ϵ/⌈log_2(1/ϵ)⌉ (a quantity SMALLER than ϵ). Here it states the angular accuracy as ϵ log_2(1/ϵ) log_2 log_2(1/ϵ)···, a quantity LARGER than ϵ for ϵ < 1/2. Target: total operator-norm error of the SU(2) approximation ≤ ϵ, where the operator is written as three phase gates and two Hadamards and ||P(α) − P(α')|| ≤ |α − α'|.",
+      "suspected_defect": "The two stated accuracies are mutually inconsistent (one divides by iterated logs, the other multiplies). An angular accuracy of ϵ log_2(1/ϵ)··· exceeds ϵ and therefore cannot guarantee total error ≤ ϵ, since the error of the product of three phase gates is bounded by the sum of the individual angular errors.",
+      "check_kind": "general_claim",
+      "confidence": 0.65,
+      "severity": "critical"
+    },
+    {
+      "candidate_id": "0006-Efficient_Fault-Tolerant_Single_Qubit_Gate_Approximation_And_Universal_Quantum_Computation_Without_Using_The_Solovay-Kit::CAND::5",
+      "error_location": "Conclusions, final complexity statement",
+      "exact_quote": "one obtains a computational efficient method to approximate any single qubit gate to an accuracy of ϵ using O(ϵ log[1/ϵ] log log[1/ϵ] ···) gates",
+      "claim_content": "The abstract and introduction of the paper claim the gate count is O(log[1/ϵ] log log[1/ϵ] log log log[1/ϵ] ···) (products terminated when the iterated log becomes O(1)). The conclusion states the count as O(ϵ log[1/ϵ] log log[1/ϵ] ···), with a multiplicative factor ϵ in front.",
+      "suspected_defect": "The factor ϵ is spurious: for ϵ → 0 this expression tends to 0 (fewer than one gate), which is impossible and contradicts the Ω(log[1/ϵ]) lower bound quoted earlier in the paper as well as the abstract's own statement of the result.",
+      "check_kind": "symbolic",
+      "confidence": 0.7,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "0006-Efficient_Fault-Tolerant_Single_Qubit_Gate_Approximation_And_Universal_Quantum_Computation_Without_Using_The_Solovay-Kit::CAND::6",
+      "error_location": "Abstract / Conclusions: derivation of the O(log[1/ϵ] log log[1/ϵ]···) count",
+      "exact_quote": "this is possible using O(log[1/ϵ] log log[1/ϵ] log log log[1/ϵ] · · ·) FT gates chosen from a finite set depending on the value of ϵ",
+      "claim_content": "The construction: to approximate P(α) to accuracy ϵ one picks a dyadic angle πℓ/2^m with |α − πℓ/2^m| < δ, δ ≤ ϵ/⌈log_2(1/ϵ)⌉, and then implements P(πℓ/2^m) via the recursion P(πℓ/2^m) ⇐ P(πℓ/2^{m−1}) ⇐ ··· ⇐ P(πℓ/4), each step consisting of one state preparation (Fig. 1) and one gate teleportation (Fig. 2). The number of recursion levels is m = ⌈log_2(π/δ)⌉.",
+      "suspected_defect": "With δ ≤ ϵ/⌈log_2(1/ϵ)⌉ one has m = log_2(1/ϵ) + log_2 log_2(1/ϵ) + O(1), which is O(log[1/ϵ]) (the iterated logs enter ADDITIVELY, not multiplicatively). Since the circuit cost appears to be a constant (or O(n)) number of gates per recursion level, the total should be O(log[1/ϵ]), not the stated product log[1/ϵ]·log log[1/ϵ]·log log log[1/ϵ]···. The paper never exhibits a recurrence or cost model that produces the claimed multiplicative iterated-log factors, so the headline complexity does not follow from the stated construction (it is either an overestimate or an unjustified claim).",
+      "check_kind": "proof_step",
+      "confidence": 0.6,
+      "severity": "critical"
+    },
+    {
+      "candidate_id": "0006-Efficient_Fault-Tolerant_Single_Qubit_Gate_Approximation_And_Universal_Quantum_Computation_Without_Using_The_Solovay-Kit::CAND::7",
+      "error_location": "Paragraph after Eq. (6)",
+      "exact_quote": "I can implement any P(πℓ/2^m) gate in a FT manner with m, ℓ ∈ Z^+ and ℓ < 2^m in O(n) times through the recursion P(πℓ/2^m) ⇐ P(πℓ/2^{m−1}) ⇐ P(πℓ/2^{m−2}) ⇐ ··· ⇐ P(πℓ/4)",
+      "claim_content": "Claim: implementing the phase gate P(πℓ/2^m) fault-tolerantly costs O(n) operations, where n is the length of the Steane-like code, using the recursion that each level P(πℓ/2^j) is realized by gate teleportation consuming a logical state |Θ(πℓ/2^j)⟩_L and a fault-tolerant correction gate P(πℓ/2^{j−1}), terminating at P(πℓ/2) = S^ℓ which is transversal.",
+      "suspected_defect": "The recursion has m−1 levels, each requiring its own magic-state preparation (which itself costs at least O(n) physical gates, plus repeated verification with cat states). Hence the cost should scale at least like O(mn) (or worse, if the probabilistic byproduct corrections branch), not O(n) independent of m. The stated O(n) omits the dependence on the recursion depth m ≈ log_2(1/ϵ), which is exactly the quantity the paper's complexity claim is about.",
+      "check_kind": "general_claim",
+      "confidence": 0.5,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "0006-Efficient_Fault-Tolerant_Single_Qubit_Gate_Approximation_And_Universal_Quantum_Computation_Without_Using_The_Solovay-Kit::CAND::8",
+      "error_location": "Introduction, Steane-like code paragraph",
+      "exact_quote": "Using Steane-like code, the logical Z, H, X, S and CNOT are automatically FT.",
+      "claim_content": "Claim: for the CSS code constructed from an arbitrary classical self-orthogonal binary code C (C ⊆ C^⊥) via |ℓ⟩_L = |C|^{-1/2} Σ_{a∈C}|ℓ+a⟩ for ℓ ∈ C^⊥/C, the logical gates Z, H, X, S (= P(π/2)) and CNOT all have automatically transversal (hence fault-tolerant) implementations.",
+      "suspected_defect": "Transversal implementation of the logical S = P(π/2) gate on such CSS codes is not automatic: it requires extra structure, typically that C (or C^⊥) be doubly even (all weights divisible by 4) and self-dual-containing in the right way; likewise transversal H requires the CSS code to be built from a self-dual-type pair. Self-orthogonality of C alone does not guarantee transversal S. Since the whole recursion bottoms out at a fault-tolerant S, this hypothesis is load-bearing.",
+      "check_kind": "general_claim",
+      "confidence": 0.45,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "0006-Efficient_Fault-Tolerant_Single_Qubit_Gate_Approximation_And_Universal_Quantum_Computation_Without_Using_The_Solovay-Kit::CAND::9",
+      "error_location": "Abstract / framing of the Nielsen–Chuang challenge",
+      "exact_quote": "showing that this is possible using O(log[1/ϵ] log log[1/ϵ] log log log[1/ϵ] · · ·) FT gates chosen from a finite set depending on the value of ϵ",
+      "claim_content": "The lower bound quoted in the paper, 'the length of instruction sequence required to approximate a general SU(2) operator to a precision of ε using a fixed finite set of generators is at least Ω(log[1/ε])', and the Nielsen–Chuang challenge, both refer to a FIXED finite generating set independent of ε. The paper's construction uses the set {H, P(πℓ/2^m)} whose size grows as ϵ decreases.",
+      "suspected_defect": "The counting argument giving the Ω(log[1/ε]) lower bound presupposes a fixed finite gate set; with an ε-dependent gate set the comparison is invalid, and indeed with the set {H, P(πℓ/2^m)} the target phase gate is itself a single element of the set, so 'gate count' must mean compiled fault-tolerant operation count rather than instruction length. The claimed answer therefore does not address the stated challenge as the counting problem is posed, and the stated complexity is not comparable with the Ω(log[1/ε]) bound.",
+      "check_kind": "prose",
+      "confidence": 0.5,
+      "severity": "critical"
+    },
+    {
+      "candidate_id": "0006-Efficient_Fault-Tolerant_Single_Qubit_Gate_Approximation_And_Universal_Quantum_Computation_Without_Using_The_Solovay-Kit::CAND::10",
+      "error_location": "Abstract, statement of the challenge",
+      "exact_quote": "they posted a challenge to efficiently approximate single-qubit gate, fault-tolerantly or otherwise, using Ω(log[1/ϵ]) gates chosen from a finite set",
+      "claim_content": "The paper states that the Nielsen–Chuang challenge is to approximate a single-qubit gate to accuracy ϵ using Ω(log[1/ϵ]) gates from a finite set, while elsewhere the paper correctly states 'The length of instruction sequence required to approximate a general SU(2) operator to a precision of ε using a fixed finite set of generators is at least Ω(log[1/ε])'.",
+      "suspected_defect": "Ω is a lower-bound symbol; achieving the challenge means using O(log[1/ϵ]) (equivalently Θ(log[1/ϵ])) gates. As written the challenge is trivially satisfiable (any construction uses Ω(log[1/ϵ]) gates by the quoted lower bound), i.e. the asymptotic notation is used in the wrong direction.",
+      "check_kind": "prose",
+      "confidence": 0.5,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "0006-Efficient_Fault-Tolerant_Single_Qubit_Gate_Approximation_And_Universal_Quantum_Computation_Without_Using_The_Solovay-Kit::CAND::11",
+      "error_location": "Paragraph before Eq. (5) ('To simplify matter...')",
+      "exact_quote": "one could amend k more rows to H that are orthogonal to the ℓth row in L to make the resultant n × n matrix invertible (both in F_2 and ℝ). Then the solution v is unique.",
+      "claim_content": "Setup: H is the (n−k)×n parity-check matrix of a self-orthogonal binary [n,k,d] code C, written H = [L | G] with L the n−2k logical representative rows and G the k generator rows of C; H has full row rank over F_2 and hence over ℝ. Claim: one can always adjoin k additional rows, each orthogonal (over F_2) to the ℓth row of L, so that the resulting n×n matrix is invertible both over F_2 and over ℝ, making the real solution v of the extended system unique and still giving a valid logical P(α)_L.",
+      "suspected_defect": "No argument is given that k rows orthogonal to the ℓth row of L can always be chosen while preserving invertibility (the orthogonality constraint cuts out a hyperplane of F_2^n, and the extra rows must be independent of the existing n−k rows); nor is it explained why orthogonality to the ℓth row of L is the relevant condition for the resulting unique v to still implement the logical phase gate. The appended rows impose extra real constraints r·v = 0 that may be incompatible with the (already questionable) requirement defining the logical operation.",
+      "check_kind": "proof_step",
+      "confidence": 0.35,
+      "severity": "minor"
+    }
+  ],
+  "detector": {
+    "model": "claude-opus-5",
+    "provider": "anthropic",
+    "mode": "lenient-high-recall",
+    "paper_chars": 39262,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 32524,
+      "output_tokens": 21802,
+      "cache_read_input_tokens": 0,
+      "cache_creation_input_tokens": 0
+    }
+  }
+}

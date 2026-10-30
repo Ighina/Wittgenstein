@@ -1,0 +1,623 @@
+{
+  "paper_name": "paper",
+  "tag": "opus5",
+  "paper_path": "/Users/iacopoghinassi/Documents/Github/Wittgenstein/data/spot-workspace/0042-CR_functions_at_CR_singularities_approximation,_extension,_and_hulls/paper.md",
+  "lean_project": "MATH_VERIFICATION/Paper",
+  "lean_project_kept": true,
+  "totals": {
+    "snippets_extracted": 22,
+    "routed_to_math": 16,
+    "routed_to_lean": 6,
+    "lean_passed": 5,
+    "lean_refuted": 1,
+    "lean_failed": 0,
+    "fallbacks_run": 0,
+    "errors_detected": 1
+  },
+  "results": [
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "Introduction (unnumbered front matter)",
+      "content": "These ideas can be combined in many different ways with existing results such as the theorem of Hanges and Trèves on the propagation of extension along complex analytic curves through CR points. See Section 4 for these results. In the CR singular case, a large disc hull and in fact the strong iterated SADH condition can appear even in the Levi-flat case, where near the CR points all discs lie in the manifold. In Section 8, we show that the manifold given by \\( w = \\overline{z}_1 z_2 \\), which is Levi-flat at CR points (in fact, an image of \\( \\mathbb{R}^2 \\times \\mathbb{C} \\)), nevertheless satisfies the strong iterated SADH condition at the origin.",
+      "route": "verify-math-lean",
+      "route_rationale": "The parenthetical 'an image of $\\mathbb{R}^2\\times\\mathbb{C}$' is a crisp, checkable surjectivity claim about an explicitly given set.",
+      "lean_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "Formalised the claim that $M=\\{(z_1,z_2,w)\\in\\mathbb{C}^3 : w=\\overline{z}_1 z_2\\}$ is an image of $\\mathbb{R}^2\\times\\mathbb{C}$, by exhibiting $\\Phi(r,\\theta,u)=(re^{i\\theta}, e^{i\\theta}u, ru)$ and proving `Set.range Phi` equals $M$ *exactly* (both inclusions, the hard one via the polar form $z_1=\\|z_1\\|e^{i\\arg z_1}$, with $u=e^{-i\\arg z_1}z_2$; the degenerate case $z_1=0$ needs no separate treatment). Lean accepted the proof with only the standard Mathlib axioms. The Levi-flatness half of the sentence is not formalisable here and was not attempted.",
+        "predicted_error_category": null,
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/0042-CRSingularities__MATHEMATICAL_MODEL__0_opus5.lean",
+          "formal_statement": "theorem paper_MATHEMATICAL_MODEL_0 :\n    Set.range Phi = {z : ℂ × ℂ × ℂ | z.2.2 = (starRingEnd ℂ) z.1 * z.2.1} := by\n  have key : ∀ θ : ℝ, (starRingEnd ℂ) (Complex.exp ((θ : ℂ) * Complex.I))\n      = Complex.exp (-((θ : ℂ) * Complex.I)) := by\n    intro θ\n    rw [← Complex.exp_conj]\n    congr 1\n    simp [Complex.conj_I]\n  have cancel : ∀ θ : ℝ, Complex.exp (-((θ : ℂ) * Complex.I))\n      * Complex.exp ((θ : ℂ) * Complex.I) = 1 := by\n    intro θ\n    rw [← Complex.exp_add]\n    simp\n  ext z\n  obtain ⟨z₁, z₂, w⟩ := z\n  simp only [Set.mem_range, Set.mem_setOf_eq]\n  constructor\n  · rintro ⟨⟨r, θ, u⟩, heq⟩\n    simp only [Phi, Prod.mk.injEq] at heq\n    obtain ⟨e1, e2, e3⟩ := heq\n    subst e1; subst e2; subst e3\n    rw [map_mul, key θ, Complex.conj_ofReal]\n    calc (r : ℂ) * u\n        = (r : ℂ) * u * (Complex.exp (-((θ : ℂ) * Complex.I))\n            * Complex.exp ((θ : ℂ) * Complex.I)) := by rw [cancel θ]; ring\n      _ = (r : ℂ) * Complex.exp (-((θ : ℂ) * Complex.I))\n            * (Complex.exp ((θ : ℂ) * Complex.I) * u) := by ring\n  · intro hz\n    have h1 : ((‖z₁‖ : ℝ) : ℂ) * Complex.exp (((Complex.arg z₁ : ℝ) : ℂ) * Complex.I) = z₁ :=\n      Complex.norm_mul_exp_arg_mul_I z₁\n    have h2 : (starRingEnd ℂ) z₁\n        = ((‖z₁‖ : ℝ) : ℂ) * Complex.exp (-(((Complex.arg z₁ : ℝ) : ℂ) * Complex.I)) := by\n      have h := congrArg (starRingEnd ℂ) h1\n      rw [map_mul, Complex.conj_ofReal, key] at h\n      exact h.symm\n    refine ⟨⟨‖z₁‖, Complex.arg z₁,\n      Complex.exp (-(((Complex.arg z₁ : ℝ) : ℂ) * Complex.I)) * z₂⟩, ?_⟩\n    simp only [Phi, Prod.mk.injEq]\n    refine ⟨h1, ?_, ?_⟩\n    · calc Complex.exp (((Complex.arg z₁ : ℝ) : ℂ) * Complex.I)\n            * (Complex.exp (-(((Complex.arg z₁ : ℝ) : ℂ) * Complex.I)) * z₂)\n          = (Complex.exp (-(((Complex.arg z₁ : ℝ) : ℂ) * Complex.I))\n              * Complex.exp (((Complex.arg z₁ : ℝ) : ℂ) * Complex.I)) * z₂ := by ring\n        _ = z₂ := by rw [cancel]; ring\n    · rw [hz, h2]; ring",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::EQUATION::0",
+      "snippet_type": "EQUATION",
+      "location": "Section 2 — CR functions (Definition 2.1 – Lemma 2.4)",
+      "content": "Let M ⊂ Cⁿ be a real submanifold of regularity at least C¹. We will assume that all submanifolds are embedded. A point q ∈ M is called a CR point if the dimension of\n\nT_η^{0,1} M = C ⊗ T_η M ∩ span_C { ∂/∂ż₁|_η, ..., ∂/∂ż_n|_η }    (1)\n\nis constant as a function of η in some neighborhood of q. Write M_CR ⊂ M for the set of CR points. A point q ∈ M is said to be a CR singular point if q ∉ M_CR. A submanifold is said to be CR if it has no CR singular points, or in other words if M = M_CR. A vector field L ∈ Γ(C⊗TM) is said to be a CR vector field if L_q ∈ T_q^{0,1} M for all q ∈ M. We remark that our definition of CR vector field includes vector fields at CR singular points as well.",
+      "route": "verify-math",
+      "route_rationale": "Equation (1) is the standard definition of the antiholomorphic tangent space; checkable by inspection against the standard convention, with no formal content Mathlib could carry.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "Equation (1) states $T^{0,1}_\\eta M=\\mathbb{C}\\otimes T_\\eta M\\cap\\operatorname{span}_{\\mathbb{C}}\\{\\partial/\\partial\\bar z_1|_\\eta,\\dots,\\partial/\\partial\\bar z_n|_\\eta\\}$, which is the standard definition; the accompanying text correctly defines CR points by local constancy of its dimension and CR vector fields as sections of $\\mathbb{C}\\otimes TM$ valued in $T^{0,1}M$. No algebraic or logical defect. (The printed glyph $\\bar z$ appears as `ż` in this markdown rendering, a transcription artifact, not a mathematical error.)",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::0",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "Section 2 — CR functions (Definition 2.1 – Lemma 2.4)",
+      "content": "It is easy to see that, for a \\( C^1 \\) submanifold \\( M \\), the set of CR points \\( M_{CR} \\) is an open dense set in \\( M \\). Therefore, a function \\( f \\) is CR if and only if \\( f|_{M_{CR}} \\) is a CR function on \\( M_{CR} \\). We remark that if \\( f \\) is a \\( CR_P \\) function, then \\( Lf = 0 \\) in the sense of distributions for every CR vector field \\( L \\), and hence \\( f \\) is CR. So \\( CR_P \\) implies CR for all \\( C^1 \\) submanifolds, but for CR singular submanifolds, the converse may not be true (see below). Note that \\( CR_H \\) trivially implies CR. In fact, \\( CR_H \\) implies \\( CR_P \\) because we can use a series expansion at each point.\n\nWhen \\( M \\) is real-analytic and CR, by Severi’s theorem [20] real-analytic CR functions are restrictions of holomorphic functions. That is, in this case \\( CR^\\omega(M) = CR^\\omega_P(M) = CR_H(M) \\). On the other hand, there do exist smooth CR functions on CR submanifolds that are not restrictions of holomorphic functions. In the presence of CR singularities, these classes can be distinct even in the real-analytic case.\n\nFor CR submanifolds of class \\( C^2 \\), the first two definitions are equivalent, which follows from the Baouendi–Trèves approximation theorem [2]: If \\( M \\) is a CR submanifold of class \\( C^2 \\) and \\( q \\in M \\), then there exists a compact neighborhood \\( K \\subset M \\) of \\( q \\) such that for every CR function \\( f \\) on \\( M \\) there exists a sequence \\( \\{P_j\\} \\) of holomorphic polynomials converging uniformly on \\( K \\) to \\( f|_K \\). So for a CR submanifold of class \\( C^2 \\), \\( CR^k(M) = CR^k_P(M) \\) for all \\( k \\). A key point in the Baouendi–Trèves theorem is that the neighborhood \\( K \\) is independent of \\( f \\); it depends only on \\( M \\) and the point \\( q \\). We will see that, in the CR singular case, there exist \\( M \\) for which the conclusion of the Baouendi–Trèves theorem does not hold even for \\( CR_P \\) functions. (See Theorem 5.1 or Theorem 9.1.)\n\nWhen considering regularity of manifolds or functions, we use the order \\( 0 < 1 < 2 < \\cdots < \\infty < \\omega \\).",
+      "route": "verify-math",
+      "route_rationale": "A chain of standard implications between the three function classes; the objects (CR, CR_P, CR_H) have no Mathlib counterpart, so only informal review is possible.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.8,
+        "reasoning": "Each assertion checks out. (i) $M_{CR}$ open is immediate from the definition; dense because $\\eta\\mapsto\\dim T^{0,1}_\\eta M$ is an integer-valued upper semicontinuous function, so on any open $U$ the locus where it attains its minimum over $U$ is open, nonempty and consists of points of local constancy. (ii) $CR_P\\Rightarrow CR$: holomorphic polynomials are annihilated by $(0,1)$ vector fields tangent to $M$, and the relation $Lf=0$ is preserved under locally uniform limits in the distributional sense. (iii) $CR_H\\Rightarrow CR_P$ by Taylor expansion of the local holomorphic extension. (iv) For real-analytic CR $M$, Severi gives $CR^{\\omega}(M)=CR_H(M)$ and the sandwich of (i)–(iii) forces $CR^{\\omega}=CR^{\\omega}_P=CR_H$. (v) For $C^2$ CR submanifolds Baouendi–Trèves gives $CR^k=CR^k_P$, and the paper correctly stresses that the compact $K$ is independent of $f$. No error.",
+        "predicted_error_category": null,
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::THEOREM::0",
+      "snippet_type": "THEOREM",
+      "location": "Theorem 2.3",
+      "content": "## Theorem 2.3.\nLet \\( M \\subset \\mathbb{C}^n \\) be a real submanifold of regularity \\( C^\\ell \\) for \\( \\ell \\geq 1 \\).\n(i) \\( CR^k(M) \\supset CR^k_P(M) \\supset CR_H(M) \\) for all \\( k \\leq \\ell \\).\n(ii) There exists a real-analytic submanifold \\( M \\) such that, for every \\( k \\), \\( CR^k(M) \\supsetneqq CR^k_P(M) \\).\n(iii) There exists a real-analytic submanifold \\( M \\) such that \\( CR^\\omega_P(M) \\supsetneqq CR_H(M) \\).",
+      "route": "verify-math",
+      "route_rationale": "An inclusion/strict-inclusion statement about three classes of functions on an arbitrary submanifold — no formalisable content without a Lean theory of CR functions.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::THEOREM::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.6,
+        "reasoning": "Part (i), $CR^k(M)\\supset CR^k_P(M)\\supset CR_H(M)$ for $k\\le\\ell$, is correct and the regularity side condition $k\\le\\ell$ is exactly what is needed for $CR_H(M)\\subset CR^k_P(M)$, since $CR_H$ functions inherit the manifold's regularity $C^{\\ell}$. Parts (ii) and (iii) are pure existence statements whose witnesses live in Sections 5, 7 and 8, which are not present in this manuscript excerpt; they are therefore not checkable here, but nothing in the statement is internally inconsistent. Noted but not flagged: the proof of (ii) cites 'Theorem 5.1 or Theorem 8.1' while the introduction cites 'Theorem 5.1 or Theorem 9.1' for the related failure of Baouendi–Trèves for $CR_P$ functions; these are different assertions, so the differing references are not in conflict.",
+        "predicted_error_category": null,
+        "snippet_type": "THEOREM",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.6
+    },
+    {
+      "snippet_id": "paper::PROOF::0",
+      "snippet_type": "PROOF",
+      "location": "Proof of Theorem 2.3",
+      "content": "Proof. (i) This follows from the earlier observations that \\( CR_P \\) implies CR and \\( CR_H \\) implies \\( CR_P \\).\n(ii) See Theorem 5.1 or Theorem 8.1.\n(iii) See Theorem 7.1. □",
+      "route": "verify-math",
+      "route_rationale": "A three-line proof that is either a back-reference to earlier prose or a forward reference; nothing to formalise.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::PROOF::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.6,
+        "reasoning": "The proof of (i) correctly reduces to the two implications established in the preceding paragraph ($CR_P\\Rightarrow CR$ and $CR_H\\Rightarrow CR_P$), both of which I verified independently. (ii) and (iii) are discharged by forward reference to Theorems 5.1/8.1 and 7.1, which are outside this excerpt, so those parts of the argument are unsettled rather than wrong. No error detectable in the reasoning given.",
+        "predicted_error_category": null,
+        "snippet_type": "PROOF",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.6
+    },
+    {
+      "snippet_id": "paper::LEMMA::0",
+      "snippet_type": "LEMMA",
+      "location": "Lemma 2.4",
+      "content": "The space \\( CR_H(M) \\) is defined via local extension, but sometimes it is necessary to have one global extension. Recall that a real submanifold is generic at a point if the complex differentials of its defining functions are linearly independent over \\( \\mathbb{C} \\) at that point.\n\n## Lemma 2.4.\nSuppose \\( M \\subset \\mathbb{C}^n \\) is a \\( C^1 \\) real submanifold that is either generic at every CR point or simply connected. Then for every \\( f \\in CR_H(M) \\) there exist an open neighborhood \\( U \\) of \\( M \\) in \\( \\mathbb{C}^n \\) and a holomorphic function \\( F \\) on \\( U \\) such that \\( F|_M = f \\).",
+      "route": "verify-math",
+      "route_rationale": "A gluing statement about holomorphic extensions on a submanifold; the hypotheses (genericity at CR points, simple connectedness) are domain objects with no Mathlib analogue.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::LEMMA::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.7,
+        "reasoning": "The statement is coherent and the stated hypotheses are the right ones: genericity at CR points gives uniqueness of the local extensions (so they glue), and simple connectedness is the standard substitute when uniqueness is unavailable. The definition of 'generic' quoted just above the lemma ($\\mathbb{C}$-linear independence of the complex differentials of the defining functions) is correct. No error in the statement.",
+        "predicted_error_category": null,
+        "snippet_type": "LEMMA",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.7
+    },
+    {
+      "snippet_id": "paper::PROOF::1",
+      "snippet_type": "PROOF",
+      "location": "Proof of Lemma 2.4",
+      "content": "Proof. If \\( M \\) is generic at every CR point, then the extension is unique locally at each CR point; as those points are dense, the extension is unique everywhere, and the result follows. If \\( M \\) is simply connected, the result follows by the monodromy theorem. □",
+      "route": "verify-math",
+      "route_rationale": "Two one-sentence arguments resting on uniqueness of extension and the monodromy theorem; informal review is the only option.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::PROOF::1",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.55,
+        "reasoning": "The generic branch is correct: at a generic CR point a holomorphic germ vanishing on $M$ vanishes identically, so the local extension is unique; the CR points are dense (verified separately), so the local extensions agree on overlaps and glue to an $F$ on a neighborhood $U$ of $M$. The simply-connected branch is terse to the point of being under-justified: without genericity the local extensions are *not* unique, so there is no canonical germ along which to run the monodromy theorem — one must first select a coherent family of germs. I judge the conclusion plausible and do not flag it; this is an exposition gap, not a demonstrable mathematical error, and the skill's bar is a derivation-invalidating mistake.",
+        "predicted_error_category": null,
+        "snippet_type": "PROOF",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.55
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::1",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "3. Extension, approximation, and hulls",
+      "content": "We make some immediate observations: CR_H(M) always has the extension property and CR^k_P(M) always has the approximation property. The fixed-neighborhood extension property for a class at a point implies the fixed-neighborhood approximation property for that class at that point. If CR^k(M) has the fixed-neighborhood approximation property, then CR^k(M) = CR^k_P(M). These properties are invariant under holomorphic changes of coordinates. If M is contained in the Levi-flat hypersurface given by Im z_n = 0, then CR_H(M) does not have the fixed-neighborhood extension property as 1/(z_n - iε) is in CR_H(M) for all real ε ≠ 0.\n\nNote that the fixed-neighborhood approximation property for CR_H(M) need not imply the fixed-neighborhood extension property for CR_H(M). See any one of Theorems 5.1, 7.1, and 9.1, or the CR case.",
+      "route": "verify-math-lean",
+      "route_rationale": "The block's load-bearing claim is a concrete counterexample, $1/(z_n-i\\varepsilon)$, whose holomorphy domain and pole location are directly formalisable.",
+      "lean_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::1",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "Formalised the counterexample the paper gives for the failure of the fixed-neighborhood extension property when $M\\subset\\{\\operatorname{Im}z_n=0\\}$: (a) for every $\\varepsilon\\neq0$ the function $\\zeta\\mapsto1/(\\zeta-i\\varepsilon)$ is complex-differentiable at every point of the slab $\\{|\\operatorname{Im}\\zeta|<|\\varepsilon|\\}$, which contains the real axis — so it lies in $CR_H$; and (b) for every fixed $\\delta>0$ there is an $\\varepsilon\\neq0$ (take $\\varepsilon=\\delta/2$) and a point inside the slab of half-width $\\delta$ (namely $i\\varepsilon$ itself) at which the function is not differentiable, proved by contradiction from continuity at the pole. Both halves compiled clean with only standard axioms, so no neighborhood of $\\{\\operatorname{Im}z_n=0\\}$ independent of $\\varepsilon$ can serve the whole family. The surrounding implications between the four properties (extension $\\Rightarrow$ approximation; fixed-neighborhood extension $\\Rightarrow$ fixed-neighborhood approximation; fixed-neighborhood approximation for $CR^k$ $\\Rightarrow$ $CR^k=CR^k_P$) were checked informally and are correct.",
+        "predicted_error_category": null,
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/0042-CRSingularities__FORMULA_BLOCK__1_opus5.lean",
+          "formal_statement": "theorem paper_FORMULA_BLOCK_1 :\n    (∀ ε : ℝ, ε ≠ 0 → ∀ z : ℂ, |z.im| < |ε| →\n        DifferentiableAt ℂ (fun ζ : ℂ => 1 / (ζ - (ε : ℂ) * Complex.I)) z)\n    ∧ (∀ δ : ℝ, 0 < δ → ∃ ε : ℝ, ε ≠ 0 ∧ ∃ z : ℂ, |z.im| < δ ∧\n        ¬ DifferentiableAt ℂ (fun ζ : ℂ => 1 / (ζ - (ε : ℂ) * Complex.I)) z) := by\n  constructor\n  · intro ε _ z hz\n    have hne : z - (ε : ℂ) * Complex.I ≠ 0 := by\n      intro h\n      have hzeq : z = (ε : ℂ) * Complex.I := by linear_combination h\n      rw [hzeq] at hz\n      simp at hz\n    exact (differentiableAt_const (1 : ℂ)).div\n      (differentiableAt_id.sub (differentiableAt_const _)) hne\n  · intro δ hδ\n    refine ⟨δ / 2, by positivity, ((δ / 2 : ℝ) : ℂ) * Complex.I, ?_, ?_⟩\n    · simp [abs_of_pos, hδ]\n    · set p : ℂ := ((δ / 2 : ℝ) : ℂ) * Complex.I with hp\n      intro hdiff\n      have hc := hdiff.continuousAt\n      rw [Metric.continuousAt_iff] at hc\n      obtain ⟨d, hd0, hdd⟩ := hc 1 one_pos\n      set r : ℝ := min (d / 2) (1 / 2) with hr\n      have hr0 : 0 < r := lt_min (by linarith) (by norm_num)\n      have hrd : r < d := lt_of_le_of_lt (min_le_left _ _) (by linarith)\n      have hrh : r ≤ 1 / 2 := min_le_right _ _\n      have hdist : dist (p + (r : ℂ)) p < d := by\n        simp only [dist_eq, add_sub_cancel_left, Complex.norm_real, Real.norm_eq_abs,\n          abs_of_pos hr0]\n        exact hrd\n      have hgoal := hdd hdist\n      simp only [add_sub_cancel_left, sub_self, div_zero] at hgoal\n      have hnorm : dist (1 / ((r : ℝ) : ℂ)) (0 : ℂ) = 1 / r := by\n        simp [dist_eq, abs_of_pos hr0]\n      rw [hnorm] at hgoal\n      have : (2 : ℝ) ≤ 1 / r := by\n        rw [le_div_iff₀ hr0]\n        linarith\n      linarith",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::DEFINITION::0",
+      "snippet_type": "DEFINITION",
+      "location": "Definition 3.2",
+      "content": "Let D ⊂ C denote the unit disc. By an analytic disc attached to X ⊂ C^n we mean a continuous function φ: D → C^n that is holomorphic on D and satisfies φ(∂D) ⊂ X. If we say φ is an analytic disc through p we mean in addition that p ∈ φ(D).\n\nDefinition 3.2. Let X ⊂ C^n. Define\n\nDH(X) = {z ∈ C^n : ∃ an analytic disc attached to X through z},     (2)\n\nDH^k(X) = DH(··· DH(DH(X)) ··· )                              (3)\n          ⏞   k times   ⏟\n\nWe call DH(X) the disc hull of X and DH^k(X) the k-fold iterated disc hull of X.\n\nWe say that X satisfies the DH condition at q ∈ X if for every neighborhood U ⊂ X of q, there is a k such that DH^k(U) is a (not necessarily open) neighborhood of q in C^n.\n\nThe set DH^k(X) is a subset of the polynomial hull. We wish to apply the Kontinuitätssatz to functions defined on a neighborhood of X, and for this purpose we also need to be able to continuously shrink these discs. It is not always possible to shrink the discs that make up the disc hull even if X is a submanifold (see the examples below), so we require another definition. On the other hand, we do not need to exactly attach these discs, as we only need their boundaries to be near X to apply the Kontinuitätssatz to functions in CR_H. Thus, we can weaken the attachment and only consider approximately attached discs.",
+      "route": "verify-math",
+      "route_rationale": "Definitions (2)–(3) plus the assertion that $DH^k(X)$ lies in the polynomial hull; the assertion is a one-line maximum-principle argument best judged by inspection.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::DEFINITION::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.8,
+        "reasoning": "Equations (2) and (3) are internally consistent, and the DH condition is stated coherently (note it is deliberately phrased with 'not necessarily open' neighborhood). The one assertion carrying content, '$DH^k(X)$ is a subset of the polynomial hull', is correct: for a holomorphic polynomial $P$ and a disc $\\varphi$ attached to $X$, $|P(\\varphi(\\zeta))|\\le\\max_{\\partial\\mathbb{D}}|P\\circ\\varphi|\\le\\|P\\|_X$ by the maximum principle, and the polynomial hull is stable under this operation so the bound survives iteration. No error.",
+        "predicted_error_category": null,
+        "snippet_type": "DEFINITION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::EQUATION::1",
+      "snippet_type": "EQUATION",
+      "location": "Definition 3.3",
+      "content": "Definition 3.3. Let q ∈ X ⊂ C^n. For ε > 0 let X_ε denote the ε-neighborhood of X. Define\nSADH_q(X) = {z ∈ C^n : for each ε > 0, ∃ a continuous family of analytic discs φ_t : 𝔻 → C^n,\nt ∈ [0, 1], z = φ₁(0), φ_t(∂𝔻) ⊂ X_ε ∀ t ∈ [0, 1], φ₀ ≡ q, and\n‖φ_t(0) − q‖ is a strictly increasing function of t},                (4)\n\nWe call SADH_q(X) the shrinking approximate disc hull of X at q.\n\nWe remark that the content of Definition 3.3 is unchanged if we require z ∈ φ₁(𝔻) instead of φ₁(0) = z.",
+      "route": "verify-math",
+      "route_rationale": "Equation (4) is a definition; the only checkable content is its internal consistency and the remark that $z\\in\\varphi_1(\\mathbb{D})$ gives the same set.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::1",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.75,
+        "reasoning": "Equation (4) is internally consistent: $\\varphi_0\\equiv q$ forces $\\|\\varphi_0(0)-q\\|=0$, which is compatible with (indeed required by) strict monotonicity starting from $t=0$, and $z=\\varphi_1(0)$ picks out the endpoint. The requirement is only that $\\varphi_t(\\partial\\mathbb{D})\\subset X_\\varepsilon$ for each $\\varepsilon>0$ with a possibly different family per $\\varepsilon$, which is what 'approximately attached' is meant to mean and is what the compactness proof of Lemma 3.8 uses. The remark that replacing $\\varphi_1(0)=z$ by $z\\in\\varphi_1(\\mathbb{D})$ leaves the set unchanged is correct, since the centre can be moved to any interior point by precomposing with a Möbius automorphism of $\\mathbb{D}$. No error.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.75
+    },
+    {
+      "snippet_id": "paper::DEFINITION::1",
+      "snippet_type": "DEFINITION",
+      "location": "Definition 3.4",
+      "content": "Definition 3.4. We say Y is a union of a compact family of nonintersecting paths from SADH_q(X) if there is a family 𝒴 of paths ψ(t) = φ_t(0) arising from the definition of SADH_q(X), 𝒴 is compact with respect to the uniform norm, Y is the union of the images of paths in 𝒴, and whenever ψ₁, ψ₂ ∈ 𝒴 are such that ψ₁(t₁) = ψ₂(t₂) for some t₁, t₂ > 0, then ψ₁([0, t₁]) = ψ₂([0, t₂]).\n\nWe will call the sets X₀, X₁, . . . , X_k SADH iterates at q if X₀ ⊂ X is a neighborhood of q, and each X_j for j = 1, . . . , k is a union of a compact family of nonintersecting paths from SADH_q(X_{j−1}).\n\nWe say that X satisfies the iterated SADH condition at q if X₀ = X and there are sets X₁, X₂, . . . , X_k that are SADH iterates at q and X_k contains a neighborhood of q in C^n.\n\nWe say that X satisfies the strong iterated SADH condition at q if X satisfies the iterated SADH condition at q for all neighborhoods X₀ ⊂ X of q.",
+      "route": "verify-math",
+      "route_rationale": "A nested chain of definitions (nonintersecting path families, SADH iterates, iterated and strong iterated SADH); only internal coherence is checkable.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::DEFINITION::1",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.55,
+        "reasoning": "The definitions are coherent: the non-self-intersection condition ($\\psi_1(t_1)=\\psi_2(t_2)$ for $t_1,t_2>0$ forces $\\psi_1([0,t_1])=\\psi_2([0,t_2])$) is exactly what rules out the loops that would spoil single-valuedness of the continuation, which is the stated purpose. One wording slip, noted but not flagged: the iterated SADH condition is defined with '$X_0=X$', yet the strong iterated SADH condition is then phrased as holding 'for all neighborhoods $X_0\\subset X$ of $q$' — the quantified condition is therefore not literally the one just defined (which pins $X_0=X$). The intended reading, that every neighborhood of $q$ in $X$ satisfies the iterated SADH condition at $q$, is unambiguous. This is an expository imprecision, not a mathematical error.",
+        "predicted_error_category": null,
+        "snippet_type": "DEFINITION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.55
+    },
+    {
+      "snippet_id": "paper::PROPOSITION::0",
+      "snippet_type": "PROPOSITION",
+      "location": "Remark 3.6",
+      "content": "Remark 3.6. The way we defined SADH_q(X) used paths of strictly increasing distance. We get the same set if we relax this definition simply to increasing distance: If p can be reached by a family of discs where ‖φ_t(0) − q‖ is only increasing and with boundary in an (ε/2)-neighborhood of X, we can perturb the family to get a strictly increasing ‖φ_t(0) − q‖ and boundary in an ε-neighborhood of X. Assuming ‖φ_t(0) − q‖ is strictly increasing makes some of the arguments somewhat cleaner, and as we just saw, there is no loss in generality.\n\nWe will generally apply SADH_q to neighborhoods of q in a manifold. A manifold is always locally path connected and, moreover, it is (locally) a union of paths of increasing distance from q ∈ M. So if X is such a neighborhood in a manifold, then X ⊂ SADH_q(X), and SADH_q(X) is (again) a union of paths of increasing distance from q.",
+      "route": "verify-math",
+      "route_rationale": "An equivalence proved by a perturbation sketch; judging the sketch is an informal task.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::PROPOSITION::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.7,
+        "reasoning": "The claim — that relaxing 'strictly increasing' to 'increasing' in Definition 3.3 gives the same set — is correct, and the $\\varepsilon/2\\to\\varepsilon$ bookkeeping is right: a family with boundaries in $X_{\\varepsilon/2}$ perturbed by something of size $<\\varepsilon/2$ still has boundaries in $X_\\varepsilon$, and since $\\varepsilon>0$ was arbitrary the conclusion survives. The sketch 'perturb the family' does not spell out how plateaus of $\\|\\varphi_t(0)-q\\|$ are removed (a reparametrisation plus a radial push is needed, not merely an additive term), but the assertion is true. Also correct is the companion observation that a neighborhood $X$ of $q$ in a manifold satisfies $X\\subset SADH_q(X)$: constant discs along a path of increasing distance qualify. No error.",
+        "predicted_error_category": null,
+        "snippet_type": "PROPOSITION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.7
+    },
+    {
+      "snippet_id": "paper::PROPOSITION::1",
+      "snippet_type": "PROPOSITION",
+      "location": "Remark 3.7",
+      "content": "Remark 3.7. It is easy to see that SADH_q(X) is contained in the rational hull of X: Consider any rational function f that is holomorphic in a neighborhood of X. By the Kontinuitätssatz, f analytically continues to any point of SADH_q(X), and hence SADH_q(X) does not intersect the pole set.",
+      "route": "verify-math",
+      "route_rationale": "A containment in the rational hull argued in one sentence via the Kontinuitätssatz; no crisp formal content.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::PROPOSITION::1",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.75,
+        "reasoning": "Correct, and the choice of hull is right: because the discs are only *approximately* attached, one gets the rational hull (functions holomorphic near $X$), not the polynomial hull, which is why the paper says 'rational' here and 'polynomial' for $DH^k(X)$ in Definition 3.2. The argument as written establishes that $SADH_q(X)$ misses the pole set; the full rational-hull bound $|f(z)|\\le\\|f\\|_X$ follows from the maximum principle along the same disc families. No error.",
+        "predicted_error_category": null,
+        "snippet_type": "PROPOSITION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.75
+    },
+    {
+      "snippet_id": "paper::LEMMA::1",
+      "snippet_type": "LEMMA",
+      "location": "Lemma 3.8",
+      "content": "It is useful to know whether the hulls we define are compact if we are starting with a compact set. The set SADH_q(X) is compact if X is, but unfortunately DH(X) need not be compact. However, the polynomial hull is always compact.\n\nLemma 3.8. If X ⊂ ℂⁿ is compact, then SADH_q(X) is compact.",
+      "route": "verify-math",
+      "route_rationale": "A compactness statement about an infinite-dimensional hull construction; not formalisable in Mathlib terms.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::LEMMA::1",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.8,
+        "reasoning": "The statement is correct, and the surrounding contrast is accurate too: $SADH_q(X)$ is compact for compact $X$, $DH(X)$ need not be (Example 3.9 supplies the witness), and the polynomial hull of a compact set is always compact. No error.",
+        "predicted_error_category": null,
+        "snippet_type": "LEMMA",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::PROOF::2",
+      "snippet_type": "PROOF",
+      "location": "Proof of Lemma 3.8",
+      "content": "Proof. That SADH_q(X) is bounded follows from the maximum principle. To see that it is closed, suppose p₁ ∈ SADH_q(X). For any ε > 0 there is a p₂ ∈ SADH_q(X) that is within ε/2 of p₁. There is an approximately attached shrinking family of discs where the last disc goes through p₂ and the boundaries are within ε/2 of X. By adding a small function linear in t to the family, we can create a new family of discs where the last disc goes through p₁ and the boundaries are within ε of X. As ε > 0 was arbitrary, p₁ ∈ SADH_q(X). □",
+      "route": "verify-math",
+      "route_rationale": "A short boundedness-plus-closedness argument whose steps are maximum principle and an explicit perturbation; inspection suffices.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::PROOF::2",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.6,
+        "reasoning": "Boundedness is correct: fixing $\\varepsilon=1$, the maximum principle gives $\\|z\\|\\le\\sup_{X_1}\\|\\cdot\\|<\\infty$ for every $z\\in SADH_q(X)$. The closedness argument is correct in substance: the perturbation $\\varphi'_t=\\varphi_t+t(p_1-p_2)$ moves the last disc through $p_1$ and keeps boundaries within $\\varepsilon/2+\\varepsilon/2=\\varepsilon$ of $X$. Two presentation points, neither flagged. (a) 'suppose $p_1\\in SADH_q(X)$' must read $p_1\\in\\overline{SADH_q(X)}$ for the argument and its conclusion to make sense; the closure bar is evidently lost in this markdown rendering, which drops overlines systematically (compare '$\\varphi:D\\to\\mathbb{C}^n$ ... holomorphic on $D$' and '$DH(\\mathbb{T}^2)=\\mathbb{D}^2$'). (b) The additive perturbation need not preserve *strict* monotonicity of $\\|\\varphi_t(0)-q\\|$, but Remark 3.6 licenses the weaker monotone version, so the gap is self-repairing.",
+        "predicted_error_category": null,
+        "snippet_type": "PROOF",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.6
+    },
+    {
+      "snippet_id": "paper::EQUATION::2",
+      "snippet_type": "EQUATION",
+      "location": "Example 3.9",
+      "content": "Example 3.9. Given a compact set X, the set DH(X) need not be compact. Let φ_k : 𝔻 → ℂ, k ∈ ℕ, be a uniformly bounded sequence of analytic functions such that φ_k(0) = 0 and φ_k|_{∂𝔻} converges to a bounded function that is continuous except at the point 1 ∈ ∂𝔻. Assume also that the sequence φ_k converges on 𝔻 \\ {1} to a continuous function φ_∞ holomorphic on 𝔻. For simplicity, we could also arrange that each φ_k extends a little past the circle. It is not difficult to construct such a sequence. Define\n\nX = {z ∈ ℂ³ : z₁ ∈ ∂𝔻, z₂ = φ_k(z₁), z₃ = 1/k, k ∈ ℕ}. (5)\n\nAny disc attached to X lies in a set where z₃ is constant, and hence either z₃ = 0 or z₃ = 1/k for some k. For each k ∈ ℕ define Φ_k(ζ) = (ζ, φ_k(ζ), 1/k). The discs Φ_k are all attached to X, and their images lie in DH(X). Moreover, for k ∈ ℕ, let Ψ(ζ) = (α(ζ), β(ζ), 1/k) be an analytic disc. The image of Φ_k is a subvariety, and it is given by functions that are holomorphic a little bit past the boundary. Thus, the analytic disc Ψ takes the circle into this subvariety, and hence it takes 𝔻 into the subvariety. In other words, the image Φ_k(𝔻) gives all the points in DH(X) for z₃ = 1/k. Note that (0, 0, 1/k) ∈ DH(X).\n\nNow suppose that Ψ(ζ) = (α(ζ), β(ζ), 0) is an analytic disc. As |α(ζ)| = 1 for |ζ| = 1, we have that α is a finite Blaschke product. In particular, either it is constant, or it goes\n\nFor smooth generic CR submanifolds, local attached analytic discs form a Banach manifold, and all such discs will shrink to a point; see Sections 6.5 and 8.2 of [1]. However, shrinking families of discs are not guaranteed for CR singular submanifolds near the CR singular point, as the next two examples show.\n\naround the entire circle some number of times. If α is constant, then clearly (0, 0, 0) is not in the image of Ψ. If α is not constant, then for each ζ ∈ ∂D such that α(ζ) ≠ 1, we have β(ζ) = φ∞(α(ζ)): the disc is attached, and that is the only possible z₂-coordinate. In particular, we find a contradiction as this means that β is discontinuous. Therefore, there are no discs attached to X where z₃ = 0 and z₁ is not a unimodular constant. In other words, (0, 0, 0) ∉ DH(X). But (0, 0, 0) is in the closure of DH(X), so DH(X) is not closed.",
+      "route": "verify-math",
+      "route_rationale": "The argument turns on the classification of inner functions continuous on $\\overline{\\mathbb{D}}$ as finite Blaschke products, which Mathlib does not have; informal review is the realistic route.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::2",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.6,
+        "reasoning": "The reasoning is sound. $z_3$ is real-valued on $\\partial\\mathbb{D}$ for any attached disc, hence constant, which forces the disc into a single slice. In a slice $z_3=1/k$ the attached discs are exactly the reparametrisations of $\\Phi_k$, so $(0,0,1/k)\\in DH(X)$ since $\\varphi_k(0)=0$. In the slice $z_3=0$: $|\\alpha|=1$ on $\\partial\\mathbb{D}$ with $\\alpha$ continuous on $\\overline{\\mathbb{D}}$ makes $\\alpha$ a finite Blaschke product, so it is either a unimodular constant (and then $z_1\\neq0$, ruling out the origin) or surjective onto $\\partial\\mathbb{D}$, in which case $\\beta=\\varphi_\\infty\\circ\\alpha$ would be discontinuous at the preimages of $1$ — a genuine contradiction. Hence $(0,0,0)\\notin DH(X)$ while $(0,0,1/k)\\to(0,0,0)$, so $DH(X)$ is not closed. One consistency note, not flagged: as printed, (5) contains no points with $z_3=0$, so the set $X$ it defines is not closed and therefore not compact, which clashes with the example's own framing ('Given a compact set $X$') and with the very next sentence ('either $z_3=0$ or $z_3=1/k$'). The intended $X$ is plainly the closure, which adjoins the $z_3=0$ slice $\\{(z_1,\\varphi_\\infty(z_1),0)\\}$; this is the same lost-overline artifact seen elsewhere in this rendering, so I treat it as a transcription defect rather than a mathematical error.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.6
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::1",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "Example 3.10",
+      "content": "Example 3.10. The iterated SADH condition is not stable under perturbation. For example, consider M ⊂ ℂ³ given by Im w = |z₁|⁴ - |z₂|⁴. The standard technique of attaching discs one normally uses for a hypersurface with indefinite Levi form applies. These discs fill a neighborhood of the origin, and all shrink to the origin. (Affine linear discs suffice.) However, the perturbation M_ε given by Im w = ε(|z₁|² + |z₂|²) + |z₁|⁴ - |z₂|⁴ is strictly pseudoconvex at 0 for all ε > 0, and hence all analytic discs attached to M_ε near 0 must fall on one side of M_ε. In a similar manner, examples having higher codimension can be constructed.",
+      "route": "verify-math-lean",
+      "route_rationale": "The pivotal claim is a Levi-form computation for an explicit polynomial defining function — exactly the kind of computation a compiler can settle.",
+      "lean_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::1",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "Formalised the computation behind 'strictly pseudoconvex at $0$ for all $\\varepsilon>0$' for $\\rho_\\varepsilon(z)=\\varepsilon(|z_1|^2+|z_2|^2)+|z_1|^4-|z_2|^4$. Lean verified, with standard axioms only: (1) the exact expansion along a complex line, $\\rho_\\varepsilon(\\zeta v)=\\varepsilon(|v_1|^2+|v_2|^2)|\\zeta|^2+(|v_1|^4-|v_2|^4)|\\zeta|^4$, so the Levi coefficient at the origin is $\\varepsilon(|v_1|^2+|v_2|^2)$ — strictly positive for every $v\\neq0$ when $\\varepsilon>0$ and identically zero when $\\varepsilon=0$; (2) the quantitative one-sidedness $\\rho_\\varepsilon(z)\\ge\\frac{\\varepsilon}{2}(|z_1|^2+|z_2|^2)$ whenever $|z_2|^2\\le\\varepsilon/2$, hence $\\rho_\\varepsilon(z)>0$ for $0<\\|z\\|$ small; (3) that for $\\varepsilon=0$ the function $|z_1|^4-|z_2|^4$ takes both signs in every neighborhood of the origin. Together these confirm the example's dichotomy: the perturbed hypersurface is strongly pseudoconvex at $0$ and locally one-sided, while the unperturbed one is Levi-degenerate at $0$ and two-sided. The assertions about attaching discs that fill a neighborhood were checked by hand (affine discs $\\zeta\\mapsto(a+b\\zeta, c+d\\zeta, w_0)$ with $\\bar a b=\\pm\\bar c d$ do fill a neighborhood of $0$) and were not formalised.",
+        "predicted_error_category": null,
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/0042-CRSingularities__MATHEMATICAL_MODEL__1_opus5.lean",
+          "formal_statement": "theorem paper_MATHEMATICAL_MODEL_1 :\n    (∀ (ε : ℝ) (v : ℂ × ℂ) (ζ : ℂ),\n        rho ε (ζ * v.1, ζ * v.2)\n          = ε * (‖v.1‖ ^ 2 + ‖v.2‖ ^ 2) * ‖ζ‖ ^ 2\n            + (‖v.1‖ ^ 4 - ‖v.2‖ ^ 4) * ‖ζ‖ ^ 4)\n    ∧ (∀ ε : ℝ, 0 < ε → ∀ v : ℂ × ℂ, v ≠ 0 → 0 < ε * (‖v.1‖ ^ 2 + ‖v.2‖ ^ 2))\n    ∧ (∀ v : ℂ × ℂ, (0 : ℝ) * (‖v.1‖ ^ 2 + ‖v.2‖ ^ 2) = 0)\n    ∧ (∀ ε : ℝ, 0 < ε → ∀ z : ℂ × ℂ, ‖z.2‖ ^ 2 ≤ ε / 2 →\n        ε / 2 * (‖z.1‖ ^ 2 + ‖z.2‖ ^ 2) ≤ rho ε z)\n    ∧ (∀ ε : ℝ, 0 < ε → ∀ z : ℂ × ℂ, ‖z.2‖ ^ 2 ≤ ε / 2 → z ≠ 0 → 0 < rho ε z)\n    ∧ (∀ δ : ℝ, 0 < δ → ∃ z w : ℂ × ℂ,\n        ‖z‖ < δ ∧ ‖w‖ < δ ∧ 0 < rho 0 z ∧ rho 0 w < 0) := by\n  refine ⟨?_, ?_, ?_, ?_, ?_, ?_⟩\n  · intro ε v ζ\n    simp only [rho, norm_mul]\n    ring\n  · intro ε hε v hv\n    have h := sq_sum_pos hv\n    positivity\n  · intro v; ring\n  · intro ε hε z hz\n    exact rho_lower hε hz\n  · intro ε hε z hz hzne\n    have h1 := rho_lower hε hz\n    have h2 : 0 < ε / 2 * (‖z.1‖ ^ 2 + ‖z.2‖ ^ 2) := by\n      have := sq_sum_pos hzne; positivity\n    linarith\n  · intro δ hδ\n    have hd : (0:ℝ) < δ / 2 := by linarith\n    refine ⟨(((δ / 2 : ℝ) : ℂ), 0), ((0 : ℂ), ((δ / 2 : ℝ) : ℂ)), ?_, ?_, ?_, ?_⟩\n    · have : ‖(((δ / 2 : ℝ) : ℂ), (0 : ℂ))‖ = δ / 2 := by\n        simp [Prod.norm_def, abs_of_pos hδ]\n        linarith\n      rw [this]; linarith\n    · have : ‖((0 : ℂ), ((δ / 2 : ℝ) : ℂ))‖ = δ / 2 := by\n        simp [Prod.norm_def, abs_of_pos hδ]\n        linarith\n      rw [this]; linarith\n    · simp only [rho]\n      simp [abs_of_pos hd]\n      positivity\n    · simp only [rho]\n      simp [abs_of_pos hd]\n      positivity",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::EQUATION::3",
+      "snippet_type": "EQUATION",
+      "location": "Example 3.11",
+      "content": "Example 3.11. Consider the smooth submanifold M ⊂ ℂ³ given in coordinates (z, w₁, w₂) via\n\nw₁ = |z|², w₂ = |z|² + f(|z|²)(Re z),\n\nwhere f(t) is a smooth real-valued function that is zero precisely when t = 1/n for n ∈ ℕ or t = 0. The submanifold M is of dimension 2. It has a CR singularity at the origin but is totally real at other points. Let φ(ζ) = (z(ζ), w₁(ζ), w₂(ζ)) be an analytic disc attached to M. Then w₁(ζ) and w₂(ζ) are holomorphic functions that are real-valued on ∂D, so they are constant on D̄. This means that |z(ζ)| is also constant on ∂D. If we insist that φ be nonconstant, then z itself must be nonconstant; in particular, Re z must be nonconstant on ∂D. But since |z|² + f(|z|²)(Re z) must be constant on ∂D, we have that f(|z|²) must be zero, which is true only if w₁ = |z|² = 1/n. In other words, the only nonconstant attached analytic discs to M are those in the discrete sequence of discs\n\nφₙ(ζ) = ( 1/√n ζ, 1/n, 1/n ).          (7)\n\nThis sequence does \"shrink to zero\" discretely but not continuously, so it does not give a shrinking disc hull, although these discs are in the regular disc hull DH(M). In particular, these discs cannot be used via the Kontinuitätssatz to extend CR_H functions beyond the initial neighborhood in which they are defined.",
+      "route": "verify-math-lean",
+      "route_rationale": "Equation (7) is an explicit family of discs whose attachment to an explicitly given manifold is a closed-form computation.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::3",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "Formalised both halves of equation (7) for $M=\\{(z,|z|^2,|z|^2+f(|z|^2)\\operatorname{Re}z)\\}$ with $f$ vanishing exactly on $\\{0\\}\\cup\\{1/n\\}$. Lean verified (a) that for every $n\\ge1$ and every $|\\zeta|=1$ the point $\\big(\\zeta/\\sqrt n,\\,1/n,\\,1/n\\big)$ lies on $M$ — using $\\|\\zeta/\\sqrt n\\|^2=1/n$ and $f(1/n)=0$, so the $\\operatorname{Re}z$ term drops out; and (b) the deduction the classification rests on: if $w_1=|z|^2=c$ and $w_2$ are constant on the boundary while $\\operatorname{Re}z$ is not, then $f(c)=0$, hence $c=0$ or $c=1/n$. Both compiled clean with standard axioms. The remaining steps (holomorphic functions real-valued on $\\partial\\mathbb{D}$ are constant; the CR singularity sits exactly at the origin because $f(0)=0$) were checked by hand and are correct: $dF(\\partial/\\partial\\bar z)=(0,z,z+f'z\\operatorname{Re}z+f/2)$ vanishes iff $z=0$.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/0042-CRSingularities__EQUATION__3_opus5.lean",
+          "formal_statement": "theorem paper_EQUATION_3\n    (f : ℝ → ℝ)\n    (hf : ∀ t : ℝ, f t = 0 ↔ (t = 0 ∨ ∃ n : ℕ, 0 < n ∧ t = 1 / (n : ℝ))) :\n    (∀ n : ℕ, 0 < n → ∀ ζ : ℂ, ‖ζ‖ = 1 →\n        (ζ / ((Real.sqrt n : ℝ) : ℂ), (((1 : ℝ) / n : ℝ) : ℂ), (((1 : ℝ) / n : ℝ) : ℂ))\n          ∈ Mset f)\n    ∧ (∀ (c : ℝ) (a b : ℂ), ‖a‖ ^ 2 = c → ‖b‖ ^ 2 = c →\n        c + f c * a.re = c + f c * b.re → a.re ≠ b.re →\n        (c = 0 ∨ ∃ n : ℕ, 0 < n ∧ c = 1 / (n : ℝ))) := by\n  constructor\n  · intro n hn ζ hζ\n    have hn0 : (0 : ℝ) < (n : ℝ) := by exact_mod_cast hn\n    have hs : 0 < Real.sqrt n := Real.sqrt_pos.mpr hn0\n    have hnorm : ‖ζ / ((Real.sqrt n : ℝ) : ℂ)‖ ^ 2 = 1 / (n : ℝ) := by\n      rw [norm_div, hζ, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hs]\n      rw [div_pow, one_pow, Real.sq_sqrt hn0.le]\n    have hfz : f (1 / (n : ℝ)) = 0 := (hf _).mpr (Or.inr ⟨n, hn, rfl⟩)\n    refine ⟨?_, ?_⟩\n    · simp only [hnorm]\n    · simp only [hnorm, hfz, zero_mul, add_zero]\n  · intro c a b _ _ heq hne\n    have hfc : f c = 0 := by\n      have : f c * a.re = f c * b.re := by linarith\n      rcases mul_eq_mul_left_iff.mp this with h | h\n      · exact absurd h hne\n      · exact h\n    exact (hf c).mp hfc",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::PROPOSITION::2",
+      "snippet_type": "PROPOSITION",
+      "location": "Example 3.12",
+      "content": "Example 3.12. If we modify the preceding example by taking f to be a real-analytic function with finitely many zeros, we find a real-analytic submanifold with trivial topology (topology of a ball) that has only finitely many attached discs.",
+      "route": "verify-math",
+      "route_rationale": "A one-sentence variant of Example 3.11 asserting a topological and a finiteness property; the content is a direct corollary best checked by inspection.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::PROPOSITION::2",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.65,
+        "reasoning": "Consistent with the (independently verified) analysis of Example 3.11: with $f$ real-analytic and having finitely many zeros, the constraint $f(|z|^2)=0$ admits only finitely many values of $|z|^2$, so only finitely many families of attached discs survive; and the submanifold, being globally parametrised by $z$ in a disc, has the topology of a ball. For the origin to remain CR singular one still needs $f(0)=0$, which is implicit in 'modify the preceding example'. No error.",
+        "predicted_error_category": null,
+        "snippet_type": "PROPOSITION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.65
+    },
+    {
+      "snippet_id": "paper::EQUATION::4",
+      "snippet_type": "EQUATION",
+      "location": "Example 3.13 (equations (8) and (9))",
+      "content": "Example 3.13. Let us show that iteration may be necessary. Consider the set X ⊂ ℂ² given by\n\nX = X₁ ∪ X₂ = { z ∈ ℂ² : |z₁| = |z₂| = 1 and Im z₂ ≥ 0 }\n        ∪  { z ∈ ℂ² : |z₁| = 2, |z₂| = 1, and Im z₂ < 0 }.      (8)\n\nIf φ = (φ₁, φ₂) : 𝔻 → ℂ² is an analytic disc attached to X, then as the two components of X are disconnected, we have that either φ(∂𝔻) ⊂ X₁ or φ(∂𝔻) ⊂ X₂. Suppose φ(∂𝔻) ⊂ X₁. Then we find that φ₂ must be constant. A similar argument applies if φ(∂𝔻) ⊂ X₂. In either case, the disc then fills in all of |z₁| ≤ 1 or |z₁| ≤ 2. That is, we find that\n\nDH(X) = {z ∈ ℂ² : |z₁| ≤ 1, |z₂| = 1, and Im z₂ ≥ 0}\n∪ {z ∈ ℂ² : |z₁| ≤ 2, |z₂| = 1, and Im z₂ ≤ 0}.   (9)\n\nIn particular, DH(X) contains the torus 𝕋² given by |z₁| = |z₂| = 1. However, DH(X) does not contain the polydisc 𝔻². It is a relatively routine computation that DH(𝕋²) = 𝔻². Hence DH(X) does not contain the unit polydisc, but DH²(X) does. Thus, iteration is necessary for some sets.",
+      "route": "verify-math-lean",
+      "route_rationale": "Equations (8) and (9) are explicit semialgebraic subsets of $\\mathbb{C}^2$; whether (9) follows from (8) is a set-membership question a compiler can settle outright.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::4",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.78,
+        "reasoning": "Formalised equations (8) and (9) literally and Lean proved, with standard axioms only, that (9) does not follow from (8). Concretely: the point $p=(3/2,\\,1)$ lies in the right-hand side of (9) (second piece: $|z_1|=3/2\\le2$, $|z_2|=1$, $\\operatorname{Im}z_2=0\\le0$), yet no analytic disc attached to $X$ as written in (8) passes through it. The second part of the theorem proves exactly that, taking as hypotheses only the two facts the paper itself establishes in this very paragraph — that $\\varphi_2$ is constant, and the maximum principle for $\\varphi_1$: if $\\varphi_2\\equiv c$ and $\\varphi(\\zeta_0)=(3/2,1)$ then $c=1$, so $\\operatorname{Im}c=0$ and every boundary point $(\\varphi_1(\\xi),1)$ must lie in $X_1$ (it cannot lie in $X_2$, which demands $\\operatorname{Im}z_2<0$ strictly); hence $|\\varphi_1|\\equiv1$ on $\\partial\\mathbb{D}$ and $\\|\\varphi_1(\\zeta_0)\\|\\le1<3/2$ — contradiction. Lean also certified $D_1\\cup D_2'\\subsetneq D_1\\cup D_2$ and that the discrepancy is exactly the locus $\\operatorname{Im}z_2=0$, $|z_1|>1$. Separately (part C) Lean verified the companion claim $DH(\\mathbb{T}^2)\\supseteq\\mathbb{D}^2$: for $|a|<1$ the Möbius map $m_a(\\zeta)=(\\zeta+a)/(1+\\bar a\\zeta)$ has $1+\\bar a\\zeta\\neq0$ and $|m_a(\\zeta)|=1$ on $|\\zeta|=1$, and $m_a(0)=a$; so '$DH(\\mathbb{T}^2)=\\mathbb{D}^2$' is right and the example's conclusion (iteration is necessary, $DH^2(X)$ contains the polydisc while $DH(X)$ does not) is unaffected. The defect is therefore local: the inequality on $\\operatorname{Im}z_2$ is strict in (8) but non-strict in (9), and the two cannot both be as intended. Equation (10), where the analogous set is written with $\\operatorname{Im}z_2\\le0$ (and which the paper calls compact), indicates that the intended reading is $\\le0$ in (8) — making $X$ compact, as the preceding discussion of compact sets requires — and that the strict '$<$' in (8) is the slip. Confidence is set at 0.78 rather than the usual $\\ge0.9$ for a refutation because the formal contradiction imports the paper's own two steps as hypotheses, and because the defect is a one-character inequality mismatch rather than a wrong theorem.",
+        "predicted_error_category": "Domain/Constraint violation",
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/0042-CRSingularities__EQUATION__4_opus5.lean",
+          "formal_statement": "theorem paper_EQUATION_4 :\n    (p ∈ D1 ∪ D2 ∧ p ∉ D1 ∪ D2' ∧ D1 ∪ D2' ⊂ D1 ∪ D2)\n    ∧ (∀ z : ℂ × ℂ, z ∈ (D1 ∪ D2) \\ (D1 ∪ D2') → z.2.im = 0 ∧ 1 < ‖z.1‖)\n    ∧ (∀ (φ₁ φ₂ : ℂ → ℂ) (ζ₀ c : ℂ),\n        (∀ ξ : ℂ, ‖ξ‖ = 1 → (φ₁ ξ, φ₂ ξ) ∈ X1 ∪ X2) →\n        (∀ ξ : ℂ, φ₂ ξ = c) →\n        (∀ M : ℝ, (∀ ξ : ℂ, ‖ξ‖ = 1 → ‖φ₁ ξ‖ ≤ M) → ‖φ₁ ζ₀‖ ≤ M) →\n        (φ₁ ζ₀, φ₂ ζ₀) ≠ p)\n    ∧ (∀ a : ℂ, ‖a‖ < 1 →\n        (∀ ζ : ℂ, ‖ζ‖ = 1 →\n            (1 + (starRingEnd ℂ) a * ζ) ≠ 0 ∧\n            ‖(ζ + a) / (1 + (starRingEnd ℂ) a * ζ)‖ = 1)\n        ∧ ((0 : ℂ) + a) / (1 + (starRingEnd ℂ) a * 0) = a) := by\n  have hp1 : ‖p.1‖ = (3 : ℝ) / 2 := by\n    simp [p, Complex.norm_real, Real.norm_eq_abs]\n  have hp2 : ‖p.2‖ = 1 := by simp [p]\n  have hp2im : p.2.im = 0 := by simp [p]\n  refine ⟨⟨?_, ?_, ?_⟩, ?_, ?_, ?_⟩\n  -- p ∈ D1 ∪ D2\n  · right\n    refine ⟨by rw [hp1]; norm_num, hp2, by rw [hp2im]⟩\n  -- p ∉ D1 ∪ D2'\n  · rintro (⟨h, -, -⟩ | ⟨-, -, h⟩)\n    · rw [hp1] at h; norm_num at h\n    · rw [hp2im] at h; exact absurd h (lt_irrefl 0)\n  -- D1 ∪ D2' ⊂ D1 ∪ D2\n  · refine ⟨?_, ?_⟩\n    · rintro z (hz | ⟨h1, h2, h3⟩)\n      · exact Or.inl hz\n      · exact Or.inr ⟨h1, h2, h3.le⟩\n    · intro hsub\n      have hmem : p ∈ D1 ∪ D2 :=\n        Or.inr ⟨by rw [hp1]; norm_num, hp2, by rw [hp2im]⟩\n      rcases hsub hmem with ⟨h, -, -⟩ | ⟨-, -, h⟩\n      · rw [hp1] at h; norm_num at h\n      · rw [hp2im] at h; exact absurd h (lt_irrefl 0)\n  -- the discrepancy sits exactly at Im z₂ = 0, |z₁| > 1\n  · intro z hz\n    obtain ⟨hin, hout⟩ := hz\n    have hnD1 : z ∉ D1 := fun h => hout (Or.inl h)\n    have hnD2' : z ∉ D2' := fun h => hout (Or.inr h)\n    have hD2 : z ∈ D2 := by rcases hin with h | h; exacts [absurd h hnD1, h]\n    obtain ⟨h1, h2, h3⟩ := hD2\n    have him : z.2.im = 0 := by\n      rcases lt_or_eq_of_le h3 with h | h\n      · exact absurd (show z ∈ D2' from ⟨h1, h2, h⟩) hnD2'\n      · exact h\n    have hgt : 1 < ‖z.1‖ := by\n      by_contra hle\n      push_neg at hle\n      exact hnD1 ⟨hle, h2, by rw [him]⟩\n    exact ⟨him, hgt⟩\n  -- no attached disc through (3/2, 1)\n  · intro φ₁ φ₂ ζ₀ c hatt hconst hmax heq\n    have h2 : φ₂ ζ₀ = p.2 := by rw [Prod.ext_iff] at heq; exact heq.2\n    have hc1 : c = 1 := by rw [← hconst ζ₀, h2]; simp [p]\n    have hbd : ∀ ξ : ℂ, ‖ξ‖ = 1 → ‖φ₁ ξ‖ ≤ 1 := by\n      intro ξ hξ\n      rcases hatt ξ hξ with ⟨h, -, -⟩ | ⟨-, -, h⟩\n      · exact le_of_eq h\n      · rw [hconst ξ, hc1] at h\n        simp at h\n    have hle := hmax 1 hbd\n    have h1 : φ₁ ζ₀ = p.1 := by rw [Prod.ext_iff] at heq; exact heq.1\n    rw [h1, hp1] at hle\n    norm_num at hle\n  -- Möbius maps: DH(𝕋²) ⊇ 𝔻²\n  · intro a ha\n    refine ⟨?_, by simp⟩\n    intro ζ h\n    have hzz : ζ * (starRingEnd ℂ) ζ = 1 := by\n      rw [Complex.mul_conj]\n      norm_cast\n      rw [Complex.normSq_eq_norm_sq, h]\n      norm_num\n    have key : 1 + (starRingEnd ℂ) a * ζ = ζ * (starRingEnd ℂ) (ζ + a) := by\n      rw [map_add]\n      have e : ζ * ((starRingEnd ℂ) ζ + (starRingEnd ℂ) a)\n          = ζ * (starRingEnd ℂ) ζ + (starRingEnd ℂ) a * ζ := by ring\n      rw [e, hzz]\n    have hnz : ζ ≠ 0 := by intro hc; rw [hc] at h; simp at h\n    have hane : ζ + a ≠ 0 := by\n      intro hc\n      have he : a = -ζ := by linear_combination hc\n      rw [he] at ha\n      simp [h] at ha\n    have hcj : (starRingEnd ℂ) (ζ + a) ≠ 0 := by\n      simp only [ne_eq, map_eq_zero]; exact hane\n    have hden : (1 + (starRingEnd ℂ) a * ζ) ≠ 0 := by\n      rw [key]; exact mul_ne_zero hnz hcj\n    refine ⟨hden, ?_⟩\n    rw [norm_div, key, norm_mul, h, Complex.norm_conj, one_mul]\n    exact div_self (norm_ne_zero_iff.mpr hane)",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.78
+    },
+    {
+      "snippet_id": "paper::EQUATION::5",
+      "snippet_type": "EQUATION",
+      "location": "Example 3.13 (equation (10))",
+      "content": "The reader may complain that X is disconnected and that the discs do not all shrink to a point. We modify the previous example as follows. Consider the set X' ⊂ ℂ³ given by\n\nX' = {z ∈ ℂ³ : |z₁| = |z₂| = Re z₃, Im z₂ ≥ 0, z₃ ∈ [0, 1]}\n∪ {z ∈ ℂ³ : |z₁| = 2 Re z₃, |z₂| = Re z₃, Im z₂ ≤ 0, z₃ ∈ [0, 1]}.   (10)\n\nBy z₃ ∈ [0, 1] we mean that z₃ is real and in the unit interval. The set X' is connected and compact. Since the third component of every analytic disc attached to X' (and hence to any disc hull) must be constant, we reduce the computation to a scaled version of the above example in ℂ². It is not hard to see that similar reasoning holds also for approximately attached discs, and moreover we find that every disc shrinks to the origin. Hence, we have a set X' for which SADH₀(X') = DH(X') and SADH₀(SADH₀(X')) = DH²(X'). In particular, if we wish to extend functions via the hull SADH₀, we must iterate: SADH₀(SADH₀(X')) ≠ SADH₀(X').",
+      "route": "verify-math",
+      "route_rationale": "A rescaled reprise of (8)–(9) with claims of connectedness, compactness and $SADH_0$ identities that reduce to the already-settled $\\mathbb{C}^2$ computation.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::5",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.7,
+        "reasoning": "All claims check out. Since $z_3$ is required real in $[0,1]$, $\\operatorname{Re}z_3=z_3=t$ and the slice at height $t$ is a $t$-scaled copy of the $\\mathbb{C}^2$ example: $|z_1|=|z_2|=t,\\ \\operatorname{Im}z_2\\ge0$ together with $|z_1|=2t,\\ |z_2|=t,\\ \\operatorname{Im}z_2\\le0$. $X'$ is closed and bounded, hence compact, and connected because both slices collapse to the origin at $t=0$. The third component of any attached disc is real on $\\partial\\mathbb{D}$ and therefore constant, which reduces every hull computation to the planar one; and every family scales to the origin, giving $SADH_0(X')=DH(X')$ and $SADH_0(SADH_0(X'))=DH^2(X')\\neq SADH_0(X')$, so iteration is genuinely needed. Worth recording: here the second piece carries the *non-strict* $\\operatorname{Im}z_2\\le0$, which is precisely what makes $X'$ compact — corroborating evidence that the strict inequality printed in (8) is the anomaly flagged under `paper::EQUATION::4`.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.7
+    },
+    {
+      "snippet_id": "paper::EQUATION::6",
+      "snippet_type": "EQUATION",
+      "location": "Example 3.14 (equations (11) and (12))",
+      "content": "Example 3.14. Let us show that a function in CR_H(X) does not necessarily uniquely extend to a holomorphic function in a neighborhood of SADH_q(X) even though it admits analytic continuation to such a neighborhood. Define X ⊂ ℂ³ by\n\nX = {z ∈ ℂ³ : z₁ = tζ, z₂ = 0, z₃ = e^{iπt}, ζ ∈ ∂𝔻, t ∈ [0, 1]}\n∪ {z ∈ ℂ³ : z₁ = 0, z₂ = tζ, z₃ = e^{-iπt}, ζ ∈ ∂𝔻, t ∈ [0, 1]}.    (11)\n\nIt is clear that the discs ζ ∈ 𝔻 → (tζ, 0, e^{iπt}) and ζ ∈ 𝔻 → (0, tζ, e^{-iπt}) are attached to X, and furthermore these give families shrinking to the point q = (0, 0, 1). It is therefore clear that SADH_q(X) contains the set\n\n{z ∈ ℂ³ : z₁ = tζ, z₂ = 0, z₃ = e^{iπt}, ζ ∈ 𝔻, t ∈ [0, 1]}\n∪ {z ∈ ℂ³ : z₁ = 0, z₂ = tζ, z₃ = e^{-iπt}, ζ ∈ 𝔻, t ∈ [0, 1]},  (12)\n\nand any function in CR_H(X) can be analytically continued along the paths given by t ∈ [0, 1] ↦ (0, 0, e^{iπt}) and t ∈ [0, 1] ↦ (0, 0, e^{-iπt}) via the Kontinuitätssatz. The point (0, 0, −1) is in SADH_q(X) but not in X. Take a branch of, say, √z₃ on some neighborhood of X (which we can do since X is simply connected, and so is some thickening of X to obtain a neighborhood). This function is in CR_H(X), but it cannot possibly extend to a CR_H function on SADH_q(X) as the continuation along the two paths given above will give a different value at (0, 0, −1).",
+      "route": "verify-math-lean",
+      "route_rationale": "Equations (11)–(12) are explicit parametrised sets; attachment, the strict monotonicity of $\\|\\varphi_t(0)-q\\|$, membership of $(0,0,-1)$ and the two branch values of $\\sqrt{z_3}$ are all closed-form and formalisable.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::6",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "Formalised $X$ as in (11) and verified with Lean (standard axioms only): (1) for $t\\in[0,1]$ and $|\\zeta|=1$ the point $(t\\zeta,0,e^{i\\pi t})$ lies in $X$, so the discs are attached, and at $t=0$ the disc is the constant $q=(0,0,1)$; (2) $t\\mapsto\\|\\varphi_t(0)-q\\|=|e^{i\\pi t}-1|$ is **strictly increasing** on $[0,1]$ — proved via $|e^{i\\theta}-1|^2=2-2\\cos\\theta$ and the strict antitonicity of $\\cos$ on $[0,\\pi]$ — which is exactly the shrinking condition Definition 3.3 demands, so these really are $SADH_q$ families; (3) $(0,0,-1)\\notin X$, because $e^{\\pm i\\pi t}=-1$ with $t\\in[0,1]$ forces $t=1$ (injectivity of $\\cos$ on $[0,\\pi]$) and then the first or second coordinate has modulus $1\\neq0$; (4) the monodromy obstruction: $e^{i\\pi/2}=i$ and $e^{-i\\pi/2}=-i$ are the two distinct square roots of $-1$, so continuing $\\sqrt{z_3}$ along the upper and lower semicircles reaches $z_3=-1$ with different values. Every step of the example as stated is confirmed.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/0042-CRSingularities__EQUATION__6_opus5.lean",
+          "formal_statement": "theorem paper_EQUATION_6 :\n    (∀ t : ℝ, t ∈ Set.Icc (0:ℝ) 1 → ∀ ζ : ℂ, ‖ζ‖ = 1 →\n        ((t : ℂ) * ζ, (0 : ℂ), Complex.exp (((Real.pi * t : ℝ) : ℂ) * Complex.I)) ∈ X314)\n    ∧ (∀ ζ : ℂ, (((0:ℝ) : ℂ) * ζ, (0 : ℂ),\n          Complex.exp (((Real.pi * (0:ℝ) : ℝ) : ℂ) * Complex.I)) = q314)\n    ∧ StrictMonoOn (fun t : ℝ =>\n          ‖Complex.exp (((Real.pi * t : ℝ) : ℂ) * Complex.I) - 1‖) (Set.Icc 0 1)\n    ∧ ((0 : ℂ), (0 : ℂ), (-1 : ℂ)) ∉ X314\n    ∧ (Complex.exp (((Real.pi / 2 : ℝ) : ℂ) * Complex.I) = Complex.I\n        ∧ Complex.exp (((-(Real.pi / 2) : ℝ) : ℂ) * Complex.I) = -Complex.I\n        ∧ Complex.I ^ 2 = (-1 : ℂ) ∧ (-Complex.I) ^ 2 = (-1 : ℂ)\n        ∧ Complex.I ≠ -Complex.I) := by\n  have hpi : (0:ℝ) < Real.pi := Real.pi_pos\n  -- `e^{iπt} = -1` with `t ∈ [0,1]` forces `t = 1`\n  have hforce : ∀ t : ℝ, t ∈ Set.Icc (0:ℝ) 1 →\n      Real.cos (Real.pi * t) = -1 → t = 1 := by\n    intro t ht hc\n    have htI : Real.pi * t ∈ Set.Icc 0 Real.pi := by\n      refine ⟨mul_nonneg hpi.le ht.1, ?_⟩\n      nlinarith [ht.2, hpi]\n    have hpiI : Real.pi ∈ Set.Icc (0:ℝ) Real.pi := ⟨hpi.le, le_refl _⟩\n    have := Real.injOn_cos htI hpiI (by rw [hc, Real.cos_pi])\n    field_simp at this\n    tauto\n  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩\n  · intro t ht ζ hζ\n    exact Or.inl ⟨t, ht, ζ, hζ, rfl⟩\n  · intro ζ\n    simp [q314]\n  · intro a ha b hb hab\n    have haI : Real.pi * a ∈ Set.Icc 0 Real.pi := by\n      refine ⟨mul_nonneg hpi.le ha.1, ?_⟩; nlinarith [ha.2, hpi]\n    have hbI : Real.pi * b ∈ Set.Icc 0 Real.pi := by\n      refine ⟨mul_nonneg hpi.le hb.1, ?_⟩; nlinarith [hb.2, hpi]\n    have hlt : Real.pi * a < Real.pi * b := by nlinarith\n    have hcos := Real.strictAntiOn_cos haI hbI hlt\n    have h2 : ‖Complex.exp (((Real.pi * a : ℝ) : ℂ) * Complex.I) - 1‖ ^ 2\n        < ‖Complex.exp (((Real.pi * b : ℝ) : ℂ) * Complex.I) - 1‖ ^ 2 := by\n      rw [nsq, nsq]; linarith\n    exact lt_of_pow_lt_pow_left₀ 2 (norm_nonneg _) h2\n  · rintro (⟨t, ht, ζ, hζ, heq⟩ | ⟨t, ht, ζ, hζ, heq⟩)\n    · rw [Prod.mk.injEq, Prod.mk.injEq] at heq\n      obtain ⟨h1, -, h3⟩ := heq\n      have hcos : Real.cos (Real.pi * t) = -1 := by\n        rw [← Complex.exp_ofReal_mul_I_re (Real.pi * t), ← h3]\n        norm_num\n      have ht1 : t = 1 := hforce t ht hcos\n      have hz0 : ζ = 0 := by\n        rw [ht1] at h1\n        push_cast at h1\n        linear_combination -h1\n      rw [hz0] at hζ\n      simp at hζ\n    · rw [Prod.mk.injEq, Prod.mk.injEq] at heq\n      obtain ⟨-, h2, h3⟩ := heq\n      have hcos : Real.cos (Real.pi * t) = -1 := by\n        rw [← Real.cos_neg, ← Complex.exp_ofReal_mul_I_re (-(Real.pi * t)), ← h3]\n        norm_num\n      have ht1 : t = 1 := hforce t ht hcos\n      have hz0 : ζ = 0 := by\n        rw [ht1] at h2\n        push_cast at h2\n        linear_combination -h2\n      rw [hz0] at hζ\n      simp at hζ\n  · rw [Complex.exp_mul_I]; simp\n  · rw [Complex.exp_mul_I]; simp\n  · simp [Complex.I_sq]\n  · simp [Complex.I_sq]\n  · intro h\n    have := congrArg Complex.im h\n    norm_num at this",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    }
+  ],
+  "findings": [
+    {
+      "snippet_id": "paper::EQUATION::4",
+      "category": "Formally refuted",
+      "severity": "minor",
+      "confidence": 0.78,
+      "evidence": "Equation (8) defines $X_2$ with the **strict** inequality $\\operatorname{Im} z_2 < 0$, but equation (9) reports the second piece of $DH(X)$ with the **non-strict** $\\operatorname{Im} z_2 \\le 0$. The two are incompatible. Lean certified the counterexample $p = (3/2,\\, 1)$: it lies in the right-hand side of (9) ($|z_1| = 3/2 \\le 2$, $|z_2| = 1$, $\\operatorname{Im} z_2 = 0 \\le 0$), yet no analytic disc attached to $X$ as written in (8) passes through it. Using only the paper's own two steps from this same paragraph — that $\\varphi_2$ is constant, and the maximum principle for $\\varphi_1$ — a disc through $p$ would need $\\varphi_2 \\equiv 1$, whose imaginary part is $0$, so every boundary point $(\\varphi_1(\\xi), 1)$ must lie in $X_1$ rather than $X_2$ (which demands $\\operatorname{Im} z_2 < 0$ strictly); hence $|\\varphi_1| \\equiv 1$ on $\\partial\\mathbb{D}$ and $\\|\\varphi_1(\\zeta_0)\\| \\le 1 < 3/2$, a contradiction. The discrepancy is exactly the locus $\\operatorname{Im} z_2 = 0$, $|z_1| > 1$ — in particular the points $(z_1, \\pm 1)$ with $1 < |z_1| \\le 2$. Equation (10) writes the analogous set with $\\operatorname{Im} z_2 \\le 0$ and calls it compact, so the intended fix is almost certainly $\\operatorname{Im} z_2 \\le 0$ in (8) (which also makes $X$ compact, as the surrounding discussion of compact sets requires), not a change to (9). Severity is **minor**: the example's conclusion — that $DH(X)$ contains $\\mathbb{T}^2$ but not the polydisc while $DH^2(X)$ does, so iteration is necessary — is unaffected, and Lean separately confirmed $DH(\\mathbb{T}^2) \\supseteq \\mathbb{D}^2$ via the Möbius maps $m_a(\\zeta) = (\\zeta+a)/(1+\\bar a \\zeta)$.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "X = X₁ ∪ X₂ = { z ∈ ℂ² : |z₁| = |z₂| = 1 and Im z₂ ≥ 0 }\n        ∪  { z ∈ ℂ² : |z₁| = 2, |z₂| = 1, and Im z₂ < 0 }.      (8)"
+    }
+  ],
+  "verdict": "MINOR_ERRORS",
+  "verdict_confidence": 0.6,
+  "summary": "Checked 22 mathematical objects extracted from this excerpt of *CR functions at CR singularities: approximation, extension, and hulls*: equation (1), Theorem 2.3 and its proof, Lemma 2.4 and its proof, Definitions 3.2–3.4 with equations (2)–(4), Remarks 3.6–3.7, Lemma 3.8 and its proof, and Examples 3.9–3.14 with equations (5), (7)–(12). Six were routed to Lean 4 and sixteen to informal review.\n\n**What Lean settled.** Five formalisations compiled clean on the standard Mathlib axioms: the introduction's claim that $\\{w=\\overline{z}_1 z_2\\}$ is exactly the image of $\\mathbb{R}^2\\times\\mathbb{C}$ under $(r,\\theta,u)\\mapsto(re^{i\\theta}, e^{i\\theta}u, ru)$; the $1/(z_n-i\\varepsilon)$ counterexample to the fixed-neighborhood extension property, including that its pole sits inside every fixed slab around the real axis; the Levi-form computation of Example 3.10, confirming that $\\varepsilon(|z_1|^2+|z_2|^2)+|z_1|^4-|z_2|^4$ is strictly plurisubharmonic at $0$ for $\\varepsilon>0$ while $|z_1|^4-|z_2|^4$ is Levi-degenerate and two-sided there; equation (7) of Example 3.11, both the attachment of $\\varphi_n(\\zeta)=(\\zeta/\\sqrt n, 1/n, 1/n)$ and the deduction $f(c)=0\\Rightarrow c\\in\\{0\\}\\cup\\{1/n\\}$; and every step of Example 3.14, notably that $\\|\\varphi_t(0)-q\\|=|e^{i\\pi t}-1|$ really is strictly increasing on $[0,1]$ as Definition 3.3 requires, that $(0,0,-1)\\notin X$, and that the two continuations of $\\sqrt{z_3}$ arrive at $-1$ with the distinct values $i$ and $-i$.\n\n**The one error found.** Equation (9) does not follow from equation (8): (8) defines $X_2$ with $\\operatorname{Im} z_2 < 0$ strictly, while (9) reports the second piece of $DH(X)$ with $\\operatorname{Im} z_2 \\le 0$. Lean refuted (9) relative to (8) using the paper's own two steps, via the witness $(3/2, 1)$. The fix almost certainly belongs in (8) — equation (10) writes the analogous set non-strictly and calls it compact — and the example's conclusion that iteration is necessary survives intact, so the finding is minor. Lean independently confirmed the companion claim $DH(\\mathbb{T}^2)\\supseteq\\mathbb{D}^2$.\n\n**No disagreement between verifiers.** Every Lean verdict was decisive (five `PASSED`, one `REFUTED`), so no snippet needed the Step 5 informal fallback and there is nothing to reconcile. The informal pass found no error at or above the reporting threshold on any of its sixteen snippets.\n\n**Caveats on coverage.** (a) This manuscript file is a truncated front portion of the paper: it breaks off mid-Example 3.14, and Sections 4–9 — where the paper's main results live (Corollary 4.4, Theorems 4.5, 4.12, 5.1, 7.1, 8.1, 9.1) — are absent. Theorem 2.3(ii)–(iii) and much of the introduction's roadmap rest on those sections and could not be checked. (b) The body of Definition 3.1 is missing from the file entirely (the text ends at 'We say:'), so the four properties it defines were judged only from their later use. (c) This markdown rendering systematically drops overlines, which produces three places that read as defects but are transcription artifacts and were deliberately not flagged: '$\\varphi: D\\to\\mathbb{C}^n$ ... holomorphic on $D$' (should be $\\overline{\\mathbb{D}}$), '$p_1\\in SADH_q(X)$' in the proof of Lemma 3.8 (should be the closure), and the set in equation (5), which as printed omits the $z_3=0$ slice and so is not compact even though Example 3.9 is explicitly about a compact $X$. (d) Two softer points are recorded in the per-snippet results but not raised as findings: the simply-connected branch of the proof of Lemma 2.4 invokes the monodromy theorem without first pinning down a coherent family of germs (local extensions are not unique without genericity), and the 'strong iterated SADH condition' in Definition 3.4 quantifies over $X_0$ a condition that was defined with $X_0=X$ fixed.\n\n**Lean project.** All six Lean snippets reused the pre-existing shared project `MATH_VERIFICATION/Paper`, which holds a built Mathlib and hundreds of other papers' saved proofs. Per `verify-math-lean`'s deletion rule (a reused project is not the run's to remove), it was kept rather than deleted by the final call; only the per-snippet scratch (`TMP.lean`, `claim.md`) was removed, and the six proofs were saved under `Paper/Verified/0042-CRSingularities__*_opus5.lean`."
+}

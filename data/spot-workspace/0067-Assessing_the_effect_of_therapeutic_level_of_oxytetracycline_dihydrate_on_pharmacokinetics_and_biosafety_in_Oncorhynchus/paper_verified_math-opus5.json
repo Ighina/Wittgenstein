@@ -1,0 +1,681 @@
+{
+  "paper_name": "paper",
+  "paper_path": "/Users/iacopoghinassi/Documents/Github/Wittgenstein/data/spot-workspace/0067-Assessing_the_effect_of_therapeutic_level_of_oxytetracycline_dihydrate_on_pharmacokinetics_and_biosafety_in_Oncorhynchus/paper.md",
+  "tag": "opus5",
+  "lean_project": "MATH_VERIFICATION/Paper",
+  "lean_project_kept": true,
+  "totals": {
+    "snippets_extracted": 17,
+    "routed_to_math": 10,
+    "routed_to_lean": 7,
+    "lean_passed": 0,
+    "lean_refuted": 7,
+    "lean_failed": 0,
+    "fallbacks_run": 0,
+    "errors_detected": 13
+  },
+  "results": [
+    {
+      "snippet_id": "paper::DEFINITION::0",
+      "snippet_type": "DEFINITION",
+      "location": "Materials and methods — Validation and optimization of OTC using LC/MS/MS; Result — Table 2 narrative",
+      "content": "\"The linearity of the calibration curves was utilized to determine the limits of detection (LOD) and quantification (LOQ) by using the slope and the standard deviation (σ) of the intercept of the analytical curve. LOD was calculated as 3 × (standard deviation of the intercept/slope), and LOQ as 10 × (standard deviation of the intercept/slope).\"\n\nReported values: \"the LOD values ranged from 44.88 µg kg⁻¹ in plasma to -587.51 µg kg⁻¹ in kidney tissue, while the LOQ values ranged from 136.00 µg kg⁻¹ in plasma to -1780.34 µg kg⁻¹ in kidney tissue.\" The paper interprets these as \"some tissues showing negative values, indicating a minimal detectable concentration\".",
+      "route": "verify-math-lean",
+      "route_rationale": "The definition pins LOD/LOQ to an explicit closed form in σ (a standard deviation, hence non-negative) and a calibration slope (positive), so the sign of the result is a formally decidable question.",
+      "lean_result": {
+        "snippet_id": "paper::DEFINITION::0",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.95,
+        "reasoning": "Formalised the paper's own definition $\\mathrm{LOD} = 3\\,(\\sigma/m)$ and $\\mathrm{LOQ} = 10\\,(\\sigma/m)$ with the two standing facts the paper supplies: $\\sigma$ is the standard deviation of the calibration intercept, so $\\sigma \\ge 0$, and $m$ is the slope of a linear calibration curve used for quantitation, so $m > 0$. Lean proved `lod_nonneg` ($0 \\le 3(\\sigma/m)$) and then refuted the existence of any $(\\sigma, m)$ in that range yielding the reported kidney values $-587.51$ (`kidney_lod_refuted`) and $-1780.34$ (`kidney_loq_refuted`). No extra hypotheses were introduced: non-negativity of a standard deviation and positivity of a quantitation slope are definitional, not assumed. A negative LOD/LOQ is therefore not “a minimal detectable concentration” — it is unreachable under the formula the paper states, so either the formula or the tabulated numbers is wrong.",
+        "predicted_error_category": "Domain/Constraint violation",
+        "snippet_type": "DEFINITION",
+        "contradiction_locations": [
+          "Methods: LOD = 3 × (standard deviation of the intercept/slope)",
+          "Result: LOD -587.51 µg kg⁻¹ and LOQ -1780.34 µg kg⁻¹ in kidney"
+        ],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/0067-OtcTrout__DEFINITION__0_opus5.lean",
+          "formal_statement": "theorem lod_nonneg (sigma slope : ℝ) (hs : 0 ≤ sigma) (hp : 0 < slope) :\n    0 ≤ 3 * (sigma / slope)\n\ntheorem kidney_lod_refuted :\n    ¬ ∃ sigma slope : ℝ, 0 ≤ sigma ∧ 0 < slope ∧ 3 * (sigma / slope) = -587.51\n\ntheorem kidney_loq_refuted :\n    ¬ ∃ sigma slope : ℝ, 0 ≤ sigma ∧ 0 < slope ∧ 10 * (sigma / slope) = -1780.34",
+          "compiler_feedback": "`lake env lean Paper/TMP.lean` exited 0 with no output; `lean_diagnostic_messages` returned an empty item list (success: true, partial: false); `lean_verify` reported trust \"standard\" with non_standard_axioms: [] and no sorryAx.",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "Materials and methods — Validation and optimization of OTC using LC/MS/MS; Result — Table 2 narrative",
+      "content": "LOD = 3 × (standard deviation of the intercept/slope) and LOQ = 10 × (standard deviation of the intercept/slope), applied to the same calibration curve of a given tissue. Reported pairs: plasma LOD = 44.88 µg kg⁻¹ / LOQ = 136.00 µg kg⁻¹; kidney LOD = -587.51 µg kg⁻¹ / LOQ = -1780.34 µg kg⁻¹.",
+      "route": "verify-math-lean",
+      "route_rationale": "Two formulas over a shared $(\\sigma, m)$ force the exact ratio $\\mathrm{LOQ}/\\mathrm{LOD} = 10/3$; testing the reported pairs against that is a crisp identity check.",
+      "lean_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.9,
+        "reasoning": "Lean proved the identity the two definitions imply, $10(\\sigma/m) = \\tfrac{10}{3}\\cdot 3(\\sigma/m)$ (`loq_eq_ten_thirds_lod`), i.e. $\\mathrm{LOQ} = \\tfrac{10}{3}\\,\\mathrm{LOD} \\approx 3.3333\\,\\mathrm{LOD}$ for every tissue. It then refuted both reported pairs: no $(\\sigma, m)$ gives $3(\\sigma/m) = 44.88$ together with $10(\\sigma/m) = 136.00$ (`plasma_pair_refuted`), nor $3(\\sigma/m) = -587.51$ with $10(\\sigma/m) = -1780.34$ (`kidney_pair_refuted`). Lean further confirmed $136.00/44.88 = 100/33$ exactly and $1780.34/587.51 \\in (3.02, 3.04)$, while $10/3 > 3.33$ (`reported_ratios_near_three_point_zero_three`). The tabulated numbers were therefore computed with $\\mathrm{LOD} = 3.3\\,(\\sigma/m)$ — the ICH convention — not with the $3\\,(\\sigma/m)$ the Methods section states, so the stated method does not reproduce the reported validation table.",
+        "predicted_error_category": "Fractional/Rational error",
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": [
+          "Methods: LOD factor 3 vs reported LOQ/LOD ratio 3.03"
+        ],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/0067-OtcTrout__MATHEMATICAL_MODEL__0_opus5.lean",
+          "formal_statement": "theorem loq_eq_ten_thirds_lod (s m : ℝ) :\n    (10 : ℝ) * (s / m) = (10 / 3) * (3 * (s / m))\n\ntheorem plasma_pair_refuted :\n    ¬ ∃ s m : ℝ, 3 * (s / m) = 44.88 ∧ 10 * (s / m) = 136.00\n\ntheorem kidney_pair_refuted :\n    ¬ ∃ s m : ℝ, 3 * (s / m) = -587.51 ∧ 10 * (s / m) = -1780.34\n\ntheorem reported_ratios_near_three_point_zero_three :\n    (136.00 : ℝ) / 44.88 = 100 / 33 ∧\n    3.02 < (-1780.34 : ℝ) / (-587.51) ∧ (-1780.34 : ℝ) / (-587.51) < 3.04 ∧\n    (10 : ℝ) / 3 > 3.33",
+          "compiler_feedback": "First attempt asserted the kidney ratio equalled 100/33 exactly and failed:\n  Paper/TMP.lean:35:79: error: unsolved goals\n  case right\n  ⊢ False\n(1780.34/587.51 = 3.0303099…, marginally off 100/33 = 3.0303030…). Restated as a two-sided bound; the revised file then compiled clean. `lake env lean Paper/TMP.lean` exited 0 with no output; `lean_diagnostic_messages` returned an empty item list (success: true, partial: false); `lean_verify` reported trust \"standard\" with non_standard_axioms: [] and no sorryAx.",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::EQUATION::0",
+      "snippet_type": "EQUATION",
+      "location": "Materials and methods — LC-MS/MS analysis",
+      "content": "\"Recovery experiments were conducted by spiking the blank matrix with known standards, and the percent recovery was calculated using the formula: Recovery = (observed concentration of the spiked sample / expected concentration) × 100.\"",
+      "route": "verify-math",
+      "route_rationale": "A one-line definitional ratio; nothing a Lean proof could add beyond inspection.",
+      "lean_result": null,
+      "fallback_result": null,
+      "verify_math_result": {
+        "snippet_id": "paper::EQUATION::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.92,
+        "reasoning": "$\\text{Recovery} = \\frac{C_{\\text{observed}}}{C_{\\text{expected}}} \\times 100$ is the standard percent-recovery definition. It is dimensionally sound (a ratio of like concentrations times 100 gives a percentage), the denominator is a nominal spiking level and hence non-zero, and no algebraic manipulation is performed on it. Nothing to flag.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.92
+    },
+    {
+      "snippet_id": "paper::EQUATION::1",
+      "snippet_type": "EQUATION",
+      "location": "Materials and methods — pharmacokinetic analysis",
+      "content": "\"The calculation of the area under the concentration-time curve (AUC) employed the trapezoidal method, with the formula:\"\n\n$$\nAUC_{Trapezoid} = \\sum_{i = 1}^{n-1} (C_i + C_{i + 1}) \\cdot (t_{i + 1} - t_i)\n$$\n\n\"where n is the number of observed time points, $C_i$ and $C_{i+1}$ are the concentrations at time points $t_i$ and $t_{i+1}$ respectively, $t_i$ and $t_{i+1}$ are consecutive time points.\"",
+      "route": "verify-math-lean",
+      "route_rationale": "A closed-form quadrature identity: it either equals the area under the piecewise-linear concentration-time curve or it does not, and that is machine-checkable against a real integral.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::1",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.95,
+        "reasoning": "The trapezoidal rule is $\\sum_i \\tfrac{C_i + C_{i+1}}{2}(t_{i+1} - t_i)$; the printed formula omits the factor $\\tfrac12$. Lean proved the general identity $\\sum_i (C_i + C_{i+1})(t_{i+1}-t_i) = 2\\sum_i \\tfrac{C_i+C_{i+1}}{2}(t_{i+1}-t_i)$ (`paper_sum_is_twice_trapezoid`), so the printed expression is exactly **twice** the trapezoidal approximation for every data set, and then refuted it against a genuine integral: on one sampling interval $[t_1, t_2] = [0,1]$ with $C \\equiv 1$, the true area is $\\int_0^1 1\\,\\mathrm{d}t = 1$ while the paper's sum returns $2$ (`paper_auc_formula_refuted`, using Mathlib's `intervalIntegral`). Every $AUC_{(0-128)}$ value in Table 1, and every $AUC_{\\text{tissue}}/AUC_{\\text{plasma}}$ ratio built from them, is inflated by a factor of 2 if the formula as printed was the one executed.",
+        "predicted_error_category": "Calculus/Proof error",
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [
+          "$AUC_{Trapezoid} = \\sum_{i=1}^{n-1}(C_i + C_{i+1})\\cdot(t_{i+1}-t_i)$"
+        ],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/0067-OtcTrout__EQUATION__1_opus5.lean",
+          "formal_statement": "theorem paper_sum_is_twice_trapezoid (n : ℕ) (C t : ℕ → ℝ) :\n    (∑ i ∈ Finset.range n, (C i + C (i + 1)) * (t (i + 1) - t i))\n      = 2 * ∑ i ∈ Finset.range n, (C i + C (i + 1)) / 2 * (t (i + 1) - t i)\n\ntheorem paper_auc_formula_refuted :\n    (∑ i ∈ Finset.range 1, (((1 : ℝ)) + (1 : ℝ)) * (((i : ℝ) + 1) - (i : ℝ)))\n      ≠ ∫ _x in (0 : ℝ)..1, (1 : ℝ)",
+          "compiler_feedback": "`lake env lean Paper/TMP.lean` exited 0 with no output; `lean_diagnostic_messages` returned an empty item list (success: true, partial: false); `lean_verify` reported trust \"standard\" with non_standard_axioms: [] and no sorryAx.",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::EQUATION::2",
+      "snippet_type": "EQUATION",
+      "location": "Materials and methods — pharmacokinetic analysis",
+      "content": "\"The absorption rate constant ($K_a$) was calculated as:\"\n\n$$\nK_a = \\frac{ln(2)}{t_{1/2a}}\n$$",
+      "route": "verify-math",
+      "route_rationale": "Standard first-order half-life relation; correctness is immediate by inspection.",
+      "lean_result": null,
+      "fallback_result": null,
+      "verify_math_result": {
+        "snippet_id": "paper::EQUATION::2",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.88,
+        "reasoning": "For a mono-exponential process $X(t) = X_0 e^{-kt}$, $X(t_{1/2}) = X_0/2$ gives $k t_{1/2} = \\ln 2$, hence $k = \\ln 2 / t_{1/2}$. The printed $K_a = \\ln(2)/t_{1/2a}$ is that relation with $t_{1/2a}$ the absorption half-life, and is dimensionally consistent ($\\mathrm{h^{-1}}$ from a dimensionless $\\ln 2$ over hours). The formula as such is correct. Note separately that the *numbers* the paper later reports do not satisfy it — that is handled under paper::FORMULA_BLOCK::0, not here, since this snippet asserts only the relation.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.88
+    },
+    {
+      "snippet_id": "paper::EQUATION::3",
+      "snippet_type": "EQUATION",
+      "location": "Materials and methods — pharmacokinetic analysis",
+      "content": "$$\nt_{1/2} = \\frac{ln(2)}{k}\n$$\n\n\"where, $k$ is the elimination rate constant.\"",
+      "route": "verify-math",
+      "route_rationale": "Standard first-order half-life relation; correctness is immediate by inspection.",
+      "lean_result": null,
+      "fallback_result": null,
+      "verify_math_result": {
+        "snippet_id": "paper::EQUATION::3",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.88,
+        "reasoning": "$t_{1/2} = \\ln 2 / k$ is the correct inversion of first-order decay $C(t) = C_0 e^{-kt}$, and is the reciprocal statement of EQUATION::2. No algebraic or domain problem in the relation itself ($k > 0$ is implicit for an elimination constant). The inconsistency lies in the values the paper substitutes into it, reported under paper::FORMULA_BLOCK::0.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.88
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::1",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "Materials and methods — pharmacokinetic analysis; Table 1 caption; Result — Pharmacokinetic result",
+      "content": "Table 1 caption: \"t₁/₂a half-life absorption, t₁/₂b half-life elimination, T decay constant, λ mean life time, Tₘₐₓ maximum time, Cₘₐₓ maximum concentration, AUC (h µg kg⁻¹) area under concentration-time curve, Kₑₗ elimination constant, Kₐ absorption rate constant.\"\n\nResults text: \"The elimination rate constant (Λ) varied between tissues, with the highest value in the gill at 0.01 h⁻¹.\" and \"The duration of the elimination phase (T) also varied between tissues. The longest duration was observed in the liver at 606.33 h.\"",
+      "route": "verify-math",
+      "route_rationale": "A labelling/dimensional conflict carried entirely in prose and a table caption; there is no crisp formal statement to compile, and the table body is supplied only as an image.",
+      "lean_result": null,
+      "fallback_result": null,
+      "verify_math_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::1",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.8,
+        "reasoning": "Two of the model's parameters carry mutually exclusive definitions, each with incompatible units:\n\n1. $\\lambda$ is defined in the Table 1 caption as \"mean life time\" (units: h) but used in the Results text as \"the elimination rate constant ($\\Lambda$) … 0.01 h$^{-1}$\" (units: h$^{-1}$). For a mono-exponential process these are reciprocals, $\\mathrm{MRT} = 1/k$; one symbol cannot denote both. The caption moreover already lists a separate $K_{el}$ \"elimination constant\", so the rate constant is named twice.\n\n2. $T$ is defined in the caption as a \"decay constant\" (units: h$^{-1}$) but reported in the text as \"the duration of the elimination phase … 606.33 h\" (units: h) — again a reciprocal-unit clash.\n\nBecause every numeric column of Table 1 is read through these labels, the parameter table is not interpretable as stated: a reader cannot tell whether a given figure is a time or a rate. This is a dimensional/definitional defect rather than a miscalculation, so it does not by itself overturn the pharmacokinetic conclusions.",
+        "predicted_error_category": "Domain/Constraint violation",
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": [
+          "Table 1 caption: \"λ mean life time\"",
+          "Results: \"The elimination rate constant (Λ) … 0.01 h⁻¹\"",
+          "Table 1 caption: \"T decay constant\"",
+          "Results: \"The duration of the elimination phase (T) … 606.33 h\""
+        ]
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::0",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "Result — Pharmacokinetic result",
+      "content": "Methods: $t_{1/2} = \\frac{ln(2)}{k}$, \"where, $k$ is the elimination rate constant.\"\n\nResults: \"The elimination rate constant (Λ) varied between tissues, with the highest value in the gill at 0.01 h⁻¹. The half-life (t₁/₂) values varied among the tissues studied, with the shortest half-life observed in the gill tissue (0.94 h)…\"",
+      "route": "verify-math-lean",
+      "route_rationale": "Substituting the reported gill numbers into the paper's own half-life relation is an exact real-arithmetic question involving $\\ln 2$; Mathlib's rational bounds on $\\log 2$ settle it.",
+      "lean_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::0",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.92,
+        "reasoning": "Using `Real.log_two_gt_d9` ($0.6931471803 < \\ln 2$), Lean proved $\\ln 2 / 0.01 > 69$ (`gill_halflife_is_above_69`) and hence refuted $\\ln 2 / 0.01 = 0.94$ (`gill_halflife_refuted`). Read the other way, it refuted $\\ln 2 / 0.94 = 0.01$ (`gill_rate_constant_refuted`). So the gill pair the paper reports is impossible under the paper's own $t_{1/2} = \\ln 2 / k$: a gill elimination constant of $0.01\\ \\mathrm{h^{-1}}$ implies $t_{1/2} \\approx 69.3\\ \\mathrm{h}$, not $0.94\\ \\mathrm{h}$; a half-life of $0.94\\ \\mathrm{h}$ implies $k \\approx 0.737\\ \\mathrm{h^{-1}}$. The two figures are roughly 74-fold apart. The abstract's claim that \"Prolonged elimination occurred at varying rates across tissues, with the gill showing the highest rate\" rests on exactly this pair.",
+        "predicted_error_category": "Sign/Arithmetic error",
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": [
+          "\"the highest value in the gill at 0.01 h⁻¹\"",
+          "\"the shortest half-life observed in the gill tissue (0.94 h)\""
+        ],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/0067-OtcTrout__FORMULA_BLOCK__0_opus5.lean",
+          "formal_statement": "theorem gill_halflife_is_above_69 : (69 : ℝ) < Real.log 2 / (0.01 : ℝ)\n\ntheorem gill_halflife_refuted : Real.log 2 / (0.01 : ℝ) ≠ (0.94 : ℝ)\n\ntheorem gill_rate_constant_refuted : Real.log 2 / (0.94 : ℝ) ≠ (0.01 : ℝ)",
+          "compiler_feedback": "First attempt used a non-existent lemma:\n  Paper/TMP.lean:14:10: error(lean.unknownIdentifier): Unknown identifier `div_lt_div_of_pos_left'`\nRewritten to go through the identity `log 2 / 0.01 = 100 * log 2` plus `Real.log_two_gt_d9` and `linarith`; the revised file compiled clean. `lake env lean Paper/TMP.lean` exited 0 with no output; `lean_diagnostic_messages` returned an empty item list (success: true, partial: false); `lean_verify` reported trust \"standard\" with non_standard_axioms: [] and no sorryAx.",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.92
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::1",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "Result — Pharmacokinetic result",
+      "content": "\"The half-life (t₁/₂) values varied among the tissues studied, with the shortest half-life observed in the gill tissue (0.94 h), followed by the liver (5.75 h), kidney (13.12 h), skin (9.88 h), and muscle (17.23 h).\"",
+      "route": "verify-math-lean",
+      "route_rationale": "An asserted total ordering on five explicit reals — decidable outright.",
+      "lean_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::1",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.9,
+        "reasoning": "The construction \"the shortest … followed by …, …, and …\" asserts the chain $0.94 < 5.75 < 13.12 < 9.88 < 17.23$. Lean refuted it both as a conjunction (`halflife_chain_refuted`) and as `List.IsChain (· < ·)` over the list as printed (`halflife_list_not_sorted`): the third link fails, $13.12 \\not< 9.88$. Lean also certified the genuine ascending order (`halflife_true_order`), which is gill $0.94$ < liver $5.75$ < **skin** $9.88$ < **kidney** $13.12$ < muscle $17.23$ — the kidney and skin entries are transposed in the manuscript. The individual values are unaffected, so this misorders the narrative without changing the parameter estimates.",
+        "predicted_error_category": "Formally refuted",
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": [
+          "\"kidney (13.12 h), skin (9.88 h)\""
+        ],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/0067-OtcTrout__FORMULA_BLOCK__1_opus5.lean",
+          "formal_statement": "theorem halflife_chain_refuted :\n    ¬ ((0.94 : ℝ) < 5.75 ∧ (5.75 : ℝ) < 13.12 ∧ (13.12 : ℝ) < 9.88 ∧\n       (9.88 : ℝ) < 17.23)\n\ntheorem halflife_list_not_sorted :\n    ¬ List.IsChain (· < ·) ([0.94, 5.75, 13.12, 9.88, 17.23] : List ℝ)\n\ntheorem halflife_true_order :\n    (0.94 : ℝ) < 5.75 ∧ (5.75 : ℝ) < 9.88 ∧ (9.88 : ℝ) < 13.12 ∧ (13.12 : ℝ) < 17.23",
+          "compiler_feedback": "First attempt used the deprecated/renamed API:\n  Paper/TMP.lean:18:6: warning: `List.Chain'` has been deprecated: Use `List.IsChain` instead\n  Paper/TMP.lean:20:8: error(lean.unknownIdentifier): Unknown constant `List.chain'_cons`\n  Paper/TMP.lean:20:2: error: `simp` made no progress\nSwitched to `List.IsChain` / `List.isChain_cons`; the revised file compiled clean. `lake env lean Paper/TMP.lean` exited 0 with no output; `lean_diagnostic_messages` returned an empty item list (success: true, partial: false); `lean_verify` reported trust \"standard\" with non_standard_axioms: [] and no sorryAx.",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::2",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "Result — Pharmacokinetic result / elimination phase; Conclusion",
+      "content": "(A) \"in muscle tissue, the initial distribution half-life (t₁/₂a) was shorter (17.23 h) compared to the elimination half-life (t₁/₂b) (20.56 h), indicating a biphasic pattern. On the other hand, in the liver tissue, the elimination half-life (238.68 h) was substantially longer than the initial distribution half-life (5.75 h)…\"\n\n(B) \"The elimination half-lives in plasma and other tissues, in decreasing order, were as follows; plasma (3368.24 h), liver (420.28 h), gill (198.48 h), kidney (189.35 h), skin (157.82 h), muscle (62.93 h), and gill (19.39 h).\"\n\n(C) Conclusion: \"The different half-lives in tissues, with the liver having the longest (238.68 h), indicated significant tissue retention…\"",
+      "route": "verify-math-lean",
+      "route_rationale": "Whether a single well-defined map tissue → elimination half-life can satisfy all three passages is a formal consistency question.",
+      "lean_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::2",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.93,
+        "reasoning": "Modelled the elimination half-life as a function $h : \\mathrm{Tissue} \\to \\mathbb{R}$ over an inductive tissue type and asked for one consistent with every reported figure. Lean refuted it (`halflife_assignment_refuted`): the manuscript assigns the liver both $238.68$ (A, C) and $420.28$ (B), the muscle both $20.56$ (A) and $62.93$ (B), and the gill both $198.48$ and $19.39$ inside the single sentence (B). No function can take two values at one argument, so these are not alternative estimates but a flat contradiction. Lean additionally refuted the Conclusion's maximality claim under either liver figure (`liver_not_longest`, `liver_23868_not_longest`): list (B) puts plasma at $3368.24$ h, so the liver is not the tissue with the longest elimination half-life on the paper's own numbers. The Conclusion's central retention claim therefore does not follow.",
+        "predicted_error_category": "Formally refuted",
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": [
+          "liver 238.68 h vs liver 420.28 h",
+          "muscle 20.56 h vs muscle 62.93 h",
+          "gill (198.48 h) … and gill (19.39 h)",
+          "Conclusion \"the liver having the longest (238.68 h)\" vs plasma 3368.24 h"
+        ],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/0067-OtcTrout__FORMULA_BLOCK__2_opus5.lean",
+          "formal_statement": "inductive Tissue | plasma | liver | gill | kidney | skin | muscle\nderiving DecidableEq\n\ntheorem halflife_assignment_refuted :\n    ¬ ∃ h : Tissue → ℝ,\n        h liver  = 238.68 ∧ h liver  = 420.28 ∧\n        h muscle = 20.56  ∧ h muscle = 62.93  ∧\n        h gill   = 198.48 ∧ h gill   = 19.39\n\ntheorem liver_not_longest :\n    ¬ ∃ h : Tissue → ℝ,\n        h plasma = 3368.24 ∧ h liver = 420.28 ∧ (∀ x, h x ≤ h liver)\n\ntheorem liver_23868_not_longest :\n    ¬ ∃ h : Tissue → ℝ,\n        h plasma = 3368.24 ∧ h liver = 238.68 ∧ (∀ x, h x ≤ h liver)",
+          "compiler_feedback": "`lake env lean Paper/TMP.lean` exited 0 with no output; `lean_diagnostic_messages` returned an empty item list (success: true, partial: false); `lean_verify` reported trust \"standard\" with non_standard_axioms: [] and no sorryAx.",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.93
+    },
+    {
+      "snippet_id": "paper::DEFINITION::1",
+      "snippet_type": "DEFINITION",
+      "location": "Result — Table 2 narrative",
+      "content": "\"The R² values, which reflect the linearity of the method, varied across tissues, with some tissues showing higher values than others. For example, muscle tissue had an R² value of 6.96, while skin tissue had an R² value of 0.002.\"",
+      "route": "verify-math-lean",
+      "route_rationale": "$R^2$ has a closed definition that bounds it above by $1$; checking a reported value against that bound is formalisable from either the residual-sum or the correlation definition.",
+      "lean_result": {
+        "snippet_id": "paper::DEFINITION::1",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.95,
+        "reasoning": "Formalised the coefficient of determination two independent ways and refuted $R^2 = 6.96$ under both. From the residual-sum definition $R^2 = 1 - SS_{res}/SS_{tot}$ with $SS_{res} \\ge 0$ (a sum of squares) and $SS_{tot} > 0$ (a non-degenerate calibration set), Lean proved $R^2 \\le 1$ (`r2_le_one`) and hence that no such $(SS_{res}, SS_{tot})$ yields $6.96$ (`muscle_r2_refuted`). From the correlation definition $R^2 = r^2$ with $|r| \\le 1$, it proved $r^2 \\le 1$ (`r2_from_corr_le_one`) and again refuted $6.96$ (`muscle_r2_refuted_corr`). Both hypotheses are definitional, not added strength. A calibration $R^2$ of $6.96$ is impossible, and the companion value for skin ($0.002$) would indicate essentially no linearity at all — so the Methods claim that \"the linearity of the calibration curves was utilized\" is not supported by the validation table it refers to.",
+        "predicted_error_category": "Domain/Constraint violation",
+        "snippet_type": "DEFINITION",
+        "contradiction_locations": [
+          "\"muscle tissue had an R² value of 6.96\""
+        ],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/0067-OtcTrout__DEFINITION__1_opus5.lean",
+          "formal_statement": "theorem r2_le_one (ssres sstot : ℝ) (h1 : 0 ≤ ssres) (h2 : 0 < sstot) :\n    1 - ssres / sstot ≤ 1\n\ntheorem muscle_r2_refuted :\n    ¬ ∃ ssres sstot : ℝ, 0 ≤ ssres ∧ 0 < sstot ∧ 1 - ssres / sstot = 6.96\n\ntheorem r2_from_corr_le_one (r : ℝ) (hr : |r| ≤ 1) : r ^ 2 ≤ 1\n\ntheorem muscle_r2_refuted_corr : ¬ ∃ r : ℝ, |r| ≤ 1 ∧ r ^ 2 = 6.96",
+          "compiler_feedback": "`lake env lean Paper/TMP.lean` exited 0 with no output; `lean_diagnostic_messages` returned an empty item list (success: true, partial: false); `lean_verify` reported trust \"standard\" with non_standard_axioms: [] and no sorryAx.",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::3",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "Result — Pharmacokinetic result; Abstract",
+      "content": "\"The maximum concentration (Cₘₐₓ) of the drug was in the kidney (9380 μg kg⁻¹) and gill (8710 μg kg⁻¹) and lowest in muscle (2460 μg kg⁻¹).\" Elsewhere: \"the plasma contained a concentration of 627 µg kg⁻¹ at 24 h\".",
+      "route": "verify-math",
+      "route_rationale": "An extremum claim over experimental concentrations; the comparison set is set by prose, not formally.",
+      "lean_result": null,
+      "fallback_result": null,
+      "verify_math_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::3",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.55,
+        "reasoning": "Taken over the full set of matrices the paper tabulates, \"lowest in muscle (2460)\" is wrong: plasma peaks at $627\\ \\mathrm{\\mu g\\,kg^{-1}}$, well under muscle. But the sentence plausibly ranges over tissues only, with plasma treated as a separate compartment (the paper elsewhere writes \"in plasma and other tissues\" and reports plasma in its own right). Under that reading the claim stands. The comparison set is fixed by prose, not mathematics, so I cannot establish a derivation-invalidating error and do not flag it. Recorded as a sub-threshold observation: the sentence would be unambiguous if it said \"lowest among tissues\".",
+        "predicted_error_category": null,
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.55
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::4",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "Result — Pharmacokinetic result, distribution phase",
+      "content": "\"The concentration-time curve showed peaks at 6 h in the skin and gill, 3 h for the plasma, and 8 h for the gill.\" Compare: \"The time (Tₘₐₓ) to reach Cₘₐₓ also varied between tissues, with the shortest time observed in the gill at 3 h and the longest in muscle at 32 h\" and the Abstract's \"24 h in plasma\".",
+      "route": "verify-math",
+      "route_rationale": "Reconciling reported peak times across passages; experimental data, not a theorem.",
+      "lean_result": null,
+      "fallback_result": null,
+      "verify_math_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::4",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.85,
+        "reasoning": "The sentence is self-contradictory and contradicts the paper's own $T_{\\max}$ values:\n\n1. The gill is assigned two distinct peak times — $6\\ \\mathrm{h}$ and $8\\ \\mathrm{h}$ — within one sentence. A concentration-time curve's peak location is single-valued per tissue, so at most one can be right.\n\n2. \"3 h for the plasma\" contradicts both the Results (\"the shortest time observed in the gill at 3 h\") and the Abstract (\"24 h in plasma\"). The $3\\ \\mathrm{h}$ figure belongs to the gill; the plasma $T_{\\max}$ is $24\\ \\mathrm{h}$, eight times later.\n\n3. Skin is given a $6\\ \\mathrm{h}$ peak here against a $16\\ \\mathrm{h}$ $T_{\\max}$ in the Abstract (\"16 h in both the liver and skin\").\n\nEach assignment is read directly off the manuscript, so the conflict is certain; it corrupts the distribution-phase description without altering the $C_{\\max}$/$T_{\\max}$ estimates reported in Table 1.",
+        "predicted_error_category": "Domain/Constraint violation",
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": [
+          "\"peaks at 6 h in the skin and gill, 3 h for the plasma, and 8 h for the gill\"",
+          "\"the shortest time observed in the gill at 3 h\"",
+          "Abstract: \"24 h in plasma\""
+        ]
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::5",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "Result — Pharmacokinetic result, distribution phase",
+      "content": "\"Comparing the area under the concentration-time curve (AUC) values, the relative distribution level of oxytetracycline dihydrate between the plasma and tissues after administration showed the highest AUC(tissue/plasma) in the liver and muscle, with a value of 7.34 h µg kg⁻¹, followed by the kidney (4.76 h µg kg⁻¹), gill (4.66 h µg kg⁻¹) and skin (2.81 h µg kg⁻¹).\"",
+      "route": "verify-math",
+      "route_rationale": "A dimensional-labelling question about a derived ratio; prose, with the underlying AUC table supplied only as an image.",
+      "lean_result": null,
+      "fallback_result": null,
+      "verify_math_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::5",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.75,
+        "reasoning": "$AUC_{\\text{tissue}}/AUC_{\\text{plasma}}$ is a quotient of two quantities with the same units $\\mathrm{h\\,\\mu g\\,kg^{-1}}$, so it is dimensionless. The paper attaches $\\mathrm{h\\ \\mu g\\ kg^{-1}}$ — the units of $AUC$ itself — to all four reported ratios, which is a dimensional error: the printed quantity cannot simultaneously be the ratio named and carry those units.\n\nThe ranking is also in tension with the rest of the section: the muscle is reported as tying the liver for the highest tissue/plasma exposure at $7.34$, yet the muscle has the lowest $C_{\\max}$ of any tissue ($2460\\ \\mathrm{\\mu g\\,kg^{-1}}$), while the Abstract states \"The liver and kidney had the highest area under the concentration-time curve\" — here the kidney ranks third. Without the Table 1 image I cannot settle which figure is wrong, so confidence is held at $0.75$ and the severity is minor: the \"widely distributed\" conclusion it supports survives either way.",
+        "predicted_error_category": "Domain/Constraint violation",
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": [
+          "\"highest AUC(tissue/plasma) in the liver and muscle, with a value of 7.34 h µg kg⁻¹\""
+        ]
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.75
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::6",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "Result — biosafety, plasma immunomodulation; and the accompanying ALP/AST/ALT/creatinine table",
+      "content": "Text: \"In the control group, the serum creatinine level was observed to be 0.05 ± 0.001 mg dL⁻¹.\" and \"The Alanine transaminase (ALT) levels in the plasma of the control group were measured at 28.00 ± 1.06 IU L⁻¹.\"\n\nTable (days 0/10/20/30): ALT (U/L) Control = 20 at every time point; Creatinine (mg/L) Control = 0.2 at every time point; ALP (U/L) 10× = 5, 14, 18, 20.",
+      "route": "verify-math",
+      "route_rationale": "Numeric reconciliation between narrative values and the tabulated series; experimental data.",
+      "lean_result": null,
+      "fallback_result": null,
+      "verify_math_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::6",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.8,
+        "reasoning": "Three numeric conflicts between the narrative and the paper's own table:\n\n1. **Creatinine, control.** Text: $0.05 \\pm 0.001\\ \\mathrm{mg\\,dL^{-1}}$. Converting, $0.05\\ \\mathrm{mg\\,dL^{-1}} = 0.5\\ \\mathrm{mg\\,L^{-1}}$, but the table's control column reads $0.2\\ \\mathrm{mg\\,L^{-1}}$ at every day — a factor of $2.5$ apart, on top of the unit mismatch ($\\mathrm{mg\\,dL^{-1}}$ vs $\\mathrm{mg\\,L^{-1}}$) between the two presentations.\n\n2. **ALT, control.** Text: $28.00 \\pm 1.06\\ \\mathrm{IU\\,L^{-1}}$; table: $20\\ \\mathrm{U\\,L^{-1}}$ at every day. $28.00 \\ne 20$, and the stated $\\pm 1.06$ does not bridge the gap.\n\n3. **ALP, 10×.** Text: \"The ALP level in the 10× group was significantly the highest among all the groups (p < 0.05) and it declined 30th day.\" The table's 10× ALP series is strictly increasing through day 30 ($5 \\to 14 \\to 18 \\to 20$), so day 30 is its maximum, not a decline.\n\nThese are the baseline values against which every biosafety effect in the section is judged, so the section cannot be reproduced as written. Confidence $0.8$ rather than higher because the table is the only machine-readable one in the file and I cannot rule out a transcription artefact; the argument's direction (dose-dependent enzyme elevation) survives, hence minor severity.",
+        "predicted_error_category": "Sign/Arithmetic error",
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": [
+          "text creatinine 0.05 mg dL⁻¹ vs table 0.2 mg/L",
+          "text ALT 28.00 IU L⁻¹ vs table 20 U/L",
+          "text \"it declined 30th day\" vs table ALP 10× 5,14,18,20"
+        ]
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::7",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "Result — residue quantification; Discussion",
+      "content": "Result: \"On the 20th day, the maximum antibiotic concentration (C_max) was 118, 351, 827, and 1560 µg kg⁻¹ in the 1×, 3×, 5× and 10× groups, respectively.\"\n\nDiscussion: \"Results indicated that tissue residual concentrations of the antibiotic remained below the maximum residue limits (MRL) set by the European Commission (100 µg kg⁻¹)⁸² and the US Food and Drug Administration (200 µg kg⁻¹)⁸³,⁸⁴ following prolonged therapeutic exposure for 30 days daily dosing of 1× and 3× concentrations.\" and \"Overall, tissue residue concentrations in the muscle of fish exposed to oxytetracycline at therapeutic dosages for varying durations remained well below the MRL prescribed by regulatory bodies, ensuring consumer safety.\"",
+      "route": "verify-math",
+      "route_rationale": "An inequality over reported experimental residues; the numbers are empirical, so informal review is the right instrument.",
+      "lean_result": null,
+      "fallback_result": null,
+      "verify_math_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::7",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.9,
+        "reasoning": "The safety conclusion is contradicted by the paper's own measurements. The EC MRL is $100\\ \\mathrm{\\mu g\\,kg^{-1}}$ and the FDA MRL is $200\\ \\mathrm{\\mu g\\,kg^{-1}}$; the reported muscle $C_{\\max}$ on day 20 is $118$ (1×), $351$ (3×), $827$ (5×) and $1560$ (10×) $\\mathrm{\\mu g\\,kg^{-1}}$. Then:\n\n- $118 > 100$: the **therapeutic** 1× dose exceeded the EC MRL, so \"remained below the MRL … of 1× and 3× concentrations\" is false for 1×.\n- $351 > 200 > 100$: 3× exceeded **both** limits, by $3.5\\times$ and $1.75\\times$.\n- $827$ and $1560$ exceed the EC MRL by $8.3\\times$ and $15.6\\times$, so the Conclusion's \"remained well below the MRL prescribed by regulatory bodies\" is false for every dose group tested.\n\nThe paper confirms the contradiction against itself: it computes withdrawal times of $44.34$ and $47.57$ days for 1× and 3×, which are only meaningful if those groups' residues were **above** the MRL. This bears directly on the headline consumer-safety claim and on the recommendation to dose at $80\\ \\mathrm{mg\\,kg^{-1}}$, hence critical.",
+        "predicted_error_category": "Domain/Constraint violation",
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": [
+          "C_max 118 µg kg⁻¹ (1×) vs EC MRL 100 µg kg⁻¹",
+          "C_max 351 µg kg⁻¹ (3×) vs FDA MRL 200 µg kg⁻¹",
+          "Conclusion \"remained well below the MRL\" vs 827 and 1560 µg kg⁻¹"
+        ]
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::8",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "Result — residue quantification / withdrawal time",
+      "content": "\"Subsequently, on the 40th day, the antibiotic residue concentrations in the muscle samples were decreased to 4.45, 1.29, 586, and 610 µg kg⁻¹ in the 1×, 3×, 5×, and 10× groups, respectively.\" and \"Withdrawal times were 44.34 days for the 1× group and 47.57 days for the 3× group. In the 5× and 10× groups, the withdrawal time was more than 30 days (WT1.4 standard: -1).\" Dosing ran for 30 days, so day 40 is 10 days post-dose; the MRL is 100 µg kg⁻¹.",
+      "route": "verify-math",
+      "route_rationale": "Withdrawal time is the output of a statistical tolerance-limit regression (WT 1.4), not a closed form; only informal consistency checking is possible.",
+      "lean_result": null,
+      "fallback_result": null,
+      "verify_math_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::8",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.72,
+        "reasoning": "The reported withdrawal times do not sit consistently with the depletion data:\n\n1. **Magnitude.** A withdrawal time is the post-dose day at which residues fall below the MRL ($100\\ \\mathrm{\\mu g\\,kg^{-1}}$). Dosing stopped on day 30, so day 40 is 10 days post-dose, and the measured residues there are $4.45$ (1×) and $1.29$ (3×) $\\mathrm{\\mu g\\,kg^{-1}}$ — already $22\\times$ and $78\\times$ below the MRL. Withdrawal times of $44.34$ and $47.57$ days are hard to reconcile with that.\n\n2. **Ordering.** 3× has the *lower* day-40 residue ($1.29 < 4.45$) yet the *longer* withdrawal time ($47.57 > 44.34$) — the reverse of what its faster depletion implies.\n\n3. **Bound strength.** The 5× and 10× groups, whose day-40 residues ($586$, $610\\ \\mathrm{\\mu g\\,kg^{-1}}$) are still $\\sim 6\\times$ above the MRL, are assigned only \"more than 30 days\" — a strictly weaker bound than the $44$–$48$ days given to the far cleaner low-dose groups, so the reported set is not monotone in dose.\n\nConfidence is held at $0.72$ because WT 1.4 fits an upper one-sided tolerance limit to the whole log-linear depletion curve, and a wide residual variance can legitimately push the tolerance limit well past the last observed mean; the \"-1\" return for 5×/10× also signals the software declined to compute, which explains point 3 without an arithmetic error. Points 1 and 2 remain unexplained on the data shown.",
+        "predicted_error_category": "Domain/Constraint violation",
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": [
+          "day-40 residues 4.45 and 1.29 µg kg⁻¹ vs withdrawal times 44.34 and 47.57 days",
+          "3× lower residue but longer withdrawal time than 1×"
+        ]
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.72
+    }
+  ],
+  "findings": [
+    {
+      "snippet_id": "paper::DEFINITION::0",
+      "category": "Domain/Constraint violation",
+      "severity": "critical",
+      "confidence": 0.95,
+      "verifier": "verify-math-lean",
+      "evidence": "Lean proved that the paper's own definition forces $\\mathrm{LOD} = 3(\\sigma/m) \\ge 0$ whenever $\\sigma \\ge 0$ (a standard deviation) and $m > 0$ (a quantitation slope), then refuted the existence of any such pair giving the reported kidney values: `kidney_lod_refuted` for $-587.51$ and `kidney_loq_refuted` for $-1780.34$. The paper's gloss that negative values \"indicat[e] a minimal detectable concentration\" and \"affirm[] method impartiality\" is therefore unavailable — a negative LOD is unreachable under the stated formula, so the entire Table 2 method validation that underpins every reported residue concentration is internally inconsistent.",
+      "exact_quote": "the LOD values ranged from 44.88 µg kg⁻¹ in plasma to -587.51 µg kg⁻¹ in kidney tissue, while the LOQ values ranged from 136.00 µg kg⁻¹ in plasma to -1780.34 µg kg⁻¹ in kidney tissue."
+    },
+    {
+      "snippet_id": "paper::EQUATION::1",
+      "category": "Calculus/Proof error",
+      "severity": "critical",
+      "confidence": 0.95,
+      "verifier": "verify-math-lean",
+      "evidence": "The trapezoidal rule is $\\sum_i \\frac{C_i + C_{i+1}}{2}(t_{i+1}-t_i)$; the printed formula drops the factor $\\tfrac12$. Lean proved the printed sum is exactly twice the trapezoidal sum for every data set (`paper_sum_is_twice_trapezoid`) and refuted it against a real integral: on $[0,1]$ with $C \\equiv 1$ the true area is $\\int_0^1 1\\,\\mathrm{d}t = 1$ while the formula returns $2$ (`paper_auc_formula_refuted`). Taken literally, every $AUC_{(0-128)}$ in Table 1 — and the tissue/plasma ratios derived from them, and the Abstract's distribution conclusions — is inflated twofold.",
+      "exact_quote": "AUC_{Trapezoid} = \\sum_{i = 1}^{n-1} (C_i + C_{i + 1}) \\cdot (t_{i + 1} - t_i)"
+    },
+    {
+      "snippet_id": "paper::DEFINITION::1",
+      "category": "Domain/Constraint violation",
+      "severity": "critical",
+      "confidence": 0.95,
+      "verifier": "verify-math-lean",
+      "evidence": "$R^2 \\le 1$ by definition. Lean proved the bound from the residual-sum form, $R^2 = 1 - SS_{res}/SS_{tot} \\le 1$ for $SS_{res} \\ge 0$, $SS_{tot} > 0$ (`r2_le_one`), and independently from the correlation form, $R^2 = r^2 \\le 1$ for $|r| \\le 1$ (`r2_from_corr_le_one`); it then refuted $R^2 = 6.96$ under both (`muscle_r2_refuted`, `muscle_r2_refuted_corr`). The reported value is impossible, and the companion skin value of $0.002$ would mean the calibration line explains essentially none of the variance — so the \"linearity of the calibration curves\" the Methods rely on is not demonstrated.",
+      "exact_quote": "muscle tissue had an R² value of 6.96, while skin tissue had an R² value of 0.002."
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::2",
+      "category": "Formally refuted",
+      "severity": "critical",
+      "confidence": 0.93,
+      "verifier": "verify-math-lean",
+      "evidence": "Lean showed no function $h : \\mathrm{Tissue} \\to \\mathbb{R}$ can satisfy the reported elimination half-lives (`halflife_assignment_refuted`): the liver is given both $238.68$ h and $420.28$ h, the muscle both $20.56$ h and $62.93$ h, and the gill both $198.48$ h and $19.39$ h within one sentence. Lean further refuted the Conclusion's maximality claim under either liver figure (`liver_not_longest`, `liver_23868_not_longest`), since the same list puts plasma at $3368.24$ h — so \"the liver having the longest\" half-life, the stated basis for \"significant tissue retention and potential for prolonged therapeutic effects\", is false on the paper's own numbers.",
+      "exact_quote": "The elimination half-lives in plasma and other tissues, in decreasing order, were as follows; plasma (3368.24 h), liver (420.28 h), gill (198.48 h), kidney (189.35 h), skin (157.82 h), muscle (62.93 h), and gill (19.39 h)."
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::0",
+      "category": "Sign/Arithmetic error",
+      "severity": "critical",
+      "confidence": 0.92,
+      "verifier": "verify-math-lean",
+      "evidence": "Under the paper's own $t_{1/2} = \\ln 2 / k$, Lean proved $\\ln 2 / 0.01 > 69$ (`gill_halflife_is_above_69`) and refuted $\\ln 2/0.01 = 0.94$ (`gill_halflife_refuted`) and $\\ln 2/0.94 = 0.01$ (`gill_rate_constant_refuted`). A gill elimination constant of $0.01\\ \\mathrm{h^{-1}}$ implies $t_{1/2} \\approx 69.3\\ \\mathrm{h}$, not $0.94\\ \\mathrm{h}$; conversely $t_{1/2} = 0.94\\ \\mathrm{h}$ implies $k \\approx 0.737\\ \\mathrm{h^{-1}}$. The two reported gill figures are $\\sim 74$-fold inconsistent, and the Abstract's \"the gill showing the highest rate\" of elimination rests on this pair.",
+      "exact_quote": "The elimination rate constant (Λ) varied between tissues, with the highest value in the gill at 0.01 h⁻¹. The half-life (t₁/₂) values varied among the tissues studied, with the shortest half-life observed in the gill tissue (0.94 h)"
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+      "category": "Fractional/Rational error",
+      "severity": "minor",
+      "confidence": 0.9,
+      "verifier": "verify-math-lean",
+      "evidence": "The two stated formulas share $\\sigma$ and the slope, so Lean's `loq_eq_ten_thirds_lod` gives $\\mathrm{LOQ} = \\tfrac{10}{3}\\,\\mathrm{LOD} \\approx 3.3333\\,\\mathrm{LOD}$ for every tissue. Both reported pairs were refuted (`plasma_pair_refuted`, `kidney_pair_refuted`): $136.00/44.88 = 100/33 \\approx 3.0303$ exactly, and $1780.34/587.51 \\in (3.02, 3.04)$, against a required $> 3.33$. The table was computed with $\\mathrm{LOD} = 3.3\\,(\\sigma/m)$ — the ICH convention — so the Methods text misstates the factor and does not reproduce the reported values.",
+      "exact_quote": "LOD was calculated as 3 × (standard deviation of the intercept/slope), and LOQ as 10 × (standard deviation of the intercept/slope)."
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::7",
+      "category": "Domain/Constraint violation",
+      "severity": "critical",
+      "confidence": 0.9,
+      "verifier": "verify-math",
+      "evidence": "Against the EC MRL of $100\\ \\mathrm{\\mu g\\,kg^{-1}}$ and the FDA MRL of $200\\ \\mathrm{\\mu g\\,kg^{-1}}$, the paper's own day-20 muscle $C_{\\max}$ values are $118$ (1×), $351$ (3×), $827$ (5×) and $1560$ (10×) $\\mathrm{\\mu g\\,kg^{-1}}$. So $118 > 100$ (the therapeutic dose exceeded the EC limit), $351 > 200 > 100$ (3× exceeded both), and $827, 1560 \\gg 100$. The Discussion's claim of staying below the MRLs for 1× and 3×, and the Conclusion's \"remained well below the MRL … ensuring consumer safety\", are both arithmetically false on these numbers — as the paper's own $44.34$- and $47.57$-day withdrawal times for those groups implicitly concede.",
+      "exact_quote": "Results indicated that tissue residual concentrations of the antibiotic remained below the maximum residue limits (MRL) set by the European Commission (100 µg kg⁻¹)⁸² and the US Food and Drug Administration (200 µg kg⁻¹)⁸³,⁸⁴ following prolonged therapeutic exposure for 30 days daily dosing of 1× and 3× concentrations."
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::1",
+      "category": "Formally refuted",
+      "severity": "minor",
+      "confidence": 0.9,
+      "verifier": "verify-math-lean",
+      "evidence": "\"Shortest … followed by …\" asserts $0.94 < 5.75 < 13.12 < 9.88 < 17.23$, which Lean refuted both as a conjunction (`halflife_chain_refuted`) and as `List.IsChain (· < ·)` on the printed list (`halflife_list_not_sorted`): $13.12 \\not< 9.88$. Lean certified the true ascending order (`halflife_true_order`) as gill $0.94$ < liver $5.75$ < skin $9.88$ < kidney $13.12$ < muscle $17.23$ — the kidney and skin entries are transposed. The underlying values are unaffected, so the defect is editorial.",
+      "exact_quote": "with the shortest half-life observed in the gill tissue (0.94 h), followed by the liver (5.75 h), kidney (13.12 h), skin (9.88 h), and muscle (17.23 h)."
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::4",
+      "category": "Domain/Constraint violation",
+      "severity": "minor",
+      "confidence": 0.85,
+      "verifier": "verify-math",
+      "evidence": "A single sentence assigns the gill two different peak times, $6\\ \\mathrm{h}$ and $8\\ \\mathrm{h}$, which a concentration-time curve cannot have. It also assigns the plasma a $3\\ \\mathrm{h}$ peak, while the same Results paragraph gives \"the shortest time observed in the gill at 3 h\" and the Abstract gives \"24 h in plasma\" — so the $3\\ \\mathrm{h}$ figure belongs to the gill and the plasma peak is eight times later. Skin is likewise given $6\\ \\mathrm{h}$ here against $16\\ \\mathrm{h}$ in the Abstract.",
+      "exact_quote": "The concentration-time curve showed peaks at 6 h in the skin and gill, 3 h for the plasma, and 8 h for the gill."
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::1",
+      "category": "Domain/Constraint violation",
+      "severity": "minor",
+      "confidence": 0.8,
+      "verifier": "verify-math",
+      "evidence": "Two Table 1 parameters carry reciprocal-unit definitions. $\\lambda$ is \"mean life time\" (units h) in the caption but \"the elimination rate constant ($\\Lambda$) … 0.01 h$^{-1}$\" in the Results; for a mono-exponential process $\\mathrm{MRT} = 1/k$, so one symbol cannot be both — and the caption already names $K_{el}$ separately for the rate constant. $T$ is a \"decay constant\" (units h$^{-1}$) in the caption but \"the duration of the elimination phase … 606.33 h\" (units h) in the Results. A reader cannot tell whether a given Table 1 entry is a time or a rate.",
+      "exact_quote": "t₁/₂a half-life absorption, t₁/₂b half-life elimination, T decay constant, λ mean life time, Tₘₐₓ maximum time, Cₘₐₓ maximum concentration, AUC (h µg kg⁻¹) area under concentration-time curve, Kₑₗ elimination constant, Kₐ absorption rate constant."
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::6",
+      "category": "Sign/Arithmetic error",
+      "severity": "minor",
+      "confidence": 0.8,
+      "verifier": "verify-math",
+      "evidence": "The narrative's control baselines disagree with the paper's own table. Creatinine: text $0.05\\ \\mathrm{mg\\,dL^{-1}} = 0.5\\ \\mathrm{mg\\,L^{-1}}$ against a tabulated $0.2\\ \\mathrm{mg\\,L^{-1}}$ — a $2.5\\times$ gap plus a $\\mathrm{dL}$/$\\mathrm{L}$ unit mismatch. ALT: text $28.00 \\pm 1.06\\ \\mathrm{IU\\,L^{-1}}$ against a tabulated $20\\ \\mathrm{U\\,L^{-1}}$. And the text's \"[ALP in the 10× group] declined 30th day\" contradicts a 10× ALP series that rises monotonically $5 \\to 14 \\to 18 \\to 20$ through day 30. These are the baselines every biosafety effect is measured against.",
+      "exact_quote": "In the control group, the serum creatinine level was observed to be 0.05 ± 0.001 mg dL⁻¹."
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::5",
+      "category": "Domain/Constraint violation",
+      "severity": "minor",
+      "confidence": 0.75,
+      "verifier": "verify-math",
+      "evidence": "$AUC_{\\text{tissue}}/AUC_{\\text{plasma}}$ divides two quantities of identical units and is therefore dimensionless, yet all four reported ratios carry $\\mathrm{h\\ \\mu g\\ kg^{-1}}$ — the units of $AUC$ itself. The ranking is also at odds with the rest of the paper: the muscle ties the liver at $7.34$ despite having the lowest $C_{\\max}$ of any tissue ($2460\\ \\mathrm{\\mu g\\,kg^{-1}}$), while the Abstract states the liver and kidney had the highest $AUC_{(0-128)}$ and the kidney here ranks only third.",
+      "exact_quote": "showed the highest AUC(tissue/plasma) in the liver and muscle, with a value of 7.34 h µg kg⁻¹, followed by the kidney (4.76 h µg kg⁻¹), gill (4.66 h µg kg⁻¹) and skin (2.81 h µg kg⁻¹)."
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::8",
+      "category": "Domain/Constraint violation",
+      "severity": "minor",
+      "confidence": 0.72,
+      "verifier": "verify-math",
+      "evidence": "Dosing stopped on day 30, so day 40 is 10 days post-dose, where the measured residues are $4.45$ (1×) and $1.29$ (3×) $\\mathrm{\\mu g\\,kg^{-1}}$ — $22\\times$ and $78\\times$ below the $100\\ \\mathrm{\\mu g\\,kg^{-1}}$ MRL — yet the withdrawal times are given as $44.34$ and $47.57$ days. The ordering is also inverted: 3× has the lower day-40 residue but the longer withdrawal time. And the 5×/10× groups, still $\\sim 6\\times$ above the MRL at day 40 ($586$, $610\\ \\mathrm{\\mu g\\,kg^{-1}}$), receive only the weaker bound \"more than 30 days\". Held at $0.72$ because WT 1.4 fits an upper tolerance limit to the whole depletion curve and a wide residual variance can push that limit past the last observed mean.",
+      "exact_quote": "Withdrawal times were 44.34 days for the 1× group and 47.57 days for the 3× group. In the 5× and 10× groups, the withdrawal time was more than 30 days (WT1.4 standard: -1) (Fig. 9)."
+    }
+  ],
+  "verdict": "CRITICAL_ERRORS",
+  "verdict_confidence": 0.95,
+  "summary": "Extracted 17 self-contained mathematical objects from this oxytetracycline pharmacokinetics/biosafety manuscript: the four display or prose formulas of the Methods (trapezoidal AUC, $K_a = \\ln 2 / t_{1/2a}$, $t_{1/2} = \\ln 2 / k$, percent recovery), the LOD/LOQ and $R^2$ definitions behind the LC-MS/MS validation, the non-compartmental parameter model, and the reported-value blocks that those formulas are applied to. Seven went to Lean 4 (shared project `MATH_VERIFICATION/Paper`, Mathlib v4.33.1, toolchain `leanprover/lean4:v4.33.1`); ten went to informal review. **All seven Lean snippets came back REFUTED** — a compiling proof of the negation in each case, every one clean under `lean_diagnostic_messages` and `sorryAx`-free under `lean_verify`. Nothing returned FAILED or NOT_ATTEMPTED, so Step 5 ran no fallbacks and no `lean_result`/`fallback_result` disagreements arose.\n\nThe formal refutations hit the paper's core machinery. (i) The printed trapezoidal rule omits its factor $\\tfrac12$: Lean proved the expression is exactly twice the trapezoidal sum for any data set and that it returns $2$ where $\\int_0^1 1 = 1$, so every $AUC_{(0-128)}$ is inflated twofold if the formula as printed was executed. (ii) $R^2 = 6.96$ was refuted from both the residual-sum and correlation definitions of the coefficient of determination. (iii) Negative LOD and LOQ values ($-587.51$, $-1780.34\\ \\mathrm{\\mu g\\,kg^{-1}}$) are unreachable under the paper's own $3(\\sigma/m)$ and $10(\\sigma/m)$, so the Discussion's reading of them as \"minimal drug presence … affirming method impartiality\" has no basis. (iv) Those same formulas force $\\mathrm{LOQ}/\\mathrm{LOD} = 10/3$, but both reported pairs sit at $\\approx 3.03$ — the table was computed with the ICH factor $3.3$, not the stated $3$. (v) The gill pair $k = 0.01\\ \\mathrm{h^{-1}}$ with $t_{1/2} = 0.94\\ \\mathrm{h}$ violates the paper's own $t_{1/2} = \\ln 2 / k$ by a factor of $\\sim 74$. (vi) No function can carry the reported elimination half-lives: the liver gets $238.68$ and $420.28$ h, the muscle $20.56$ and $62.93$ h, the gill $198.48$ and $19.39$ h in one sentence — and under either liver value the Conclusion's \"the liver having the longest\" half-life is false, since plasma is listed at $3368.24$ h. (vii) The half-life ordering \"gill, liver, kidney, skin, muscle\" transposes kidney and skin.\n\nInformal review confirmed the most consequential defect of all: the muscle residue $C_{\\max}$ values the paper itself reports — $118$, $351$, $827$ and $1560\\ \\mathrm{\\mu g\\,kg^{-1}}$ for 1× to 10× — all exceed the EC MRL of $100\\ \\mathrm{\\mu g\\,kg^{-1}}$, and 3× upward also exceed the FDA's $200\\ \\mathrm{\\mu g\\,kg^{-1}}$, directly contradicting the Discussion and the Conclusion's \"remained well below the MRL … ensuring consumer safety\". Five further informal findings are minor: reciprocal-unit definitions for $\\lambda$ and $T$ in the Table 1 caption versus the Results text; the gill given two peak times and the plasma peak given as 3 h against a 24 h $T_{\\max}$; dimensionless $AUC$ ratios carrying $\\mathrm{h\\ \\mu g\\ kg^{-1}}$; control ALT and creatinine baselines that disagree with the paper's own table; and withdrawal times of $44$–$48$ days against day-40 residues already $20$–$80\\times$ under the MRL.\n\nThree snippets were clean. The percent-recovery formula and both first-order half-life relations ($K_a = \\ln 2 / t_{1/2a}$, $t_{1/2} = \\ln 2 / k$) are correct **as formulas** — the failures are in the numbers substituted into them, which is why FORMULA_BLOCK::0 is flagged and EQUATION::2/::3 are not. One sub-threshold observation was recorded without flagging (confidence $0.55$): \"lowest in muscle ($2460\\ \\mathrm{\\mu g\\,kg^{-1}}$)\" is wrong if plasma ($627$) counts as a comparator, but the sentence can be read as ranging over tissues only.\n\nVerdict CRITICAL_ERRORS at confidence $0.95$: six critical findings, five of them machine-checked refutations, and they strike the AUC computation, the analytical method validation, the tissue half-life table, and the consumer-safety conclusion — not peripheral detail. `lean_project_kept` is `true`: `MATH_VERIFICATION/Paper` is a pre-existing shared project (Mathlib built, 565 saved proofs from other manuscripts), so per `verify-math-lean`'s reuse rule it was not mine to delete; only per-snippet scratch (`TMP.lean`, `claim.md`) was removed, and the seven proofs were saved as `Paper/Verified/0067-OtcTrout__*_opus5.lean`."
+}

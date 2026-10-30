@@ -1,0 +1,404 @@
+{
+  "paper_name": "paper",
+  "paper_path": "/Users/iacopoghinassi/Documents/Github/Wittgenstein/data/spot-workspace/0048-The_Art_of_Staying_Ahead_of_Deadlines_Improved_Algorithms_for_the_Minimum_Tardy_Processing_Time/paper.md",
+  "tag": "opus5",
+  "lean_project": "MATH_VERIFICATION/Paper",
+  "lean_project_kept": true,
+  "totals": {
+    "snippets_extracted": 12,
+    "routed_to_math": 7,
+    "routed_to_lean": 5,
+    "lean_passed": 3,
+    "lean_refuted": 2,
+    "lean_failed": 0,
+    "lean_not_attempted": 0,
+    "fallbacks_run": 0,
+    "errors_detected": 3,
+    "unsettled_claims": 1
+  },
+  "results": [
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "Earliest-Deadline-First",
+      "content": "We employ the key observation due to Lawler and Moore [9] that w.l.o.g. the early, i.e., non-tardy, jobs may be scheduled in the sorted order of their deadlines. Thus, the problem reduces to computing a subset of jobs J* ⊆ [n] that maximizes ∑j∈J* pj and observes the deadlines of the jobs within J*, i.e., ∑i∈J*:i≤j pi ≤ dj for all j ∈ J.",
+      "route": "verify-math",
+      "route_rationale": "EDF exchange reduction: a prose argument over schedule objects the manuscript never formalises; the only crisp content is the quantifier range.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+        "verifier_name": "math",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.7,
+        "reasoning": "The reduction is the standard Lawler–Moore EDF observation and the objective is stated correctly: maximising $\\sum_{j\\in J^*} p_j$ over feasible early sets is exactly the complement of minimising tardy processing time. The feasibility condition quantifies over `for all j ∈ J`, and $J$ is never defined anywhere in the paper — it is plainly a typo for $J^*$. I checked whether the slip is consequential: reading $J = [n]$ gives a formally *stronger* condition, but it is in fact equivalent. For $j \\notin J^*$, let $j'$ be the largest element of $J^*$ with $j' \\le j$; then $\\sum_{i\\in J^*, i\\le j} p_i = \\sum_{i\\in J^*, i\\le j'} p_i \\le d_{j'} \\le d_j$, because jobs are indexed in nondecreasing deadline order. So the two quantifier ranges define the same feasible sets and the misprint is harmless. Recorded as a notational slip, not a mathematical error.",
+        "predicted_error_category": null,
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.7
+    },
+    {
+      "snippet_id": "paper::LEMMA::0",
+      "snippet_type": "LEMMA",
+      "location": "Leveraging Dynamic Strings (Lemma 3.1)",
+      "content": "**Lemma 3.1** (Dynamic String Data Structure [6, 7]). The dynamic string data structure maintains a dynamic collection \\( X \\) of non-empty strings, supporting the following operations:\n\n- **make_string(x):** Given any string \\( x \\in \\Sigma^+ \\), insert \\( x \\) into \\( X \\).\n- **concat(x_1, x_2):** Given \\( x_1, x_2 \\in X \\), insert the concatenated string \\( x_1x_2 \\) into \\( X \\).\n- **split(x, i):** Given \\( x \\in X \\) and \\( i \\in [0..|x|) \\), insert \\( x[0..i] \\) and \\( x(i..|x|] \\) into \\( X \\).\n\nLet \\( s \\) be the maximum of the total length of all strings and the number of executed operations. Then all operations run in randomized time \\( O(\\log s) \\) or in deterministic time \\( O(\\log^{1+o(1)} s) \\), except for **make_string** which takes time \\( O(|x| + \\log s) \\) and \\( O(|x| \\cdot \\log^{o(1)} s) \\), respectively.",
+      "route": "verify-math",
+      "route_rationale": "An imported data-structure interface with cited complexity bounds; nothing to formalise, only internal consistency to check.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::LEMMA::0",
+        "verifier_name": "math",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.65,
+        "reasoning": "The stated bounds match the known dynamic-strings results of [6, 7] and are internally consistent. The two pieces produced by `split(x, i)` do partition $x$ under the paper's own interval convention ($[i..j] = \\{i,\\dots,j\\}$): the prefix $x[0..i]$ has length $i+1$ and the suffix has length $|x|-i-1$, summing to $|x|$; requiring $i \\in [0..|x|)$ is exactly what keeps both pieces non-empty, as the structure demands. One loose endpoint: writing the suffix as $x(i..|x|]$ names index $|x|$, which is out of range for a $0$-indexed string of length $|x|$; it should be $x(i..|x|)$. That is a transcription slip in the interval notation, not an error in the bounds. Not flagged.",
+        "predicted_error_category": null,
+        "snippet_type": "LEMMA",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.65
+    },
+    {
+      "snippet_id": "paper::DEFINITION::0",
+      "snippet_type": "DEFINITION",
+      "location": "Leveraging Dynamic Strings",
+      "content": "Let \\( u \\) be the string size (this will be set to \\( d_{\\max} + 1 \\) later). We represent a set \\( S \\subseteq [n] \\) by its corresponding indicator string \\( x_S \\in \\{0, 1\\}^u \\), i.e., \\( i \\in S \\) if and only if \\( x_S[i] = 1 \\). [Context: the notation section fixes [n] := {1, ..., n}; footnote 2 states \"The offset of '+1' is necessary to account for deadlines of value 0\".]",
+      "route": "verify-math",
+      "route_rationale": "A ground-set/domain mismatch between the declared type of S and the length of its indicator string; settled by inspection against the paper's own notation.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::DEFINITION::0",
+        "verifier_name": "math",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.85,
+        "reasoning": "The sets being represented by indicator strings are the dynamic-programming sets $S_j$, which are sets of **processing-time sums**, contained in $[0..d_{\\max}]$ — not subsets of the job index set. Writing $S \\subseteq [n]$ is wrong on three counts, each checkable against the paper's own text:\n\n1. **Wrong ground set.** Three paragraphs earlier the paper states the invariant $S_{j-1} \\subseteq [0..d_{j-1}]$, so $S \\subseteq [0..d_{\\max}]$, which has nothing to do with $[n]$.\n2. **Length mismatch.** An indicator string of a subset of a ground set $G$ must have length $|G|$. Here $|x_S| = u = d_{\\max}+1$, forcing $S \\subseteq [0..u-1] = [0..d_{\\max}]$. If $S \\subseteq [n]$ were correct, $u$ would have to be $n+1$ — which would destroy the entire point of the paper, namely that the string size is $d_{\\max}+1$ rather than $2P+1$.\n3. **Excludes index 0.** The notation section fixes $[n] := \\{1,\\dots,n\\}$, so $0 \\notin [n]$, yet the definition indexes $x_S[0]$ and footnote 2 explicitly insists the $+1$ offset exists precisely to accommodate the value $0$. $S_0 = \\{0\\}$ is the DP base case.\n\nThe correct reading is $S \\subseteq [0..u-1]$. The defect is confined to this sentence and nothing downstream depends on the wrong ground set, so the argument survives.",
+        "predicted_error_category": "Domain/Constraint violation",
+        "snippet_type": "DEFINITION",
+        "contradiction_locations": [
+          "\\( S \\subseteq [n] \\)"
+        ]
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::0",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "Leveraging Dynamic Strings",
+      "content": "To initialize the data structure, we build \\( 0^u \\) by inserting the word \\( w = 0 \\) and self-concatenating it \\( \\log u \\) times. This takes time \\( O(\\log^2 u) \\).",
+      "route": "verify-math",
+      "route_rationale": "Complexity bookkeeping over the Lemma 3.1 cost model; arithmetic a careful reader can check directly.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::0",
+        "verifier_name": "math",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.75,
+        "reasoning": "The accounting is right under Lemma 3.1's randomized bounds. One `make_string` on a single character costs $O(1 + \\log s)$; repeated self-concatenation doubles the length, so $\\lceil\\log u\\rceil$ `concat` calls suffice. The total length of all strings created is $1 + 2 + 4 + \\dots + u = \\Theta(u)$ and the operation count is $O(\\log u)$, so $s = \\Theta(u)$ and $\\log s = \\Theta(\\log u)$. Hence $O(\\log u) \\cdot O(\\log u) = O(\\log^2 u)$. $\\checkmark$\n\nTwo caveats that do not amount to errors: doubling yields $0^{2^{\\lceil \\log u\\rceil}}$, which equals $0^u$ only when $u$ is a power of two — in general one extra `split` is needed to cut it down to length exactly $u$, and that costs a further $O(\\log u)$, leaving the bound unchanged. And $O(\\log^2 u)$ is the randomized figure; the deterministic variant of Lemma 3.1 gives $O(\\log^{2+o(1)} u)$. Both are absorbed by the $\\tilde{O}$ in the final running time.",
+        "predicted_error_category": null,
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.75
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::1",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "Our Approach",
+      "content": "First, observe that, by construction, the following invariant holds: \\(S_{j-1} \\subseteq [0..d_{j-1}]\\). The new algorithm works as follows. Instead of directly performing Eq. (3b) as is, we first split \\(S_j\\) into two parts w.r.t. to \\(d_j - p_j\\), i.e., we obtain \\(L_{j-1} := S_{j-1} \\cap [0..d_j - p_j]\\) and \\(R_{j-1} := S_{j-1} \\cap (d_j - p_j..d_j]\\). We will see later how \\(L_{j-1}\\) and \\(R_{j-1}\\) can be computed via the dynamic string data structure. We then compute \\(\\tilde{S}_j = L_{j-1} + p_j\\). Finally, we need to merge \\(\\tilde{S}_j\\) with both \\(L_{j-1}\\) and \\(R_{j-1}\\) to obtain the final \\(S_j\\). Better said, we are left with merging \\(\\tilde{S}_j\\) with \\(S_{j-1}\\) to get \\(S_j = \\tilde{S}_j \\cup S_{j-1}\\). [Context: Lawler–Moore recurrence S_j = (S_{j-1} ∪ (S_{j-1} + p_j)) ∩ [0..d_j]; jobs sorted by deadline so d_{j-1} ≤ d_j; A + b = {a + b | a ∈ A}.]",
+      "route": "verify-math-lean",
+      "route_rationale": "The core correctness identity of the refined algorithm; a crisp set-theoretic claim whose truth turns on the invariant and the deadline ordering.",
+      "lean_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::1",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "Formalised the load-bearing claim $S_j = \\tilde{S}_j \\cup S_{j-1}$, i.e. that dropping the trim against $d_j$ and instead pre-splitting at $d_j - p_j$ computes exactly the Lawler–Moore set. Hypotheses carried over from the paper and nothing more: $S_{j-1} \\subseteq [0..d_{j-1}]$ (the stated invariant), $d_{j-1} \\le d_j$ (EDF ordering), and nonnegative integer data. $L_{j-1} = S_{j-1} \\cap [0..d_j-p_j]$ was rendered as $\\{x \\in S_{j-1} \\mid x + p_j \\le d_j\\}$ to avoid importing Lean's truncated $\\mathbb{N}$-subtraction, which is the faithful reading of the paper's integer interval (it is empty exactly when $p_j > d_j$, as $[0..d_j-p_j]$ should be). Lean proved all three parts: the identity, the propagation of the invariant to $S_j \\subseteq [0..d_j]$, and the monotonicity $S_{j-1} \\subseteq S_j$ that Lemma 3.2 later depends on. Clean compile, no `sorry`, no `sorryAx`. Incidental: the text says \"we first split $S_j$ into two parts\" where it means $S_{j-1}$, and $R_{j-1}$ is defined but never used (the merge is against all of $S_{j-1}$) — harmless.",
+        "predicted_error_category": null,
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/0048-TardyProcessingTime__MATHEMATICAL_MODEL__1_opus5.lean",
+          "formal_statement": "theorem refined_step_eq (p d' d : ℕ) (S : Set ℕ)\n    (hS : S ⊆ Set.Iic d') (hd : d' ≤ d) :\n    ((S ∪ (fun x => x + p) '' S) ∩ Set.Iic d)\n      = ((fun x => x + p) '' {x ∈ S | x + p ≤ d}) ∪ S\n\ntheorem refined_step_invariant (p d' d : ℕ) (S : Set ℕ)\n    (hS : S ⊆ Set.Iic d') (hd : d' ≤ d) :\n    ((fun x => x + p) '' {x ∈ S | x + p ≤ d}) ∪ S ⊆ Set.Iic d\n\ntheorem refined_step_mono (p d : ℕ) (S : Set ℕ) :\n    S ⊆ ((fun x => x + p) '' {x ∈ S | x + p ≤ d}) ∪ S",
+          "compiler_feedback": "Paper/TMP.lean:14:4: warning: `Set.mem_setOf_eq` has been deprecated: Use `Set.mem_ofPred_eq` instead\nEXIT=0\n✔ [8706/8706] Built Paper.TMP (12s)\nBuild completed successfully (8706 jobs).\n'TardyRefinedStep.refined_step_eq' depends on axioms: [propext, Quot.sound]\n'TardyRefinedStep.refined_step_invariant' does not depend on any axioms\n'TardyRefinedStep.refined_step_mono' does not depend on any axioms",
+          "axioms": [
+            "propext",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::1",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "Leveraging Dynamic Strings",
+      "content": "Then, to obtain \\( L_{j-1} \\), we split \\( x_{S_{j-1}} \\) at position \\( d_j - p_j \\). Afterward, we can compute \\( \\widetilde{S}_j \\) by shifting \\( x_{L_{j-1}} \\) by \\( p_j \\) positions. Namely, we perform **concat(\\( 0^{p_j}, x_{L_{j-1}} \\))**, where the string \\( 0^{p_j} \\) can be obtained by splitting off the above pre-computed \\( 0^u \\) via **split(\\( 0^u, p_j \\))**. We finally trim the resulting string to length \\( u \\) via **split(\\( 0^{p_j} x_{L_{j-1}}, u \\))**. Merging \\( \\widetilde{S}_j \\) with \\( S_{j-1} \\) is now a bit-wise OR of \\( x_{\\widetilde{S}_j} \\) and \\( x_{S_{j-1}} \\), and can be implemented in the same way as by Fischer and Wennmann [5]. [Context: Lemma 3.1 defines split(x, i) for i ∈ [0..|x|), producing the inclusive prefix x[0..i] and x(i..|x|]; the notation section fixes [i..j] := {i, ..., j}; u = d_max + 1 and |x_{S_{j-1}}| = u.]",
+      "route": "verify-math-lean",
+      "route_rationale": "The string lengths produced by the split/concat/trim pipeline are exact integer arithmetic over the paper's own stated conventions — ideal for a machine check.",
+      "lean_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::1",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.8,
+        "reasoning": "Modelled strings as bit lists and the paper's inclusive prefix $x[0..i]$ (from Lemma 3.1's `split`) as `x.take (i+1)`, which is forced by the paper's own convention $[i..j] := \\{i,\\dots,j\\}$ and by the requirement that both pieces of a split be non-empty for every admissible $i \\in [0..|x|)$. Under $u = d_{\\max}+1$, $p_j \\le d_j \\le d_{\\max}$ and $|x_{S_{j-1}}| = u$, Lean proved:\n\n- `shifted_length`: $|0^{p_j} \\cdot x_{S_{j-1}}[0..d_j-p_j]| = p_j + (d_j - p_j + 1) = d_j + 1$.\n- `trim_index_out_of_range`: $d_j + 1 \\le u$, hence $\\lnot(u < d_j+1)$ — the index $u$ lies **outside** the admissible range $[0..|x|)$ that Lemma 3.1 requires, so the stated `split(`$0^{p_j} x_{L_{j-1}}$`, u)` is not a legal operation.\n- `shifted_strictly_shorter`: when $d_j < d_{\\max}$ the shifted string has length $d_j + 1 < u$, so it is **shorter** than $x_{S_{j-1}}$ and must be **padded** to $u$, not trimmed, before the bit-wise OR against $x_{S_{j-1}}$ can be taken.\n- `split_zeros_gives_p_succ`: `split(`$0^u$`, `$p_j$`)` returns the prefix $0^{p_j+1}$, not the $0^{p_j}$ the text asks for; obtaining $0^{p_j}$ needs `split(`$0^u$`, `$p_j-1$`)`.\n\nSo the trimming step is stated in the wrong direction: pre-splitting at $d_j - p_j$ is exactly what makes trimming unnecessary — that is the paper's own stated advantage over Fischer and Wennmann — and what the pipeline actually needs at that point is zero-padding on the right. Both defects are presentational / implementation-level: the corrected pipeline has the same $O(1)$ operation count per job, so the running-time analysis and all of Section 4 are unaffected.",
+        "predicted_error_category": "Formally refuted",
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": [
+          "**split(\\( 0^{p_j} x_{L_{j-1}}, u \\))**",
+          "**split(\\( 0^u, p_j \\))**"
+        ],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/0048-TardyProcessingTime__FORMULA_BLOCK__1_opus5.lean",
+          "formal_statement": "def pre (x : List Bool) (i : ℕ) : List Bool := x.take (i + 1)\n\ntheorem split_zeros_gives_p_succ (u p : ℕ) (h : p < u) :\n    pre (List.replicate u false) p = List.replicate (p + 1) false\n\ntheorem shifted_length (u p d : ℕ) (xS : List Bool) (hlen : xS.length = u)\n    (hp : p ≤ d) (hd : d + 1 ≤ u) :\n    (List.replicate p false ++ pre xS (d - p)).length = d + 1\n\ntheorem trim_index_out_of_range (u p d dmax : ℕ) (hu : u = dmax + 1)\n    (hp : p ≤ d) (hd : d ≤ dmax) (xS : List Bool) (hlen : xS.length = u) :\n    ¬ (u < (List.replicate p false ++ pre xS (d - p)).length)\n\ntheorem shifted_strictly_shorter (u p d dmax : ℕ) (hu : u = dmax + 1)\n    (hp : p ≤ d) (hd : d < dmax) (xS : List Bool) (hlen : xS.length = u) :\n    (List.replicate p false ++ pre xS (d - p)).length < u",
+          "compiler_feedback": "EXIT=0\n✔ [8706/8706] Built Paper.TMP (11s)\nBuild completed successfully (8706 jobs).\n'TardyStringPipeline.split_zeros_gives_p_succ' depends on axioms: [propext, Quot.sound]\n'TardyStringPipeline.shifted_length' depends on axioms: [propext, Quot.sound]\n'TardyStringPipeline.trim_index_out_of_range' depends on axioms: [propext, Quot.sound]\n'TardyStringPipeline.shifted_strictly_shorter' depends on axioms: [propext, Quot.sound]",
+          "axioms": [
+            "propext",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::LEMMA::1",
+      "snippet_type": "LEMMA",
+      "location": "Running Time Analysis (Lemma 3.2)",
+      "content": "**Lemma 3.2.** It holds that \\( \\sum_{i \\in [n]} |\\widetilde{S}_j \\setminus S_{j-1}| \\leq d_{\\max} + 1 \\). [Context: the refined recurrence S_j = \\widetilde{S}_j ∪ S_{j-1} gives S_{j-1} ⊆ S_j and \\widetilde{S}_j ⊆ S_j, and every S_j ⊆ [0..d_j] ⊆ [0..d_max]. The lemma bounds the cumulative number of insertions into the dynamic string structure.]",
+      "route": "verify-math-lean",
+      "route_rationale": "A combinatorial counting bound over a monotone family of finite sets; exactly the kind of claim a formal check settles outright.",
+      "lean_result": {
+        "snippet_id": "paper::LEMMA::1",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.7,
+        "reasoning": "Two renderings were formalised.\n\n**Intended reading — PROVED.** With the summation index $j$, Lean proved `insertion_bound`: for a monotone family $S$ with $\\tilde{S}_j \\subseteq S_j$ and $S_j \\subseteq [0..d_{\\max}]$, $\\sum_{j\\in[1..n]} |\\tilde{S}_j \\setminus S_{j-1}| \\le d_{\\max}+1$. The proof shows the sets $\\tilde{S}_j \\setminus S_{j-1}$ are pairwise disjoint (for $a < b$, $\\tilde{S}_a \\setminus S_{a-1} \\subseteq S_a \\subseteq S_{b-1}$, which $\\tilde{S}_b \\setminus S_{b-1}$ avoids) and all sit inside $[0..d_{\\max}]$. Clean compile, no `sorry`, no `sorryAx`. **The mathematical content of Lemma 3.2 is correct.**\n\n**Literal printed reading — REFUTED.** As typeset the sum runs over $i \\in [n]$ while the summand is indexed by the free variable $j$, so the statement is ill-formed: it reads as $n \\cdot |\\tilde{S}_j \\setminus S_{j-1}|$, which is not bounded by $d_{\\max}+1$. `literal_reading_false` compiles a counterexample with $d_{\\max}=0$, $n=2$, $j=1$, $S_k = \\tilde{S}_k = \\emptyset$ for $k=0$ and $\\{0\\}$ otherwise: all hypotheses hold and the sum is $2 > 1$.\n\nThe same $i/j$ mismatch recurs twice inside the proof of Lemma 3.2, while Lemma 4.1 and its proof use $j$ correctly — so the intent is unambiguous and this is a typographical defect, not a flaw in the argument. Flagged as `minor` at confidence $0.7$ rather than the $\\ge 0.9$ a REFUTED normally carries, precisely because what Lean refuted is the misprint and not the mathematics.",
+        "predicted_error_category": "Formally refuted",
+        "snippet_type": "LEMMA",
+        "contradiction_locations": [
+          "\\( \\sum_{i \\in [n]} |\\widetilde{S}_j \\setminus S_{j-1}| \\leq d_{\\max} + 1 \\)"
+        ],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/0048-TardyProcessingTime__LEMMA__1_opus5.lean",
+          "formal_statement": "-- intended reading: PROVED\ntheorem insertion_bound (n dmax : ℕ) (S St : ℕ → Finset ℕ)\n    (hmono : ∀ a b, a ≤ b → S a ⊆ S b)\n    (hSt : ∀ j, St j ⊆ S j)\n    (hsub : ∀ j, S j ⊆ Finset.range (dmax + 1)) :\n    ∑ j ∈ Finset.Icc 1 n, ((St j) \\ S (j - 1)).card ≤ dmax + 1\n\n-- literal printed reading: REFUTED\ntheorem literal_reading_false :\n    ¬ ∀ (n dmax j : ℕ) (S St : ℕ → Finset ℕ),\n        (∀ a b, a ≤ b → S a ⊆ S b) → (∀ k, St k ⊆ S k) →\n        (∀ k, S k ⊆ Finset.range (dmax + 1)) →\n        ∑ _i ∈ Finset.Icc 1 n, ((St j) \\ S (j - 1)).card ≤ dmax + 1",
+          "compiler_feedback": "EXIT=0\nBuild completed successfully (8706 jobs).\n'TardyLemma32.insertion_bound' depends on axioms: [propext, Classical.choice, Quot.sound]\n'TardyLemma32.literal_reading_false' depends on axioms: [propext, Classical.choice, Quot.sound]",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.7
+    },
+    {
+      "snippet_id": "paper::PROOF::0",
+      "snippet_type": "PROOF",
+      "location": "Running Time Analysis (proof of Lemma 3.2)",
+      "content": "**Proof.** A benefit of the new algorithm is that, compared to Ref. [5], we do not need to split w.r.t. \\( d_j \\) since the set \\( S_j \\) is, by construction, already filtered out of processing times greater than \\( d_j \\). Hence, for any \\( x \\in [0..d_{\\max}] \\), once \\( x \\in \\widetilde{S}_j \\setminus S_{j-1} \\), then \\( x \\in S_j, \\ldots, S_n \\) and, hence, we have\n\\[\n|\\{i \\in [n] \\mid x \\in \\widetilde{S}_j \\setminus S_{j-1}\\}| \\leq 1.\n\\]\nWith this observation, the cumulative number of insertions reads\n\\[\n\\sum_{i \\in [n]} |\\widetilde{S}_j \\setminus S_{j-1}| = \\sum_{x \\in [0..d_{\\max}]} |\\{i \\in [n] \\mid x \\in \\widetilde{S}_j \\setminus S_{j-1}\\}| \\leq d_{\\max} + 1.\n\\]",
+      "route": "verify-math-lean",
+      "route_rationale": "The double-counting identity and the multiplicity bound are the steps that carry the load; both are formalisable verbatim.",
+      "lean_result": {
+        "snippet_id": "paper::PROOF::0",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "Formalised the proof as the paper runs it, in three steps, then reassembled it.\n\n1. `persists` — the persistence claim \"once $x \\in \\tilde{S}_j \\setminus S_{j-1}$, then $x \\in S_j, \\ldots, S_n$\": follows from $\\tilde{S}_j \\subseteq S_j$ and monotonicity, both of which were themselves machine-verified at `paper::MATHEMATICAL_MODEL::1`.\n2. `at_most_one` — the multiplicity bound $|\\{j \\in [n] \\mid x \\in \\tilde{S}_j \\setminus S_{j-1}\\}| \\le 1$.\n3. `double_count` — the displayed exchange of summation $\\sum_{j} |A_j| = \\sum_{x \\in U} |\\{j \\mid x \\in A_j\\}|$, valid whenever every $A_j \\subseteq U$, proved by expanding cardinalities as sums of indicators and applying `Finset.sum_comm`.\n4. `lemma32_via_double_counting` — steps 2 and 3 combined to give $\\le |[0..d_{\\max}]| = d_{\\max}+1$, i.e. the paper's chain of (in)equalities end to end.\n\nClean compile, no `sorry`, no `sorryAx`. The proof strategy is sound and complete as written; the only defect is the $i$ versus $j$ summation index, recorded against `paper::LEMMA::1`.",
+        "predicted_error_category": null,
+        "snippet_type": "PROOF",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/0048-TardyProcessingTime__PROOF__0_opus5.lean",
+          "formal_statement": "theorem persists (hmono : ∀ a b, a ≤ b → S a ⊆ S b) (hSt : ∀ j, St j ⊆ S j)\n    (x j : ℕ) (hx : x ∈ (St j) \\ S (j - 1)) : ∀ k, j ≤ k → x ∈ S k\n\ntheorem at_most_one (n : ℕ) (hmono : ∀ a b, a ≤ b → S a ⊆ S b)\n    (hSt : ∀ j, St j ⊆ S j) (x : ℕ) :\n    ((Finset.Icc 1 n).filter (fun j => x ∈ (St j) \\ S (j - 1))).card ≤ 1\n\ntheorem double_count (T U : Finset ℕ) (A : ℕ → Finset ℕ) (hA : ∀ j ∈ T, A j ⊆ U) :\n    ∑ j ∈ T, (A j).card = ∑ x ∈ U, (T.filter (fun j => x ∈ A j)).card\n\ntheorem lemma32_via_double_counting (n dmax : ℕ)\n    (hmono : ∀ a b, a ≤ b → S a ⊆ S b) (hSt : ∀ j, St j ⊆ S j)\n    (hsub : ∀ j, S j ⊆ Finset.range (dmax + 1)) :\n    ∑ j ∈ Finset.Icc 1 n, ((St j) \\ S (j - 1)).card ≤ dmax + 1",
+          "compiler_feedback": "EXIT=0\n✔ [8706/8706] Built Paper.TMP (12s)\nBuild completed successfully (8706 jobs).\n'TardyProof32.persists' depends on axioms: [propext, Classical.choice, Quot.sound]\n'TardyProof32.at_most_one' depends on axioms: [propext, Classical.choice, Quot.sound]\n'TardyProof32.double_count' depends on axioms: [propext, Classical.choice, Quot.sound]\n'TardyProof32.lemma32_via_double_counting' depends on axioms: [propext, Classical.choice, Quot.sound]",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::LEMMA::2",
+      "snippet_type": "LEMMA",
+      "location": "Multiple Machines (Lemma 4.1)",
+      "content": "**Lemma 4.1.** It holds that \\(\\sum_{j \\in [n]} \\left| \\widetilde{S}_j \\setminus S_{j-1} \\right| \\leq (d_{\\max} + 1)^m\\). [Context: the sets are now subsets of [0..P]^m, one coordinate per machine; the refined algorithm applies the trimming strategy point-wise, so S_j ⊆ [0..d_j]^m ⊆ [0..d_max]^m.]",
+      "route": "verify-math-lean",
+      "route_rationale": "Same counting argument lifted to a product ground set; the cardinality (d_max+1)^m is exactly checkable.",
+      "lean_result": {
+        "snippet_id": "paper::LEMMA::2",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "Generalised the Lemma 3.2 counting argument to an arbitrary finite ground set ($\\sum_j |\\tilde{S}_j \\setminus S_{j-1}| \\le |U|$ for a monotone family inside $U$) and instantiated it at the product box $[0..d_{\\max}]^m$, with $|[0..d_{\\max}]^m| = (d_{\\max}+1)^m$ proved separately. Lean accepted all three declarations cleanly, no `sorry`, no `sorryAx`, so Lemma 4.1 holds exactly as stated — and here the paper does index the sum by $j$ correctly.\n\nOne hypothesis the paper assumes without argument: that point-wise trimming at $d_j$ leaves $S_j \\subseteq [0..d_j]^m$ without discarding feasible states. It is true — on any machine, the last early job $i \\le j$ assigned to it forces that machine's load to be $\\le d_i \\le d_j$, so every coordinate of a feasible state is $\\le d_j$ — but the paper does not say so. Noted, not flagged.",
+        "predicted_error_category": null,
+        "snippet_type": "LEMMA",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/0048-TardyProcessingTime__LEMMA__2_opus5.lean",
+          "formal_statement": "theorem insertion_bound_general {α : Type*} [DecidableEq α] (n : ℕ) (U : Finset α)\n    (S St : ℕ → Finset α)\n    (hmono : ∀ a b, a ≤ b → S a ⊆ S b) (hSt : ∀ j, St j ⊆ S j)\n    (hsub : ∀ j, S j ⊆ U) :\n    ∑ j ∈ Finset.Icc 1 n, ((St j) \\ S (j - 1)).card ≤ U.card\n\ntheorem card_box (m dmax : ℕ) :\n    (Fintype.piFinset (fun _ : Fin m => Finset.range (dmax + 1))).card\n      = (dmax + 1) ^ m\n\ntheorem insertion_bound_multi (m n dmax : ℕ) (S St : ℕ → Finset (Fin m → ℕ))\n    (hmono : ∀ a b, a ≤ b → S a ⊆ S b) (hSt : ∀ j, St j ⊆ S j)\n    (hsub : ∀ j, S j ⊆ Fintype.piFinset (fun _ : Fin m => Finset.range (dmax + 1))) :\n    ∑ j ∈ Finset.Icc 1 n, ((St j) \\ S (j - 1)).card ≤ (dmax + 1) ^ m",
+          "compiler_feedback": "EXIT=0\nBuild completed successfully (8706 jobs).\n'TardyLemma41.insertion_bound_general' depends on axioms: [propext, Classical.choice, Quot.sound]\n'TardyLemma41.card_box' depends on axioms: [propext, Classical.choice, Quot.sound]\n'TardyLemma41.insertion_bound_multi' depends on axioms: [propext, Classical.choice, Quot.sound]",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::PROOF::1",
+      "snippet_type": "PROOF",
+      "location": "Multiple Machines (proof of Lemma 4.1)",
+      "content": "**Proof.** We closely follow our proof for Lemma 3.2. Namely, we make the observation that for any \\(x \\in [0..d_{\\max}]^m\\), once \\(x \\in \\widetilde{S}_j \\setminus S_{j-1}\\), then \\(x \\in S_j, \\ldots, S_n\\). Hence, we have\n\n\\[\n|\\{ j \\in [n] \\mid x \\in \\widetilde{S}_j \\setminus S_{j-1} \\}| \\leq 1.\n\\]\n\nTherefore, we can bound the total number of insertions by\n\n\\[\n\\sum_{j \\in [n]} \\left| \\widetilde{S}_j \\setminus S_{j-1} \\right| = \\sum_{x \\in [0..d_{\\max}]^m} |\\{ j \\in [n] \\mid x \\in \\widetilde{S}_j \\setminus S_{j-1} \\}| \\leq (d_{\\max} + 1)^m.",
+      "route": "verify-math",
+      "route_rationale": "Structurally identical to PROOF::0, whose every step Lean verified, and its conclusion (Lemma 4.1) was itself machine-checked; inspection against those results suffices.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::PROOF::1",
+        "verifier_name": "math",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.8,
+        "reasoning": "The argument is the Lemma 3.2 proof transported to the product ground set, and both ends of it were independently machine-checked in this run: every step of the single-machine version at `paper::PROOF::0`, and the conclusion at `paper::LEMMA::2` (where the generalised counting lemma was proved over an arbitrary finite $U$ and instantiated at $[0..d_{\\max}]^m$). The three ingredients transfer verbatim — persistence from monotonicity, multiplicity $\\le 1$ from disjointness, and the double count — and $|[0..d_{\\max}]^m| = (d_{\\max}+1)^m$ is correct. The summation index is $j$ here, so the misprint of Lemma 3.2 is absent.\n\nOne genuine gap, same as noted at `paper::LEMMA::2`: the double count ranges over $[0..d_{\\max}]^m$, which presupposes $S_j \\subseteq [0..d_j]^m$, i.e. that point-wise trimming at $d_j$ discards no feasible state. That is true but asserted rather than argued (\"The key idea is to apply our trimming strategy point-wise\"). An incomplete justification, not an error.",
+        "predicted_error_category": null,
+        "snippet_type": "PROOF",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::2",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "Multiple Machines",
+      "content": "Our refined analysis can be extended to the setting of \\(m\\) machines. In that context, the original dynamic program slightly changes, but the core idea remains the same. In particular, we can define similar sets \\(S_0, \\ldots, S_n\\) which are this time subsets of \\([0..P]^m\\), i.e., the \\(i\\)-th entry of each vector corresponds to the \\(i\\)-th machine:\n\nA feasible schedule of total processing time \\(t\\) exists if and only if there exists \\(s \\in S_n\\) such that \\(s_1 + \\ldots + s_m = t\\) [9]. It is now easy to see that we can apply our refined algorithm for the single-machine setting to this setting as well. The key idea is to apply our trimming strategy point-wise, for each of the \\(m\\) (independent) entries of the vectors.",
+      "route": "verify-math",
+      "route_rationale": "The load-bearing recurrence is a display block that did not survive extraction, so there is no formal object to state; routed for best-effort informal judgement.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::2",
+        "verifier_name": "math",
+        "status": "UNVERIFIABLE",
+        "error_detected": false,
+        "confidence": 0.3,
+        "reasoning": "The sentence \"we can define similar sets $S_0, \\ldots, S_n$ ... subsets of $[0..P]^m$:\" ends in a colon introducing a displayed recurrence that is **absent** from the manuscript as supplied — the display block did not survive extraction, exactly as Eqs. (3a)–(3c) did not. Without the recurrence, the characterisation \"a feasible schedule of total processing time $t$ exists iff there exists $s \\in S_n$ with $s_1 + \\ldots + s_m = t$\" has no definition of $S_n$ to be checked against, so the biconditional cannot be verified either way.\n\nWhat can be said: the characterisation is the standard Lawler–Moore multi-machine statement and is attributed to [9]; the state space $[0..P]^m$ with one coordinate per machine is the usual encoding; and the point-wise trimming the paragraph proposes is in fact sound (see `paper::LEMMA::2`). Nothing here looks wrong. Reported `UNVERIFIABLE` because the manuscript as given does not contain the object the claim is about, not because of any suspicion about it.",
+        "predicted_error_category": null,
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": []
+      },
+      "status": "UNVERIFIABLE",
+      "error_detected": false,
+      "confidence": 0.3
+    },
+    {
+      "snippet_id": "paper::EQUATION::0",
+      "snippet_type": "EQUATION",
+      "location": "Our Results / Running Time Analysis / Conclusion",
+      "content": "Using the dynamic string data structure with string-size \\( u = d_{\\max} + 1 \\), we obtain an \\(\\tilde{O}(n + d_{\\max})\\)-time algorithm. [Together with: \"We show that an Õ(n + dmax)-time algorithm does indeed exist. ... Our analysis also extends to the multi-machine setting, resulting in a Õ(n + d^mmax)-time algorithm.\" and \"we manage to bound the number of insertions by \\( d_{\\max} + 1 \\) instead of \\( 2P + 1 \\)\".]",
+      "route": "verify-math",
+      "route_rationale": "An asymptotic running-time claim: its content is consistency with the lemmas and the Lemma 3.1 cost model, which is an inspection task rather than a formal one.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::0",
+        "verifier_name": "math",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.8,
+        "reasoning": "The running times are consistent with everything the paper establishes, and the two components it must account for are both covered.\n\n*Single machine.* Per job the refined step performs $O(1)$ dynamic-string operations (one `split` for $L_{j-1}$, one `split` to obtain the zero block, one `concat`), each $O(\\log s)$ by Lemma 3.1, giving $\\tilde{O}(n)$ over all $n$ jobs; initialisation is $O(\\log^2 u)$; and the bit-wise OR merges cost $\\tilde{O}(1)$ per job plus $\\tilde{O}(1)$ per newly set bit, which Lemma 3.2 — machine-verified here — bounds in total by $d_{\\max}+1$. Sum: $\\tilde{O}(n + d_{\\max})$. $\\checkmark$ The headline comparison is also right: the string size drops from $2P+1$ to $d_{\\max}+1$ because the pre-split at $d_j - p_j$ makes the shifted set fit inside $[0..d_j]$, which is precisely the identity verified at `paper::MATHEMATICAL_MODEL::1`.\n\n*Multiple machines.* The $m$-dimensional string has $(d_{\\max}+1)^m$ positions, so initialisation is $\\tilde{O}(d_{\\max}^m)$, and Lemma 4.1 — also machine-verified — bounds the insertions by $(d_{\\max}+1)^m$. Sum: $\\tilde{O}(n + d_{\\max}^m)$, as claimed. $\\checkmark$ ($m$ is fixed constant by assumption.)\n\nNote that this is a claim about the running time of a pipeline whose implementation description contains the defect recorded at `paper::FORMULA_BLOCK::1`. The repair there (pad to length $u$ instead of trimming to it) is still $O(1)$ dynamic-string operations per job, so it does not disturb either bound.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.8
+    }
+  ],
+  "findings": [
+    {
+      "snippet_id": "paper::DEFINITION::0",
+      "category": "Domain/Constraint violation",
+      "severity": "minor",
+      "confidence": 0.85,
+      "evidence": "The sets carried by the indicator strings are the DP sets $S_j$ of **processing-time sums**, which the paper itself confines to $[0..d_{\\max}]$ (\"the following invariant holds: $S_{j-1} \\subseteq [0..d_{j-1}]$\"). Declaring $S \\subseteq [n]$ names the job-index set instead, and is inconsistent with its own sentence in two further ways: an indicator string over ground set $G$ must have length $|G|$, and here $|x_S| = u = d_{\\max}+1$, which forces $S \\subseteq [0..d_{\\max}]$ — if $S \\subseteq [n]$ were meant, $u$ would have to be $n+1$, collapsing the paper's whole contribution; and the notation section fixes $[n] := \\{1,\\dots,n\\}$, so $0 \\notin [n]$, yet $x_S[0]$ is indexed and footnote 2 insists the $+1$ offset exists exactly \"to account for deadlines of value 0\" (the base case is $S_0 = \\{0\\}$). Should read $S \\subseteq [0..u-1]$. Nothing downstream uses the wrong ground set, so the result stands.",
+      "verifier": "verify-math",
+      "exact_quote": "We represent a set \\( S \\subseteq [n] \\) by its corresponding indicator string \\( x_S \\in \\{0, 1\\}^u \\), i.e., \\( i \\in S \\) if and only if \\( x_S[i] = 1 \\)."
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::1",
+      "category": "Formally refuted",
+      "severity": "minor",
+      "confidence": 0.8,
+      "evidence": "Lean refuted the trimming step under the paper's own conventions. With $u = d_{\\max}+1$, $|x_{S_{j-1}}| = u$ and $p_j \\le d_j \\le d_{\\max}$, the shifted string has length $|0^{p_j}| + |x_{S_{j-1}}[0..d_j-p_j]| = p_j + (d_j - p_j + 1) = d_j + 1 \\le u$. Lemma 3.1 admits `split(x, i)` only for $i \\in [0..|x|)$, and $\\lnot(u < d_j+1)$, so `split(`$0^{p_j} x_{L_{j-1}}$`, u)` is not a legal split; worse, when $d_j < d_{\\max}$ the string is *strictly shorter* than $u$, so what the subsequent bit-wise OR against $x_{S_{j-1}}$ (length $u$) requires is zero-**padding** up to $u$, not trimming down to it. The step is stated in the wrong direction: pre-splitting at $d_j - p_j$ is exactly what makes trimming unnecessary, which is the paper's own stated advantage over Ref. [5]. A second, independent off-by-one in the same block: under the paper's convention $[i..j] := \\{i,\\dots,j\\}$, `split(`$0^u$`, `$p_j$`)` returns the inclusive prefix $0^{p_j+1}$, not the $0^{p_j}$ the text asks for — taken literally the algorithm would shift by $p_j+1$. Both are presentational; the corrected pipeline is still $O(1)$ operations per job, so Lemma 3.2, Lemma 4.1 and the $\\tilde{O}(n + d_{\\max})$ bound are unaffected.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "We finally trim the resulting string to length \\( u \\) via **split(\\( 0^{p_j} x_{L_{j-1}}, u \\))**."
+    },
+    {
+      "snippet_id": "paper::LEMMA::1",
+      "category": "Notation/Index error",
+      "severity": "minor",
+      "confidence": 0.7,
+      "evidence": "The summation index is $i$ while the summand is indexed by the free variable $j$, so the statement as printed is ill-formed: it reads as $n \\cdot |\\widetilde{S}_j \\setminus S_{j-1}|$, which is not bounded by $d_{\\max}+1$. Lean compiled a counterexample to that literal reading ($d_{\\max}=0$, $n=2$, $j=1$, $S_k = \\widetilde{S}_k = \\emptyset$ for $k=0$ and $\\{0\\}$ otherwise: every hypothesis holds and the sum is $2 > 1$). The same $i/j$ mismatch recurs twice in the proof of Lemma 3.2. The intended statement — summing over $j \\in [n]$ — **was proved in Lean** in this run, and Lemma 4.1 together with its proof index the sum by $j$ correctly, so the intent is unambiguous and the mathematics is sound. Recorded as a typographical defect; the confidence is set to $0.7$ rather than the $\\ge 0.9$ a formal refutation usually carries because what Lean refuted is the misprint, not the argument.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "**Lemma 3.2.** It holds that \\( \\sum_{i \\in [n]} |\\widetilde{S}_j \\setminus S_{j-1}| \\leq d_{\\max} + 1 \\)."
+    }
+  ],
+  "verdict": "MINOR_ERRORS",
+  "verdict_confidence": 0.75,
+  "summary": "Extracted 12 mathematically verifiable snippets and routed 5 to Lean 4 (Mathlib v4.33.1, shared project `MATH_VERIFICATION/Paper`) and 7 to informal review. **All five Lean calls compiled cleanly — none `FAILED`, so no Lean-to-informal fallback was triggered.**\n\n**What Lean settled.** The paper's substantive mathematics is correct, and the three results the $\\tilde{O}(n + d_{\\max})$ claim rests on are now machine-checked:\n\n- The refined recurrence (`MATHEMATICAL_MODEL::1`): assuming only the paper's own invariant $S_{j-1} \\subseteq [0..d_{j-1}]$ and the EDF ordering $d_{j-1} \\le d_j$, Lean proved $(S_{j-1} \\cup (S_{j-1} + p_j)) \\cap [0..d_j] = \\widetilde{S}_j \\cup S_{j-1}$ where $\\widetilde{S}_j = (S_{j-1} \\cap [0..d_j - p_j]) + p_j$ — so pre-splitting at $d_j - p_j$ really does compute the Lawler–Moore set without a trim against $d_j$, together with the propagation of the invariant and the monotonicity $S_{j-1} \\subseteq S_j$ that the analysis later needs.\n- Lemma 3.2 (`LEMMA::1`) in its intended form, $\\sum_{j \\in [n]} |\\widetilde{S}_j \\setminus S_{j-1}| \\le d_{\\max}+1$, and (`PROOF::0`) every step of its proof as the paper runs it: persistence, the multiplicity bound $\\le 1$, and the displayed double-counting exchange of summation.\n- Lemma 4.1 (`LEMMA::2`), $\\sum_{j \\in [n]} |\\widetilde{S}_j \\setminus S_{j-1}| \\le (d_{\\max}+1)^m$, via the counting argument generalised to an arbitrary finite ground set and instantiated at the box $[0..d_{\\max}]^m$.\n\n**What was found.** Three confident findings, all `minor` — every one of them presentational, and none touching the correctness of the algorithm or the running-time bounds. (1) `S \\subseteq [n]` in the indicator-string definition names the job-index set where the paper means $[0..d_{\\max}]$, and is inconsistent with the string length $u = d_{\\max}+1$ and with footnote 2's insistence that index $0$ matters. (2) Lean refuted the trimming step of the dynamic-string pipeline under the paper's own Lemma 3.1 conventions: the shifted string has length exactly $d_j + 1 \\le u$, so $u$ is outside the admissible split range and the string in fact needs **padding** to $u$, not trimming — the step is stated backwards — plus a second off-by-one, `split(`$0^u$`, `$p_j$`)` yielding $0^{p_j+1}$ rather than $0^{p_j}$. (3) Lemma 3.2 sums over $i \\in [n]$ a summand indexed by the free variable $j$ (twice more in its proof), which Lean refuted as literally stated while proving the intended version; Lemma 4.1 gets the index right.\n\n**No verifier disagreements.** The informal reviews and the Lean verdicts agree throughout; the two routes were complementary rather than overlapping, and the informal pass of `EQUATION::0` was able to lean on the Lean-verified lemmas when checking that $\\tilde{O}(n + d_{\\max})$ and $\\tilde{O}(n + d_{\\max}^m)$ follow from them.\n\n**Coverage limits.** The markdown extraction lost every numbered display block: Eqs. (3a)–(3c), the Lawler–Moore recurrence that the whole paper refines, and the multi-machine recurrence are all referenced in the prose but absent from the file. `MATHEMATICAL_MODEL::2` is therefore reported `UNVERIFIABLE` — the object its biconditional is about is not in the manuscript as supplied — and the Lawler–Moore recurrence had to be supplied from the standard literature as context for `MATHEMATICAL_MODEL::1`. Two further steps are asserted rather than argued, and are noted but not flagged: that point-wise trimming at $d_j$ discards no feasible multi-machine state (true — on each machine the last early job $i \\le j$ forces load $\\le d_i \\le d_j$), and that the schedule itself, not just its value, can be retrieved in the same time (deferred to Ref. [5, Sec. 3.2]).\n\n**Verdict.** `MINOR_ERRORS`. Three confident findings, all minor; the main theorems survive every one of them, and four of the paper's load-bearing claims carry machine-checked proofs.\n\n**Lean project lifecycle.** `MATH_VERIFICATION/Paper` is a pre-existing shared project (~7.4 GB of built Mathlib plus `Paper/Verified/` proofs from dozens of other papers' runs, since every manuscript in these workspaces is stored as `paper.md` and so derives the same project name). It was **reused, not created**, so per `verify-math-lean`'s deletion rule — a reused project is not the run's to remove — all five calls kept it and `lean_project_kept` is `true`; letting the fifth call delete it would have destroyed other runs' proofs. Only per-snippet scratch (`TMP.lean`, `claim.md`) was removed, and this run's five proofs were saved as `Paper/Verified/0048-TardyProcessingTime__*_opus5.lean`."
+}

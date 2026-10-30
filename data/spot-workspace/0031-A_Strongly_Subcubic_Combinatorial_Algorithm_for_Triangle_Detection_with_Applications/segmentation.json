@@ -1,0 +1,264 @@
+{
+  "paper_id": "0031",
+  "title": "A Strongly Subcubic Combinatorial Algorithm for Triangle Detection with Applications",
+  "paper_category": "cs.DS",
+  "total_snippets": 34,
+  "snippets": [
+    {
+      "snippet_id": "0031::SECTION::0",
+      "snippet_type": "SECTION",
+      "location": "Preamble",
+      "content": "We revisit the algorithmic problem of finding a triangle in a graph: We give a randomized combinatorial algorithm for triangle detection in a given n-vertex graph with m edges running in O(n^{7/3}) time, or alternatively in O(m^{4/3}) time, and whose probability of error is at most 10^{-30} (or smaller than any fixed ε, as required, by a modest runtime increase). This may come as a surprise since it invalidates several conjectures in the literature. In particular,\n\nKeywords: triangle detection problem, Boolean matrix multiplication, witness matrix, combinatorial algorithm, randomized algorithm.\n\nMarch 5, 2024\n\nAdrian Dumitrescu*",
+      "content_length": 527,
+      "metadata": { "heading_level": 0 }
+    },
+    {
+      "snippet_id": "0031::SECTION::1",
+      "snippet_type": "SECTION",
+      "location": "Triangle detection.",
+      "content": "Consider the problem of deciding whether a given graph \\( G = (V, E) \\) contains a complete subgraph on \\( k \\) vertices. If the subgraph size \\( k \\) is part of the input, then the problem is NP-complete — the well-known CLIQUE problem, see [21] — whereas for every fixed \\( k \\), it can be answered by a brute-force algorithm running in \\( O(n^k) \\) time, where \\( |V| = n, |E| = m \\).\n\nFor \\( k = 3 \\), deciding whether a graph contains a triangle and finding one if it does (or counting all triangles in a graph) can be done in \\( O(n^\\omega) \\) time by the algorithm of Itai and Rodeh [22]: the algorithm computes \\( M^2 \\) using Fast Matrix Multiplication (FMM), where \\( M \\) is the graph adjacency matrix. The existence of entries \\( ij \\) where \\( i < j \\), \\( M_{ij} = 1 \\), and \\( M^2_{ij} \\geq 1 \\) indicates the presence of triangle(s) with edge \\( ij \\). If at least one pair \\( i, j \\) satisfies this condition, then \\( G \\) contains a triangle. An equivalent characterization is: \\( G \\) contains a triangle iff \\( M^3 \\) has a non-zero entry on its main diagonal. See [28, Ch. 10] for a short exposition of this elegant — though impractical — method. Alternatively, this task can be done in \\( O(m^{2\\omega/(\\omega+1)}) = O(m^{1.407}) \\) time by the algorithm of Alon, Yuster, and Zwick [9]. Here \\( \\omega \\) is the exponent of matrix multiplication, with \\( \\omega < 2.372 \\) being the current bound [16, 40]. It is generally conjectured that \\( \\omega = 2 \\), however, in spite of the ongoing effort, the progress has been slow.\n\nIt should be noted that the algorithms for fast matrix multiplication (FMM) have mainly a theoretical importance and are otherwise largely impractical [27, Ch. 10.2.4]. See also [2] for a more up to date discussion concerning their limitations in relation to generalizability, elegance, and practical efficiency.",
+      "content_length": 1830,
+      "metadata": { "heading_level": 1 }
+    },
+    {
+      "snippet_id": "0031::EQUATION::0",
+      "snippet_type": "EQUATION",
+      "location": "Boolean matrix multiplication.",
+      "content": "$$\nC_{ij} = \\bigvee_{k=1}^n A_{ik} \\wedge B_{kj}.\n$$",
+      "content_length": 56,
+      "metadata": { "label": null, "display_mode": true }
+    },
+    {
+      "snippet_id": "0031::SECTION::2",
+      "snippet_type": "SECTION",
+      "location": "Boolean matrix multiplication.",
+      "content": "As a relative of matrix multiplication (MM) Boolean matrix multiplication (BMM) is one of the fundamental problems in computer science, with direct applications to triangle finding [28, 39], transitive closure [20, 19, 29], grammar parsing [25, 32, 34], and other problems [26]; see also [24, Lect. 5 & 7], [27, Ch. 9.5], and [42]. One way to multiply two Boolean matrices is to treat them as integer matrices, and apply a fast matrix multiplication algorithm over the integers (i.e., BMM via FMM).\n\nA different group of BMM algorithms, often called \"combinatorial\" algorithms, generally have nice properties like simplicity that make them attractive. The notion of \"combinatorial\" algorithm does not have a formal or precise definition. Following [39], such an algorithm must be both theoretically and practically efficient. The oldest and probably the best known combinatorial algorithm for BMM is the \"Four Russians\" algorithm by Arlazarov, Dinic, Kronrod, and Faradzhev [10] which can be implemented to run in O(n^3 / log^2 n) time. Subsequent improvements took about 40 years and only affected the polylogarithmic factors: Bansal and R. R. Williams [11] gave a combinatorial algorithm for BMM running in \\tilde{O}(n^3 / \\log^{9/4} n) time relying on the weak regularity lemma for graphs, whereas Chan [14] further improved the running time to \\tilde{O}(n^3 / \\log^3 n). Here the \\tilde{O} notation hides poly(log log n) factors. The fastest known combinatorial algorithm for BMM, due to Yu [42], runs in \\tilde{O}(n^3 / \\log^4 n) time. Very recently, an even faster algorithm — achieving a super-poly-logarithmic saving — has been announced [2]; it runs in O(n^3/2^{\\Omega(\\log^{1/7} n)}) time.\n\nIn fact, Satta [32] noted 30 years ago that \"the design of practical algorithms for Boolean matrix multiplication that considerably improve the cubic time upper bound is regarded as a very difficult enterprise\".\n\nOn a side note, it is worth noting that much better running times can be obtained for random Boolean matrices. For example, under the assumption that all Boolean matrices are equally likely choices for A and B, the expected number of operations to perform the multiplication AB is O(n²) [30]. Moreover, for large n, almost all pairs of matrices can be multiplied using an algorithm of P. O'Neil and E. O'Neil in O(n²⁺ᵋ) operations for any ε > 0.",
+      "content_length": 2550,
+      "metadata": { "heading_level": 1 }
+    },
+    {
+      "snippet_id": "0031::THEOREM::0",
+      "snippet_type": "THEOREM",
+      "location": "Boolean matrix multiplication.",
+      "content": "In addition to the line of work trying to enhance the algebraic machinery aiming to reach the conjectured bound ω = 2, a parallel line of work aims to approach subcubic bounds with combinatorial techniques. In this vein, V. V. Williams and R. R. Williams showed [38, 39, Thm. 1.3 or Thm. 6.1] that either triangle detection and Boolean matrix multiplication (BMM) both have truly subcubic \"combinatorial\" algorithms, or none of them has. Their key lemma is next, see also [2] from which we borrow the following formulation:\n\n**Theorem 1. ([39])** If Triangle Detection is in time O(n³ / f(n)) for some nondecreasing function f(n), then Boolean Matrix Multiplication is in time O(n³ / f(n¹/³)).\n\nHere we show that the former, subcubic option, materializes: we obtain the first truly subcubic combinatorial algorithm for triangle detection running in O(n⁷/³) time; and via the above reduction the first truly subcubic combinatorial algorithm for BMM, running in Õ(n²⁵/⁹) time, where Õ notation hides poly(log) factors. As such, these results represent the greatest advance in triangle detection in over 45 years and the greatest advance in Boolean matrix multiplication in over 50 years.",
+      "content_length": 1135,
+      "metadata": { "label": "Theorem 1", "has_proof": false }
+    },
+    {
+      "snippet_id": "0031::SECTION::3",
+      "snippet_type": "SECTION",
+      "location": "Definitions and notations.",
+      "content": "algorithms [41]. At the same time this result strongly invalidates — by a polynomial factor, n^(2k/9) — the combinatorial k-clique conjecture according to which, combinatorial algorithms cannot solve k-Clique in time O(n^(k−δ)) for any k ≥ 3 and positive constant δ > 0, see [3, Conj. 2], [13, p. 48:3], [12, Hypothesis 1.1].\n\n**Definitions and notations.** Let G = (V, E) be an undirected graph. The neighborhood of a vertex v ∈ V is the set N(v) = {w : (v, w) ∈ E} of all adjacent vertices, and its cardinality deg(v) = |N(v)| is called the degree of v in G. Similarly, the neighborhood of a vertex subset U ∈ V is the set N(U) = {w : u ∈ U and (u, w) ∈ E} of all vertices adjacent to vertices in U. Define the closed neighborhood of U as\n\nWe write O*(c^n) for a time complexity of the form O(c^n · poly(n)). The Õ notation hides poly(log) factors, whereas the Ô notation hides poly(log log) factors. Unless specified otherwise: (i) all algorithms discussed are assumed to be deterministic; (ii) all graphs mentioned are undirected; (iii) all logarithms are in base 2.",
+      "content_length": 1079,
+      "metadata": { "heading_level": 1 }
+    },
+    {
+      "snippet_id": "0031::EQUATION::1",
+      "snippet_type": "EQUATION",
+      "location": "Definitions and notations.",
+      "content": "N^+(U) = U ∪ N(U).                                        (1)",
+      "content_length": 61,
+      "metadata": { "label": "(1)", "display_mode": true }
+    },
+    {
+      "snippet_id": "0031::SECTION::4",
+      "snippet_type": "SECTION",
+      "location": "Algorithm overview.",
+      "content": "The idea in our algorithm for triangle detection is very simple, but apparently not so easy to find (it took more than 45 years to surpass the running time of the algorithm of Itai and Rodeh [22]). In this section we outline a randomized algorithm for triangle detection; it comes in two variants, TRIANGLE-DETECTION-1 and TRIANGLE-DETECTION-2^1.",
+      "content_length": 332,
+      "metadata": { "heading_level": 1 }
+    },
+    {
+      "snippet_id": "0031::THEOREM::1",
+      "snippet_type": "THEOREM",
+      "location": "Algorithm overview.",
+      "content": "**Theorem 2.** There is a randomized algorithm for triangle detection in a given n-vertex graph with m edges running in O(m^(2/3)n) = O(n^(7/3)) time, and whose probability of error is at most 10^(−30). Alternatively, this task can be handled in O(mn^(1/2)) time, or in O(m^(4/3)) time.\n\nIf the graph G has no triangles, the algorithm is always correct; whereas if G has at least one triangle, the algorithms finds one with probability at least 1 − 10^(−30).",
+      "content_length": 427,
+      "metadata": { "label": "Theorem 2", "has_proof": true }
+    },
+    {
+      "snippet_id": "0031::SECTION::5",
+      "snippet_type": "SECTION",
+      "location": "Some intuition.",
+      "content": "**Some intuition.** The idea behind the algorithm is to get in a position to be able to detect a triangle during a Breadth First Search (BFS) from a suitable vertex. Specifically we will use the following slightly modified version of BFS with a start vertex s. For a standard version, the reader can refer for instance to [27, Ch. 7].\n\nAssume that G contains at least one triangle, and fix one, say, T. For instance a vertex of T is a suitable vertex. Another favorable scenario is when BFS discovers exactly one vertex of T on some level of the search tree and the other two vertices of T appear on the next level. In particular starting BFS from a vertex that is a \"neighbor\" of a triangle leads to successful triangle detection. See Step 12 of the modified BFS procedure and Fig. 1(i). In general, however, vertices could be unsuitable as start vertices for the task at hand as they might cause BFS to discover two or all three vertices of T on the same level of the search tree, making the detection of T difficult.\n\nTo achieve this privileged \"neighbor\" position, the algorithm distinguishes between high and low degree vertices—also a key step in the seminal work on triangle detection of Alon, Yuster, and Zwick [9]. This distinction is exploited by the algorithm in a novel way by using random sampling.",
+      "content_length": 1285,
+      "metadata": { "heading_level": 1 }
+    },
+    {
+      "snippet_id": "0031::SECTION::6",
+      "snippet_type": "SECTION",
+      "location": "Analysis.",
+      "content": "**Analysis.** The algorithm works with a parameter x suitably set. We say that a vertex in G has low degree if deg(v) ≤ x. Assume that T = {a, b, c} is a triangle in G, i.e., a, b, c ∈ V and ab, ac, bc ∈ E. If T is incident to a low degree vertex, i.e., a, b, or c has low degree, then T is found in step 3.\n\nLet A = N+({a, b, c}) (recall (1)). Then clearly |A| ≥ deg(a) ≥ x. For each of the ⎡70n/x⎤ trials, let E_v denote the bad event that the picked vertex v is not in A. Let E denote the bad overall event that no picked vertex is in A. We have\n\nProb(E_v) ≤ 1 - |A|/n ≤ 1 - x/n.\n\nSince the trials are independent from each other we have\n\nProb(E) = ∏_{i=1}^{⎡70n/x⎤} Prob(E_v) ≤ (1 - x/n)^{70n/x} ≤ exp(−70) ≤ 10^{-30},",
+      "content_length": 948,
+      "metadata": { "heading_level": 1 }
+    },
+    {
+      "snippet_id": "0031::ALGORITHM::0",
+      "snippet_type": "ALGORITHM",
+      "location": "Analysis.",
+      "content": "TRIANGLE-DETECTION-1(G)\nInput: an undirected graph G = (V, E)\nOutput: a triangle in G (if found)\n\n1 x ← ⌊m¹/³⌋\n2 foreach vertex v ∈ V of degree ≤ x do\n3    Check whether there is any triangle T incident to v; if there is, return T and halt\n4 end\n5 // every triangle in G must be incident only to vertices of high degree\n6 Randomly and independently pick a vertex from V, ⌈70n/x⌉ times: let U ⊆ V denote the subset of picked vertices\n7 foreach vertex s ∈ U do\n8    if a triangle T is found during BFS⁺(s) then return T and halt\n9 end\n10 return \"no triangles\" and halt",
+      "content_length": 487,
+      "metadata": { "label": "TRIANGLE-DETECTION-1" }
+    },
+    {
+      "snippet_id": "0031::SECTION::7",
+      "snippet_type": "SECTION",
+      "location": "Case analysis.",
+      "content": "by applying the standard inequality 1 − x ≤ e^(−x) for 0 ≤ x ≤ 1/2. Indeed, we have x/n ≤ 1/2 for n ≥ 4.\nIt remains to show that if s ∈ A then BFS⁺(s) finds a triangle in G (not necessarily T, unless T is the unique triangle in G). We distinguish two cases:\n\n**Case 1: s ∈ {a, b, c}.** By symmetry, we may assume that s = a (the root, on level 0 of the BFS tree). Then b and c appear on the next level (level 1) of the BFS tree. Assuming that b is discovered before c, the triangle {a, b, c} is detected when scanning the adjacency list of b. Refer to Fig. 1 (ii).\n\n**Case 2: s ∉ {a, b, c}.** We may assume without loss of generality that s ∈ N(a). Then a appears on level 1 of the BFS tree. We distinguish two subcases:\n\n**Case 2.1: Exactly one vertex, namely a, appears on level 1.** Then b and c appear on the next level (level 2) of the BFS tree. Assuming that b is discovered before c, the triangle {a, b, c} is detected while scanning the adjacency list of b. Refer to Fig. 1 (iii).\n\n**Case 2.2: At least two vertices of T, say, a and b, appear on level 1.** This means that sa, sb ∈ E. Since we also have ab ∈ E, {s, a, b} is a triangle in G that is detected while scanning the adjacency list of a, assuming that a, b (and possibly c) are discovered in this order. Refer to Fig. 1 (iv). Note that in this subcase a triangle different from T is detected by the algorithm. (This case does not occur if T is the only triangle present in G.)\n\nThis completes the case analysis and thereby shows that the algorithm performs as intended.",
+      "content_length": 1666,
+      "metadata": { "heading_level": 1 }
+    },
+    {
+      "snippet_id": "0031::SECTION::8",
+      "snippet_type": "SECTION",
+      "location": "Time analysis.",
+      "content": "**Time analysis.** Note that Phase I (lines 2–4) of TRIANGLE-DETECTION-1 takes O(nx²) time, as there are at most n vertices of degree at most x, and checking such a vertex amounts to (x 2) edge tests; indeed, there are \\binom{\\deg(v)}{2} two-edge paths whose middle vertex is v and an edge test takes O(1) time using the adjacency matrix of G. Phase II (lines 6–9) takes O(mn/x) time; indeed, each BFS^+ takes O(m) time on a connected graph with m edges and there are O(n/x) such calls. With the setting x ~ m^{1/3}, the run-time is O(m^{2/3}n) for each phase, thus O(m^{2/3}n) overall. In particular, this is O(n^{7/3}), completing the proof of the first upper bound in Theorem 2.\n\nWe slightly modify the previous algorithm as follows. In Phase I the algorithm generates all paths of length two in G whose intermediate vertex is of low degree (the previous algorithm achieves the same operation in a slightly different way). There are at most 2mx such paths and they can be found in O(mx) time. For each such path, checking whether its endpoints are connected by an edge takes O(1) time using the adjacency matrix of G. Consequently, Phase I takes O(mx) time. Phase II is left unchanged; it executes O(n/x) BFS trials.\n\nRunning time in terms of m. Next we derive the O(m^{4/3}) upper bound on the running time in two different ways, namely starting from TRIANGLE-DETECTION-1 or starting from TRIANGLE-DETECTION-2. The two methods, based on the high-degree vs. low-degree distinction, have been distilled in the following lemma of A. Abboud and V. V. Williams [5]. For concreteness we instantiate them below.",
+      "content_length": 1675,
+      "metadata": { "heading_level": 1 }
+    },
+    {
+      "snippet_id": "0031::LEMMA::0",
+      "snippet_type": "LEMMA",
+      "location": "Time analysis.",
+      "content": "**Lemma 1. ([5])** If there is an O(m^δ n) time algorithm for triangle detection for graphs on n nodes and m edges, then there is an O(m^{1+δ/2}) time algorithm for triangle detection for graphs on m edges (and arbitrary number of nodes). And similarly, if there is an O(mn^δ) time algorithm, then there is an O(m^{1+δ/(1+δ)}) time algorithm as well.",
+      "content_length": 350,
+      "metadata": { "label": "Lemma 1", "has_proof": false }
+    },
+    {
+      "snippet_id": "0031::SECTION::9",
+      "snippet_type": "SECTION",
+      "location": "Proof completion.",
+      "content": "It can be assumed that the graph is connected, otherwise the algorithm is run on each connected component. First, consider TRIANGLE-DETECTION-1 and note that (by Theorem 2, first part) it satisfies the conditions in the first part of Lemma 1 with δ = 2/3. The lemma yields a randomized algorithm for triangle detection running in O(m^(4/3)) time and whose probability of error is as claimed. Second, consider TRIANGLE-DETECTION-2 and note that (by Theorem 2, second part) it satisfies the conditions in the second part of Lemma 1 with δ = 1/2. Once again, the lemma yields a randomized algorithm for triangle detection running in O(m^(4/3)) time and whose probability of error is as claimed. The proof of Theorem 2 is now complete. □\n\nBy a result of V. V. Williams and R. R. Williams [39, Thm. 6.1], the problems of triangle detection in an n-vertex graph and that of Boolean matrix multiplication of two n × n matrices are subcubically equivalent in the sense that both have truly subcubic combinatorial algorithms or none of them do. Since prior to this work no truly subcubic combinatorial algorithms were known for either problem the above statement had until now more of a speculative nature. Thus, by the above reduction, our first truly subcubic combinatorial algorithm for triangle detection implies the first truly subcubic combinatorial algorithm for Boolean matrix multiplication. The new faster combinatorial algorithm for BMM owes a lot to the work of V. V. Williams and R. R. Williams on this reduction.",
+      "content_length": 1455,
+      "metadata": { "heading_level": 1 }
+    },
+    {
+      "snippet_id": "0031::THEOREM::2",
+      "snippet_type": "THEOREM",
+      "location": "Proof completion.",
+      "content": "**Theorem 3.** There is a randomized combinatorial algorithm for multiplying two n × n Boolean matrices with high probability running in O(n^(25/9) log n) time. [Moreover, a Boolean product witness matrix can be computed by the algorithm.]",
+      "content_length": 254,
+      "metadata": { "label": "Theorem 3", "has_proof": true }
+    },
+    {
+      "snippet_id": "0031::SECTION::10",
+      "snippet_type": "SECTION",
+      "location": "Witness computation.",
+      "content": "**Proof. (Theorem 3)** According to V. V. Williams and R. R. Williams [39, Thm 6.3], if there exists a T(n) = O(n^β) time algorithm for triangle detection in an n-vertex graph, where 2 ≤ β ≤ 3, then there is a randomized algorithm that computes the Boolean product of two given n × n matrices with high probability, say, at least 1 − 1/(10^30 n^3), in time O(n^(2+β/3) log n). Substituting β = 7/3 and using O(nm^(-1/3) log n) random trials in TRIANGLE-DETECTION-1 yields the claimed bound. □\n\nGiven two n × n Boolean matrices A and B, index k ∈ [n] is said to be a witness for the index pair (i, j) iff a_ik = b_kj = 1. An n × n integer matrix W is a Boolean product witness matrix for A and B iff\n\nw_ij = {\n0  if there is no witness for (i, j), and\nsome witness k for (i, j) otherwise.\n\nIn many applications, in addition to computing the Boolean product C = AB it is also desired to compute a matrix W of witnesses. When there is more than one witness for a given pair (i, j), any witness usually suffices. An elegant randomized algorithm due to Seidel [33], also noticed by other researchers [6], computes a matrix of witnesses in time O(n^ω log n); if ω = 2, the runtime becomes O(n^2 log^2 n). Slightly slower deterministic variants have been obtained, among others, by Alon et al. [6] and by Alon and Naor [7].\n\nAll previous algorithms that compute witnesses in subcubic time use FMM and are therefore impractical. Moreover, computing witnesses is done by a separate algorithm independent of the one computing the matrix product. In contrast, our new combinatorial algorithm for BMM outlined in Theorem 3 can compute witnesses on its own by its intrinsic nature. More precisely, the algorithm of V. V. Williams and R. R. Williams implementing the BMM to Triangle Detection reduction, can do this as follows, see [39, p. 16]. The algorithm repeatedly finds a triangle (i, j, k) in a tripartite graph with parts (I, J, K). Whenever a triangle (i, j, k) is found, the algorithm simply records k in the matrix as a witness for the pair (i, j), removes the edge (i, j) from the graph and attempts to find a new triangle. The algorithm ensures that a witness is found for each index pair (i, j), if it exists. The statement in square brackets in Theorem 3 is implied.",
+      "content_length": 2029,
+      "metadata": { "heading_level": 1 }
+    },
+    {
+      "snippet_id": "0031::SECTION::11",
+      "snippet_type": "SECTION",
+      "location": "k-Clique application.",
+      "content": "As mentioned in the introduction, the k-clique problem can be answered by a brute-force algorithm running in O(n^k) time, where |V| = n, |E| = m (and k is fixed). The current fastest algorithm is due to Nešetřil and Poljak [31]. It is based on the idea that triangle detection can be done in subcubic time using FMM (recall the algorithm of Itai and Rodeh [22]). For k = 3ℓ, the algorithm of Nešetřil and Poljak runs in O(n^ℓω) = O(n^(kω/3)) = O(n^(0.791k)) time; see for instance [41, Sec. 4].\n\nObtaining faster than trivial combinatorial algorithms, by more than polylogarithmic factors, for k-clique is a longstanding open question, as is the case of BMM, see [1]. The fastest combinatorial algorithm runs in O(n^k / log^k n) time [36]. A slightly faster combinatorial algorithm was just announced in [3]. Assume that k = 3ℓ. Replacing the FMM algorithm in the algorithm of Nešetřil and Poljak with that in Theorem 2 yields a faster randomized combinatorial algorithm for detecting a k-clique, running in O(n^(7ℓ/3)) = O(n^(7k/9)) = O(n^(0.778k)) time, thereby providing the first solution to the above open problem. If k = 3ℓ + 1, the runtime is O(n · n^(7ℓ/3)), whereas if k = 3ℓ + 2, the runtime is O(n^2 · n^(7ℓ/3)). For example, if k = 100, the algorithm runs in O(n^78) time, whereas the previous record was O(n^100 / polylog(n)).",
+      "content_length": 1371,
+      "metadata": { "heading_level": 1 }
+    },
+    {
+      "snippet_id": "0031::THEOREM::3",
+      "snippet_type": "THEOREM",
+      "location": "k-Clique application.",
+      "content": "**Theorem 4.** There is a randomized combinatorial algorithm for detecting a k-clique in a given n-vertex graph, where k = 3ℓ, running in O(n^(7k/9)) time, and whose probability of error is at most 10^(-30). If k = 3ℓ + 1, the runtime is O(n^((7k+2)/9)), whereas if k = 3ℓ + 2, the runtime is O(n^((7k+4)/9)).",
+      "content_length": 321,
+      "metadata": { "label": "Theorem 4", "has_proof": true }
+    },
+    {
+      "snippet_id": "0031::SECTION::12",
+      "snippet_type": "SECTION",
+      "location": "Proof of Theorem 4.",
+      "content": "We only give here a brief outline of the argument and refer the reader to [31], [35], or [41] for the details. For simplicity, assume that k = 3ℓ.\n\n**Proof.** For every ℓ-clique C in G, create a corresponding vertex v(C) in an auxiliary graph. Two vertices v(C_1) and v(C_2) are connected by an edge in the auxiliary graph, if and only if C_1 ∪ C_2 forms a 2ℓ–clique in G. Note that the auxiliary graph has O(n^ℓ) = O(n^(k/3)) vertices. Furthermore, the graph G contains a k-clique if and only if the auxiliary graph contains a triangle. The latter graph is where the triangle detection algorithm is run. Its runtime is O(n^(7k/(3·3))) = O(n^(7k/9)).\n\nIn the general context of constraint satisfaction optimization, R. R. Williams [35] outlined a method in which an optimum weight k-clique corresponds to an optimum solution of the problem to be solved. In the conclusion of his paper, and in direct relation to the technique used above he specifically asked: \"Is there a randomized 3-clique detection algorithm running in O(n^3–ε)? (Is there merely a good one that does not use matrix multiplication?)\" Our Theorem 2 gives a positive answer to both questions.",
+      "content_length": 1121,
+      "metadata": { "heading_level": 1 }
+    },
+    {
+      "snippet_id": "0031::SECTION::13",
+      "snippet_type": "SECTION",
+      "location": "Max-Cut application.",
+      "content": "Our presentation closely follows that of Woeginger [41] regarding this problem. In the Max-Cut problem, given an n-vertex graph G = (V, E), the problem is to find a cut of maximum cardinality, that is, a subset X ⊂ V of the vertices that maximizes the number of edges between X and V \\ X. The problem can be solved easily in O*(2^n) time by enumerating all possible subsets X. R. R. Williams [35] developed the following method effective in reducing the runtime of an exact algorithm; his algorithm runs in O*(2^{ω n/3}) = O(1.730^n) time. Here we offer a \"black box\" replacement that yields a faster randomized combinatorial algorithm.\n\nPartition the vertex set V into three parts V_0, V_1, V_2 of roughly the same size, n/3: |V_0| + |V_1| + |V_2| = n. Introduce a complete tripartite auxiliary graph H = (V', E') that contains one vertex for every subset X_0 ⊆ V_0, one vertex for every subset X_1 ⊆ V_1, and one vertex for every subset X_2 ⊆ V_2. Note that H has N := O(2^{n/3}) vertices.\n\nFor every subset X_i ⊆ V_i and every X_j ⊆ V_j with j = i+1 (mod 3), introduce the directed edge from X_i to X_j. This edge receives a weight w(X_i, X_j) that equals the number of edges in G between X_i and V_i \\ X_i plus the number of edges between X_i and V_j \\ X_j plus the number of edges between X_j and V_i \\ X_i. As a result, the cut X_0 ∪ X_1 ∪ X_2 cuts exactly w(X_0, X_1) + w(X_1, X_2) + w(X_2, X_0) edges in G.\n\nWrite |E| = m. There are less than m^3 possible triples (z_{01}, z_{12}, z_{20}) to consider, where w(X_0, X_1) = z_{01}, w(X_1, X_2) = z_{12}, and w(X_2, X_0) = z_{20}, such that the auxiliary graph contains a triangle on vertices X_i ⊆ V_i, (i = 0, 1, 2) with these edge-weights. For each such triple, the algorithm computes a corresponding simplified version of the auxiliary graph that only contains the edges of weight z_{ij} between vertices X_i ⊆ V_i and X_j ⊆ V_j. It remains to find a triangle in the simplified auxiliary graph.\n\nSince the triangle detection algorithm we use is randomized, we slightly modify it so that given a graph H with N vertices, it runs in O(N^{7/3} log m) time and its probability of success is at least 1 − 1/(10^{30} m^3). By the union bound, the probability of error is at most m^3 · 10^{-30} · m^{-3} = 10^{-30}. We obtain the following result.",
+      "content_length": 2300,
+      "metadata": { "heading_level": 1 }
+    },
+    {
+      "snippet_id": "0031::THEOREM::4",
+      "snippet_type": "THEOREM",
+      "location": "Max-Cut application.",
+      "content": "**Theorem 5.** Given an n-vertex graph G = (V, E), a maximum cut can be computed by a randomized combinatorial algorithm in O*(2^{7n/9}) = O(1.715^n) time with probability at least 1 − 10^{-30}.",
+      "content_length": 228,
+      "metadata": { "label": "Theorem 5", "has_proof": false }
+    },
+    {
+      "snippet_id": "0031::SECTION::14",
+      "snippet_type": "SECTION",
+      "location": "Applications to detecting small cliques.",
+      "content": "Triangle detection (or counting) is a key ingredient in many algorithms for detecting (or counting) small complete subgraphs, i.e., K_ℓ for a fixed ℓ ≥ 4. See for instance [18] and some recent developments in [17]. Our new triangle detection algorithm yields many improvements, always in practicality and in most cases also in the running time.\n\nFor example, the fastest known algorithm for detecting a K_4, due to Alon, Yuster, and Zwick, runs in O(n^{ω+1}) = O(n^{3.372}) and since it relies on fast matrix multiplication is largely impractical. Using the \"extension method\", the problem easily reduces to n calls for triangle detection in a graph with ≤ n vertices; see [9] or [17]. Indeed detecting a K_4 in G reduces to detecting a K_3 in the graph induced by N(v), for some v ∈ V. Our new algorithm for triangle detection immediately improves the running time to O(n^{10/3}) with a simpler practical combinatorial randomized algorithm. The bound on the error probability still holds (it is in fact better, one can check, since a K_4 can be detected from any of its four vertices). Alternatively, consider the following algorithm. For a parameter x, the algorithm first checks the existence of a K_4 incident to a vertex of low degree, ≤ x, and then attempts detecting a K_4 in the subgraph induced by vertices of high degree, ≥ x, using the randomized algorithm described above. The resulting running time is",
+      "content_length": 1345,
+      "metadata": { "heading_level": 1 }
+    },
+    {
+      "snippet_id": "0031::EQUATION::2",
+      "snippet_type": "EQUATION",
+      "location": "Applications to detecting small cliques.",
+      "content": "$$\nO\\left(m x^2 + \\left(\\frac{m}{x}\\right)^{10/3}\\right) = O(m^{15/8}),\n$$",
+      "content_length": 90,
+      "metadata": { "label": null, "display_mode": true }
+    },
+    {
+      "snippet_id": "0031::SECTION::15",
+      "snippet_type": "SECTION",
+      "location": "More applications.",
+      "content": "when setting x = ⌊m^{7/16}⌋. Whereas this runtime does not quite match the current record, O(m^{(ω+1)/2}) = O(m^{1.687}), due to Kloks, Kratsch, and Müller [23], it gets close to it via a practical solution.\n\nAs another example, the fastest known algorithm for detecting a K_6 running in O(n^{4.751}) or O(m^{2.372}) time [18, 23] also relies on FMM thus is largely impractical. Using the \"triangle method\", the problem easily reduces to triangle detection in a (auxiliary) graph with m vertices, see [17] or [41]. Thus our Theorem 2 immediately gives a simpler and faster combinatorial randomized algorithm running in O(m^{7/3}) = O(n^{4.667}) time. Similarly, we obtain randomized combinatorial algorithms for detecting a K_9 in O(n^7) time, or in O(m^{7/2}) time; and for detecting a K_10 in O(n^8) time, or in O(m^4) time. These running time match or surpass previous ones attainable via FMM algorithms, see [17]. We recall that Woeginger [41] asked whether a K_10 can be detected in O(n^{7.5}) time, and so this particular challenge remains.\n\nMore examples of a similar nature can be shown along the lines of [17], however, here we do not elaborate further in this direction.\n\nClearly we have to miss many applications. Here is one in computational geometry that we did not want to miss, where a \"black box\" replacement substantially improves the algorithm.\n\nRecently, Chan [15] showed that detecting a triangle in the intersection graphs of segments in the plane can be done in \\tilde{O}(T_3(n)) time, where T_3(m) denotes the time complexity of finding a triangle in a graph with m edges. However, his algorithm is rather impractical since it uses fast matrix multiplication (BMM via FMM). As such, the algorithm runs in O(n^{2ω/(ω+1)}) = O(n^{1.407}) time. Replacing the BMM algorithm with that in Theorem 2 yields a practical algorithm for detecting a triangle in the intersection graphs of segments in the plane that is also faster, running in \\tilde{O}(n^{4/3}) time.",
+      "content_length": 2196,
+      "metadata": { "heading_level": 1 }
+    },
+    {
+      "snippet_id": "0031::SECTION::16",
+      "snippet_type": "SECTION",
+      "location": "Equivalence and concluding remarks.",
+      "content": "Besides the subcubic equivalence between Triangle Detection and BMM we used here, V. V. Williams and R. R. Williams [39, Thm. 6.1] have also shown that two other problems, (i) Listing up to n^{2.99} triangles in a graph, and (ii) Verifying the correctness of a matrix product over the Boolean semiring are also subcubic equivalent in the same sense. Since Theorem 2 shows that there is a randomized algorithm for triangle detection in a given n-vertex graph running in truly subcubic time, the same holds for the two problems mentioned above, i.e., each admits a randomized combinatorial algorithm running in time O(n^{3-δ}), for some constant δ > 0. More details on these algorithms are expected to appear elsewhere.\n\nIt is perfectly possible (even expected) that the running time of the Itai-Rodeh algorithm for triangle detection will surpass the running time of our algorithm at some point in time, provided that sufficient advances in FMM algorithms are made. When this would happen, it is hard to tell. However, the improvement in practicality will remain, it seems, on the side of our algorithm.\n\nWe conclude with two problems for further investigation. The first was initially posed by Alon, Yuster, and Zwick [8], and later included by Woeginger in his survey on exact algorithms [41]: Is K_3 detection as difficult as Boolean matrix multiplication? Further, one can ask: if there is a combinatorial algorithm for K_3 detection in an n-vertex graph running in O(n^β) time, is there a combinatorial algorithm for multiplying two n × n Boolean matrices in time that is close to that?\n\nAnother interesting question is whether the running times of our randomized combinatorial algorithms can be matched or approached by deterministic ones.",
+      "content_length": 2140,
+      "metadata": { "heading_level": 1 }
+    },
+    {
+      "snippet_id": "0031::SECTION::17",
+      "snippet_type": "SECTION",
+      "location": "References",
+      "content": "References section with 42 citations.",
+      "content_length": 7900,
+      "metadata": { "heading_level": 1 }
+    },
+    {
+      "snippet_id": "0031::FIGURE::0",
+      "snippet_type": "FIGURE",
+      "location": "Analysis.",
+      "content": "![Figure 0](data:image/jpeg;base64,...)",
+      "content_length": 3200,
+      "metadata": { "caption": "Figure 0" }
+    },
+    {
+      "snippet_id": "0031::FIGURE::1",
+      "snippet_type": "FIGURE",
+      "location": "Analysis.",
+      "content": "![Figure 1](data:image/jpeg;base64,...)",
+      "content_length": 3500,
+      "metadata": { "caption": "Figure 1" }
+    },
+    {
+      "snippet_id": "0031::FIGURE::2",
+      "snippet_type": "FIGURE",
+      "location": "Time analysis.",
+      "content": "![Figure 2](data:image/jpeg;base64,...)",
+      "content_length": 3400,
+      "metadata": { "caption": "Figure 2" }
+    },
+    {
+      "snippet_id": "0031::FIGURE::3",
+      "snippet_type": "FIGURE",
+      "location": "Time analysis.",
+      "content": "![Figure 3](data:image/jpeg;base64,...)",
+      "content_length": 3400,
+      "metadata": { "caption": "Figure 3" }
+    }
+  ]
+}

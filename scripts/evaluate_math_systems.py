@@ -583,7 +583,14 @@ def main() -> None:
 
     # ── CSVs ───────────────────────────────────────────────────────────────
     output_dir.mkdir(parents=True, exist_ok=True)
+    # The tag belongs in the FILENAME, not only in the rows. Without it a v3
+    # run writes over the v1 run's per-paper CSV -- same path, different
+    # systems -- and evaluate_math_oracle.py's rung A, which reads that file
+    # for the headline recall, silently starts reporting whichever system was
+    # scored last. Nothing errors; the number just quietly changes meaning.
     stem = "math_systems_strict" if args.strict else "math_systems"
+    if args.tag:
+        stem += f"_{args.tag}"
     if args.min_confidence is not None:
         stem += f"_c{args.min_confidence:g}".replace(".", "p")
     comp_path = output_dir / f"{stem}_comparison.csv"

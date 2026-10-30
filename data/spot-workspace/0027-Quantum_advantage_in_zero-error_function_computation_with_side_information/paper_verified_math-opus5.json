@@ -1,0 +1,970 @@
+{
+  "paper_name": "paper",
+  "paper_path": "/Users/iacopoghinassi/Documents/Github/Wittgenstein/data/spot-workspace/0027-Quantum_advantage_in_zero-error_function_computation_with_side_information/paper.md",
+  "tag": "opus5",
+  "lean_project": "MATH_VERIFICATION/Paper",
+  "lean_project_kept": true,
+  "totals": {
+    "snippets_extracted": 38,
+    "routed_to_math": 31,
+    "routed_to_lean": 7,
+    "lean_passed": 4,
+    "lean_refuted": 3,
+    "lean_failed": 0,
+    "fallbacks_run": 0,
+    "errors_detected": 4
+  },
+  "results": [
+    {
+      "snippet_id": "paper::EQUATION::0",
+      "snippet_type": "EQUATION",
+      "location": "Introduction / f-confusion graph example",
+      "content": "p_{XY}(x, y) = { 1/10,  if y = x or y = (x + 1) mod 5, { 0, otherwise. (1) ... We observe that Alice symbols 0 and 1 are connected since p_{XY}(0, 1)p_{XY}(1, 1) = 1/100 > 0 and f(0, 1) != f(1, 1); the reasoning for the other edges is similar. It can be observed that this f-confusion graph is a pentagon (see Fig. 1).",
+      "route": "verify-math",
+      "route_rationale": "Small explicit numerical example; checkable by inspection, no formalisation needed.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "The pmf is normalised: 5 values of x times 2 admissible y each, 10 cells at 1/10, total mass 1. The quoted edge check is right: y = 1 satisfies y = x+1 mod 5 for x = 0 and y = x for x = 1, so p(0,1)p(1,1) = 1/100 > 0, and f = [X = Y] gives f(0,1) != f(1,1). Running the same test over all pairs gives edges exactly between x and x +/- 1 mod 5, i.e. C_5, matching the claim that the confusion graph is a pentagon.",
+        "predicted_error_category": null
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::DEFINITION::0",
+      "snippet_type": "DEFINITION",
+      "location": "Classical Setting, Definition 2",
+      "content": "Definition 2. The rate in the classical setting is given by R_{classical} = \\lim_{m \\to \\infty} \\frac{\\log \\chi(G^{(m)})}{m} = \\inf_m \\frac{\\log \\chi(G^{(m)})}{m}.",
+      "route": "verify-math",
+      "route_rationale": "Asserts a limit equals an infimum; standard Fekete argument, checkable informally.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::DEFINITION::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "$\\log\\chi(G^{(m+n)}) \\le \\log\\chi(G^{(m)}) + \\log\\chi(G^{(n)})$ because colourings of the two blocks can be combined, so the sequence is subadditive and Fekete's lemma gives $\\lim_m a_m/m = \\inf_m a_m/m$. The stated equality of limit and infimum is correct.",
+        "predicted_error_category": null
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::PROPOSITION::0",
+      "snippet_type": "PROPOSITION",
+      "location": "Section II, known results (Proposition 1)",
+      "content": "Proposition 1. \\(G \\boxtimes H = G \\lor H\\).  [with Definition 3: the strong product has ((u_1,v_1),(u_2,v_2)) in E(G boxtimes H) iff (u_1=u_2 and (v_1,v_2) in E(H)) or ((u_1,u_2) in E(G) and v_1=v_2) or ((u_1,u_2) in E(G) and (v_1,v_2) in E(H)); the OR product has ((u_1,v_1),(u_2,v_2)) in E(G or H) iff (v_1,v_2) in E(H) if u_1=u_2, (u_1,u_2) in E(G) if v_1=v_2, (u_1,u_2) in E(G) or (v_1,v_2) in E(H) if u_1 != u_2, v_1 != v_2.]",
+      "route": "verify-math-lean",
+      "route_rationale": "A crisp graph-theoretic identity stated for all simple graphs; directly formalisable and decidable on small witnesses.",
+      "lean_result": {
+        "snippet_id": "paper::PROPOSITION::0",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.9,
+        "reasoning": "Definition 3 was transcribed verbatim as two edge relations `strongAdj` and `orAdj`; a lemma `orAdj_iff` confirms the paper's three-case OR definition is the disjunction `G.Adj u1 u2 or H.Adj v1 v2`, so the formalisation is faithful. Lean then proved `prop1_as_printed_is_false`: taking G = K_2 on Bool and H the edgeless graph on Bool, the pair ((true,true),(false,false)) is an edge of the OR product but not of the strong product. The same file also proves `prop1_corrected`, i.e. that the complement of the strong product is the OR product of the complements, which compiles cleanly; so the printed identity is the complement-free version of a true statement.",
+        "predicted_error_category": "Formally refuted",
+        "snippet_type": "PROPOSITION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/0027-QuantumZeroError__PROPOSITION__0_opus5.lean",
+          "formal_statement": "theorem prop1_as_printed_is_false : ¬ (∀ (V W : Type) (G : SimpleGraph V) (H : SimpleGraph W) (p q : V × W), strongAdj G H p q ↔ orAdj G H p q)  -- plus  theorem prop1_corrected (G : SimpleGraph V) (H : SimpleGraph W) (p q : V × W) : (p ≠ q ∧ ¬ strongAdj G H p q) ↔ orAdj Gᶜ Hᶜ p q",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::PROPOSITION::1",
+      "snippet_type": "PROPOSITION",
+      "location": "Section II, known results (Proposition 2)",
+      "content": "Proposition 2. \\(G \\boxtimes (H_1 \\cup H_1) = G \\boxtimes H_1 \\cup G \\boxtimes H_1\\).",
+      "route": "verify-math",
+      "route_rationale": "Distributivity of the strong product over graph union; elementary set-level check.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::PROPOSITION::1",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.6,
+        "reasoning": "As printed the statement repeats $H_1$ on both sides and is therefore a tautology; the intended claim is clearly $G \\boxtimes (H_1 \\cup H_2) = (G\\boxtimes H_1)\\cup(G\\boxtimes H_2)$, which is true: an edge of the left side needs $u_1 \\approx u_2$ in $G$ and $v_1 \\approx v_2$ in $H_1\\cup H_2$, and the $H$-side condition is witnessed in one of $H_1, H_2$. This is a transcription-level index typo, not a derivation-invalidating error.",
+        "predicted_error_category": null
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.6
+    },
+    {
+      "snippet_id": "paper::PROPOSITION::2",
+      "snippet_type": "PROPOSITION",
+      "location": "Section II, known results (Proposition 3)",
+      "content": "Proposition 3. \\(\\alpha(G \\lor H) = \\alpha(G)\\alpha(H) \\leq \\alpha(G \\boxtimes H)\\).",
+      "route": "verify-math-lean",
+      "route_rationale": "A combinatorial identity plus an inequality about independence numbers of graph products; non-trivial and formalisable with Mathlib's `indepNum`.",
+      "lean_result": {
+        "snippet_id": "paper::PROPOSITION::2",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.95,
+        "reasoning": "The OR and strong products of Definition 3 were defined as `SimpleGraph` structures on `V × W` and the full statement — `(orProd G H).indepNum = G.indepNum * H.indepNum` together with `G.indepNum * H.indepNum ≤ (strongProd G H).indepNum` — was proved for arbitrary finite simple graphs. Both halves of the paper's argument are reproduced: products of independent sets stay independent in both products, and the two coordinate projections of an independent set of `G ∨ H` are independent, giving the matching upper bound. Compiles with no errors and no `sorryAx`.",
+        "predicted_error_category": null,
+        "snippet_type": "PROPOSITION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/0027-QuantumZeroError__PROPOSITION__2_opus5.lean",
+          "formal_statement": "theorem prop3 (G : SimpleGraph V) (H : SimpleGraph W) : (orProd G H).indepNum = G.indepNum * H.indepNum ∧ G.indepNum * H.indepNum ≤ (strongProd G H).indepNum",
+          "compiler_feedback": "only `linter.unusedSectionVars` warnings on two auxiliary lemmas; no errors, no sorry",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::PROPOSITION::3",
+      "snippet_type": "PROPOSITION",
+      "location": "Section II, known results (Proposition 4)",
+      "content": "Proposition 4. \\(\\chi(G \\boxtimes H) \\leq \\chi(G \\lor H) \\leq \\chi(G)\\chi(H)\\).",
+      "route": "verify-math",
+      "route_rationale": "Chromatic-number monotonicity plus the product colouring; short informal check, chromatic numbers are costly to formalise.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::PROPOSITION::3",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "$G\\boxtimes H \\subseteq G\\vee H$ as spanning subgraphs (every strong-product edge requires $G$- or $H$-adjacency in a coordinate, so it is an OR-product edge), and $\\chi$ is monotone under adding edges, giving the first inequality. The second follows from the product colouring $c(u,v) = (c_G(u), c_H(v))$, which is proper for $G \\vee H$ because adjacency there forces a disagreement in one coordinate. Both steps are correct.",
+        "predicted_error_category": null
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::PROPOSITION::4",
+      "snippet_type": "PROPOSITION",
+      "location": "Section III (Proposition 5)",
+      "content": "Proposition 5. \\(G^{\\boxtimes m} \\subseteq G^{(m)} \\subseteq G^{\\lor m}\\) for \\(m \\geq 1\\).",
+      "route": "verify-math",
+      "route_rationale": "Sandwich of the m-instance confusion graph; its proof (Appendix B-A) is absent from the markdown, so only the statement can be judged.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::PROPOSITION::4",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.8,
+        "reasoning": "Both inclusions are standard and consistent with Definition 1. If $(\\mathbf{x},\\mathbf{x}')\\in E(G^{\\boxtimes m})$ then every coordinate is adjacent or equal with at least one adjacent, and coordinatewise witnesses $y_i$ combine into a $\\mathbf{y}$ with positive product probability and a differing function value, so the pair is confusable. Conversely a confusable pair must have at least one adjacent coordinate, which is exactly membership in $G^{\\vee m}$. The referenced proof (Appendix B-A) does not appear in this markdown, so only the statement was checked.",
+        "predicted_error_category": null
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::THEOREM::0",
+      "snippet_type": "THEOREM",
+      "location": "Section III (Theorem 1)",
+      "content": "Theorem 1. Let \\(f : X \\times Y \\to Z\\) be a function and \\(p_{XY}(x, y)\\). Recall \\(G\\) and \\(G^{(m)}\\) are \\(f\\)-confusion graphs over one-instance and m-instances respectively. Assume \\(G\\) is nontrivial. (a) \\(G^{(m)} = G^{\\boxtimes m}\\) for all \\(m \\in \\mathbb{N}_{\\geq 1}\\) iff all \\((x, x') \\notin E(G)\\) is due to condition C1. (b) \\(G^{(m)} = G^{\\lor m}\\) for all \\(m \\in \\mathbb{N}_{\\geq 1}\\) iff all \\((x, x') \\notin E(G)\\) is due to condition C2.",
+      "route": "verify-math",
+      "route_rationale": "Main structural theorem; its content rests on the C1/C2 dichotomy over an unformalised joint pmf, better judged informally.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::THEOREM::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.8,
+        "reasoning": "C1 and C2 are mutually exclusive and jointly exhaustive descriptions of a non-edge, and the two characterisations are what one obtains by pushing the single-instance witness condition through the product. The statement is coherent and its hypotheses (nontriviality, Assumption 1) are present. No defect in the statement itself; see `paper::PROOF::1` for a problem in the printed proof of (b).",
+        "predicted_error_category": null
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::THEOREM::1",
+      "snippet_type": "THEOREM",
+      "location": "Section III (Theorem 2)",
+      "content": "Theorem 2. Let \\(G\\) be a finite simple graph. Then (a) There exists a function \\(f\\) and a joint pmf \\(p_{XY}(x, y)\\) s.t. the \\(f\\)-confusion graph over m-instances is \\(G^{\\boxtimes m}\\). (b) There exists a function \\(g\\) and a joint pmf \\(p_{XY}(x, y)\\) s.t. the \\(g\\)-confusion graph over m-instances is \\(G^{\\lor m}\\).",
+      "route": "verify-math",
+      "route_rationale": "Existence statement realised by an explicit construction; depends on pmf objects the paper leaves unspecified up to support.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::THEOREM::1",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.75,
+        "reasoning": "The two constructions in the appendix do realise $G^{\\boxtimes m}$ and $G^{\\vee m}$ (see `paper::PROOF::0`). One small gap: the theorem says 'let $G$ be a finite simple graph', while Theorem 1, which it invokes, assumes $G$ nontrivial, and construction (a) violates Assumption 1 when $G$ has an isolated vertex (that vertex lies on no edge, so $p_{XY}(x,y)=0$ for all $y$). Both trivial cases were already handled separately in Section III, so the conclusion survives; this is a missing hypothesis, not a false claim.",
+        "predicted_error_category": null
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.75
+    },
+    {
+      "snippet_id": "paper::PROOF::0",
+      "snippet_type": "PROOF",
+      "location": "Appendix B-C, proof of Theorem 2",
+      "content": "Proof of (a). We construct the function \\( f \\) as follows. Let \\( \\mathcal{X} = V(G) \\) and \\( \\mathcal{Y} = E(G) \\). Choose any distribution \\( p_{XY} \\) s.t. \\( p_{XY}(x, y) > 0 \\) if and only if vertex \\( x \\) is incident with edge \\( y \\). Then, we set \\( f(x, y) = x \\). ... Proof of (b). ... \\( \\mathcal{Y} = \\{\\{i, j\\} : i \\ne j \\in V(G)\\} \\) ... \\( g(x, y) = x \\) if \\( y \\in E(G) \\), \\( 1 \\) if \\( y \\notin E(G) \\).",
+      "route": "verify-math",
+      "route_rationale": "Explicit combinatorial constructions, checkable by inspection.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::PROOF::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "In (a) $f(x,y)=x$ always separates distinct $x,x'$, so confusability reduces to the existence of a common incident edge, i.e. to adjacency in $G$; every non-edge is then of type C1 and Theorem 1(a) applies. In (b) the unique $y$ with both marginals positive is $\\{x,x'\\}$, and $g(x,\\{x,x'\\}) = g(x',\\{x,x'\\})$ exactly when $\\{x,x'\\}\\notin E(G)$; every non-edge is then of type C2 and Theorem 1(b) applies. Both constructions are correct.",
+        "predicted_error_category": null
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::PROOF::1",
+      "snippet_type": "PROOF",
+      "location": "Appendix B-B, proof of Theorem 1(b), the (<=) direction",
+      "content": "\\(\\Leftarrow\\): By Proposition 5 and the fact \\( V(G^{\\vee m}) = V(G^{\\boxtimes m}) \\), it suffices to show \\( E(G^{(m)}) \\subseteq E(G^{\\vee m}) \\). Let \\( (\\mathbf{x}, \\mathbf{x}') \\in E(G^{(m)}) \\). ... To show \\( (\\mathbf{x}, \\mathbf{x}') \\in E(G^{\\vee m}) \\), it suffices to find \\( y = [y_1, \\ldots, y_m] \\) s.t. \\( p_{XY}(\\mathbf{x}, y)p_{XY}(\\mathbf{x}', y) > 0 \\) and \\( f^{(m)}(\\mathbf{x}, y) \\ne f^{(m)}(\\mathbf{x}', y) \\). ... Therefore, \\( (\\mathbf{x}, \\mathbf{x}') \\in E(G^{\\vee m}) \\) holds. Since \\( (\\mathbf{x}, \\mathbf{x}') \\in E(G^{(m)}) \\) is arbitrary, we have \\( E(G^{(m)}) \\subseteq E(G^{\\vee m}) \\).",
+      "route": "verify-math",
+      "route_rationale": "A proof-direction/logic question about an argument over unformalised pmf objects; informal review is the right tool.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::PROOF::1",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.8,
+        "reasoning": "The two graphs are interchanged throughout this direction. (i) Proposition 5 already gives $G^{(m)} \\subseteq G^{\\vee m}$, so 'by Proposition 5 ... it suffices to show $E(G^{(m)}) \\subseteq E(G^{\\vee m})$' is vacuous: it asks for precisely the inclusion Proposition 5 supplies, and establishing it proves nothing new. What is needed to conclude $G^{(m)} = G^{\\vee m}$ is the reverse inclusion $E(G^{\\vee m}) \\subseteq E(G^{(m)})$. (ii) The criterion the proof then uses — 'to show $(\\mathbf{x},\\mathbf{x}') \\in E(G^{\\vee m})$, it suffices to find $y$ with $p_{XY}(\\mathbf{x},y)p_{XY}(\\mathbf{x}',y) > 0$ and $f^{(m)}(\\mathbf{x},y) \\ne f^{(m)}(\\mathbf{x}',y)$' — is the *definition of membership in* $E(G^{(m)})$, not in $E(G^{\\vee m})$; OR-product membership is a purely graph-theoretic condition on coordinates and does not refer to $p_{XY}$ or $f$ at all. The body of the argument is sound once the labels are swapped: starting from $(\\mathbf{x},\\mathbf{x}') \\in E(G^{\\vee m})$ (which is exactly the displayed case split with $k_1 \\ge 1$), the constructed $y$ witnesses $(\\mathbf{x},\\mathbf{x}') \\in E(G^{(m)})$, giving $E(G^{\\vee m}) \\subseteq E(G^{(m)})$ and, with Proposition 5, equality. So Theorem 1(b) itself stands.",
+        "predicted_error_category": "Calculus/Proof error"
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::PROOF::2",
+      "snippet_type": "PROOF",
+      "location": "Appendix B-B, second paragraph under 'Proof of (b)'",
+      "content": "Now let \\( (\\mathbf{x}, \\mathbf{x}') \\notin E(G^{\\boxtimes m}) \\) be arbitrary. Then, there is \\( i \\) s.t. \\( (x_i, x_i') \\notin E(G) \\). Since all \\( (x, x') \\notin E(G) \\) are due to condition \\( C_1 \\), there does not exist \\( y_i \\) s.t. \\( p_{XY}(x_i, y_i)p_{XY}(x_i', y_i) > 0 \\), which implies \\( p_{XY}(\\mathbf{x}, y)p_{XY}(\\mathbf{x}', y) = 0 \\) for all choices of \\( y \\). Thus, we have \\( (\\mathbf{x}, \\mathbf{x}') \\notin E(G^{(m)}) \\). Since \\( (\\mathbf{x}, \\mathbf{x}') \\notin E(G^{\\vee m}) \\) is arbitrary, this implies \\( E(G^{\\vee m}) \\subseteq E(G^{(m)}) \\).",
+      "route": "verify-math",
+      "route_rationale": "Prose proof step over unformalised pmf objects.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::PROOF::2",
+        "verifier_name": "math-equations",
+        "status": "UNVERIFIABLE",
+        "error_detected": false,
+        "confidence": 0.5,
+        "reasoning": "This paragraph sits under the heading 'Proof of (b)' but argues from condition C1, which is the hypothesis of part (a); it is evidently a fragment of the proof of Theorem 1(a) that the PDF-to-markdown conversion has misplaced (the whole appendix of this file is out of document order, with equations and section headings interleaved arbitrarily). Internally it is also inconsistent: it quantifies over $(\\mathbf{x},\\mathbf{x}')\\notin E(G^{\\boxtimes m})$ but then says '$(\\mathbf{x},\\mathbf{x}')\\notin E(G^{\\vee m})$ is arbitrary', and the conclusion it draws, $E(G^{\\vee m}) \\subseteq E(G^{(m)})$, is not the contrapositive of what was shown (that would be $E(G^{(m)}) \\subseteq E(G^{\\boxtimes m})$, which is exactly what part (a) needs). Because the passage cannot be attributed reliably to the authors' text rather than to the conversion, no verdict on the mathematics is issued.",
+        "predicted_error_category": null
+      },
+      "status": "UNVERIFIABLE",
+      "error_detected": false,
+      "confidence": 0.5
+    },
+    {
+      "snippet_id": "paper::PROPOSITION::5",
+      "snippet_type": "PROPOSITION",
+      "location": "Section IV (Proposition 6)",
+      "content": "Proposition 6. If \\(G \\subseteq H\\), then \\(\\xi(H) \\leq \\xi(G)\\).",
+      "route": "verify-math",
+      "route_rationale": "One-line monotonicity of the orthogonal rank; the appendix proof is present and checkable by inspection.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::PROPOSITION::5",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "With Definition 4 (non-adjacent vertices get orthogonal vectors), a spanning supergraph $H \\supseteq G$ imposes *fewer* orthogonality constraints, since every non-adjacent pair of $H$ is non-adjacent in $G$. Hence any orthogonal representation of $G$ is one of $H$ and $\\xi(H) \\le \\xi(G)$. The appendix proof says exactly this and is correct.",
+        "predicted_error_category": null
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::PROPOSITION::6",
+      "snippet_type": "PROPOSITION",
+      "location": "Section IV (Proposition 7)",
+      "content": "Proposition 7. \\(\\xi(G \\lor H)\\leq \\xi(G \\boxtimes H) \\leq \\xi(G)\\xi(H)\\).",
+      "route": "verify-math",
+      "route_rationale": "Follows from Proposition 6 plus a tensor-product construction; short informal check.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::PROPOSITION::6",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "The first inequality is Proposition 6 applied to $G\\boxtimes H \\subseteq G\\vee H$. The second is the tensor construction $\\phi_G \\otimes \\phi_H$, whose unit-norm property and orthogonality on non-adjacent pairs are verified in Appendix C and are correct: non-adjacency in the strong product forces non-adjacency in at least one coordinate, and $\\langle a\\otimes b, c\\otimes d\\rangle = \\langle a,c\\rangle\\langle b,d\\rangle$ vanishes.",
+        "predicted_error_category": null
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::PROPOSITION::7",
+      "snippet_type": "PROPOSITION",
+      "location": "Section IV (Proposition 8)",
+      "content": "Proposition 8. \\(\\xi(G) \\leq \\chi(G)\\).  [Definition 4: an orthogonal representation of G is a mapping phi : V(G) -> C^m s.t. each phi(v) is a unit-norm vector and non-adjacent vertices are assigned orthogonal vectors. The orthogonal rank xi(G) is the minimum such dimension m.]",
+      "route": "verify-math-lean",
+      "route_rationale": "A sharp inequality between two graph invariants under a definition the paper pins down exactly; formalisable and decidable on a small witness.",
+      "lean_result": {
+        "snippet_id": "paper::PROPOSITION::7",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.9,
+        "reasoning": "Definition 4 was formalised as `HasOrthRep G m` (a map `V → EuclideanSpace ℂ (Fin m)` with unit norms and orthogonality on *non-adjacent* pairs) and `xi G = sInf {m | HasOrthRep G m}`. Lean proved that for the edgeless graph on two vertices any orthogonal representation needs dimension at least 2 (the two images are orthonormal, hence linearly independent, so `2 ≤ finrank = m`), while `chromaticNumber ⊥ = 1`; therefore `prop8_as_printed_is_false` holds. The same file proves the complement-corrected bound `ξ(⊥) ≤ χ(⊥ᶜ) = 2`, so, as with Proposition 1, the printed inequality is a complement-free rendering of Lovász's true sandwich bound `ξ(G) ≤ χ(Ḡ)`. The paper's own later use, `ξ(C̄₅) = χ(C₅) = 3`, is consistent with the corrected form, not with the printed one.",
+        "predicted_error_category": "Formally refuted",
+        "snippet_type": "PROPOSITION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/0027-QuantumZeroError__PROPOSITION__7_opus5.lean",
+          "formal_statement": "theorem prop8_as_printed_is_false : ¬ (∀ (V : Type) (G : SimpleGraph V), (xi G : ℕ∞) ≤ G.chromaticNumber)  -- with  theorem two_le_of_hasOrthRep {m : ℕ} (h : HasOrthRep (⊥ : SimpleGraph Bool) m) : 2 ≤ m  and  theorem corrected_bound_holds : ((xi (⊥ : SimpleGraph Bool) : ℕ) : ℕ∞) ≤ (⊥ : SimpleGraph Bool)ᶜ.chromaticNumber",
+          "compiler_feedback": "only deprecation warnings for `EuclideanSpace.norm_single` / `EuclideanSpace.single_apply` and `push_neg`; no errors, no sorry",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 4,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::PROPOSITION::8",
+      "snippet_type": "PROPOSITION",
+      "location": "Section IV (Proposition 9)",
+      "content": "Proposition 9. If G \\subseteq H, then \\vartheta(G) \\geq \\vartheta(H).",
+      "route": "verify-math",
+      "route_rationale": "Monotonicity of the Lovász number; mirrors Proposition 6 and is checked by inspection of the given proof.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::PROPOSITION::8",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "Adding edges enlarges the set of admissible orthogonal representations, so the minimum defining $\\vartheta$ can only decrease. The Appendix D-B proof makes exactly this feasible-set argument and is correct.",
+        "predicted_error_category": null
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::LEMMA::0",
+      "snippet_type": "LEMMA",
+      "location": "Section IV, Lemmas 1-2 and the remark on [19]",
+      "content": "Lemma 1 (from [19]). α(G) ≤ ϑ(G).  Lemma 2 (from [19]). ϑ(G∨H) = ϑ(G⊠H) = ϑ(G)ϑ(H).  In [19], Lovász proved that ϑ(G)ϑ(H) ≤ ϑ(G ⊠ H) ≤ ϑ(G)ϑ(H). The first inequality is sufficient for him to compute the Shannon capacity of C₅.",
+      "route": "verify-math",
+      "route_rationale": "Cited results plus an attribution remark; a literature/consistency check rather than a formalisable derivation.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::LEMMA::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.6,
+        "reasoning": "Lemmas 1 and 2 are correct in Lovász's convention, which is the one Definition 5 adopts (non-adjacent vertices orthogonal): $\\alpha(G) \\le \\vartheta(G)$ and $\\vartheta$ is multiplicative over both products. The accompanying remark is degenerate as printed — '$\\vartheta(G)\\vartheta(H) \\le \\vartheta(G\\boxtimes H) \\le \\vartheta(G)\\vartheta(H)$' has identical bounds on both sides, so the following sentence about 'the first inequality' being the one Lovász needed is vacuous. That is a garbled sentence rather than a false mathematical claim, and the lemma content it introduces is right.",
+        "predicted_error_category": null
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.6
+    },
+    {
+      "snippet_id": "paper::LEMMA::1",
+      "snippet_type": "LEMMA",
+      "location": "Section IV (Lemma 3)",
+      "content": "Lemma 3. ϑ(G) ≤ ξ(G)",
+      "route": "verify-math",
+      "route_rationale": "Standard Lovász bound restated over C; short informal check.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::LEMMA::1",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "Given a $\\xi(G)$-dimensional orthogonal representation, choosing a handle $c$ in that space yields $\\max_i 1/|\\langle c, \\phi(i)\\rangle|^2 \\le \\xi(G)$ for a suitable $c$, so $\\vartheta(G) \\le \\xi(G)$. The inequality is the correct direction in the paper's (Lovász) convention and is used consistently in Theorem 3 and in equation (3).",
+        "predicted_error_category": null
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::THEOREM::2",
+      "snippet_type": "THEOREM",
+      "location": "Section IV (Theorem 3)",
+      "content": "Theorem 3. Let G be an f-confusion graph and G^{(m)} be its f-confusion graph over m-instances. We have $$\\alpha(G^{\\boxtimes m}) \\leq \\vartheta(G^{\\boxtimes m}) = \\vartheta(G)^m = \\vartheta(G^{(m)}) = \\vartheta(G^{\\vee m}) \\leq \\xi(G^{\\vee m}).$$",
+      "route": "verify-math",
+      "route_rationale": "A chain assembled from Lemmas 1-3 and Propositions 5, 9; the assembly is the checkable content.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::THEOREM::2",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "Each link is justified: $\\alpha \\le \\vartheta$ is Lemma 1; $\\vartheta(G^{\\boxtimes m}) = \\vartheta(G)^m = \\vartheta(G^{\\vee m})$ is Lemma 2 iterated; the middle equality for $\\vartheta(G^{(m)})$ is the squeeze from Proposition 5 ($G^{\\boxtimes m} \\subseteq G^{(m)} \\subseteq G^{\\vee m}$) together with the antitone Proposition 9, which forces all three to coincide because the two outer values are equal; and the last step is Lemma 3. The chain is internally consistent.",
+        "predicted_error_category": null
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::LEMMA::2",
+      "snippet_type": "LEMMA",
+      "location": "Section V (Lemma 4) and its proof",
+      "content": "Lemma 4. Fix the block length m and function f and a pmf p_{XY}(x, y). The optimal rate is (log₂ ξ(G^{(m)}))/m, where we recall that Ḡ^{(m)} denotes the complement of the f-confusion graph over m-instances G^{(m)}. ... Conversely, a protocol Π of rate (1/m) log₂ d induces an orthogonal representation ψ: V(Ḡ^{(m)}) → ℂ^d. ... Now we check it is indeed an orthogonal representation. Let (x, x') ∈ E(Ḡ^{(m)}). The protocol Π is zero-error, so ρ_x = ∑λ_i |v_i⟩⟨v_i|, ρ_{x'} = ∑λ'_i |v'_i⟩⟨v'_i| must be perfectly distinguishable, i.e., ρ_x ⟂ ρ_{x'}.",
+      "route": "verify-math",
+      "route_rationale": "Operational quantum-protocol argument over POVMs and density operators; not reducible to a self-contained formal statement.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::LEMMA::2",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.6,
+        "reasoning": "The forward direction is sound: projectors onto the spans $S_z$ of states with equal function value are mutually orthogonal precisely because confusable sequences are non-adjacent in $\\bar G^{(m)}$ and so receive orthogonal vectors, and Bob's outcome is then deterministic. The converse has an inverted membership: it begins 'Let $(\\mathbf{x},\\mathbf{x}') \\in E(\\bar G^{(m)})$' and then invokes perfect distinguishability, but confusable pairs are the edges of $G^{(m)}$, i.e. the *non*-edges of $\\bar G^{(m)}$ — which is also exactly the condition Definition 4 requires one to check. The intended condition is $(\\mathbf{x},\\mathbf{x}') \\notin E(\\bar G^{(m)})$. This markdown drops or mangles complement bars throughout (the lemma statement itself writes $\\xi(G^{(m)})$ while its own prose says the quantity is $\\xi(\\bar G^{(m)})$), so the slip is most likely a transcription artefact; the operational argument is correct under the intended reading. Not flagged.",
+        "predicted_error_category": null
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.6
+    },
+    {
+      "snippet_id": "paper::THEOREM::3",
+      "snippet_type": "THEOREM",
+      "location": "Section V (Theorem 4)",
+      "content": "Theorem 4. The rate in the quantum setting is given by $$R_\\text{quantum} = \\inf_m \\frac{\\log_2 \\xi(G^{(m)})}{m}$$  Proof. It can be seen that ξ(G^{(m+n)}) ≤ ξ(G^{(m)}) ξ(G^{(n)}), since a protocol for the (m+n)-instance case can be obtained by putting together the m-instance and n-instance protocols. By Fekete lemma [20], the limit exists and is inf_m (1/m) log ξ(G^{(m)}).",
+      "route": "verify-math",
+      "route_rationale": "Submultiplicativity plus Fekete; a short informal check, and the objects are the same unformalised protocol objects as Lemma 4.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::THEOREM::3",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "Concatenating an $m$-instance and an $n$-instance protocol and tensoring the state spaces gives a valid $(m+n)$-instance protocol of dimension $\\xi_m\\xi_n$, so $\\log\\xi$ is subadditive and Fekete's lemma yields $\\lim_m \\log_2\\xi_m/m = \\inf_m \\log_2\\xi_m/m$. The argument is correct; as elsewhere in this markdown the complement bar on $\\bar G^{(m)}$ has been dropped from the displayed formula, although Lemma 4 makes the intended quantity explicit.",
+        "predicted_error_category": null
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::EQUATION::1",
+      "snippet_type": "EQUATION",
+      "location": "Section VI, equation (3)",
+      "content": "\\[ \\xi(C_{5}^{\\boxtimes m}) \\geq \\vartheta(C_{5}^{\\boxtimes m}) = \\vartheta(C_{5})^{m} = 5^{m/2}. \\] (3)  where first inequality follows from Lemma 3, the first equality follows from Theorem 3, the second equality follows from \\( \\vartheta(C_{5}) = \\sqrt{5} \\) [19].",
+      "route": "verify-math",
+      "route_rationale": "Short chain whose only numeric content ((sqrt 5)^m = 5^{m/2}) is also covered by the Lean check on EQUATION::3.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::1",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "Each cited justification matches: Lemma 3 gives $\\vartheta \\le \\xi$, Lemma 2 / Theorem 3 gives $\\vartheta(C_5^{\\boxtimes m}) = \\vartheta(C_5)^m$, and Lovász's $\\vartheta(C_5) = \\sqrt{5}$ gives $(\\sqrt{5})^m = 5^{m/2}$. The identity $(\\sqrt 5)^m = 5^{m/2}$ was separately machine-checked in Lean (`PaperEq3.sqrt_five_pow`).",
+        "predicted_error_category": null
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::EQUATION::2",
+      "snippet_type": "EQUATION",
+      "location": "Section VI, equation (2)",
+      "content": "\\[ \\xi(C_{5}^{\\vee m}) = \\xi(C_{5}^{\\boxtimes m}) \\leq \\begin{cases} \\xi(C_{5}^{\\boxtimes 2})^{m/2} & \\text{if } m \\text{ even} \\\\ \\xi(C_{5})\\chi(C_{5}^{\\boxtimes 2})^{(m-1)/2} & \\text{if } m \\text{ odd} \\end{cases} \\leq 3\\cdot 5^{(m-1)/2} \\] (2)",
+      "route": "verify-math",
+      "route_rationale": "The numeric envelope is covered by the Lean check on EQUATION::3; what remains is a symbol-level consistency question.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::2",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.6,
+        "reasoning": "The odd case is printed as $\\xi(C_5)\\,\\chi(C_5^{\\boxtimes 2})^{(m-1)/2}$, mixing the chromatic number into a chain whose only cited justification is Proposition 7, the submultiplicativity of $\\xi$; the quantity that submultiplicativity delivers, and the one needed for the final bound, is $\\xi(C_5)\\,\\xi(C_5^{\\boxtimes 2})^{(m-1)/2}$. With $\\xi(C_5) = 3$ and $\\xi(C_5^{\\boxtimes 2}) \\le 5$ (Claim 3) the stated envelope $3\\cdot5^{(m-1)/2}$ follows, and the even case $\\xi(C_5^{\\boxtimes2})^{m/2} \\le 5^{m/2} = \\sqrt5\\cdot5^{(m-1)/2} \\le 3\\cdot5^{(m-1)/2}$ also holds (machine-checked as `PaperEq3.even_case_le`). So the printed $\\chi$ is a symbol slip that does not invalidate the bound; not flagged.",
+        "predicted_error_category": null
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.6
+    },
+    {
+      "snippet_id": "paper::EQUATION::3",
+      "snippet_type": "EQUATION",
+      "location": "Section VI, the sandwich combining (2) and (3)",
+      "content": "\\[ 5^{m/2} \\leq \\xi(C_{5}^{\\vee m}) \\leq 3\\cdot 5^{(m-1)/2}. \\]  ... The result follows by taking logarithms, normalizing by \\( m \\) and taking the infimum.",
+      "route": "verify-math-lean",
+      "route_rationale": "A real-exponent inequality and a limit claim; exactly the kind of bound a compiler can settle outright.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::3",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "Three facts were formalised and proved: (i) $(\\sqrt5)^m = 5^{m/2}$, so the lower bound of (3) is what the paper says; (ii) $5^{m/2} \\le 3\\cdot5^{(m-1)/2}$ for every real $m$ — the sandwich is non-vacuous and the even case of (2) is dominated by the uniform bound; (iii) the normalised lower bound $\\log_2(5^{m/2})/m$ equals $\\tfrac12\\log_2 5$ identically, while the normalised upper bound $\\log_2(3\\cdot5^{(m-1)/2})/m$ tends to $\\tfrac12\\log_2 5$ as $m \\to \\infty$. So 'taking logarithms, normalizing by $m$ and taking the infimum' does give $R_{quantum}(g) = \\tfrac12\\log_2 5$. Compiles cleanly, no sorry.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/0027-QuantumZeroError__EQUATION__3_opus5.lean",
+          "formal_statement": "theorem sqrt_five_pow (m : ℕ) : (Real.sqrt 5) ^ m = (5 : ℝ) ^ ((m : ℝ) / 2);  theorem bounds_consistent {m : ℝ} (_hm : 1 ≤ m) : (5 : ℝ) ^ (m / 2) ≤ 3 * 5 ^ ((m - 1) / 2);  theorem upper_bound_rate_tendsto : Filter.Tendsto (fun m : ℝ => Real.logb 2 (3 * (5 : ℝ) ^ ((m - 1) / 2)) / m) Filter.atTop (nhds ((1 / 2) * Real.logb 2 5))",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::EQUATION::4",
+      "snippet_type": "EQUATION",
+      "location": "Section VI, Proposition 11 (quantum advantage for g)",
+      "content": "\\[ R_{quantum}(g) = \\frac{1}{2}\\log_{2} 5 < \\log_{2} \\frac{5}{2} \\leq R_{classical}(g) \\]",
+      "route": "verify-math-lean",
+      "route_rationale": "The strict inequality that carries the paper's headline quantum-advantage claim; a decidable real-number fact.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::4",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.95,
+        "reasoning": "Formalised as `(1/2) * Real.logb 2 5 < Real.logb 2 (5/2)` and proved: $\\log_2(5/2) = \\log_2 5 - 1$ and $\\log_2 5 > \\log_2 4 = 2$, so $\\tfrac12\\log_2 5 < \\log_2 5 - 1$. Numerically $1.1609 < 1.3219$. The strict separation underpinning the quantum advantage for $g$ holds. Compiles cleanly, no sorry.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/0027-QuantumZeroError__EQUATION__4_opus5.lean",
+          "formal_statement": "theorem quantum_lt_classical : (1 / 2 : ℝ) * Real.logb 2 5 < Real.logb 2 (5 / 2)",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::EQUATION::5",
+      "snippet_type": "EQUATION",
+      "location": "Appendix F-C, the classical lower bound for g",
+      "content": "\\[ \\chi(C_{5}^{\\vee m}) \\geq \\left(\\frac{5}{2}\\right)^{m} \\]  Proof. By Proposition 3, we have that $\\alpha(C_5^{\\vee m}) = \\alpha(C_5)^m = 2^m$. Since $\\alpha(G)\\chi(G) \\geq |V(G)|$ [22, page 193], we have $\\chi(C_5^{\\vee m}) \\geq |V(C_5^{\\vee m})|/\\alpha(C_5^{\\vee m}) = \\frac{5^m}{2^m}$.",
+      "route": "verify-math-lean",
+      "route_rationale": "A combinatorial bound resting on alpha(C_5) = 2 and an arithmetic step; both are machine-checkable.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::5",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "The 5-cycle was defined on `Fin 5` and `α(C₅) = 2` was proved outright: `{0,2}` is independent, and an exhaustive `decide` over all subsets shows no independent set has three vertices. With Proposition 3 (already machine-verified for `paper::PROPOSITION::2`), iterating gives $\\alpha(C_5^{\\vee m}) = 2^m$, formalised as the induction `indep_pow`. The final step was proved as `chrom_lower_bound`: from $5^m \\le 2^m\\,c$ it follows that $(5/2)^m \\le c$, using $5^m/2^m = (5/2)^m$. So the displayed bound follows correctly from $\\alpha\\chi \\ge |V|$. Compiles cleanly, no sorry.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/0027-QuantumZeroError__EQUATION__5_opus5.lean",
+          "formal_statement": "theorem indepNum_C5 : C5.indepNum = 2;  theorem chrom_lower_bound (m c : ℕ) (h : 5 ^ m ≤ 2 ^ m * c) : (5 / 2 : ℝ) ^ m ≤ (c : ℝ);  theorem ratio_pow (m : ℕ) : (5 : ℝ) ^ m / 2 ^ m = (5 / 2 : ℝ) ^ m",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::EQUATION::6",
+      "snippet_type": "EQUATION",
+      "location": "Section VI, proof of Claim 3, equation (6)",
+      "content": "\\[ H_{5}^{2}(4) \\subseteq C_{5} \\vee C_{5}. \\] (6)   [preceded by: \"On the other hand, notice that \\( H_{5}^{2}(4) = Cay(\\mathbb{Z}_{5}^{\\times 2}, S) \\) where \\( S = \\{ x \\in \\mathbb{Z}_{5}^{\\times 2} : x_{1} + x_{2} \\geq 4 \\} \\). Since \\( x_{1} \\geq 4 \\) or \\( x_{2} \\geq 4 \\) implies \\( x_{1} + x_{2} \\geq 4 \\), we have \\( E(C_{5} \\vee C_{5}) \\subseteq E(H_{5}^{2}(4)) \\). Note \\( V(C_{5} \\vee C_{5}) = V(H_{5}^{2}(4)) = \\mathbb{Z}_{5}^{\\times 2} \\). Thus, we conclude that\"]",
+      "route": "verify-math-lean",
+      "route_rationale": "A concrete containment between two explicit 25-vertex Cayley graphs; fully decidable.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::6",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.9,
+        "reasoning": "Both graphs were built on $\\mathbb{Z}_5^{\\times2}$ from the paper's own connection sets, $S = \\{x : x_1 + x_2 \\ge 4\\}$ and $T = \\{x : x_1 \\ge 4 \\text{ or } x_2 \\ge 4\\}$, with the paper's Cayley adjacency ($g \\ne h$ adjacent iff $g-h \\in A$ or $h-g \\in A$). Faithfulness was checked by `decide`: $Cay(\\mathbb{Z}_5,\\{x \\ge 4\\})$ is the 5-cycle and $Cay(\\mathbb{Z}_5^{\\times2}, T)$ is exactly the OR product $C_5 \\vee C_5$. Lean then confirmed the paper's own one-line argument, $T \\subseteq S$ and hence $E(C_5\\vee C_5) \\subseteq E(H_5^2(4))$, i.e. $C_5\\vee C_5 \\subseteq H_5^2(4)$ — and refuted equation (6) as printed, $H_5^2(4) \\subseteq C_5\\vee C_5$: the pair $((0,0),(2,2))$ has difference $(3,3)$ with $3+3 \\ge 4$, so it is an edge of $H_5^2(4)$, while neither coordinate differs by $\\pm1$, so it is not an edge of $C_5\\vee C_5$. Equation (6) therefore states the opposite of the containment the surrounding text derives.",
+        "predicted_error_category": "Formally refuted",
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/0027-QuantumZeroError__EQUATION__6_opus5.lean",
+          "formal_statement": "theorem eq6_as_printed_is_false : ¬ (∀ p q : V, cayAdj S p q → orAdj p q);  theorem orProd_subset_H : ∀ p q : V, orAdj p q → cayAdj S p q;  theorem cayT_eq_orProd : ∀ p q : V, cayAdj T p q ↔ orAdj p q;  theorem T_subset_S : T ⊆ S",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::EQUATION::7",
+      "snippet_type": "EQUATION",
+      "location": "Section VI, Claim 3 and the symmetric orthogonal rank bound",
+      "content": "\\[ \\xi(C_{5} \\vee C_{5}) \\leq \\xi(H_{5}^{2}(4)) \\leq \\xi_{sym}(H_{5}^{2}(4)) = 5 \\]  ... the last equality follows from Theorem 1 of [21], i.e. \\( \\xi_{sym}(H_{5}^{2}(4)) = 5^{2-4/4} = 5 \\).  [Theorem 1 of [21]: For all positive integers \\( \\ell, n \\) and any \\( d \\in [(\\ell-1)n] \\) that is divisible by \\( \\ell-1 \\), we have \\( \\xi_{sym}(H_{\\ell}^{n}(d)) = \\ell^{n - d/(\\ell-1)} \\).]",
+      "route": "verify-math",
+      "route_rationale": "Instantiation of an external cited theorem; the checkable part is the arithmetic and the side conditions.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::7",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.8,
+        "reasoning": "The instantiation is arithmetically correct: with $\\ell = 5$, $n = 2$, $d = 4$, the side conditions hold ($d = 4 \\in [(\\ell-1)n] = [8]$ and $\\ell - 1 = 4$ divides $4$), and $\\ell^{n - d/(\\ell-1)} = 5^{2 - 4/4} = 5^1 = 5$. The middle inequality $\\xi \\le \\xi_{sym}$ is equation (4), immediate since a symmetric orthogonal representation is in particular an orthogonal representation. The first inequality rests on equation (6), whose printed direction is wrong — see the finding on `paper::EQUATION::6`; under the complement reading of (6) it follows from Proposition 6.",
+        "predicted_error_category": null
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::EQUATION::8",
+      "snippet_type": "EQUATION",
+      "location": "Section VI (Claim 1)",
+      "content": "\\[ \\xi(\\overline{C_{5}}) = \\chi(C_{5}) = 3 \\]",
+      "route": "verify-math",
+      "route_rationale": "A two-number identity about a specific small graph; checkable by inspection against known values.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::8",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "$\\chi(C_5) = 3$ since $C_5$ is an odd cycle. $\\xi(\\bar C_5)$ in the paper's convention (non-adjacent vertices orthogonal) is the usual orthogonal rank of $C_5$, which is $3$ — the standard Lovász umbrella representation of the pentagon lives in $\\mathbb{R}^3$, and $2$ is impossible. Note that this identity is consistent with the corrected form $\\xi(G) \\le \\chi(\\bar G)$ of Proposition 8, not with the printed form $\\xi(G) \\le \\chi(G)$; see the finding on `paper::PROPOSITION::7`.",
+        "predicted_error_category": null
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::EQUATION::9",
+      "snippet_type": "EQUATION",
+      "location": "Section VI (no quantum advantage for f)",
+      "content": "\\[ R_{quantum}(f) = R_{classical}(f) = \\frac{1}{2}\\log_{2}5 \\]",
+      "route": "verify-math",
+      "route_rationale": "Rests on the Witsenhausen rate of C_5 and on bounds for the strong power; literature-dependent, not self-contained enough to formalise faithfully.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::9",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.7,
+        "reasoning": "For $f$ the $m$-instance graph is $C_5^{\\boxtimes m}$, and $\\inf_m \\tfrac1m\\log_2\\chi(C_5^{\\boxtimes m}) = \\tfrac12\\log_2 5$ is the known Witsenhausen rate of the pentagon: the lower bound comes from $\\chi \\ge |V|/\\alpha$ with $\\alpha(C_5^{\\boxtimes m}) \\approx 5^{m/2}$ (Shannon capacity $\\sqrt5$) and the upper bound from $\\chi(C_5^{\\boxtimes 2}) \\le 5$. The quantum rate is squeezed between $\\vartheta(C_5)^m = 5^{m/2}$ and the same value, so the two coincide and there is no advantage. Consistent with Theorem 3; the supporting Claims are only partially present in this markdown, so confidence is moderate.",
+        "predicted_error_category": null
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.7
+    },
+    {
+      "snippet_id": "paper::DEFINITION::1",
+      "snippet_type": "DEFINITION",
+      "location": "Section VI, Definitions 6-8 and equation (5)",
+      "content": "Definition 6. ... The Cayley graph \\( Cay(\\Gamma, S) \\) has vertex set \\( V = \\Gamma \\). \\( g, h \\in \\Gamma \\), where \\( g \\ne h \\) are adjacent if we have \\( ah^{-1} \\in S \\text{ or } hg^{-1} \\in S \\) ... Definition 8. ... \\[ H_{\\ell}^{n}(d) = Cay(\\mathbb{Z}_{\\ell}^{\\times n}, S) \\] (5) where \\( S = \\{ x \\in \\mathbb{Z}_{\\ell}^{\\times n} : \\sum_{i=1}^{n} x_{i} \\geq d \\} \\) and the sum in the definition \\( S \\) is taken in \\( \\mathbb{N} \\).",
+      "route": "verify-math",
+      "route_rationale": "Definitions; the only checkable content is internal consistency with the use made of them.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::DEFINITION::1",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.7,
+        "reasoning": "Definition 6 contains an obvious typo, '$ah^{-1} \\in S$' for '$gh^{-1} \\in S$' — a typographical slip, not a mathematical error. The definitions are otherwise consistent with their later use: $C_5 = Cay(\\mathbb{Z}_5, \\{x : x \\ge 4\\}) = Cay(\\mathbb{Z}_5,\\{4\\})$ does give adjacency exactly for differences $\\pm1$, which was machine-checked in the Lean file for `paper::EQUATION::6`.",
+        "predicted_error_category": null
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.7
+    },
+    {
+      "snippet_id": "paper::PROOF::3",
+      "snippet_type": "PROOF",
+      "location": "Appendix D-A, Theorem 5 (matrix characterisation of the Lovász number over C)",
+      "content": "Theorem 5. Let G be a graph on vertices [n]. Then ϑ_C(G) is minimum of the largest eigenvalue of any Hermitian matrix (a_{ij}) s.t. a_{ij} = 1, if i = j or i, j are non-adjacent (7).  Proof: a_{ij} = 1 - ⟨u_i, u_j⟩ / (⟨c, u_i⟩⟨c, u_j⟩), i ≠ j; a_{ii} = 1 ... -a_{ij} = (c - u_i/⟨c, u_i⟩)†(c - u_j/⟨c, u_j⟩), ϑ_C(G) - a_{ii} = (c - u_i/⟨c, u_i⟩)†(c - u_i/⟨c, u_i⟩) + (ϑ_C(G) - 1/|⟨c, u_i⟩|^2) ... λδ_{ij} - a_{ij} = x_i†x_j ... u_i = 1/√λ (c + x_i) ... u_i†u_i = 1/λ (c†c + x_i†x_i) = 1, u_i†u_j = 1/λ (1 + x_i†x_j) = 0 if (i, j) ∉ E(G) ... λ = 1/|⟨c, u_i⟩|^2, ∀i ∈ [n].",
+      "route": "verify-math",
+      "route_rationale": "A multi-step linear-algebra derivation; each identity is checkable by direct expansion.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::PROOF::3",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "Every identity expands correctly. With $\\langle v,u\\rangle = v^\\dagger u$ and $\\|c\\| = \\|u_i\\| = 1$: $(c - u_i/\\langle c,u_i\\rangle)^\\dagger(c - u_j/\\langle c,u_j\\rangle) = 1 - 1 - 1 + \\langle u_i,u_j\\rangle/(\\overline{\\langle c,u_i\\rangle}\\langle c,u_j\\rangle) = -a_{ij}$, and setting $i = j$ gives $-1 + 1/|\\langle c,u_i\\rangle|^2$, so adding $\\vartheta - 1/|\\langle c,u_i\\rangle|^2$ yields $\\vartheta - 1 = \\vartheta - a_{ii}$ as printed. In the converse, $x_i^\\dagger x_i = \\lambda - 1$ gives $u_i^\\dagger u_i = (1 + \\lambda - 1)/\\lambda = 1$; $x_i^\\dagger x_j = -a_{ij} = -1$ for non-adjacent $i \\ne j$ gives $u_i^\\dagger u_j = 0$; and $\\langle c, u_i\\rangle = 1/\\sqrt\\lambda$ gives $\\lambda = 1/|\\langle c,u_i\\rangle|^2$. The Gram factorisation of the PSD matrix $\\lambda I - A$ and the choice of a handle orthogonal to all $x_i$ are legitimate.",
+        "predicted_error_category": null
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::PROOF::4",
+      "snippet_type": "PROOF",
+      "location": "Appendix D-A, Lemma 5 and the identification of the real and complex Lovász numbers",
+      "content": "Lemma 5. ... ϑ_C(G) ≥ max_B Tr BJ.  Proof. ... Tr BJ = ∑_{i,j=1}^n b_{ij} = ∑_{i,j=1}^n a_{ij}b_{ij} = Tr AB; ϑ_C(G) - Tr BJ = Tr (ϑ_C(G)I - A)B ... Tr (ϑ_C(G)I - A)B = ∑ λ_i e_i†(ϑ_C(G)I - A)e_i ≥ 0 ... Since R ⊆ C, the feasible set in the minimization problem defining ϑ_R(G) is a subset of the feasible set in the minimization problem defining ϑ_C(G). Therefore, we have ϑ_R(G) ≥ ϑ_C(G) ... ϑ_C(G) ≥ max_{B is Hermitian PSD} Tr BJ ≥ max_{B is symmetric PSD} Tr BJ = ϑ_R(G).",
+      "route": "verify-math",
+      "route_rationale": "A duality/feasible-set argument; checkable by inspection.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::PROOF::4",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.8,
+        "reasoning": "The substitution $\\sum_{ij} b_{ij} = \\sum_{ij} a_{ij}b_{ij}$ is valid because $a_{ij} = 1$ exactly where $b_{ij}$ can be non-zero (diagonal and non-adjacent pairs) and $b_{ij} = 0$ on edges. The non-negativity of $\\mathrm{Tr}((\\vartheta I - A)B)$ follows from both factors being PSD, via the eigenbasis of $B$. The feasible-set comparison is the right direction for a minimisation ($\\mathbb{R}$-feasible set smaller, so $\\vartheta_\\mathbb{R} \\ge \\vartheta_\\mathbb{C}$), and combining with the dual chain squeezes the two to equality. Correct.",
+        "predicted_error_category": null
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::PROOF::5",
+      "snippet_type": "PROOF",
+      "location": "Appendix A, proof of Proposition 3",
+      "content": "Proof. Let $S_1$ and $S_2$ be independent in $G$ and $H$ respectively. Then, $S_1 \\times S_2$ is independent in $G \\vee H$. Thus, $\\alpha(G \\vee H) \\geq \\alpha(G)\\alpha(H)$. Now we show the other inequality. Let $S$ be a maximum independent set in $G \\vee H$. Define $S_g := \\{g \\in V(G) : \\exists h \\in V(H), (g, h) \\in S\\}$, $S_h := \\{h \\in V(H) : \\exists g \\in V(G), (g, h) \\in S\\}$ ... Let distinct $g_1, g_2 \\in S_g$. Then there exist $h_1, h_2$ s.t. $(g_1, h_1), (g_2, h_2) \\in S$. Since $S$ is independent in $G \\vee H$, $(g_1, h_1), (g_2, h_2) \\notin E(G \\vee H)$ and thus $(g_1, g_2) \\notin E(G)$.",
+      "route": "verify-math",
+      "route_rationale": "Companion proof to the Lean-verified Proposition 3; read as a cross-check on the formalisation.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::PROOF::5",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "Both directions are correct and are exactly the argument that was independently machine-checked for `paper::PROPOSITION::2`: products of independent sets stay independent in both products, and the coordinate projections of a maximum independent set of $G\\vee H$ are independent with $S \\subseteq S_g \\times S_h$, giving $|S| \\le \\alpha(G)\\alpha(H)$.",
+        "predicted_error_category": null
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::PROOF::6",
+      "snippet_type": "PROOF",
+      "location": "Appendix C-B, proof of Proposition 7",
+      "content": "Proof. \\( \\xi(G \\vee H) \\le \\xi(G \\boxtimes H) \\) holds because of Proposition 6 and the fact that \\( G \\boxtimes H \\subseteq G \\vee H \\). ... We claim \\( \\phi_G \\times \\phi_H : V(G) \\times V(H) \\to \\mathbb{C}^{m_1 m_2}, (g, h) \\mapsto \\phi_G(g) \\otimes \\phi_H(h) \\) ... is an orthogonal representation of \\( G \\boxtimes H \\). Indeed, let \\( (g_1, h_1), (g_2, h_2) \\) be non-adjacent in \\( G \\boxtimes H \\). Since the role of \\( G, H \\) are interchangeable, we assume \\( (g_1, g_2) \\notin E(G) \\).",
+      "route": "verify-math",
+      "route_rationale": "A tensor-product construction; checkable by inspection.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::PROOF::6",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "Non-adjacency of distinct vertices in the strong product means at least one coordinate is distinct and non-adjacent, so the WLOG is legitimate; then $\\langle \\phi_G(g_1)\\otimes\\phi_H(h_1), \\phi_G(g_2)\\otimes\\phi_H(h_2)\\rangle = \\langle\\phi_G(g_1),\\phi_G(g_2)\\rangle\\langle\\phi_H(h_1),\\phi_H(h_2)\\rangle = 0$, and tensor products of unit vectors are unit vectors. The first inequality is Proposition 6 applied to $G\\boxtimes H \\subseteq G\\vee H$. Correct.",
+        "predicted_error_category": null
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::PROOF::7",
+      "snippet_type": "PROOF",
+      "location": "Appendix D-B, proof of Proposition 9",
+      "content": "Proof. Since \\( G \\subseteq H \\), we have \\( V(G) = V(H) \\) and that if \\( (u, v) \\notin E(H) \\), then \\( (u, v) \\notin E(G) \\). Therefore, an orthogonal representation \\( \\phi \\) of \\( G \\) is an orthogonal representation of \\( H \\). Let \\( \\psi \\) and \\( d \\) be optimal orthogonal representation and handle that achieves \\( \\vartheta(G) \\). Then, we have \\[ \\vartheta(G) = \\max_{i \\in V(G)} \\frac{1}{|\\langle d, \\psi(i) \\rangle|^2} \\geq \\min_{\\phi, c} \\max_{i \\in V(H)} \\frac{1}{|\\langle c, \\phi(i) \\rangle|^2} = \\vartheta(H). \\]",
+      "route": "verify-math",
+      "route_rationale": "One-line feasible-set argument; checkable by inspection.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::PROOF::7",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "The optimal pair $(\\psi, d)$ for $G$ is feasible for $H$, so the minimum defining $\\vartheta(H)$ is at most the value it attains, giving $\\vartheta(G) \\ge \\vartheta(H)$. The inequality direction is correct.",
+        "predicted_error_category": null
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "Section I, the quantum protocol and its zero-error criterion",
+      "content": "• Alice picks a quantum state ρ_x ∈ L(H), where dim H = d, that depends on the sequence x and transmits it to Bob. • Bob performs a POVM measurement ... Λ^{z}_{f(·,·), y} ⪰ 0, for z ∈ Z^m, and ∑_{z ∈ Z^m} Λ^{z}_{f(·,·), y} = I. The protocol is deemed successful if z_i = f(x_i, y_i), for i ∈ {1, …, m} for all possible pairs (x, y). Alice's rate of transmission is defined as (1/m) log_2 d. It can be shown (Section V), that this protocol is zero-error if and only if for (x, x') ∈ G^{(m)} then ρ_x ⟂ ρ_{x'}.",
+      "route": "verify-math",
+      "route_rationale": "A modelling description of a quantum protocol; not a formalisable assertion in isolation.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.8,
+        "reasoning": "The model is internally coherent: states are Hermitian PSD unit-trace operators, the POVM elements are PSD and resolve the identity, orthogonality $\\mathrm{Tr}(\\rho^\\dagger\\sigma) = 0$ is correctly identified with orthogonal supports for PSD operators, and the zero-error criterion 'confusable pairs get orthogonal states' is the right condition — exactly what Lemma 4 then proves in both directions. The rate $(1/m)\\log_2 d$ is the standard normalisation.",
+        "predicted_error_category": null
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::DEFINITION::2",
+      "snippet_type": "DEFINITION",
+      "location": "Section VI, Definition 7 (symmetric orthogonal rank)",
+      "content": "Definition 7. Let \\( \\widetilde{G} = \\overline{Cay}(\\Gamma, S) \\) be the complement of a Cayley graph and \\( \\varphi : V(\\widetilde{G}) \\mapsto \\mathbb{C}^{m} \\) be an orthogonal representation of \\( \\widetilde{G} \\). \\( \\varphi \\) is said to be \"symmetric\" if there exists \\( f : \\Gamma \\to \\mathbb{C} \\) s.t. \\( \\langle \\varphi(g), \\varphi(h) \\rangle = \\widetilde{f}(gh^{-1}) \\) for all \\( g, h \\in \\Gamma \\). The symmetric orthogonal rank \\( \\xi_{sym}(\\widetilde{G}) \\) is the minimum dimension \\( m \\) such that there exists a symmetric orthogonal representation of \\( \\widetilde{G} \\).",
+      "route": "verify-math",
+      "route_rationale": "Definition supporting equation (4); checked only for internal consistency.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::DEFINITION::2",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.7,
+        "reasoning": "The definition is well posed and supports equation (4), $\\xi(\\widetilde G) \\le \\xi_{sym}(\\widetilde G)$, since symmetry is an extra constraint on an orthogonal representation and can only raise the minimum dimension. Minor inconsistency of notation: the function is introduced as $f$ but used as $\\tilde f$. Note also that this definition is stated for the *complement* of a Cayley graph, while equation (5) defines $H_\\ell^n(d)$ as a Cayley graph and the text later calls it 'complement of a Cayley graph' — one of the many places where this markdown's complement bars have been dropped.",
+        "predicted_error_category": null
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.7
+    }
+  ],
+  "findings": [
+    {
+      "snippet_id": "paper::EQUATION::6",
+      "category": "Formally refuted",
+      "severity": "minor",
+      "confidence": 0.9,
+      "evidence": "Lean refuted the containment as printed and confirmed the opposite one. Building both graphs on $\\mathbb{Z}_5^{\\times2}$ from the paper's own connection sets $S=\\{x: x_1+x_2 \\ge 4\\}$ and $T=\\{x : x_1\\ge4 \\text{ or } x_2\\ge4\\}$ (and checking by exhaustive decision that $Cay(\\mathbb{Z}_5^{\\times2},T)$ really is $C_5\\vee C_5$), the pair $((0,0),(2,2))$ has difference $(3,3)$ with $3+3\\ge4$, so it is an edge of $H_5^2(4)$, while neither coordinate differs by $\\pm1$, so it is not an edge of $C_5\\vee C_5$. The text's own one-line argument — '$x_1\\ge4$ or $x_2\\ge4$ implies $x_1+x_2\\ge4$, we have $E(C_5\\vee C_5)\\subseteq E(H_5^2(4))$' — establishes $C_5 \\vee C_5 \\subseteq H_5^2(4)$, i.e. the reverse of (6); Lean confirmed that direction too. The intended statement is almost certainly $\\overline{H_5^2(4)} \\subseteq \\overline{C_5\\vee C_5}$, which is what Proposition 6 then needs to give $\\xi(\\overline{C_5\\vee C_5}) \\le \\xi_{sym}(\\overline{H_5^2(4)}) = 5$; read literally, however, (6) is the wrong way round and the upper bound $\\xi(C_5^{\\vee2}) \\le 5$ — and with it the quantum rate $R_{quantum}(g)=\\tfrac12\\log_2 5$ — does not follow from Proposition 6.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "H_{5}^{2}(4) \\subseteq C_{5} \\vee C_{5}."
+    },
+    {
+      "snippet_id": "paper::PROPOSITION::0",
+      "category": "Formally refuted",
+      "severity": "minor",
+      "confidence": 0.9,
+      "evidence": "Taking $G=K_2$ and $H$ the edgeless graph on two vertices, Lean showed $((\\text{true},\\text{true}),(\\text{false},\\text{false}))$ is an edge of $G\\vee H$ but not of $G\\boxtimes H$, so $G\\boxtimes H = G\\vee H$ is false as printed. The same file proves the complement form $\\overline{G\\boxtimes H} = \\bar G \\vee \\bar H$ for all simple graphs, which is the identity the paper actually uses later (e.g. '$\\overline{C_5^{\\boxtimes m}}$'). The defect is a lost complement bar, pervasive in this manuscript file.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "Proposition 1. \\(G \\boxtimes H = G \\lor H\\)."
+    },
+    {
+      "snippet_id": "paper::PROPOSITION::7",
+      "category": "Formally refuted",
+      "severity": "minor",
+      "confidence": 0.9,
+      "evidence": "With Definition 4 formalised exactly as stated (unit vectors in $\\mathbb{C}^m$, **non-adjacent** vertices orthogonal), Lean proved that the edgeless graph on two vertices has $\\xi \\ge 2$ — its two images are orthonormal, hence linearly independent, so the dimension is at least $2$ — while $\\chi = 1$. Hence $\\xi(G)\\le\\chi(G)$ is false. The complement-corrected bound $\\xi(G) \\le \\chi(\\bar G)$, which is Lovász's sandwich bound, was verified on the same witness, and the paper's own later use $\\xi(\\overline{C_5}) = \\chi(C_5) = 3$ is consistent with the corrected form and not with the printed one.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "Proposition 8. \\(\\xi(G) \\leq \\chi(G)\\)."
+    },
+    {
+      "snippet_id": "paper::PROOF::1",
+      "category": "Proof-direction error",
+      "severity": "minor",
+      "confidence": 0.8,
+      "evidence": "In the $(\\Leftarrow)$ direction of Theorem 1(b) the two graphs are interchanged. Proposition 5 already gives $G^{(m)}\\subseteq G^{\\vee m}$, so 'by Proposition 5 ... it suffices to show $E(G^{(m)})\\subseteq E(G^{\\vee m})$' asks for exactly what Proposition 5 supplies and proves nothing; the inclusion needed for equality is $E(G^{\\vee m})\\subseteq E(G^{(m)})$. Moreover the criterion the proof applies — find $\\mathbf{y}$ with $p_{XY}(\\mathbf{x},\\mathbf{y})p_{XY}(\\mathbf{x}',\\mathbf{y})>0$ and $f^{(m)}(\\mathbf{x},\\mathbf{y})\\ne f^{(m)}(\\mathbf{x}',\\mathbf{y})$ — is the definition of membership in $E(G^{(m)})$, not in $E(G^{\\vee m})$, which is a purely graph-theoretic condition independent of $p_{XY}$ and $f$. The construction itself is sound: swapping the labels turns it into a correct proof of $E(G^{\\vee m})\\subseteq E(G^{(m)})$, so Theorem 1(b) survives.",
+      "verifier": "verify-math",
+      "exact_quote": "By Proposition 5 and the fact \\( V(G^{\\vee m}) = V(G^{\\boxtimes m}) \\), it suffices to show \\( E(G^{(m)}) \\subseteq E(G^{\\vee m}) \\)."
+    }
+  ],
+  "verdict": "MINOR_ERRORS",
+  "verdict_confidence": 0.72,
+  "summary": "38 mathematical objects were extracted from the manuscript and all 38 were checked: 7 were routed to Lean 4 and 31 to informal review. The Lean arm came back 4 PASSED, 3 REFUTED, 0 FAILED, so no informal fallbacks were required.\n\n**What Lean settled.** Proposition 3 ($\\alpha(G\\vee H)=\\alpha(G)\\alpha(H)\\le\\alpha(G\\boxtimes H)$) was proved in full generality for finite simple graphs, products and projections included. $\\alpha(C_5)=2$ was proved by exhaustive decision, and with it the Appendix F-C step $\\chi(C_5^{\\vee m})\\ge(5/2)^m$. The analytic envelope of the quantum rate was verified: $(\\sqrt5)^m=5^{m/2}$, $5^{m/2}\\le3\\cdot5^{(m-1)/2}$ for every $m$, and the normalised upper bound $\\log_2(3\\cdot5^{(m-1)/2})/m \\to \\tfrac12\\log_2 5$, so the sandwich really does pin $R_{quantum}(g)$ to $\\tfrac12\\log_2 5$. The headline separation $\\tfrac12\\log_2 5 < \\log_2\\tfrac52$ was proved outright. The paper's two main results — the structural sandwich of $G^{(m)}$ and the strict quantum advantage for $g$ against none for $f$ — are therefore supported by the checks that went through.\n\n**What was refuted.** Three statements are false exactly as printed. Proposition 1 ($G\\boxtimes H = G\\vee H$) and Proposition 8 ($\\xi(G)\\le\\chi(G)$) both become true once a complement is restored ($\\overline{G\\boxtimes H}=\\bar G\\vee\\bar H$ and $\\xi(G)\\le\\chi(\\bar G)$), and Lean verified those corrected forms in the same files. This markdown drops complement bars systematically — Lemma 4's prose says the rate is $\\xi(\\bar G^{(m)})$ while its own formula prints $\\xi(G^{(m)})$, and Definition 7 calls $H_\\ell^n(d)$ the complement of a Cayley graph while equation (5) defines it as a Cayley graph — so these two are best read as transcription damage rather than authorial error, which is why both are graded *minor*. The third, equation (6), is more consequential: $H_5^2(4)\\subseteq C_5\\vee C_5$ is refuted by the explicit pair $((0,0),(2,2))$, and the sentence immediately preceding it derives the *opposite* containment. Under the complement reading ($\\overline{H_5^2(4)}\\subseteq\\overline{C_5\\vee C_5}$) the subsequent appeal to Proposition 6 works; read literally, the bound $\\xi(C_5^{\\vee2})\\le5$ does not follow and the upper half of the quantum-advantage argument for $g$ is unsupported.\n\n**What informal review added.** One further finding: the $(\\Leftarrow)$ direction of Theorem 1(b) in Appendix B-B has $G^{(m)}$ and $G^{\\vee m}$ interchanged throughout, so the inclusion it announces as sufficient is the one Proposition 5 already gives, and the membership criterion it then uses belongs to the other graph. The construction is right and relabelling repairs it, so the theorem stands. The remaining 27 informal snippets came back clean, including the full Appendix D-A development of the complex Lovász number (every matrix identity expands correctly), the Theorem 2 constructions, and the Lemma 4 protocol/orthogonal-representation correspondence.\n\n**Caveats.** The markdown is a lossy conversion of the PDF: appendix paragraphs are out of order and in one place the proof of Theorem 1(a) sits inside 'Proof of (b)' (recorded as UNVERIFIABLE, `paper::PROOF::2`, rather than as a finding, since it cannot be attributed to the authors). Two further symbol slips were noted but not flagged — Proposition 2 repeats $H_1$ where $H_2$ is meant, and equation (2) writes $\\chi(C_5^{\\boxtimes2})$ where submultiplicativity of $\\xi$ supplies $\\xi(C_5^{\\boxtimes2})$. The two verifiers did not disagree anywhere: no Lean verdict was contradicted by informal review, and the one informal finding concerns a passage Lean was not asked about. The verdict is MINOR_ERRORS at moderate confidence — all four findings are repairable and none invalidates a main claim, but the pervasiveness of the complement-bar loss means this file cannot distinguish authorial error from conversion damage.\n\n**Lean project.** `MATH_VERIFICATION/Paper` was reused, not created by this run, and is shared with dozens of other papers' saved proofs, so it was kept (`lean_project_kept: true`) and only per-snippet scratch was removed. The seven proofs are saved as `Paper/Verified/0027-QuantumZeroError__*_opus5.lean`."
+}

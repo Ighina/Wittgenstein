@@ -1,0 +1,86 @@
+{
+  "paper_id": "0021-ITERTL_An_Iterative_Framework_for_Fine-tuning_LLMs_for_RTL_Code_Generation",
+  "title": "ITERTL An Iterative Framework for Fine-tuning LLMs for RTL Code Generation",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Equation (6), first displayed derivation",
+      "confidence": 0.99,
+      "supporting_evidence": "The asserted first equality is algebraically false: it rewrites the negative log-likelihood as \"sum_j log(P_teacher,j / log P_pi,j)\". The denominator should not be log P_pi,j; in general -log P_pi,j is not equal to log(P_teacher,j / log P_pi,j). The valid cross-entropy/KL relation is E_{P_teacher}[-log P_pi] = H(P_teacher) + KL(P_teacher || P_pi), not the expression printed here. Consequently the claimed derivation of the KL objective does not follow.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0021-ITERTL_An_Iterative_Framework_for_Fine-tuning_LLMs_for_RTL_Code_Generation::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Section 3.2, Equations (8)--(11), claimed theoretical analysis and EM interpretation",
+      "confidence": 0.94,
+      "supporting_evidence": "The text presents the update pi_{t+1}=argmax_pi E_{a~pi_t}[r_pi(s,a)] as formally showing reduced distribution mismatch and then calls it a \"degenerate variant\" of generalized EM. No likelihood, latent variable, E-step posterior, lower bound, or monotonicity argument is defined, so this is not an EM derivation. Moreover, even if samples were drawn from pi_t, the optimization is said to train to convergence at pi_{t+1}; the sampling distribution is therefore generally still different from the policy being optimized. Replacing pi_old with pi_t alone does not establish that mismatch or estimation error is mitigated, much less prove it.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0021-ITERTL_An_Iterative_Framework_for_Fine-tuning_LLMs_for_RTL_Code_Generation::baseline"
+    },
+    {
+      "error_category": "Experiment setup",
+      "error_location": "Section 4.1, \"Decoding Strategy\"",
+      "confidence": 0.97,
+      "supporting_evidence": "The protocol tunes/selects on the test benchmark: models are evaluated at temperatures {0, 0.2, 0.5, 0.8} and \"For each test metric (pass@1, pass@5, and pass@10), the best result is chosen.\" This is outcome selection over multiple test-time settings, which biases the reported benchmark values upward unless the same pre-registered selection procedure is applied to every comparison. It also conflicts with the immediately preceding claim that the paper \"mainly focus[es] on the pass@1 value under greedy decoding\" to avoid randomness; a per-metric best-over-temperatures result is not necessarily greedy decoding.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0021-ITERTL_An_Iterative_Framework_for_Fine-tuning_LLMs_for_RTL_Code_Generation::baseline"
+    },
+    {
+      "error_category": "Figure / table error",
+      "error_location": "Section 4.2, references to Table 1 and the reported benchmark comparisons",
+      "confidence": 0.99,
+      "supporting_evidence": "The paper repeatedly relies on \"Table 1\" for its central numerical evidence (including the claimed 42.9%/62.2%, comparisons with RTLCoder, GPT-3.5, and GPT-4, and relative improvements), but no Table 1 or any table containing those results is present in the supplied full text. Thus the numerical comparisons cannot be checked, including which iteration/model was evaluated and whether the claimed percentage improvements are correctly calculated.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0021-ITERTL_An_Iterative_Framework_for_Fine-tuning_LLMs_for_RTL_Code_Generation::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Abstract, contributions (iii), and Section 4.2",
+      "confidence": 0.9,
+      "supporting_evidence": "Claims such as \"outperform the state-of-the-art open-source LLM,\" \"comprehensively surpasses GPT-3.5,\" and \"approach the level of GPT-4\" are presented as established conclusions, but their sole stated evidence is the missing Table 1. In addition, the paper admits that its seven-iteration training declines after iteration five: \"From the fifth to the seventh iteration, the pass@1 rate gradually decreases.\" It never identifies whether the headline final model/results are from iteration 5, iteration 7, or a test-selected checkpoint. The SOTA and headline-performance conclusions are therefore not reproducibly supported.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0021-ITERTL_An_Iterative_Framework_for_Fine-tuning_LLMs_for_RTL_Code_Generation::baseline"
+    },
+    {
+      "error_category": "Citation / attribution",
+      "error_location": "Title-page metadata and reference material at the end of the paper",
+      "confidence": 1.0,
+      "supporting_evidence": "The manuscript contains unreplaced ACM template placeholders and impossible publication metadata: \"Proceedings of Make sure to enter the correct conference title ... Conference acronym 'XX,\" DOI \"XXXXXXX.XXXXXXX,\" and \"Conference acronym 'XX, June 03–05, 2018.\" Yet it relies on DeepSeek-Coder-Instruct-6.7B [5], LLaMA 2 [23], GPT-4, RTLCoder [12], and recent RTL benchmarks, all postdating 2018. The supplied reference list is also absent; it ends with an orphaned fragment, \"summarize with human feedback. Advances in Neural Information Processing Systems...\" followed by unrelated received/revised dates from 2007--2009. These defects make the cited sources and claimed provenance unverifiable and the stated publication record false.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0021-ITERTL_An_Iterative_Framework_for_Fine-tuning_LLMs_for_RTL_Code_Generation::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Section 3.1, definition of the training loss and quality scores",
+      "confidence": 0.82,
+      "supporting_evidence": "The method says each sampled candidate is assigned a quality score using \"Pyverilog and Rough-L,\" then optimizes a ranking loss based on those scores. However, it never defines how these two quantities are combined, their scales, whether ROUGE-L is computed against the teacher/reference code, or the identity/range of the ranking comparator r in Eq. (2). This is consequential rather than merely stylistic: the surrogate reward r_pi used throughout the claimed theory cannot be reconstructed from the stated procedure, so the experiment and the theoretical objective are not reproducible.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0021-ITERTL_An_Iterative_Framework_for_Fine-tuning_LLMs_for_RTL_Code_Generation::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 7,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (gpt-5.6-terra, taxonomy=default): 7 error(s) reported.",
+  "baseline": {
+    "model": "gpt-5.6-terra",
+    "provider": "openai",
+    "taxonomy": "default",
+    "paper_chars": 141160,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 83509,
+      "output_tokens": 3327,
+      "cache_read_input_tokens": null,
+      "cache_creation_input_tokens": null
+    }
+  }
+}

@@ -1,0 +1,150 @@
+{
+  "paper_id": "0004-A_Simple,_Nearly-Optimal_Algorithm_for_Differentially_Private_All-Pairs_Shortest_Distances",
+  "title": "A Simple, Nearly-Optimal Algorithm for Differentially Private All-Pairs Shortest Distances",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Lemma 4.4 and its proof (Section 4.2)",
+      "confidence": 0.55,
+      "supporting_evidence": "The proof concludes E[X_i] > (t/2)·|A_i^r| by asserting \"the last inequality follows from |A_i^r|·t ≤ n\". With t = ⌈100·n^{1/k} log n⌉ and |A_1^r| = n^{1-2/k}, we get |A_1^r|·t ≈ 100·n^{1-1/k} log n, which exceeds n whenever n^{1/k} < 100 log n — i.e. for most of the admitted range k ∈ {2,…,⌊log n/log 2⌋}. Worse, the conclusion itself becomes impossible: for k = ⌊log n/log 2⌋ the lemma asserts |A_1| ≥ (t/4)·n^{1-2/k} = 25·n^{1-1/k} log n ≈ 12.5·n·log n > n, while |A_1| ≤ n. Hence Lemma 4.4 (and Lemma 4.5, which conditions on it) is false in the parameter range used by Theorems 4.3 and 4.4.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0004-A_Simple,_Nearly-Optimal_Algorithm_for_Differentially_Private_All-Pairs_Shortest_Distances::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Theorem 4.3, inequality (3) (and the analogous step in Appendix D for Theorem 4.4)",
+      "confidence": 0.5,
+      "supporting_evidence": "Each tree is released with the ε/(t·k)-DP algorithm, where t·k = 100·k·n^{1/k}·log n, so Corollary 4.1 gives per-tree error O(t·k·log^{1.5}(n)·log(n·t·k/γ)/ε) = O(k·n^{1/k}·log^{2.5}(n)·log(n·t·k/γ)/ε). The paper instead writes O(k·n^{1/k}·log^{1.5}(n)·log(n·t·k/γ)/ε), dropping the log n coming from t, and therefore states a final bound of log^{2.5}(n) where the computation yields log^{3.5}(n). The same omission appears in Theorem 4.4 (stated log^{2.5}(n) instead of log^{3}(n)). Note that the analogous calculation in Theorems 4.1/4.2 (where the number of trees is k·n^{1/k} with no log n) is done correctly, confirming the slip.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0004-A_Simple,_Nearly-Optimal_Algorithm_for_Differentially_Private_All-Pairs_Shortest_Distances::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Section 3, paragraph introducing the input-perturbation algorithm / Lemma 3.1",
+      "confidence": 0.45,
+      "supporting_evidence": "The text claims the method \"is a simple application of the Laplace mechanism (Lemma 2.3) to the function f : w → ℝ^{n²} which takes as input the edge weights of a graph and outputs all-pairs shortest distances\" and then argues Δ₁ = 1 because \"a shortest path cannot traverse any single edge more than once\". The ℓ₁ sensitivity of the n²-dimensional APSD vector is Θ(n²) (each of the n² coordinates can change by up to 1), not 1; privacy here actually follows from perturbing the 1-sensitive weight vector w and post-processing. As written the sensitivity/privacy argument is invalid.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0004-A_Simple,_Nearly-Optimal_Algorithm_for_Differentially_Private_All-Pairs_Shortest_Distances::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Theorems 4.1 and 4.2 (Section 4.1)",
+      "confidence": 0.4,
+      "supporting_evidence": "The additive error is stated as O(k·n^{1/k}·log^{2.5}(n)·log(k)·log(1/γ)/ε) \"For γ ∈ (0,0.5], k ∈ ℤ⁺\". For k = 1 (allowed by k ∈ ℤ⁺) the factor log(k) = 0, so the stated bound is identically 0, which is obviously false (with k = 1 the construction uses n trees and the error is Ω(n)). The simplification log(nk/γ) = O(log n·log k·log(1/γ)) (Prop. E.2) requires k ≥ 2.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0004-A_Simple,_Nearly-Optimal_Algorithm_for_Differentially_Private_All-Pairs_Shortest_Distances::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Theorem 3.1 proof (\"we do not release any shortest path trees themselves\") and Section 4 (Corollary 4.1 applied to tree-padding spanner / TZ clusters)",
+      "confidence": 0.35,
+      "supporting_evidence": "Corollary 4.1 / Lemma 3.2 give an ε-DP guarantee for a FIXED tree whose topology is public (the hierarchical centroid decomposition and the 1-sensitivity argument presuppose a fixed tree). In the algorithms the trees are computed from the private edge weights (shortest-path trees from the hitting set; the Ramsey/tree-padding spanner; the clusters C^r(w) defined via true distances), so the whole mechanism's output distribution depends on private data through the tree structure. The paper's justification — \"we do not release any shortest path trees themselves, hence no shortest path information is revealed\" — is not a valid DP argument. Notably the paper itself reports that [CGK+23] needed the exponential mechanism to select bunches privately, which indicates that private selection of the data-dependent structure cannot simply be ignored.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0004-A_Simple,_Nearly-Optimal_Algorithm_for_Differentially_Private_All-Pairs_Shortest_Distances::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Section 4.2, definition of bunches",
+      "confidence": 0.4,
+      "supporting_evidence": "\"we define the bunches as B(u) = {w ∈ V | d(w,u) < d(u, p_{i+1}(u))}\" contains a free index i that is never quantified, so the set is ill-defined. In Thorup–Zwick the bunch is ∪_i {w ∈ A_i \\ A_{i+1} : d(w,u) < d(u, A_{i+1})}, i.e. the index is determined by the level of w. All of Lemma 4.6, the stretch analysis and Theorem 4.3 rely on this missing level condition.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0004-A_Simple,_Nearly-Optimal_Algorithm_for_Differentially_Private_All-Pairs_Shortest_Distances::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Abstract and Section 1.1",
+      "confidence": 0.4,
+      "supporting_evidence": "The abstract says the algorithm \"is the first to be optimal up to a polylogarithmic factor, based on a lower bound of Ω̃(n^{1/4})\", and Section 1.1 states \"we show the additive approximation problem to be Θ̃(n^{1/4})-accurate by giving a nearly optimal algorithm which matches the known lower bound\". This only holds in the (ε,δ)-DP setting; the pure ε-DP result is Õ(n^{1/3}/ε), a polynomial gap from n^{1/4}. The blanket statement that the problem is Θ̃(n^{1/4})-accurate overstates the result.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0004-A_Simple,_Nearly-Optimal_Algorithm_for_Differentially_Private_All-Pairs_Shortest_Distances::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 1 (description of [Sea16] bounded-weight results) vs Section 1.4 Related Work",
+      "confidence": 0.35,
+      "supporting_evidence": "The introduction reports Sealfon's approximate-DP bounded-weight bound as Õ(√(nM/ε)), whereas the Related Work section states O(√n · M · log(1/δ)/ε · log(nMε/γ)), i.e. √n·M/ε. These two expressions are not asymptotically equivalent (√(nM/ε) vs √n·M/ε), so at least one statement of the cited result is wrong.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0004-A_Simple,_Nearly-Optimal_Algorithm_for_Differentially_Private_All-Pairs_Shortest_Distances::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Beginning of Section 4 (\"a corollary of Theorem 3.2 originally proven by [Sea16]\")",
+      "confidence": 0.4,
+      "supporting_evidence": "Corollary 4.1 is derived from Lemma 3.2 (Sealfon's rooted-tree single-source result, Theorem 4.1 in [Sea16]), as its own proof in Appendix A shows. Theorem 3.2 is this paper's (ε,δ)-DP general-graph algorithm, which is not from [Sea16] and is not what Corollary 4.1 follows from.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0004-A_Simple,_Nearly-Optimal_Algorithm_for_Differentially_Private_All-Pairs_Shortest_Distances::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Lemma 4.5 proof (Section 4.2)",
+      "confidence": 0.3,
+      "supporting_evidence": "The step P[d(u,p_{i+1}(u)) ≤ d(u,A_i^r −{w})] ≥ 1 − (1 − 1/(2|A_i^r|))^{|A_{i+1}|} treats the |A_{i+1}| vertices as independent trials, even though A_{i+1} = ∪_r A^r_{i+1} and A^r_{i+1} ⊆ A^r_i, so the events are strongly dependent (and the bound on |A_{i+1}| from Lemma 4.4 uses the same randomness). The independence is never justified.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0004-A_Simple,_Nearly-Optimal_Algorithm_for_Differentially_Private_All-Pairs_Shortest_Distances::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Proof of Lemma 3.1",
+      "confidence": 0.35,
+      "supporting_evidence": "The displayed accuracy bound is written as |d̃^{(t)}(u,v) − d_{G̃}^{(t)}(u,v)| ≤ O(√t·log(n/γ)/ε), but the algorithm sets d̃^{(t)}(u,v) ← d_{G̃}^{(t)}(u,v), so this difference is identically zero. The quantity that must be bounded is |d̃^{(t)}(u,v) − d_G^{(t)}(u,v)| (noisy vs. true), which is the quantity in the lemma statement.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0004-A_Simple,_Nearly-Optimal_Algorithm_for_Differentially_Private_All-Pairs_Shortest_Distances::baseline"
+    },
+    {
+      "error_category": "Citation / attribution",
+      "error_location": "Section 1.2 (\"previous constructions [Sea16, CGK+23] also add Laplace noise ... leading to an error Õ(t/ε)\")",
+      "confidence": 0.3,
+      "supporting_evidence": "This explanation is inconsistent with the prior bounds the paper itself reports. Under the paper's own framework (tree error Õ(s/ε), short-path error Õ(t/ε), hitting-set constraint s·t ≈ n), summing per-edge errors would give Õ(√n/ε) in the ε-DP case and Õ(n^{1/3}/ε) with advanced composition — not the Õ(n^{2/3}/ε) and Õ(√n/ε) attributed to [FLL22, CGK+23]. The stated reason for the gap therefore mischaracterizes the prior analyses.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0004-A_Simple,_Nearly-Optimal_Algorithm_for_Differentially_Private_All-Pairs_Shortest_Distances::baseline"
+    },
+    {
+      "error_category": "Citation / attribution",
+      "error_location": "Section 1.4 (\"In 2009, Hay et al. [HLMJ09] were the first to study differentially private graph algorithms\")",
+      "confidence": 0.3,
+      "supporting_evidence": "Private graph analysis predates Hay et al. (2009); e.g. Nissim, Raskhodnikova and Smith (STOC 2007) already gave differentially private algorithms for graph statistics (triangle counting, MST cost). The 'first' claim is inaccurate; Hay et al. are best credited with the node/edge-DP distinction and degree-distribution estimation.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0004-A_Simple,_Nearly-Optimal_Algorithm_for_Differentially_Private_All-Pairs_Shortest_Distances::baseline"
+    },
+    {
+      "error_category": "Citation / attribution",
+      "error_location": "Lemma 4.1 (\"Theorem 2 in [ACE+20]\")",
+      "confidence": 0.25,
+      "supporting_evidence": "The Ramsey/tree-padding spanner construction of Abraham et al. yields a collection of trees of size O(k·n^{1/k}·log n) (an extra logarithmic covering factor is required to cover all vertices, since a single tree only handles a subset of size n^{1-1/k}). Stating the collection size as exactly k·n^{1/k} appears to drop this factor, which propagates into the explicit polylog factors of Theorems 4.1 and 4.2.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0004-A_Simple,_Nearly-Optimal_Algorithm_for_Differentially_Private_All-Pairs_Shortest_Distances::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Appendix D, proof of Theorem 4.4 (\"The stretch analysis is the same as in Theorem E.2\")",
+      "confidence": 0.3,
+      "supporting_evidence": "There is no Theorem E.2 (Appendix E contains Propositions E.1 and E.2 about logarithms); the intended reference is the stretch analysis of Theorem 4.3 / the (2k−1)-stretch lemma.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0004-A_Simple,_Nearly-Optimal_Algorithm_for_Differentially_Private_All-Pairs_Shortest_Distances::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 15,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (claude-opus-5, taxonomy=default): 15 error(s) reported.",
+  "baseline": {
+    "model": "claude-opus-5",
+    "provider": "anthropic",
+    "taxonomy": "default",
+    "paper_chars": 120522,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 81120,
+      "output_tokens": 46720,
+      "cache_read_input_tokens": 0,
+      "cache_creation_input_tokens": 0
+    }
+  }
+}

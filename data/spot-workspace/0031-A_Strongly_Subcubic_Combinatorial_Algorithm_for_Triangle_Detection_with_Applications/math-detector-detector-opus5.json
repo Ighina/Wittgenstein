@@ -1,0 +1,100 @@
+{
+  "paper_id": "0031-A_Strongly_Subcubic_Combinatorial_Algorithm_for_Triangle_Detection_with_Applications",
+  "title": "A Strongly Subcubic Combinatorial Algorithm for Triangle Detection with Applications",
+  "stage": "detector",
+  "candidates": [
+    {
+      "candidate_id": "0031-A_Strongly_Subcubic_Combinatorial_Algorithm_for_Triangle_Detection_with_Applications::CAND::0",
+      "error_location": "Proof of Theorem 2, Case 2.1 of the case analysis",
+      "exact_quote": "Case 2.1: Exactly one vertex, namely a, appears on level 1. Then b and c appear on the next\nlevel (level 2) of the BFS tree. Assuming that b is discovered before c, the triangle {a, b, c} is\ndetected while scanning the adjacency list of b.",
+      "claim_content": "Setting: G = (V,E) is an undirected graph containing a triangle T = {a,b,c} (so ab, ac, bc ∈ E). A modified breadth-first search BFS⁺(s) is run from a start vertex s, which is assumed to be a neighbor of a (s ∉ {a,b,c}, s ∈ N(a)), so that a appears on level 1 of the BFS tree. The claim under scrutiny is: if a is the ONLY vertex of T on level 1, then b and c both appear on level 2, and the triangle {a,b,c} is necessarily detected while scanning the adjacency list of b (assuming b is discovered before c). The intended detection mechanism is a BFS that, while scanning an edge, can report a triangle in O(1) time using parent/level information plus adjacency-matrix lookups, and the whole BFS⁺ is claimed to run in O(m) time. Potential counterexample: V = {s, a, p, q, b, c}; E = {sa, sp, sq, ab, ac, pb, qc, bc}. Start BFS at s and let the adjacency list of s be ordered p, q, a. Then level 1 = {p, q, a}; scanning p discovers b (parent p), scanning q discovers c (parent q), and scanning a finds b, c already discovered. Both b and c sit on level 2 but have different BFS parents (p and q, neither equal to a). When the adjacency list of b is scanned and c is encountered, the local information (levels of b and c, parents p and q) does not reveal the triangle {a,b,c}; the edge bc together with the tree edges forms a 6-cycle/4-cycle structure, not a detectable triangle.",
+      "suspected_defect": "The inference that the triangle {a,b,c} is detected while scanning b's adjacency list does not follow: b and c need not be children of a in the BFS tree, so the edge bc gives no local certificate of a triangle. Detecting it would require, for each level-2 edge, checking all common neighbors on the previous level, which is not an O(1) per-edge operation and breaks the claimed O(m) BFS⁺ bound. This is the central correctness step of the O(n^{7/3}) algorithm.",
+      "check_kind": "proof_step",
+      "confidence": 0.85,
+      "severity": "critical"
+    },
+    {
+      "candidate_id": "0031-A_Strongly_Subcubic_Combinatorial_Algorithm_for_Triangle_Detection_with_Applications::CAND::1",
+      "error_location": "Proof of Theorem 2, statement preceding the case analysis",
+      "exact_quote": "It remains to show that if s ∈ A then BFS⁺(s) finds a triangle in G (not necessarily T, unless\nT is the unique triangle in G).",
+      "claim_content": "Claim: Let G=(V,E) be an undirected graph containing a triangle T={a,b,c}, and let A = N⁺({a,b,c}) = {a,b,c} ∪ N({a,b,c}) be the closed neighborhood of the triangle's vertex set. The claim is that for EVERY s ∈ A, a single run of a modified breadth-first search BFS⁺(s) (a standard BFS augmented with an O(1)-per-edge triangle test, so that the whole search runs in O(m) time) finds some triangle in G. This claim is the correctness core of the algorithm TRIANGLE-DETECTION-1, which (i) checks all triangles incident to vertices of degree ≤ x by brute force, and (ii) samples ⌈70n/x⌉ random start vertices and runs BFS⁺ from each, returning 'no triangles' if none succeeds.",
+      "suspected_defect": "The claim appears false in general: a start vertex s adjacent to exactly one triangle vertex a can produce a BFS tree in which the other two triangle vertices b, c lie on level 2 with BFS parents different from a (and different from each other). Then no O(1)-per-edge local test during BFS exposes a triangle, so BFS⁺(s) may fail even though s ∈ A, and the algorithm can report 'no triangles' on a graph containing a triangle. Consequently Theorem 2 (O(m^{2/3}n) = O(n^{7/3}) randomized triangle detection with error ≤ 10^{-30}) is not established, and all downstream results (Theorems 3, 4, 5 and the K4/K6/K9/K10 and geometric applications) rest on it.",
+      "check_kind": "general_claim",
+      "confidence": 0.85,
+      "severity": "critical"
+    },
+    {
+      "candidate_id": "0031-A_Strongly_Subcubic_Combinatorial_Algorithm_for_Triangle_Detection_with_Applications::CAND::2",
+      "error_location": "Time analysis of Phase II of TRIANGLE-DETECTION-1",
+      "exact_quote": "Phase II (lines 6–9) takes $O(mn/x)$ time; indeed, each BFS$^+$ takes $O(m)$ time on a connected graph with $m$ edges and there are $O(n/x)$ such calls.",
+      "claim_content": "Claim: a single call to the modified BFS BFS⁺(s) on a connected graph with m edges runs in O(m) time, and the modified BFS is strong enough to detect a triangle in each of the configurations required by the correctness proof (in particular: a triangle {a,b,c} with a on level 1 and b, c on level 2, possibly with BFS parents different from a). The algorithm makes ⌈70n/x⌉ = O(n/x) such calls, for a total of O(mn/x).",
+      "suspected_defect": "There is a tension between the claimed O(m) running time of BFS⁺ and the detection power attributed to it. A BFS that in O(1) time per scanned edge only consults levels/parents cannot certify a triangle whose two lower vertices have distinct parents; a BFS that checks, for each scanned edge (u,w), all previously discovered common neighbors of u and w takes ω(m) time in general (up to Θ(m·x) or Θ(n·m)). Either the O(m) bound per BFS⁺ call or the correctness claim must fail.",
+      "check_kind": "proof_step",
+      "confidence": 0.6,
+      "severity": "critical"
+    },
+    {
+      "candidate_id": "0031-A_Strongly_Subcubic_Combinatorial_Algorithm_for_Triangle_Detection_with_Applications::CAND::3",
+      "error_location": "Theorem 3 and its proof",
+      "exact_quote": "Substituting β = 7/3 and using O(nm^(-1/3) log n) random trials in TRIANGLE-DETECTION-1 yields the claimed bound.",
+      "claim_content": "Theorem 3 claims a randomized combinatorial algorithm multiplying two n×n Boolean matrices with high probability in O(n^{25/9} log n) time. The proof invokes the reduction of V. V. Williams and R. Williams: if triangle detection in an n-vertex graph runs in T(n) = O(n^β) time (2 ≤ β ≤ 3), then Boolean matrix product of two n×n matrices can be computed with high probability (≥ 1 − 1/(10^{30} n^3)) in O(n^{2+β/3} log n) time. To achieve the required per-call success probability 1 − 1/(10^{30} n^3) rather than 1 − 10^{-30}, the proof boosts TRIANGLE-DETECTION-1 by using O((n/m^{1/3}) log n) random start vertices instead of ⌈70 n/m^{1/3}⌉, which multiplies the running time of Phase II by Θ(log n), giving a triangle-detection time of O(n^{7/3} log n), not O(n^{7/3}).",
+      "suspected_defect": "A log factor seems to be dropped: with the boosted triangle-detection routine running in O(n^{7/3} log n) rather than O(n^{7/3}), the reduction's O(n^{2+β/3} log n) bound becomes O(n^{25/9} log^2 n), not the claimed O(n^{25/9} log n). The claimed bound does not follow from the stated inputs (β = 7/3 is not attainable with the boosted success probability).",
+      "check_kind": "proof_step",
+      "confidence": 0.45,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "0031-A_Strongly_Subcubic_Combinatorial_Algorithm_for_Triangle_Detection_with_Applications::CAND::4",
+      "error_location": "Max-Cut section (before Theorem 5)",
+      "exact_quote": "There are less than \\(m^3\\) possible triples \\((z_{01}, z_{12}, z_{20})\\) to consider",
+      "claim_content": "In the Max-Cut algorithm, V is split into V_0,V_1,V_2, and for subsets X_i ⊆ V_i, X_j ⊆ V_j the weight w(X_i,X_j) is an integer counting certain cut edges of G, so 0 ≤ w(X_i,X_j) ≤ m where m = |E|. The algorithm enumerates all triples (z_{01}, z_{12}, z_{20}) of possible weights, and the text asserts there are fewer than m^3 such triples. Each triple triggers one randomized triangle-detection call with failure probability at most 1/(10^{30} m^3), and a union bound over the triples is then taken: 'the probability of error is at most m^3 · 10^{-30} · m^{-3} = 10^{-30}'.",
+      "suspected_defect": "The number of triples of integers in {0,1,...,m} is (m+1)^3, which is strictly greater than m^3, so 'less than m^3' is false; the union bound then needs (m+1)^3 · 10^{-30} m^{-3} > 10^{-30}, and the stated error bound of exactly 10^{-30} does not follow as written (it is a trivially repairable constant-factor slip, but as stated the arithmetic is wrong).",
+      "check_kind": "numeric",
+      "confidence": 0.4,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "0031-A_Strongly_Subcubic_Combinatorial_Algorithm_for_Triangle_Detection_with_Applications::CAND::5",
+      "error_location": "Applications section, K9 and K10 bounds in terms of m",
+      "exact_quote": "Similarly, we obtain randomized combinatorial algorithms for detecting a \\( K_9 \\) in \\( O(n^7) \\) time, or in \\( O(m^{7/2}) \\) time; and for detecting a \\( K_{10} \\) in \\( O(n^8) \\) time, or in \\( O(m^4) \\) time.",
+      "claim_content": "Assuming (as the paper claims) that a triangle can be detected in an N-vertex graph in O(N^{7/3}) time, the paper claims: K9 detection in a graph with m edges in O(m^{7/2}) time, and K10 detection in O(m^4) time. The standard reductions are: K_{3ℓ} detection reduces to triangle detection in an auxiliary graph whose vertices are the ℓ-cliques of G (at most O((2m)^{ℓ/2}) of them for the m-parameterized bound), and K_{3ℓ+1} detection is usually handled by enumerating one extra vertex v and detecting K_{3ℓ} in the subgraph induced by N(v), which costs n times the K_{3ℓ} bound.",
+      "suspected_defect": "For K9 (ℓ=3) the auxiliary graph has O(m^{3/2}) vertices, giving (m^{3/2})^{7/3} = m^{7/2}, which is consistent; but for K10 = K_{3·3+1} the natural reduction gives n · m^{7/2}, and since n can be as large as Θ(m) in sparse graphs (n ≤ 2m only), this yields O(m^{9/2}), not the claimed O(m^4). The claimed O(m^4) bound only matches in the dense case m = Θ(n^2); no argument is given for sparse graphs.",
+      "check_kind": "general_claim",
+      "confidence": 0.35,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "0031-A_Strongly_Subcubic_Combinatorial_Algorithm_for_Triangle_Detection_with_Applications::CAND::6",
+      "error_location": "Applications section, K4 detection running time",
+      "exact_quote": "O\\left(m x^2 + \\left(\\frac{m}{x}\\right)^{10/3}\\right) = O(m^{15/8}),",
+      "claim_content": "For K4 detection the paper proposes: for a parameter x, first check existence of a K4 incident to a vertex of degree ≤ x (claimed cost O(mx^2)), then run the O(N^{10/3}) randomized K4 algorithm on the subgraph induced by vertices of degree ≥ x (whose number is at most 2m/x), claimed cost O((m/x)^{10/3}); setting x = ⌊m^{7/16}⌋ gives O(m^{15/8}). Here the O(n^{10/3}) K4 algorithm is obtained by n calls to the claimed O(n^{7/3}) triangle detection on neighborhoods.",
+      "suspected_defect": "Two points to check: (i) the low-degree phase cost — detecting a K4 incident to a low-degree vertex v requires triangle detection inside G[N(v)], whose cost is not obviously O(deg(v)^2) per vertex; summing a brute-force Θ(deg(v)^3) gives Σ deg(v)^3 ≤ x^2·2m = O(mx^2), so the bound may be fine, but it should be verified that the stated O(mx^2) is achievable; (ii) the balance: with x = m^{7/16}, mx^2 = m^{15/8} and (m/x)^{10/3} = m^{(9/16)(10/3)} = m^{15/8}, which is consistent. Also the whole bound depends on the unproved O(n^{7/3}) triangle detection.",
+      "check_kind": "numeric",
+      "confidence": 0.15,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "0031-A_Strongly_Subcubic_Combinatorial_Algorithm_for_Triangle_Detection_with_Applications::CAND::7",
+      "error_location": "Analysis of TRIANGLE-DETECTION-1, probability computation",
+      "exact_quote": "by applying the standard inequality 1 − x ≤ e^(−x) for 0 ≤ x ≤ 1/2. Indeed, we have x/n ≤ 1/2 for n ≥ 4.",
+      "claim_content": "In TRIANGLE-DETECTION-1 the threshold is x = ⌊m^{1/3}⌋ where m = |E| ≤ n(n−1)/2, and the analysis asserts that x/n ≤ 1/2 holds for all n ≥ 4, in order to apply 1 − t ≤ e^{−t}. In the second variant (TRIANGLE-DETECTION-2) the threshold is x ∼ n^{1/2}. The derived bound is Prob(E) ≤ (1 − x/n)^{70n/x} ≤ exp(−70) ≤ 10^{−30}.",
+      "suspected_defect": "Check whether ⌊m^{1/3}⌋/n ≤ 1/2 really holds for all n ≥ 4 (m^{1/3} can be as large as (n^2/2)^{1/3} = n^{2/3}/2^{1/3}, and n^{2/3} ≤ n/2 only for n ≥ 8, so small n must be checked individually); also verify exp(−70) ≈ 3.98×10^{−31} ≤ 10^{−30} and that the ceiling ⌈70n/x⌉ in the exponent is used in the correct direction. Additionally, the inequality 1 − t ≤ e^{−t} holds for all real t, so the stated range restriction is spurious.",
+      "check_kind": "numeric",
+      "confidence": 0.15,
+      "severity": "minor"
+    }
+  ],
+  "detector": {
+    "model": "claude-opus-5",
+    "provider": "anthropic",
+    "mode": "lenient-high-recall",
+    "paper_chars": 70941,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 49691,
+      "output_tokens": 23318,
+      "cache_read_input_tokens": 0,
+      "cache_creation_input_tokens": 0
+    }
+  }
+}

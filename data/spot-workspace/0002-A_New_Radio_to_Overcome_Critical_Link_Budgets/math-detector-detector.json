@@ -1,0 +1,215 @@
+{
+  "paper_id": "0002-A_New_Radio_to_Overcome_Critical_Link_Budgets",
+  "title": "A New Radio to Overcome Critical Link Budgets",
+  "stage": "detector",
+  "candidates": [
+    {
+      "candidate_id": "paper::CAND::0",
+      "error_location": "Section V-A (numerical example), 'we set T = 18.375'",
+      "exact_quote": "In order to cope with the spectral mask, we set T = 18.375. This results in a subcarrier spacing of 5.74 MHz.",
+      "claim_content": "Setting. A radio transmitter has $N$ antenna elements. The paper defines a per-block space-time transmit matrix $\\mathbf{T}_b = \\operatorname{diag}(\\mathbf{x}_b)\\mathbf{F}_b$ (Eq. (3)), where $\\mathbf{x}_b \\in \\mathbb{C}^{1\\times N}$ is a block of $N$ data symbols, $\\operatorname{diag}(\\cdot)$ denotes 'an $N \\times T$ diagonal matrix with the components of its argument as diagonal entries', and $\\mathbf{F}_b \\in \\mathbb{C}^{T\\times T}$. The resulting $\\mathbf{T}_b$ is an $N \\times T$ matrix, said to contain '$TN$ entries, but only $N$ data symbols', and $f_{b,n}$ is defined as 'the $n^{\\text{th}}$ row of $\\mathbf{F}_b$'. $\\mathbf{F}_b$ is also required to be unitary for crosstalk-free recovery, and an oversampled version $f_{b,n}^{(S)} \\in \\mathbb{C}^{1 \\times ST}$ of its rows is used, with sample index $s$ ranging over $0 \\le s < ST$. Claim to check. The paper then instantiates this construction with $N = 16$ and $T = 18.375$. Question. Is the quantity $T$, as defined above (a matrix dimension: the number of rows and columns of $\\mathbf{F}_b$, the number of columns of $\\mathbf{T}_b$, the number of diagonal positions of an $N\\times T$ matrix, the upper limit of an integer sample index via $ST$, and the count in '$TN$ entries'), consistent with the assigned value $T = 18.375$? A matrix dimension and an index bound must be a non-negative integer; $18.375 = 147/8$ is not an integer.",
+      "suspected_defect": "$T$ is introduced purely as a matrix dimension / cardinality (size of $\\mathbf{F}_b \\in \\mathbb{C}^{T\\times T}$, number of columns of the $N\\times T$ matrix $\\mathbf{T}_b$, number of entries $TN$, index bound $ST$ in Eq. (6)-(7)), yet the numerical example sets $T = 18.375$, which is not an integer. Either $T$ is not really a dimension (and the formal model of Section III is mis-stated), or the value is wrong. The whole 'T-fold combining gain' chain, including the 12.6 dB figure derived as $10\\log_{10}(18.375)$, rests on this quantity.",
+      "check_kind": "general_claim",
+      "confidence": 0.55,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "paper::CAND::1",
+      "error_location": "Eq. (7), exponent of the subcarrier sinusoid",
+      "exact_quote": "f_{b,n,s}^{(S)} = \\begin{cases}\n\\exp\\left(2\\pi j \\frac{s n}{S N}\\right) & L_s \\leq s < ST - L_e \\\\\nq_{n,s,d} & \\text{else}\n\\end{cases}",
+      "claim_content": "Setting. $N$ is the number of transmit antennas; each antenna carries one subcarrier. $\\mathbf{F}_b \\in \\mathbb{C}^{T\\times T}$ is a matrix whose $n^{\\text{th}}$ row $f_{b,n} \\in \\mathbb{C}^{1\\times T}$ is the subcarrier waveform carried by antenna $n$; the paper states that the particular $\\mathbf{F}_b$ of interest 'is close to the discrete Fourier transform' and that the construction is 'a kind of orthogonal frequency-division multiplexing (OFDM) where each subcarrier is served by a different antenna'. $f_{b,n}^{(S)} \\in \\mathbb{C}^{1\\times ST}$ is $f_{b,n}$ oversampled by an integer factor $S$ and interpolated, with sample index $s \\in \\{0,\\dots,ST-1\\}$. Claim to check. For most of the block, namely for $L_s \\le s < ST - L_e$, the paper sets $f_{b,n,s}^{(S)} = \\exp\\!\\left(2\\pi j \\frac{sn}{SN}\\right)$, i.e. the discrete frequency of subcarrier $n$ is $n/(SN)$ cycles per oversampled sample. Question. If $f_{b,n}$ is row $n$ of a $T \\times T$ matrix that is 'close to the discrete Fourier transform', then row $n$ of the $T\\times T$ DFT matrix has entries $\\exp(2\\pi j n s'/T)$ for $s' \\in \\{0,\\dots,T-1\\}$, whose $S$-fold oversampled version is $\\exp\\!\\left(2\\pi j \\frac{sn}{ST}\\right)$. Is the denominator $SN$ in the paper's Eq. (7) consistent with that, given that the paper's own numerical examples use $T \\neq N$ (namely $T=18.375$ with $N=16$, and $T=46$ with $N=32$)?",
+      "suspected_defect": "The exponent denominator is $SN$, but the waveform is defined as (an oversampling of) the $n^{\\text{th}}$ row of a $T\\times T$ matrix 'close to the discrete Fourier transform', which would require $ST$. With $T \\neq N$ in both numerical examples, $sn/(SN)$ and $sn/(ST)$ are different frequencies, so either the exponent or the description of $\\mathbf{F}_b$ as a $T\\times T$ DFT-like matrix is wrong. The subcarrier-spacing numbers (5.74 MHz, 2.88 MHz) appear to follow the $SN$ convention, which would make the $T\\times T$ DFT description the mistaken half.",
+      "check_kind": "symbolic",
+      "confidence": 0.5,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "paper::CAND::2",
+      "error_location": "Section IV-A-1 (Power Amplifier), 'L_s \\le s < SN - L_e'",
+      "exact_quote": "Obviously, during the sinusoidal phase, i.e. \\( L_s \\leq s < SN - L_e \\), we do not need D/A-conversion, not even a mixer or upconverter.",
+      "claim_content": "Setting. In Eq. (6)-(7) the paper defines the oversampled subcarrier waveform $f_{b,n}^{(S)} \\in \\mathbb{C}^{1\\times ST}$ over the sample index $s \\in \\{0,\\dots,ST-1\\}$, where $S$ is the oversampling factor and $T$ the block length (number of columns of the transmit matrix $\\mathbf{T}_b \\in \\mathbb{C}^{N\\times T}$). Eq. (7) specifies that the waveform equals a pure complex sinusoid exactly on the index range $L_s \\le s < ST - L_e$, with $L = L_s + L_e < ST$, and equals a transition sequence $q_{n,s,d}$ elsewhere. $N$ is the number of antennas. Claim to check. Section IV-A-1 refers to 'the sinusoidal phase' as the index range $L_s \\le s < SN - L_e$. Question. Are the two stated index ranges for the sinusoidal phase, $L_s \\le s < ST - L_e$ (Eq. (7)) and $L_s \\le s < SN - L_e$ (Section IV-A-1), the same set of indices, given the paper's own numerical instantiations $T = 18.375, N = 16$ and $T = 46, N = 32$?",
+      "suspected_defect": "Eq. (7) delimits the sinusoidal phase by $ST$ while Section IV-A-1 delimits it by $SN$. Since $T \\neq N$ in both numerical examples, these are different intervals; one of the two uses the wrong symbol. The same $T$/$N$ confusion appears in Eq. (7)'s exponent, so the two may share a root cause.",
+      "check_kind": "symbolic",
+      "confidence": 0.5,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "paper::CAND::3",
+      "error_location": "Section III-A, sentence after Eq. (4) ('If the matrix F_b is unitary ...')",
+      "exact_quote": "If the matrix \\( \\mathbf{F}_b \\) is unitary, the data symbols \\( x_{b,n} \\) can be recovered without crosstalk by the matched filters \\( f_{b,n}^{\\dagger} \\) that provide the \\( T \\)-fold improvement of SINR.",
+      "claim_content": "Setting. $\\mathbf{F}_b \\in \\mathbb{C}^{T\\times T}$ with rows $f_{b,n} \\in \\mathbb{C}^{1\\times T}$, $n = 0,\\dots,N-1$, $N \\le T$. The transmit matrix is $\\mathbf{T}_b = \\operatorname{diag}(\\mathbf{x}_b)\\mathbf{F}_b \\in \\mathbb{C}^{N\\times T}$ with data symbols $x_{b,n}$ on the complex unit circle ($|x_{b,n}| = 1$, any PSK). The channel is $h \\in \\mathbb{C}^{1\\times N}$ and the received block is $h\\mathbf{T}_b = \\sum_{n=0}^{N-1} h_n x_{b,n} f_{b,n}$ (Eq. (4)). The receiver applies the matched filter $f_{b,n}^{\\dagger}$ (conjugate transpose of $f_{b,n}$) to the received block. Claim to check. The paper asserts two things simultaneously: (i) if $\\mathbf{F}_b$ is unitary then the symbols $x_{b,n}$ are recovered without crosstalk, and (ii) these matched filters 'provide the $T$-fold improvement of SINR'. Question. For a unitary $\\mathbf{F}_b$, every row satisfies $\\|f_{b,n}\\|_2^2 = \\sum_{s} |f_{b,n,s}|^2 = 1$, so the matched-filter output is $(h\\mathbf{T}_b) f_{b,n}^{\\dagger} = h_n x_{b,n}\\|f_{b,n}\\|_2^2 = h_n x_{b,n}$ and, for additive white noise of per-sample variance $\\sigma^2$, the output noise variance is $\\sigma^2\\|f_{b,n}\\|_2^2 = \\sigma^2$. Does a unitary $\\mathbf{F}_b$ then deliver a $T$-fold improvement in SINR, or does the $T$-fold gain require instead rows of squared norm $T$ (i.e. unit-modulus entries, $|f_{b,n,s}| = 1$, as Eq. (7) in fact prescribes for constant-envelope transmission), in which case $\\mathbf{F}_b$ is $\\sqrt{T}$ times a unitary matrix and not unitary itself?",
+      "suspected_defect": "Normalisation conflict: a unitary $\\mathbf{F}_b$ has unit-norm rows and yields no $T$-fold combining gain, whereas the $T$-fold gain requires rows of squared norm $T$, i.e. unit-modulus entries. Eq. (7) does prescribe unit-modulus entries (constant envelope), so the matrix used in the paper cannot be unitary; 'unitary' should presumably be 'unitary up to the scale factor $\\sqrt{T}$' / 'has orthogonal rows'. As written, the two halves of the sentence are mutually inconsistent.",
+      "check_kind": "general_claim",
+      "confidence": 0.45,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "paper::CAND::4",
+      "error_location": "Section III-A, after Eq. (7): 'd \\in \\{1,\\dots,|A|^2\\}'",
+      "exact_quote": "for some values \\( L_s \\) and \\( L_e \\) with \\( L = L_s + L_e < ST \\), \\( d \\in \\{ 1, \\ldots, |A|^2 \\} \\), and some sequences \\( q_{n,s,d} \\) to be optimized.",
+      "claim_content": "Setting. $\\mathcal{A}$ is a regular PSK constellation with $|\\mathcal{A}|$ points; data symbols lie in $\\mathcal{A}$. The paper states: 'If we allow the discrete waveform $f_{b,n}$ to depend on the data symbols of blocks $b-1$, $b$, and $b+1$, phase jumps can be avoided.' The transition sequences $q_{n,s,d}$ of Eq. (7) are indexed by $d$, and the index $d$ enumerates the distinct transition cases that the waveform must provide. Eq. (8) averages over them as $\\frac{1}{|A|^2}\\sum_{d=1}^{|A|^2} q_{n,s,d}$. Claim to check. The number of distinct cases is $|\\mathcal{A}|^2$. Question. If the waveform depends on the data symbols of the three blocks $b-1$, $b$, $b+1$, there are $|\\mathcal{A}|^3$ ordered triples of symbols. Is the reduction to $|\\mathcal{A}|^2$ cases correct, i.e. does the waveform shape depend only on the two consecutive phase differences $\\arg(x_{b,n}) - \\arg(x_{b-1,n})$ and $\\arg(x_{b+1,n}) - \\arg(x_{b,n})$ (each taking $|\\mathcal{A}|$ values, giving $|\\mathcal{A}|^2$ cases), or does it genuinely depend on all three symbols, requiring $|\\mathcal{A}|^3$?",
+      "suspected_defect": "Dependence on three consecutive data symbols naively gives $|\\mathcal{A}|^3$ transition cases, not $|\\mathcal{A}|^2$. The count $|\\mathcal{A}|^2$ is only right if the waveform is invariant under a common phase rotation of all three symbols, so that only the two phase increments matter; the paper never states that invariance. If it does not hold, the alphabet of transition sequences and the average of Eq. (8) are both under-dimensioned.",
+      "check_kind": "general_claim",
+      "confidence": 0.35,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "paper::CAND::5",
+      "error_location": "Section V-B (second numerical example), 'The combining gain is 15 dB'",
+      "exact_quote": "For such a wide pulse, the lowpass filter hardly distorts the pulse shape. Therefore, we use an FFT-based receiver with rectangular windowing. This achieves an SIR of 43 dB. The combining gain is 15 dB, exactly the same as for transmit beamforming.",
+      "claim_content": "Setting. The paper's Section III establishes that for a transmit matrix $\\mathbf{T}_b \\in \\mathbb{C}^{N\\times T}$ built as $\\operatorname{diag}(\\mathbf{x}_b)\\mathbf{F}_b$ the coherent temporal combining of the $TN$ transmit signal entries onto $N$ data symbols 'results in a $T$-fold improvement of received power', and that for $T = N$ 'the same combining gain as with transmit beamforming is achieved'. Transmit beamforming with $N$ antennas gives an $N$-fold power gain, i.e. $10\\log_{10}N$ dB. In the first numerical example ($N = 16$, $T = 18.375$) the paper reports temporal combining gains of 12.6 dB and 12.2 dB and remarks: 'This compares favorably to the 12.0 dB combining gain of transmit beamforming with 16 antennas. Note that the temporal combining gain can exceed 12 dB as $T = 18.375 > N = 16$.' In the second numerical example the parameters are $N = 32$ antennas, QPSK, symbol rate 2 Msymbol/s per subcarrier, symbol period 500 ns, $T = 46$, subcarrier spacing 2.88 MHz, squared-sine pulse of 152 ns, and an FFT-based receiver with rectangular windowing (i.e. the full block is combined, with no window tapering). Claim to check. In this second example the combining gain is 15 dB, 'exactly the same as for transmit beamforming'. Question. With $T = 46 > N = 32$, the paper's own $T$-fold argument gives an achievable temporal combining gain of up to $10\\log_{10}(46) = 16.63$ dB, while transmit beamforming with 32 antennas gives $10\\log_{10}(32) = 15.05$ dB. Is a reported combining gain of exactly 15 dB consistent with rectangular (untapered) windowing over a block of $T = 46$, given that the first example with a *tapered* window still reached $12.6 > 10\\log_{10}(16) = 12.04$ dB because $T > N$?",
+      "suspected_defect": "The reported 15 dB equals $10\\log_{10}(32) = 10\\log_{10}N$, not $10\\log_{10}(46) = 10\\log_{10}T = 16.6$ dB. By the paper's own reasoning (and by the pattern of the first example, where the gain exceeded $10\\log_{10}N$ precisely because $T > N$), rectangular windowing over $T = 46$ samples should give about 1.6 dB more than beamforming, not exactly the same. Either the 15 dB figure, or the claim that it is 'exactly the same as for transmit beamforming', or the $T$-fold gain argument is wrong.",
+      "check_kind": "numeric",
+      "confidence": 0.4,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "paper::CAND::6",
+      "error_location": "Section VII (Conclusions), last bullet",
+      "exact_quote": "Peak data rate can be made to grow linearly with SNR by means of spatial multiplexing even in far field scenarios, since omni-directional transmission does not prevent rich scattering.",
+      "claim_content": "Setting. The paper states the capacity of the complex additive white Gaussian noise channel with power constraint as $R = \\log_2(1+\\mathrm{SNR})$ (Eq. (9)), and its low-SNR approximation, valid for $\\mathrm{SNR} \\ll 1$, as $R \\approx \\mathrm{SNR}/\\ln 2$ (Eq. (10)). It also states, in Section VI-B: 'Spatial multiplexing exploits unused antenna elements. If the link budget is better than expected, not all transmit antennas are in need. Some of them can be used for spatial multiplexing. Spatial multiplexing converts a linear increase in the number of antennas into a linear increase in data rate', and contrasts this with higher-order modulation, which 'converts a linear increase in SNR into a logarithmic increase in data rate'. Claim to check. The conclusion asserts that peak data rate 'can be made to grow linearly with SNR by means of spatial multiplexing'. Question. Is 'grows linearly with SNR' the correct dependence? For a MIMO channel with multiplexing order $M$ the rate is $M\\log_2(1+\\mathrm{SNR})$: linear in the number of parallel streams $M$ (hence in the number of antennas), but logarithmic in SNR for $\\mathrm{SNR} \\gg 1$. Spatial multiplexing is invoked in the paper precisely when 'the link budget is better than expected', i.e. when SNR is not small, which is the regime where Eq. (10)'s linearisation does not apply.",
+      "suspected_defect": "The conclusion attributes a linear-in-SNR rate growth to spatial multiplexing, while Section VI-B attributes linear growth to the number of *antennas* and explicitly says SNR buys only a logarithmic rate increase. Growth linear in SNR follows from Eq. (10) only in the low-SNR regime, which is not the surplus-link-budget regime in which spatial multiplexing is deployed. The quantity that the rate is claimed to be linear in appears to have been swapped (SNR for number of antennas).",
+      "check_kind": "general_claim",
+      "confidence": 0.4,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "paper::CAND::7",
+      "error_location": "Section IV-B (Receiver), 'two receiver chains are sufficient'",
+      "exact_quote": "Even for three or more separable propagation paths, two receiver chains are sufficient to equalize the resulting intersymbol interference. Note that these two receive chains span twice as many dimensions in signal space.",
+      "claim_content": "Setting. The receiver uses analog beamforming towards the transmitter: the combined signal of all receive antennas is bandlimited, A/D-converted, sampled and demodulated by FFT. A 'receiver chain' is one such analog-combining + A/D + FFT path. The transmitted signal is the MA-TISK multi-carrier signal of Section IV, in which antenna $n$ carries subcarrier $n$ with waveform $f_{b,n}$, and the propagation channel offers some number $P$ of separable propagation paths (resolvable delays/directions). Claim to check. For $P \\ge 3$ separable propagation paths, two receiver chains suffice to equalise the resulting intersymbol interference, because 'these two receive chains span twice as many dimensions in signal space'. Question. Does a receiver with two spatial degrees of freedom suffice to equalise the interference generated by $P \\ge 3$ separable paths? In standard linear equalisation/nulling, $P$ separable interfering components generally require $P$ independent dimensions (one chain plus $P-1$ nulling dimensions); two chains span 2 dimensions, which is strictly fewer than $P$ for $P \\ge 3$.",
+      "suspected_defect": "The sufficiency claim for 'three or more' paths with only two receiver chains is not supported by the dimension-counting argument offered ('twice as many dimensions'), which only says 2 > 1. Equalising $P \\ge 3$ separable paths generally needs at least $P$ signal-space dimensions. The claim may be true for frequency-domain equalisation exploiting the many subcarriers rather than the spatial dimension, but as stated the justification given does not imply the conclusion.",
+      "check_kind": "general_claim",
+      "confidence": 0.35,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "paper::CAND::8",
+      "error_location": "Section V-A, subcarrier spacing of 5.74 MHz from T = 18.375",
+      "exact_quote": "We choose a transmit array with N = 16 antennas and QPSK modulation at a symbol rate of 5 Msymbols/s on each subcarrier resulting in a total data rate of 160 Mbit/s. The corresponding symbol period is 200 ns. In order to cope with the spectral mask, we set T = 18.375. This results in a subcarrier spacing of 5.74 MHz.",
+      "claim_content": "Given: a transmit array of $N = 16$ antennas; QPSK modulation (2 bits per symbol); a symbol rate of 5 Msymbol/s on each of the $N$ subcarriers; one subcarrier per antenna; a block length (number of time samples per data block, in the notation of the $N\\times T$ transmit matrix $\\mathbf{T}_b$) of $T = 18.375$; a target channel bandwidth of 100 MHz. In Eq. (7) the discrete frequency of subcarrier $n$ is $n/(SN)$ cycles per oversampled sample, i.e. subcarrier spacing equals the (un-oversampled) sampling rate divided by $N$, where the sampling rate is $T$ samples per symbol period. Check all of the following numerically: (a) the symbol period is 200 ns; (b) the total data rate is 160 Mbit/s; (c) the subcarrier spacing is 5.74 MHz; (d) the total occupied bandwidth $N$ times the subcarrier spacing does not exceed 100 MHz.",
+      "suspected_defect": "The paper never states the formula linking $T$, $N$ and the symbol rate to the subcarrier spacing, so the 5.74 MHz figure cannot be checked from the text alone. Verify that $T/(N \\cdot T_{\\text{sym}}) = 18.375/(16 \\times 200\\,\\mathrm{ns})$ really equals 5.74 MHz, that $16\\times 5\\,\\mathrm{Msym/s} \\times 2\\,\\mathrm{bit} = 160$ Mbit/s, and that $N$ times the spacing stays inside the 100 MHz channel; a mismatch in any of these would indicate a wrong $T$ or a wrong spacing.",
+      "check_kind": "numeric",
+      "confidence": 0.2,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "paper::CAND::9",
+      "error_location": "Section V-B, parameters of the sharper-spectrum example (N = 32, T = 46)",
+      "exact_quote": "a symbol rate of 2 Msymbols/s on each subcarrier resulting in a total data rate of 128 Mbit/s. This corresponds to a symbol period of 500 ns. The reduced data rate allows for a longer transition period. This results in greatly reduced out-of-band radiation. We set T = 46, which results in a subcarrier spacing of 2.88 MHz.",
+      "claim_content": "Given: a transmit array of $N = 32$ antennas; QPSK modulation (2 bits per symbol); a symbol rate of 2 Msymbol/s on each of the $N$ subcarriers; one subcarrier per antenna; block length $T = 46$ time samples per data block; target channel bandwidth 100 MHz. As in the paper's first example, the subcarrier spacing equals the sampling rate divided by $N$, with the sampling rate being $T$ samples per symbol period. Check numerically: (a) the symbol period is 500 ns; (b) the total data rate is 128 Mbit/s; (c) the subcarrier spacing is 2.88 MHz; (d) $N$ times the spacing stays within the 100 MHz channel; (e) consistency with the first example, which used $N = 16$, $T = 18.375$, 5 Msymbol/s, 160 Mbit/s and 5.74 MHz spacing, under one and the same spacing formula.",
+      "suspected_defect": "Two independent parameter sets are quoted with derived spacings (5.74 MHz and 2.88 MHz). If both are to follow from one relation between $T$, $N$ and the symbol rate, that relation must reproduce both numbers; otherwise one of the quoted $T$ values or spacings is wrong. The data rate 128 Mbit/s must also follow from $32 \\times 2\\,\\mathrm{Msym/s} \\times 2$ bits.",
+      "check_kind": "numeric",
+      "confidence": 0.2,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "paper::CAND::10",
+      "error_location": "Section V-B, '70 MHz, i.e. 40% above the edge of the channel band'",
+      "exact_quote": "At 70 MHz, i.e. 40% above the edge of the channel band, the PSD has already decayed to −80 dB.",
+      "claim_content": "Given: the targeted channel bandwidth is 100 MHz, centred on the carrier, so that the baseband spectrum runs from $-50$ MHz to $+50$ MHz and the edge of the channel band is at $50$ MHz (as confirmed by the axis of Fig. 9, which runs from $-75$ to $+75$ MHz). Claim: the frequency $70$ MHz is '40% above the edge of the channel band'. Check: compute the relative offset of 70 MHz above the band edge and compare it with 40%.",
+      "suspected_defect": "Check the percentage arithmetic: with a band edge at 50 MHz, 70 MHz is above it by 20 MHz. Verify whether that is 40% of the band edge (as the phrase suggests) or should be expressed relative to some other reference such as the full 100 MHz bandwidth, in which case the 40% figure would be wrong.",
+      "check_kind": "numeric",
+      "confidence": 0.15,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "paper::CAND::11",
+      "error_location": "Eq. (10), low-SNR approximation of Eq. (9)",
+      "exact_quote": "$$R \\approx \\frac{\\text{SNR}}{\\ln 2}.$$",
+      "claim_content": "Given the capacity of the complex-valued additive white Gaussian noise channel with a power constraint, $R = \\log_2(1 + \\mathrm{SNR})$ (Eq. (9)), where $R$ is the data rate in bits per channel use and $\\mathrm{SNR} > 0$ is the signal-to-noise ratio. The paper asserts that when the link budget is critical, so that $\\mathrm{SNR} \\ll 1$, 'the logarithm in (9) is well approximated by a linear function' and $R \\approx \\mathrm{SNR}/\\ln 2$ (Eq. (10)). Claim to check: as $\\mathrm{SNR} \\to 0^{+}$, is $\\log_2(1+\\mathrm{SNR})$ asymptotically equal to $\\mathrm{SNR}/\\ln 2$ — i.e. is $\\lim_{x\\to 0^{+}} \\frac{\\log_2(1+x)}{x/\\ln 2} = 1$ — and is the constant $1/\\ln 2$ (rather than, say, $\\ln 2$) the correct one?",
+      "suspected_defect": "Verify the direction of the constant: the first-order expansion of $\\log_2(1+x)$ is $x/\\ln 2$, but a sign/reciprocal slip would give $x\\ln 2$. Equation (10) is load-bearing for the paper's central claim that, for critical link budgets, a loss in data rate and a loss in beamforming gain are equivalent, so the constant and the direction of the approximation both matter.",
+      "check_kind": "symbolic",
+      "confidence": 0.15,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "paper::CAND::12",
+      "error_location": "Section VI-C, multi-user comparison (footnote 1 paragraph)",
+      "exact_quote": "In contrast to transmit beamforming, users do not suffer from a loss of combining gain, but they suffer from a loss in data rate by a factor of K. For critical link-budget, however, a loss in data rate and a loss in beamforming gain are equivalent due to (10).",
+      "claim_content": "Setting. There are $N$ transmit antennas. In transmit beamforming, serving $K$ users with different data at a fixed per-user data rate splits the array, so only $N/K$ antennas form the beam towards any one user; the paper concludes a loss in beamforming gain by a factor of at least $K$. In MA-TISK, each of the $N$ antennas carries exactly one subcarrier, all radiation is omni-directional, and the $K$ users are separated in frequency: each user is assigned $N/K$ of the $N$ subcarriers, hence the signals of $N/K$ antennas. The temporal combining gain for a user is the $T$-fold coherent combining of that user's subcarrier waveforms over the block of $T$ samples (Section III, Eq. (3)-(4)). The paper also states $R = \\log_2(1+\\mathrm{SNR})$ (Eq. (9)) and, for $\\mathrm{SNR}\\ll 1$, $R \\approx \\mathrm{SNR}/\\ln 2$ (Eq. (10)). Claims to check, jointly. (i) When MA-TISK's $N$ subcarriers/antennas are split among $K$ users, a user suffers no loss of combining gain, only a loss of data rate by the factor $K$. (ii) Because of Eq. (10), a loss in data rate by a factor $K$ and a loss in beamforming gain by a factor $K$ are equivalent, so MA-TISK and transmit beamforming end up with similar rate-per-user and link budget. Question. Does (i) hold given that a user now receives signal energy from only $N/K$ of the $N$ antennas (so its total received signal power falls by the factor $K$, even though the number of data symbols it must demodulate also falls by $K$)? And is the equivalence in (ii) legitimate, i.e. does $R \\approx \\mathrm{SNR}/\\ln 2$ make a factor-$K$ reduction of $R$ and a factor-$K$ reduction of SNR interchangeable?",
+      "suspected_defect": "Two things to separate. First, splitting the subcarriers among $K$ users cuts a user's received signal power by $K$ (it hears $N/K$ instead of $N$ antennas); whether the per-symbol SNR, and hence the combining gain, is genuinely unaffected depends on an unstated cancellation (the user also demodulates $K$ times fewer symbols). Second, the equivalence of a rate loss and a gain loss relies on the strict proportionality $R \\propto \\mathrm{SNR}$ of Eq. (10), which only holds to first order in SNR; this is the load-bearing step of the paper's central multi-user comparison.",
+      "check_kind": "general_claim",
+      "confidence": 0.3,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "paper::CAND::13",
+      "error_location": "Section IV-A-2 (Phase Transitions), QPSK phase-shift sets",
+      "exact_quote": "For a QPSK constellation, this means that there are some subcarriers which use phase shifts from {0, −π/2, −π, −3π/2}, some from {+π/2, 0, −π/2, −π}, some from {+π, +π/2, 0, −π/2}, and some from {+3π/2, +π, +π/2, 0}. The set that is used depends on the position of the subcarrier.",
+      "claim_content": "Setting. QPSK data symbols lie on the complex unit circle at phases $\\{0, \\pi/2, \\pi, 3\\pi/2\\}$. A symbol transition requires a phase shift, and a phase shift of $\\theta$ transmits the same data symbol as a phase shift of $\\theta + 2\\pi k$ for any integer $k$, because 'phases are indifferent with respect to shifts of $2\\pi$'. To steer out-of-band radiation in-band, each subcarrier is assigned a set of four phase shifts, one per possible transition, chosen so that shifts are predominantly directed towards the centre of the frequency band: for the rightmost subcarrier all shifts should be non-positive (frequency lowered), for the leftmost all non-negative. Claim to check. Each of the four listed sets $S_1 = \\{0, -\\pi/2, -\\pi, -3\\pi/2\\}$, $S_2 = \\{\\pi/2, 0, -\\pi/2, -\\pi\\}$, $S_3 = \\{\\pi, \\pi/2, 0, -\\pi/2\\}$, $S_4 = \\{3\\pi/2, \\pi, \\pi/2, 0\\}$ is a valid complete set of QPSK phase shifts, i.e. reducing each element modulo $2\\pi$ yields exactly the four residues $\\{0, \\pi/2, \\pi, 3\\pi/2\\}$ with no repetition and none missing; and $S_1$ is entirely non-positive (suitable for the rightmost subcarrier) while $S_4$ is entirely non-negative (suitable for the leftmost).",
+      "suspected_defect": "Check each of the four sets for completeness modulo $2\\pi$: a set that repeats a residue or omits one would leave a QPSK transition unimplementable. In particular check $S_2$ and $S_3$, which mix positive and negative shifts, and check that the extreme sets $S_1$ and $S_4$ have the one-sided signs the argument requires.",
+      "check_kind": "numeric",
+      "confidence": 0.2,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "paper::CAND::14",
+      "error_location": "Section IV-A-2 (Phase Transitions), '+π/2 ... lower it three times as much ... −3π/2'",
+      "exact_quote": "When implementing a phase shift of +π/2 at the rightmost subcarrier, it is better not to raise the instantaneous frequency, but to lower it three times as much as for −π/2. This results in a phase shift of −3π/2 which does not change the transmitted data symbol as phases are indifferent with respect to shifts of 2π.",
+      "claim_content": "Setting. The instantaneous frequency is the temporal derivative of the phase, so the phase shift realised during a transition is the integral of the deviation of the instantaneous frequency from the subcarrier frequency over the transition. Lowering the instantaneous frequency by a deviation whose integral is $-\\pi/2$ realises a phase shift of $-\\pi/2$; lowering it 'three times as much' realises three times that integral. QPSK symbol phases are defined modulo $2\\pi$. Claims to check: (a) lowering the instantaneous frequency three times as much as for a $-\\pi/2$ shift yields a phase shift of $-3\\pi/2$; (b) $-3\\pi/2 \\equiv +\\pi/2 \\pmod{2\\pi}$, so the realised symbol is the same as for a $+\\pi/2$ shift; (c) the magnitude of the frequency deviation, and hence the spectral regrowth, is larger for the $-3\\pi/2$ route than for the $+\\pi/2$ route.",
+      "suspected_defect": "Verify the modular arithmetic and the factor three: if the required shift were, say, $-\\pi/2$ three times over it would give $-3\\pi/2$, which must be congruent to $+\\pi/2$ modulo $2\\pi$ for the data symbol to be unchanged. An off-by-one in the multiple (e.g. twice instead of three times, giving $-\\pi$) would silently change the transmitted symbol.",
+      "check_kind": "numeric",
+      "confidence": 0.15,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "paper::CAND::15",
+      "error_location": "Section IV-A-2-a (Round-Robin D/A-Conversion), 'If ST ≥ LN'",
+      "exact_quote": "If ST ≥ LN, a single D/A-converter can serve all antennas.",
+      "claim_content": "Setting. Each data block occupies $T$ time samples; with oversampling factor $S$ this is $ST$ oversampled samples per block, indexed $s \\in \\{0,\\dots,ST-1\\}$. Each of the $N$ antennas needs a phase transition once per block, and one transition occupies $L = L_s + L_e$ oversampled samples (Eq. (7) specifies the waveform as a pure sinusoid on $L_s \\le s < ST - L_e$ and as a transition sequence elsewhere, with $L < ST$). Transitions at the various antennas need not be aligned in time; if they occur one after the other, a single D/A-converter can serve several antennas in round-robin fashion. Claim to check: a single D/A-converter can serve all $N$ antennas precisely when the $N$ non-overlapping transitions of length $L$ each fit inside one block of $ST$ samples, i.e. when $ST \\ge LN$.",
+      "suspected_defect": "Verify the inequality direction and the placement of the factors: fitting $N$ transitions of $L$ samples each into $ST$ samples requires $N L \\le ST$. A transposed condition such as $SN \\ge LT$ or $ST \\ge L + N$ would be wrong. Note also that the paper elsewhere writes the block length as $SN$ rather than $ST$ (Section IV-A-1), so which of the two bounds the available time here is itself in question.",
+      "check_kind": "symbolic",
+      "confidence": 0.2,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "paper::CAND::16",
+      "error_location": "Section III-A, paragraph after Eq. (1)",
+      "exact_quote": "Despite its \\(N^2\\) entries, this matrix only contains \\(N\\) data symbols. Thus, coherent combining of \\(N^2\\) entries at the receiver to \\(N\\) data symbols can result in an \\(N\\)-fold gain in received power.",
+      "claim_content": "Setting. $T_b^{\\mathrm{BF}} = \\phi\\, x_b$ (Eq. (1)) with $\\phi \\in \\mathbb{C}^{N\\times 1}$ a vector of per-antenna phase shifts and $x_b \\in \\mathbb{C}^{1\\times N}$ a block of $N$ data symbols, so $T_b^{\\mathrm{BF}}$ is an $N\\times N$ rank-one space-time matrix with rows indexing space (antennas) and columns indexing time. The channel is $h \\in \\mathbb{C}^{1\\times N}$ and the received block is $h T_b^{\\mathrm{BF}} = (h\\phi)x_b$ (Eq. (2)), with $\\phi = h^{\\dagger}$ the matched-filter choice. If $\\phi$ is constrained to contain phases only (unit-modulus entries), each antenna radiates the same power $P$. Claim to check: coherent combining of the $N^2$ entries onto $N$ data symbols 'can result in an $N$-fold gain in received power'. Question: with unit-modulus $\\phi$ and per-antenna power $P$ (total radiated power $NP$), the received amplitude is $|h\\phi| \\le \\sum_n |h_n| \\sim N$ times a single antenna's, so the received power gain is $N^2$ relative to one antenna at power $P$, and $N$ relative to the same total radiated power $NP$. Which normalisation makes the stated $N$-fold gain correct, and is it the same normalisation under which the later general construction is said to give a '$T$-fold improvement of received power' (where $T_b$ has $TN$ entries and $N$ symbols)?",
+      "suspected_defect": "The $N$-fold figure holds only under a fixed-total-radiated-power normalisation; relative to one antenna at the same per-antenna power the coherent gain is $N^2$. The paper's later generalisation derives the gain as the ratio (number of matrix entries)/(number of data symbols) — $N^2/N = N$ for beamforming, $TN/N = T$ for the general matrix — which is a counting argument, not a power-budget argument, and the two normalisations should be checked to agree, since the numerical claims (12.0 dB for $N=16$, 15 dB for $N=32$, 12.6 dB for $T=18.375$) all depend on it.",
+      "check_kind": "general_claim",
+      "confidence": 0.25,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "paper::CAND::17",
+      "error_location": "Section VII (Conclusions), bullet on per-antenna bandwidth",
+      "exact_quote": "Each of the N antenna elements operates only at about (1/N)th of the channel bandwidth.",
+      "claim_content": "Setting. The channel bandwidth is $B$ (100 MHz in both numerical examples). There are $N$ antennas, each carrying exactly one subcarrier. The subcarrier spacing $\\Delta f$ satisfies $N\\Delta f = 91.875$ MHz for the first example ($N = 16$, $\\Delta f = 5.74$ MHz) and $N \\Delta f = 92$ MHz for the second ($N = 32$, $\\Delta f = 2.88$ MHz). Each antenna's signal is a complex sinusoid at its subcarrier frequency for $L_s \\le s < ST-L_e$ and a transition waveform $q_{n,s,d}$ otherwise (Eq. (7)); the transition broadens the per-antenna spectrum beyond $\\Delta f$, and the paper reports that per-subcarrier spectra show pronounced sidelobes (Figs. 3, 8, 9) that are suppressed only in the aggregate. Claim to check: each antenna element operates at about $B/N$ of bandwidth.",
+      "suspected_defect": "The per-antenna bandwidth is being equated with the subcarrier spacing $\\Delta f \\approx B/N$, but the paper's own Eq. (7) makes each antenna's waveform data-dependent during the transitions, which produces exactly the per-subcarrier sidelobes the paper reports in Figs. 3 and 8-9. Whether the occupied bandwidth per antenna is really $\\approx B/N$, rather than several times that, is the quantitative claim behind the paper's narrowband-RF-hardware argument.",
+      "check_kind": "numeric",
+      "confidence": 0.2,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "paper::CAND::18",
+      "error_location": "Section V-A-2 vs V-A-1, average-matched-filter figure of 9.7 dB",
+      "exact_quote": "For windowing exponent \\(\\alpha = 15\\), the signal-to-interference-and-noise-ratio (SINR) is found as 9.7 dB and 20.9 dB for the average matched filter and the FFT-based receive filter, respectively. This is a minor improvement.",
+      "claim_content": "Setting. Two pulse shapes are simulated with the same array ($N = 16$ antennas, QPSK, 5 Msymbol/s per subcarrier, $T = 18.375$, 5.74 MHz subcarrier spacing, 100 MHz channel). (1) Rectangular pulse of duration 21.8 ns with a first-order RC lowpass at 50 MHz cut-off: the paper reports 'The signal-to-interference ratio (SIR) is found as 9.7 dB and 18.3 dB for the average matched filter and the FFT-based receive filter, respectively. No Gaussian noise was added. Interference is solely due to crosstalk of subcarriers and intersymbol interference.' (2) Squared sine wave pulse within $[0;\\pi]$ of duration 43.5 ns with a first-order RC lowpass at 70 MHz cut-off: the paper reports, for windowing exponent $\\alpha = 15$, values of 9.7 dB and 20.9 dB, and calls the change 'a minor improvement'. Claims to check: (a) the average matched filter yields the identical figure 9.7 dB under two different pulse shapes and two different lowpass cut-off frequencies; (b) an increase of the FFT-based receive filter's ratio from 18.3 dB to 20.9 dB, a factor of $10^{2.6/10} \\approx 1.8$ in power, is correctly described as 'a minor improvement'; (c) the quantity reported in case (2) is labelled SINR while case (1) is labelled SIR with no noise added, although the two are compared directly.",
+      "suspected_defect": "Three consistency concerns about reported numbers: the average matched filter gives bit-for-bit the same 9.7 dB for two different pulse shapes and cut-off frequencies, which would be a coincidence; the 18.3 dB to 20.9 dB change is +2.6 dB, nearly a doubling of the interference-limited ratio, yet is called 'minor'; and the same quantity is called SIR in one subsection and SINR in the other even though no Gaussian noise was added in either, so the two figures may not be measuring the same thing.",
+      "check_kind": "numeric",
+      "confidence": 0.2,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "paper::CAND::19",
+      "error_location": "Section IV-A-1 (Power Amplifier), VCO phase/frequency relation",
+      "exact_quote": "A VCO converts a feeding voltage into the frequency of an oscillator by a linear mapping. As frequency is the temporal derivative of the phase, the VCO is fed with the phase derivative, also known as the instantaneous frequency. Thus, it integrates the input signal.",
+      "claim_content": "Let the oscillator output be $\\exp(j\\varphi(t))$ with instantaneous phase $\\varphi(t)$ in radians. The instantaneous angular frequency is $\\omega(t) = \\mathrm{d}\\varphi/\\mathrm{d}t$ in rad/s and the instantaneous (ordinary) frequency is $f(t) = \\frac{1}{2\\pi}\\mathrm{d}\\varphi/\\mathrm{d}t$ in Hz. A VCO maps its input voltage $v(t)$ linearly to its output frequency, $f(t) = f_0 + K_v v(t)$. Claim to check: 'frequency is the temporal derivative of the phase', and consequently the VCO acts as an integrator of its input voltage, so that the realised phase shift over a transition equals the integral of the frequency deviation over that transition. Verify the stated identification of frequency with $\\mathrm{d}\\varphi/\\mathrm{d}t$ including its constant of proportionality, and verify that the integrator interpretation (and hence 'the phase shift is the integral of the temporary deviation of the instantaneous frequency from the subcarrier frequency over the duration of the phase transition') holds with the right factor.",
+      "suspected_defect": "Frequency in Hz is $\\frac{1}{2\\pi}\\mathrm{d}\\varphi/\\mathrm{d}t$, not $\\mathrm{d}\\varphi/\\mathrm{d}t$; only angular frequency equals the phase derivative. A missing factor $2\\pi$ propagates into the quantitative statement that a phase shift equals the integral of the frequency deviation, which is how the paper sizes the frequency excursions (e.g. 'lower it three times as much') and relates pulse durations (21.8 ns, 43.5 ns, 152 ns) to realised phase shifts of $\\pm\\pi/2$.",
+      "check_kind": "symbolic",
+      "confidence": 0.15,
+      "severity": "minor"
+    }
+  ],
+  "detector": {
+    "model": "agent",
+    "provider": "self",
+    "mode": "lenient-high-recall",
+    "paper_chars": 717026,
+    "truncated": false,
+    "usage": {}
+  }
+}

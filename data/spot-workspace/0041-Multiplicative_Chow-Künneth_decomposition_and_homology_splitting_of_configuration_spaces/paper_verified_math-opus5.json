@@ -1,0 +1,696 @@
+{
+  "paper_name": "paper",
+  "paper_path": "/Users/iacopoghinassi/Documents/Github/Wittgenstein/data/spot-workspace/0041-Multiplicative_Chow-Künneth_decomposition_and_homology_splitting_of_configuration_spaces/paper.md",
+  "tag": "opus5",
+  "lean_project": "MATH_VERIFICATION/Paper",
+  "lean_project_kept": true,
+  "totals": {
+    "snippets_extracted": 24,
+    "routed_to_math": 16,
+    "routed_to_lean": 8,
+    "lean_passed": 7,
+    "lean_refuted": 1,
+    "lean_failed": 0,
+    "fallbacks_run": 0,
+    "errors_detected": 1
+  },
+  "results": [
+    {
+      "snippet_id": "paper::EQUATION::0",
+      "snippet_type": "EQUATION",
+      "location": "1. Introduction",
+      "content": "h(X) \\cong \\bigoplus_{i=0}^{2d} h^{i}(X).  ...  \\bigoplus_{i,j} h^{i}(X) \\otimes h^{j}(X) \\to \\bigoplus_{k} h^{k}(X), then $h^i(X) \\otimes h^j(X) \\to h^k(X)$ vanishes unless $i + j = k$.",
+      "route": "verify-math",
+      "route_rationale": "Definitional display of a Chow-Kunneth decomposition plus the multiplicativity condition on the product; nothing formally checkable.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.6,
+        "reasoning": "The decomposition $h(X)\\cong\\bigoplus_{i=0}^{2d}h^i(X)$ with $2d=\\dim_{\\mathbb R}$-style indexing over $i=0,\\dots,2d$ is the standard Chow-Kunneth range, and 'the product $h^i\\otimes h^j\\to h^k$ vanishes unless $i+j=k$' is the standard definition of multiplicativity (the product respects the grading). No algebraic defect.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.6
+    },
+    {
+      "snippet_id": "paper::EQUATION::1",
+      "snippet_type": "EQUATION",
+      "location": "1. Introduction",
+      "content": "Equivalently, the class of the small diagonal $\\Delta_{(3)} \\subset X \\times X \\times X$ satisfies \\[ [\\Delta_{(3)}] = \\sum_{i + j + k = 2d} (\\pi_i \\times \\pi_j \\times \\pi_k)_*[\\Delta_{(3)}] \\in CH_d(X^3). \\]  (X smooth proper of dimension d, with Chow-Kunneth projectors $\\pi_i$, $i=0,\\dots,2d$.)",
+      "route": "verify-math-lean",
+      "route_rationale": "The content is a degree/index bookkeeping claim about Kunneth components of a fixed cycle class - exactly the kind of statement a formal model settles.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::1",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.85,
+        "reasoning": "Formalised the degree obstruction. The small diagonal $\\Delta_{(3)}\\cong X$ has codimension $2d$ in $X^3$, so $[\\Delta_{(3)}]$ has cohomology class in $H^{4d}(X^3)$ and its Kunneth component in $H^i\\otimes H^j\\otimes H^k$ vanishes unless $i+j+k=4d$. Modelling the components as `c : N x N x N -> Q` with that support hypothesis, Lean proves (`small_diagonal_index_condition`) that the sum the paper prints - restricted to $i+j+k=2d$ - is identically **zero** whenever $d>0$, while the sum restricted to $i+j+k=4d$ reproduces the full class; and (`printed_identity_fails`) that the printed identity therefore cannot hold for a nonzero class. The identity is stated in $CH_d(X^3)$, which implies the corresponding identity of cohomology classes, so the printed version is false as written; the index condition must be $i+j+k=4d$. The hypotheses imported from geometry are only (a) the codimension of the small diagonal and (b) $[\\Delta_{(3)}]\\neq 0$ in cohomology - no hypothesis was added that makes the negation easier. Corroborated independently by paper::EQUATION::2: every projector triple the paper itself uses for a curve ($(0,2,2)$, $(1,1,2)$, $(2,0,2)$, ...) has index sum $4=4d$, and none has index sum $2=2d$.",
+        "predicted_error_category": "Formally refuted",
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__EQUATION__1_0041opus5.lean",
+          "formal_statement": "theorem printed_identity_fails (d : ℕ) (hd : 0 < d) (c : ℕ × ℕ × ℕ → ℚ) (total : ℚ)\n    (hsupp : ∀ p : ℕ × ℕ × ℕ, p.1 + p.2.1 + p.2.2 ≠ 4 * d → c p = 0)\n    (htotal : total = ∑ p ∈ cube d, c p) (hne : total ≠ 0) :\n    total ≠ ∑ p ∈ (cube d).filter (fun p => p.1 + p.2.1 + p.2.2 = 2 * d), c p",
+          "compiler_feedback": "lake env lean Paper/TMP.lean -> exit 0, no diagnostics, no sorry. #print axioms small_diagonal_index_condition / printed_identity_fails -> depends on axioms: [propext, Classical.choice, Quot.sound]",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::EQUATION::2",
+      "snippet_type": "EQUATION",
+      "location": "1. Introduction (equation (1))",
+      "content": "(1) $[\\Delta_{(3)}] = \\Delta_{(2)} \\times o_X + (\\text{perm.}) - [X] \\times o_X \\times o_X - (\\text{perm.})$ ... with corresponding projectors $\\pi_0, \\pi_1$ and $\\pi_2$ given by \\[ \\pi_0 = [X] \\times o_X, \\quad \\pi_1 = [\\Delta_{(2)}] - \\pi_0 - \\pi_2, \\quad \\pi_2 = o_X \\times [X]. \\] since $\\Delta_{(2)} \\times o_X = \\sum_{i+j=2} (\\pi_i \\times \\pi_j \\times \\pi_2)_* [\\Delta_{(3)}]$ and $[X] \\times o_X \\times o_X = (\\pi_0 \\times \\pi_2 \\times \\pi_2)_*[\\Delta_{(3)}]$.",
+      "route": "verify-math-lean",
+      "route_rationale": "The justification is an inclusion-exclusion over projector-index triples for a curve (d = 1) - a finite, decidable combinatorial claim.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::2",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "For a curve ($d=1$) let $T=\\{(i,j,k)\\in\\{0,1,2\\}^3 : i+j+k=4\\}$ be the triples whose Kunneth component of $[\\Delta_{(3)}]$ can be nonzero, and let $A=\\{(i,j,2):i+j=2\\}$, $B=\\{(i,2,k):i+k=2\\}$, $C=\\{(2,j,k):j+k=2\\}$ be the triples of $\\Delta_{(2)}\\times o_X$ and its two permutations. Lean verifies by decision procedure that $A\\cup B\\cup C=T$, $|T|=6$, $A\\cap B=\\{(0,2,2)\\}$, $A\\cap C=\\{(2,0,2)\\}$, $B\\cap C=\\{(2,2,0)\\}$ and $A\\cap B\\cap C=\\emptyset$, and proves the resulting inclusion-exclusion identity $\\sum_A c+\\sum_B c+\\sum_C c-c(0,2,2)-c(2,0,2)-c(2,2,0)=\\sum_T c$. That is exactly the shape of equation (1): three $\\Delta_{(2)}\\times o_X$ terms minus three $[X]\\times o_X\\times o_X$ terms (the triples double-counted by the three permutations). Equation (1) and the projector list are therefore coherent. Lean also confirms that every triple used here has index sum $4=4d$ and none has index sum $2=2d$, which is the independent corroboration of the paper::EQUATION::1 finding.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__EQUATION__2_0041opus5.lean",
+          "formal_statement": "theorem triples_union : A ∪ B ∪ C = T := by decide\ntheorem index_sums : (∀ p ∈ A ∪ B ∪ C, p.1 + p.2.1 + p.2.2 = 4) ∧ (∀ p ∈ A ∪ B ∪ C, p.1 + p.2.1 + p.2.2 ≠ 2)\ntheorem equation_one_inclusion_exclusion (c : ℕ × ℕ × ℕ → ℚ) :\n    (∑ p ∈ A, c p) + (∑ p ∈ B, c p) + (∑ p ∈ C, c p) - c (0,2,2) - c (2,0,2) - c (2,2,0) = ∑ p ∈ T, c p",
+          "compiler_feedback": "lake env lean Paper/TMP.lean -> exit 0, no diagnostics, no sorry. #print axioms -> [propext, Classical.choice, Quot.sound] for all declarations",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::EQUATION::3",
+      "snippet_type": "EQUATION",
+      "location": "1. Introduction",
+      "content": "One can show the Gross-Schoen cycle associated to $o_X$ can only vanish when $o_X = \\frac{1}{2g-2} K_X$ [FLV21b, Section 3], and that in this case vanishing of the Gross-Schoen cycle is equivalent to vanishing of the Ceresa cycle [Cer83].",
+      "route": "verify-math",
+      "route_rationale": "One-line degree check on a zero-cycle; verifiable by inspection.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::3",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "The construction requires $o_X\\in CH_0(X)$ of degree $1$. For a curve of genus $g$, $\\deg K_X = 2g-2$, so $\\deg\\left(\\frac{1}{2g-2}K_X\\right)=1$: the normalisation is the only one compatible with the degree-1 requirement, and the formula is well defined precisely when $g\\ge 2$ (as required for a Ceresa/Gross-Schoen discussion). Consistent.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::EQUATION::4",
+      "snippet_type": "EQUATION",
+      "location": "1.16",
+      "content": "H^4(F(\\Sigma, 3), \\mathbb{Q}) \\cong V_2 \\otimes \\sigma_{111} \\oplus V_1 \\otimes \\sigma_3 ... If $g \\gg 0$, then $H^3(M_g, V_1) \\cong \\mathbb{Q}$ [Loo96]. Thus, one knows that in the Leray spectral sequence $E_2^{p,q} = H^p(M_g, R^q f_*^{(3)} \\mathbb{Q}) \\Rightarrow H^{p+q}(M_{g,3}, \\mathbb{Q})$ one has $E_2^{3,4} \\cong \\mathbb{Q}$ for sufficiently large $g$. On the other hand the stable cohomology of $M_{g,n}$ is concentrated in even degrees, so for $g$ sufficiently large this class must be killed by a differential.",
+      "route": "verify-math",
+      "route_rationale": "Rests on cited computations ([Loo96], Totaro spectral sequence) and on stable cohomology of $M_{g,n}$; not formalisable.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::4",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.5,
+        "reasoning": "Internally coherent as far as it can be checked from the snippet. $E_2^{3,4}=H^3(M_g,R^4f_*\\mathbb{Q})$ receives $H^3(M_g,V_1)\\otimes\\sigma_3$, one-dimensional since $\\sigma_3$ is the trivial $S_3$-representation; the parity bookkeeping is consistent, since $E_2^{3,4}$ contributes to $H^7(M_{g,3},\\mathbb{Q})$, of odd total degree, while the stable cohomology of $M_{g,n}$ is $\\mathbb{Q}[\\kappa_i,\\psi_j]$ with all generators in even degree - hence the class must die, as asserted. The $\\mathrm{Sp}_{2g}$-content $V_2\\otimes\\sigma_{111}\\oplus V_1\\otimes\\sigma_3$ of $H^4(F(\\Sigma,3),\\mathbb{Q})$ is also parity-admissible ($|\\lambda|$ and the number of $H^1(\\Sigma)$ factors have matching parity, and $|\\lambda|\\le 3$ for three points). Verifying the decomposition itself requires the cited Totaro-spectral-sequence computation and [Loo96], which this snippet does not contain.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.5
+    },
+    {
+      "snippet_id": "paper::PROOF::0",
+      "snippet_type": "PROOF",
+      "location": "2.2 Proof of Theorem 1.8",
+      "content": "Proof of Theorem 1.8. The first author has introduced an explicit functor $A \\mapsto CF(A, n)$ ... (i) The functor $CF(-, n)$ takes quasi-isomorphisms to quasi-isomorphisms. (ii) If $A$ is a cdga model for $C^\\bullet(X,\\mathbb{Q})$ ... then $H^\\bullet(CF(A, n)) \\cong H_c^\\bullet(F(X, n), \\mathbb{Q})$. ... Now if $X$ admits a multiplicative decomposition then $C^*(X,\\mathbb{Q}) \\cong H^*(X,\\mathbb{Q})$ ... Since this category is semisimple, the resulting cochain complex is quasi-isomorphic to its cohomology, and in particular $H_c^*(F(X,n),\\mathbb{Q})$ is a direct sum of pure Hodge structures. Then the same is true for $H^*(F(X,n),\\mathbb{Q})$ by Poincare duality.",
+      "route": "verify-math",
+      "route_rationale": "An argument in the derived infinity-category of mixed Hodge structures; no crisp formal content to autoformalise.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::PROOF::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.5,
+        "reasoning": "The chain of reductions is internally consistent: multiplicativity gives $C^\\bullet(X,\\mathbb{Q})\\simeq H^\\bullet(X,\\mathbb{Q})$ as a cdga in mixed Hodge structures; $CF(-,n)$ preserves quasi-isomorphisms, so it may be evaluated on the pure model; semisimplicity of pure polarizable Hodge structures of fixed weight splits the resulting complex into its cohomology; and the transfer from $H_c^\\bullet$ to $H^\\bullet$ by Poincare duality is legitimate because $F(X,n)$ is smooth. No step is mathematically invalid on its face; the substance (property (ii) of $CF$, and the monoidality inputs of 2.1) is cited, not reproved here.",
+        "predicted_error_category": null,
+        "snippet_type": "PROOF",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.5
+    },
+    {
+      "snippet_id": "paper::PROOF::1",
+      "snippet_type": "PROOF",
+      "location": "2.3 Proof of Theorem 1.13",
+      "content": "Proof of Theorem 1.13. ... The space $X^n$ is stratified with strata indexed by the partition lattice $\\Pi_n$. By assigning to every element of $\\Pi_n$ the closure of the corresponding stratum we get a contravariant functor from $\\Pi_n$ to smooth proper varieties over $S$, taking a partition with $k$ blocks to $X^k$. ... By [DJ20] we can form the total homotopy fiber of this diagram by an explicit procedure which outputs a Postnikov system ... By semisimplicity of the category of pure mixed Hodge modules of fixed weights, this Postnikov system must be isomorphic to one in which all objects are equal to their homology and all morphisms are zero. ... which means that the object $Rf_!^{(n)}\\mathbb{Q}$ is a direct sum of degree-shifted polarizable variations of Hodge structure. Then the same is true for $Rf_*^{(n)}$ by duality.  (Footnote 3: the total homotopy fiber of $F : D \\to M$, $D$ with initial object $*$, is the homotopy fiber of $F(*) \\to \\mathrm{holim}_{x \\in D, x \\neq *} F(x)$.)",
+      "route": "verify-math",
+      "route_rationale": "Postnikov systems in $D^b(\\mathrm{MHM}(S))$ and six-functor formalism; unformalisable.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::PROOF::1",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.5,
+        "reasoning": "Bookkeeping checks out where it can be checked: a partition with $k$ blocks has closed stratum $\\cong X^k$ (points equal within blocks), the finest partition into $n$ singletons is the initial object of $\\Pi_n$ under refinement and its open stratum is $F(X/S,n)$, so footnote 3's total-homotopy-fiber recipe (a map out of $F(*)$ into the homotopy limit over the non-initial objects) is the right shape; weight-preservation plus semisimplicity of pure Hodge modules of fixed weight splits the Postnikov system; and passing from $Rf_!$ to $Rf_*$ by duality is valid for the smooth $f$ at hand. The essential inputs ([DJ20], [Tub23]) are cited rather than reproved.",
+        "predicted_error_category": null,
+        "snippet_type": "PROOF",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.5
+    },
+    {
+      "snippet_id": "paper::EQUATION::5",
+      "snippet_type": "EQUATION",
+      "location": "3.1-3.2 Local systems on M2",
+      "content": "We thus get a Gysin long exact sequence: ... -> H^k(A_{1,1}, V_\\lambda)(-1) -> H^{k+2}(A_2, V_\\lambda) -> H^{k+2}(M_2, V_\\lambda) -> H^{k+1}(A_{1,1}, V_\\lambda)(-1) -> ...   3.2. A first observation is that (for $\\lambda \\neq 0$), $H^k(M_2, V_\\lambda)$ is nontrivial only for $k \\in \\{1,2,3\\}$. This is because the virtual cohomological dimension of the genus 2 mapping class group is 3, and $H^0$ vanishes since the genus two mapping class group surjects onto $Sp_4(\\mathbb{Z})$. We therefore only need to consider two Gysin homomorphisms: $H^0(A_{1,1},V_\\lambda)(-1) \\to H^2(A_2,V_\\lambda)$ and $H^1(A_{1,1},V_\\lambda)(-1) \\to H^3(A_2,V_\\lambda)$.",
+      "route": "verify-math",
+      "route_rationale": "Exact-sequence and dimension bookkeeping that a careful reader can check by inspection.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::5",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.8,
+        "reasoning": "All three numerical claims check out. (a) $\\mathrm{vcd}(\\mathrm{Mod}_g)=4g-5$, which is $3$ for $g=2$, so $H^k(M_2,V_\\lambda)=0$ for $k>3$. (b) $H^0(M_2,V_\\lambda)=V_\\lambda^{\\mathrm{Mod}_2}=0$ for $\\lambda\\neq0$ because the image of $\\mathrm{Mod}_2$ in $\\mathrm{Sp}_4(\\mathbb{Z})$ is everything and $V_\\lambda$ has no $\\mathrm{Sp}_4(\\mathbb{Z})$-invariants. (c) In the displayed Gysin sequence the maps controlling $H^1$ and $H^2$ of $M_2$ are precisely those out of $H^0(A_{1,1})(-1)$ and $H^1(A_{1,1})(-1)$, i.e. the two listed; $A_2\\setminus M_2 = A_{1,1}$ has codimension 1, matching the $(-1)$ twist and the degree shift by 2.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::EQUATION::6",
+      "snippet_type": "EQUATION",
+      "location": "3.3",
+      "content": "H^{\\bullet}(A_{1,1}, U_{a,b}) \\cong H^{\\bullet}(M_{1,1}, V_a) \\otimes H^{\\bullet}(M_{1,1}, V_b);  H^{\\bullet}(A_{1,1}, U_a^+) \\cong \\mathrm{Sym}^2 H^{\\bullet}(M_{1,1}, V_a);  H^{\\bullet}(A_{1,1}, U_a^-) \\cong \\wedge^2 H^{\\bullet}(M_{1,1}, V_a).  The cohomology $H^\\bullet(M_{1,1}, V_\\ell)$ is determined by the Eichler-Shimura isomorphism: $H^k(M_{1,1}, V_\\ell) \\cong \\mathbb{Q}$ for $k = \\ell = 0$; $S_{\\ell+2} \\oplus \\mathbb{Q}(-1-\\ell)$ for $k=1, \\ell>0$ even; $0$ otherwise.",
+      "route": "verify-math",
+      "route_rationale": "Cited branching formula and Eichler-Shimura; the checkable part is consistency with 3.4-3.5.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::6",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.7,
+        "reasoning": "The Eichler-Shimura statement is the standard one: for $\\ell>0$ even, $H^1(M_{1,1},V_\\ell)=S_{\\ell+2}\\oplus\\mathbb{Q}(-1-\\ell)$, where the cuspidal part has weight $\\ell+1$ and the Eisenstein part weight $2\\ell+2$; the vanishing for odd $\\ell$ (implicit in 'otherwise') is forced by $-1\\in\\mathrm{SL}_2(\\mathbb{Z})$. Since $A_{1,1}\\cong\\mathrm{Sym}^2 M_{1,1}$, the three displayed formulas are the Kunneth decomposition plus its $\\Sigma_2$-isotypic pieces, with $\\mathrm{Sym}^2$ and $\\wedge^2$ read in the graded sense. They are consistent with the use made of them in 3.4: $H^1(A_{1,1},U_a^{\\pm})=0$ because $H^0(M_{1,1},V_a)=0$ for $a>0$, which is exactly why only the $U_{a,0}$ summands contribute to $H^1$.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.7
+    },
+    {
+      "snippet_id": "paper::PROPOSITION::0",
+      "snippet_type": "PROPOSITION",
+      "location": "3.5 Proposition",
+      "content": "3.5. Proposition. Let $\\lambda = (a,b)$ be even. The cohomology $H^k(A_{1,1}, V_\\lambda)$ in degrees $k=0$ and $k=1$ is given by $H^0(A_{1,1},V_\\lambda) = \\mathbb{Q}(-b)$ if $a = b \\equiv 0 \\pmod 2$, $0$ otherwise, and $H^1(A_{1,1},V_\\lambda) = S_{a-b+2}(-b) \\oplus \\mathbb{Q}(-1-a)$ if $a > b$, $0$ if $a = b$.",
+      "route": "verify-math-lean",
+      "route_rationale": "The content beyond the cited branching formula is Tate-twist bookkeeping, which formalises cleanly.",
+      "lean_result": {
+        "snippet_id": "paper::PROPOSITION::0",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.7,
+        "reasoning": "Formalised the twist bookkeeping that turns 3.3-3.4 into the proposition, writing $\\mathbb{Q}(-m)$ for weight $2m$ and $S_w(-m)$ for weight $(w-1)+2m$. Lean confirms: (i) the Eisenstein summand $\\mathbb{Q}(-1-(a-b))$ of $H^1(M_{1,1},V_{a-b})$, twisted by $(-b)$ as the summand $U_{a-b,0}(-b)$ requires, is $\\mathbb{Q}(-1-a)$, since $(1+(a-b))+b = 1+a$; (ii) the cuspidal summand is $S_{a-b+2}(-b)$, of weight $a+b+1$, the expected weight of $H^1$ of a weight-$(a+b)$ local system; (iii) in the case $a=b$ the $H^0$ twist $\\mathbb{Q}(-b)$ has weight $2b=a+b=|\\lambda|$, as a trivial summand in degree 0 must; (iv) the Eisenstein weight $2a+2$ dominates the cuspidal weight $a+b+1$ for $a\\ge b$. Every printed twist is the one the inputs force. What Lean does NOT check is the cited branching formula [Pet13, Prop. 3.4] itself (that $U_{a-b,0}(-b)$ is the unique summand with nonvanishing $H^1$, and that $U_0^+$ occurs iff $a=b\\equiv0$); that is assumed.",
+        "predicted_error_category": null,
+        "snippet_type": "THEOREM",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__PROPOSITION__0_0041opus5.lean",
+          "formal_statement": "theorem prop35_twist_bookkeeping (a b : ℤ) (hb : 0 ≤ b) (hab : b ≤ a) :\n    (1 + (a - b)) + b = 1 + a ∧ ((a - b) + 2 - 1) + 2 * b = a + b + 1 ∧ (a = b → 2 * b = a + b) ∧ a + b + 1 ≤ 2 * (1 + a)",
+          "compiler_feedback": "lake env lean Paper/TMP.lean -> exit 0; only `linter.unusedVariables` warnings (severity 2, category linter) for the unused hypotheses `hb`, `hab`; no sorry. #print axioms -> [propext, Quot.sound]",
+          "axioms": [
+            "propext",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.7
+    },
+    {
+      "snippet_id": "paper::EQUATION::7",
+      "snippet_type": "EQUATION",
+      "location": "3.7",
+      "content": "H^2(A_2, V_\\lambda) = \\mathbb{Q}(-1-b)^{\\oplus s_{a+b+4}}$ if $a = b \\equiv 0 \\pmod 2$, $0$ otherwise. Here $s_k$ denotes the dimension of the space of cusp forms for $SL(2,\\mathbb{Z})$ of weight $k$. Comparing with Proposition 3.5 we see that there is a possibility of a nonzero Gysin map precisely when $a = b \\equiv 0 \\pmod 2$ and $s_{a+b+4} > 0$. Since the domain of this Gysin map is one-dimensional we only need to determine if the homomorphism is zero or not.",
+      "route": "verify-math",
+      "route_rationale": "Quoted from [Pet15]; the checkable content is the comparison with Prop 3.5.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::7",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.75,
+        "reasoning": "The comparison is correct. By Prop. 3.5 the domain $H^0(A_{1,1},V_\\lambda)(-1)$ is $\\mathbb{Q}(-b-1)$ exactly when $a=b\\equiv0\\pmod 2$ and zero otherwise, so it is at most one-dimensional - justifying 'we only need to determine if the homomorphism is zero or not' - and the target is nonzero exactly when $a=b\\equiv0\\pmod2$ and $s_{a+b+4}>0$; the intersection of the two conditions is what is stated. The twists also match: $\\mathbb{Q}(-b-1)$ on both sides. Consistency with the downstream Theorem 3.13 and Conjecture 3.16 (whose $\\mathbb{Q}(-b-1)^{\\oplus(s_{a+b+4}-1)}$ is the cokernel of an injective map out of a one-dimensional space) is a further check that this formula is the one actually used.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.75
+    },
+    {
+      "snippet_id": "paper::THEOREM::0",
+      "snippet_type": "THEOREM",
+      "location": "3.8 Theorem",
+      "content": "H^1(M_2, V_\\lambda) \\cong \\mathbb{Q}(-3)$ if $\\lambda = (2,2)$, $0$ otherwise.",
+      "route": "verify-math-lean",
+      "route_rationale": "A kernel-of-Gysin case analysis over the cusp-form dimensions $s_k$ - decidable arithmetic.",
+      "lean_result": {
+        "snippet_id": "paper::THEOREM::0",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.8,
+        "reasoning": "From the Gysin sequence, $H^1(M_2,V_\\lambda)=\\ker\\left(H^0(A_{1,1},V_\\lambda)(-1)\\to H^2(A_2,V_\\lambda)\\right)$; by Prop. 3.5 and 3.7 this is nonzero exactly when $a=b>0$ is even and $s_{2a+4}=0$ (the Gysin map being nonzero whenever $s_{a+b+4}>0$, by [Pet16, Sect. 5]). Lean verifies, from the standard cusp-form data ($s_k=0$ for $k<12$, for odd $k$, and for $k=14$; $0<s_{12}$; $0<s_k$ for even $k\\ge16$), that for every even $a>0$: $s_{2a+4}=0 \\iff a=2$. The delicate point is the gap $s_{14}=0$: Lean also proves $2a+4=14$ is unreachable for even $a$, so $14$ creates no second exception - $\\lambda=(2,2)$ really is unique. The surviving twist is $\\mathbb{Q}(-(b+1))=\\mathbb{Q}(-3)$ at $b=2$, as printed. Geometric inputs (Prop. 3.5, 3.7 and the nonvanishing of the Gysin map) are assumed.",
+        "predicted_error_category": null,
+        "snippet_type": "THEOREM",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__THEOREM__0_0041opus5.lean",
+          "formal_statement": "theorem h1_M2_unique_case (s : ℕ → ℕ) (hlow : ∀ k, k < 12 → s k = 0) (hodd : ∀ k, k % 2 = 1 → s k = 0)\n    (h12 : 0 < s 12) (h14 : s 14 = 0) (hbig : ∀ k, 16 ≤ k → k % 2 = 0 → 0 < s k) :\n    ∀ a : ℕ, 0 < a → a % 2 = 0 → (s (2 * a + 4) = 0 ↔ a = 2)\ntheorem fourteen_unreachable : ∀ a : ℕ, a % 2 = 0 → 2 * a + 4 ≠ 14",
+          "compiler_feedback": "lake env lean Paper/TMP.lean -> exit 0; only `linter.unusedVariables` warnings for `hodd`, `h14`; no sorry. #print axioms h1_M2_unique_case -> [propext, Classical.choice, Quot.sound]",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::EQUATION::8",
+      "snippet_type": "EQUATION",
+      "location": "3.9",
+      "content": "What will be relevant is that (up to semisimplification) $H^3(A_2, V_{a,b})$ contains as a direct summand the terms $S_{a-b+2}(-1-b)^{\\oplus s_{a+b+4}} \\oplus \\mathbb{Q}(-2-a)^{\\oplus s_{a+b+4}}$; moreover, if $b = 0$ it contains an additional term $\\mathbb{Q}(-2-a)$. ... Part of this was proven by Watanabe [Wat18], who showed that if $a > b$ and $s_{a+b+4} > 0$ then the Gysin map is injective on the summand $\\mathbb{Q}(-2-a)$ of $H^1(A_{1,1}, V_{a,b})$.",
+      "route": "verify-math",
+      "route_rationale": "Cited summand description from [Pet15] plus Watanabe's theorem; only weight matching is checkable.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::8",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.6,
+        "reasoning": "The summands match the source of the Gysin map exactly: by Prop. 3.5, $H^1(A_{1,1},V_{a,b})(-1)=S_{a-b+2}(-b-1)\\oplus\\mathbb{Q}(-2-a)$, which is precisely the pair of summand types listed for $H^3(A_2,V_{a,b})$ - a necessary condition for the Gysin map to be studied summand by summand, and the reason the paper can discard 'the remaining terms'. One notational slip, not a mathematical error: the summand $\\mathbb{Q}(-2-a)$ belongs to $H^1(A_{1,1},V_{a,b})(-1)$, whereas the sentence attributes it to the untwisted $H^1(A_{1,1},V_{a,b})$, whose Eisenstein summand is $\\mathbb{Q}(-1-a)$ (same slip recurs in 3.11); the paper has already announced that Tate twists are being suppressed in this discussion. The substance is cited, not reproved.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.6
+    },
+    {
+      "snippet_id": "paper::PROOF::2",
+      "snippet_type": "PROOF",
+      "location": "3.10",
+      "content": "Harder's formula gives $(R^3 j_* V_{a,0})_{f(\\eta)} \\cong \\bigoplus_{p+q=3} H^p(M(\\mathbb{Z}), H^q(u, V_{a,0}))$. We claim that this expression equals $H^3(u, V_{a,0})$. Indeed ... Kostant's formula shows that as an $SL_2$-module it is irreducible, given by the $b$th symmetric power representation when $q = 0, 3$ and the $(a+1)$st symmetric power when $q = 1, 2$ [Sch95, Table 2.3.4]. ... we get the same Levi but a smaller unipotent radical $u_H$ which is now one-dimensional, and we find similarly $(R^1 j'_*(V_a \\boxtimes \\mathbb{Q}))_\\eta \\cong H^1(u_H, V_a \\boxtimes \\mathbb{Q})$. Now we should determine the nonvanishing of the Gysin map $H^1(u_H, V_a \\boxtimes \\mathbb{Q}) \\to H^3(u, V_{a,0})$. But this map is nothing by the Poincare dual of the restriction $\\mathbb{Q} \\cong H^0(u, V_{a,0}) \\to H^0(u_H, V_a \\boxtimes \\mathbb{Q}) \\cong \\mathbb{Q}$ which is evidently an isomorphism.",
+      "route": "verify-math-lean",
+      "route_rationale": "The load-bearing step is a finite degree collapse plus Poincare-duality index arithmetic.",
+      "lean_result": {
+        "snippet_id": "paper::PROOF::2",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.8,
+        "reasoning": "Formalised the claim 'this expression equals $H^3(u,V_{a,0})$'. With $b=0$, Kostant's answer is $H^q(u,V_{a,0})=\\mathrm{Sym}^0$ for $q\\in\\{0,3\\}$ and $\\mathrm{Sym}^{a+1}$ for $q\\in\\{1,2\\}$, and $a+1$ is odd because $a$ is even. Feeding in the Eichler-Shimura vanishing for $M(\\mathbb{Z})\\sim\\mathrm{SL}_2(\\mathbb{Z})$ ($H^p=0$ for $p\\ge2$; $H^p(\\cdot,\\mathrm{Sym}^m)=0$ for odd $m$; $H^0(\\cdot,\\mathrm{Sym}^m)=0$ for $m>0$), Lean proves that in $\\bigoplus_{p+q=3}$ the terms $(p,q)=(3,0)$, $(2,1)$ and $(1,2)$ all vanish - the last precisely because $a+1$ is odd - leaving $(p,q)=(0,3)$, i.e. $H^0(M(\\mathbb{Z}),H^3(u,V_{a,0}))=H^3(u,V_{a,0})$. The Poincare-duality indices are also checked: $\\dim u=3$, $\\dim u_H=1$, codimension $3-1=2$, so $H^1(u_H)\\to H^{1+2}(u)=H^3(u)$ is dual to $H^{3-3}(u)\\to H^{1-1}(u_H)$, a map $H^0\\to H^0$, exactly as the paper says. Kostant's and Harder's formulas themselves are assumed inputs.",
+        "predicted_error_category": null,
+        "snippet_type": "PROOF_STEP",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__PROOF__2_0041opus5.lean",
+          "formal_statement": "theorem harder_sum_collapses (a : ℕ) (ha : a % 2 = 0) (coh : ℕ → ℕ → ℕ)\n    (hp : ∀ p m, 2 ≤ p → coh p m = 0) (hodd : ∀ p m, m % 2 = 1 → coh p m = 0)\n    (h0 : ∀ m, 0 < m → coh 0 m = 0) :\n    coh 3 (symdeg a 0) = 0 ∧ coh 2 (symdeg a 1) = 0 ∧ coh 1 (symdeg a 2) = 0 ∧\n      (∑ p ∈ range 4, coh p (symdeg a (3 - p))) = coh 0 (symdeg a 3)",
+          "compiler_feedback": "lake env lean Paper/TMP.lean -> exit 0; only a `linter.unusedVariables` warning for `h0`; no sorry. #print axioms harder_sum_collapses -> [propext, Classical.choice, Quot.sound]; gysin_duality_indices -> does not depend on any axioms",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::EQUATION::9",
+      "snippet_type": "EQUATION",
+      "location": "3.10",
+      "content": "we need to replace the Siegel parabolic in Harder's formula with the Klingen parabolic, which we take to consist of matrices of the form (* * * *; 0 * * *; 0 0 * 0; 0 * * *). We write MU for the Levi decomposition of the Klingen parabolic, where $M \\cong SL_2 \\times G_m$ is given by matrices of the form (* 0 0 0; 0 * 0 *; 0 0 * 0; 0 * 0 *) ... Now we consider the intersection of the Klingen parabolic with the standard embedded copy of $H = SL_2 \\times SL_2$ in $Sp_4$ ... This intersection gives the standard Borel parabolic in the first factor and the whole group in the second factor.",
+      "route": "verify-math",
+      "route_rationale": "Explicit matrix shapes in $\\mathrm{Sp}_4$ - checkable by direct inspection.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::9",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "Checked directly in the basis $(e_1,e_2,f_1,f_2)$ with $\\langle e_i,f_j\\rangle=\\delta_{ij}$. The Klingen parabolic is the stabiliser of the isotropic line $\\langle e_1\\rangle$, hence also of $\\langle e_1\\rangle^\\perp=\\langle e_1,e_2,f_2\\rangle$ (coordinates 1,2,4). Stabilising the line forces first column $(*,0,0,0)^T$ and stabilising the perp forces row 3 to be $(0,0,*,0)$ - exactly the printed pattern. The printed Levi has free $(1,1)$ and $(3,3)$ entries (the $G_m$ acting by $t$ on $e_1$ and $t^{-1}$ on $f_1$) and a free $2\\times2$ block in coordinates $2,4$ (the $\\mathrm{SL}_2$ on $\\langle e_2,f_2\\rangle$), so $M\\cong \\mathrm{SL}_2\\times G_m$ as stated. The printed embedding of $H=\\mathrm{SL}_2\\times\\mathrm{SL}_2$ puts the first factor on $\\langle e_1,f_1\\rangle$ and the second on $\\langle e_2,f_2\\rangle$, and an element of $H$ lies in the Klingen parabolic iff $c=0$ in the first factor - the Borel - with the second factor unconstrained, which is precisely the claim. Dimensions agree: $\\dim u=3$, and $u\\cap H=u_H$ is the 1-dimensional unipotent radical of that Borel.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::PROOF::3",
+      "snippet_type": "PROOF",
+      "location": "3.11",
+      "content": "Our expectation is that the Gysin map restricted to the first summand $S_{a-b+2}(-b)$ is nonzero whenever it can be, i.e. whenever $s_{a-b+2} > 0$ and $s_{a+b+4} > 0$. The smallest $(a, b)$ satisfying both these conditions is $(a, b) = (11, 1)$, which makes the local system $V_{11,1}$ the unique local system of weight $\\leq 12$ for which there is an ambiguity.",
+      "route": "verify-math-lean",
+      "route_rationale": "A minimality claim over a finite range of weights - decidable from the cusp-form dimensions.",
+      "lean_result": {
+        "snippet_id": "paper::PROOF::3",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "Formalised the minimality/uniqueness claim. With $s_k=0$ for $k<12$, odd $k$, and $k=14$, and $0<s_{12}$, $0<s_{16}$, Lean proves that for all $a\\ge b\\ge0$ with $a+b$ even and $a+b\\le12$: $\\left(0<s_{a-b+2}\\ \\wedge\\ 0<s_{a+b+4}\\right)\\iff(a,b)=(11,1)$. The forward direction forces $a-b+2=12$ (the only even value $\\le 14$ with $s>0$, since $s_{14}=0$) and $a+b+4\\in\\{12,16\\}$, and $a-b=10$ with $a+b\\le12$, $b\\ge0$ leaves only $a+b=12$, i.e. $(11,1)$; $a+b=8$ would need $b=-1$. The data at $(11,1)$ also check out: $a-b+2=12$, $a+b+4=16$, $a+b=12$ even, $a>b\\ge0$. The paper's claim is confirmed.",
+        "predicted_error_category": null,
+        "snippet_type": "PROOF_STEP",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__PROOF__3_0041opus5.lean",
+          "formal_statement": "theorem unique_ambiguous_weight_le_12 (s : ℕ → ℕ) (hlow : ∀ k, k < 12 → s k = 0)\n    (hodd : ∀ k, k % 2 = 1 → s k = 0) (h14 : s 14 = 0) (h12 : 0 < s 12) (h16 : 0 < s 16) :\n    ∀ a b : ℕ, b ≤ a → (a + b) % 2 = 0 → a + b ≤ 12 →\n      ((0 < s (a - b + 2) ∧ 0 < s (a + b + 4)) ↔ (a = 11 ∧ b = 1))",
+          "compiler_feedback": "lake env lean Paper/TMP.lean -> exit 0; only a `linter.unusedVariables` warning for `hodd`; no sorry. #print axioms -> [propext, Classical.choice, Quot.sound]",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::PROOF::4",
+      "snippet_type": "PROOF",
+      "location": "3.12",
+      "content": "Suppose by way of contradiction that the Gysin map were zero. We would obtain a nonzero summand $S_{12}(-2)$ inside $H^3(M_2, V_{11,1})$, which under the Leray-Serre spectral sequence for the forgetful map $M_{2,12} \\to M_2$ would give rise to a nonzero summand $S_{12}(-2)$ inside $H^{15}(M_{2,12}, \\mathbf{Q})$. This summand is of weight 15, i.e. of pure weight. This means [Del71, Corollaire 3.2.17] that it is in the image of the restriction map from $H^{15}(\\overline{M}_{2,12}, \\mathbf{Q})$, implying the existence of a class in $H^{15}(M_{2,12}, \\mathbf{Q})$ not pushed forward from the Deligne-Mumford boundary. But [CLP23, Lemma 7.3] says precisely that the group $H^{15}(M_{2,12}, \\mathbf{Q})$ is generated by cycles pushed forward from the boundary!",
+      "route": "verify-math",
+      "route_rationale": "Hinges on [CLP23, Lemma 7.3] and on a purity argument; the formal content is weight/degree bookkeeping only.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::PROOF::4",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.5,
+        "reasoning": "The bookkeeping is consistent. For $\\lambda=(11,1)$, $H^1(A_{1,1},V_\\lambda)(-1)\\supset S_{a-b+2}(-b-1)=S_{12}(-2)$; if the Gysin map vanished on it, then $H^3(A_2,V_{11,1})$ - which by 3.9 contains $S_{12}(-2)$ with multiplicity $s_{16}=1$ - would inject into $H^3(M_2,V_{11,1})$, so the summand really does appear in degree 3 as claimed. Since $|\\lambda|=12$ and $V_{11,1}\\subset R^{12}f_*\\mathbb{Q}$ for $M_{2,12}\\to M_2$, the Leray-Serre term $E_2^{3,12}$ contributes to total degree $3+12=15$; and $S_{12}(-2)$ has weight $11+4=15$, so it is of pure weight in $H^{15}$ - the hypothesis Deligne's criterion needs. Two occurrences of $H^{15}(M_{2,12},\\mathbf{Q})$ in the last two sentences should read $H^{15}(\\overline{M}_{2,12},\\mathbf{Q})$: an open moduli space has no boundary to push cycles forward from, and [CLP23, Lemma 7.3] is a statement about the compactification. That is an imprecision of notation rather than a defect in the argument - the preceding clause names $\\overline{M}_{2,12}$ correctly - and it may well be an artefact of this plain-text rendering, so it is reported here rather than as a finding.",
+        "predicted_error_category": null,
+        "snippet_type": "PROOF",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.5
+    },
+    {
+      "snippet_id": "paper::THEOREM::1",
+      "snippet_type": "THEOREM",
+      "location": "3.13 Theorem",
+      "content": "3.13. Theorem. Let $\\lambda = (a,b)$ be even, and suppose that $a + b \\leq 12$. Then $H^2(M_2, V_\\lambda) \\cong \\mathbf{Q}(-a-2)$ if $a > b > 0$ and $a + b \\notin \\{8,12\\}$; $S_{12}(-1)$ if $(a,b) = (10,0)$; $0$ otherwise.",
+      "route": "verify-math-lean",
+      "route_rationale": "The case conditions are an arithmetic statement about $s_{a+b+4}$ and $s_{a-b+2}$ over a finite range.",
+      "lean_result": {
+        "snippet_id": "paper::THEOREM::1",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "Formalised the case analysis that the theorem's conditions encode, with $s_{12}=s_{16}=s_{18}=s_{20}=s_{22}=1$, $s_{24}=2$, $s_k=0$ for $k<12$, odd $k$, and $k=14$. Lean proves: (i) for even $a+b\\le12$, $s_{a+b+4}=0\\iff a+b\\notin\\{8,12\\}$ - so the theorem's first case is exactly the case where the Gysin target $\\mathbb{Q}(-2-a)^{\\oplus s_{a+b+4}}$ vanishes, leaving $\\ker=\\mathbb{Q}(-2-a)=\\mathbb{Q}(-a-2)$; (ii) for $b=0$ and even $a\\le12$, $0<s_{a+2}\\iff a=10$, giving the single exceptional case $S_{12}(-1)$ (the Eisenstein summand being killed by the injectivity proved in 3.10); (iii) for $a=b$ even with $a+b\\le12$ the cokernel multiplicity $s_{2a+4}-1$ is $0$, so all $a=b$ cases fall under 'otherwise'; (iv) for $a>b>0$ with $a+b\\le12$ a nonvanishing cuspidal summand $S_{a-b+2}$ occurs only at $(11,1)$, whose weight $a+b=12$ is one of the two excluded values - so no cuspidal summand can interfere with the first case. Every printed condition and twist is reproduced. The geometric inputs (3.5, 3.7, 3.9, [Wat18], 3.10, 3.12) are assumed.",
+        "predicted_error_category": null,
+        "snippet_type": "THEOREM",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__THEOREM__1_0041opus5.lean",
+          "formal_statement": "theorem gysin_target_zero (hs : CuspData s) (a b : ℕ) (hpar : (a + b) % 2 = 0) (hw : a + b ≤ 12) :\n    s (a + b + 4) = 0 ↔ (a + b ≠ 8 ∧ a + b ≠ 12)\ntheorem b_zero_cuspidal (hs : CuspData s) (a : ℕ) (ha : a % 2 = 0) (hw : a ≤ 12) : 0 < s (a + 2) ↔ a = 10\ntheorem diagonal_coker_zero (hs : CuspData s) (a : ℕ) (ha : a % 2 = 0) (hw : a + a ≤ 12) : s (2 * a + 4) - 1 = 0\ntheorem cuspidal_only_at_eleven_one (hs : CuspData s) (a b : ℕ) (hba : b ≤ a) (hpar : (a + b) % 2 = 0)\n    (hw : a + b ≤ 12) (hb : 0 < b) (hc : 0 < s (a - b + 2)) : a = 11 ∧ b = 1",
+          "compiler_feedback": "lake env lean Paper/TMP.lean -> exit 0, no diagnostics, no sorry. #print axioms -> [propext, Quot.sound] / [propext, Classical.choice, Quot.sound]",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::THEOREM::2",
+      "snippet_type": "THEOREM",
+      "location": "3.16 Conjecture / 3.17",
+      "content": "3.16. Conjecture. Let $\\lambda = (a,b)$ be even, and suppose that $a + b \\geq 14$. Then $H^2(M_2, V_\\lambda) \\cong \\mathbb{Q}(-b-1)^{\\oplus(s_{a+b+4}-1)}$ if $a = b \\equiv 0 \\pmod 2$, $0$ otherwise.  3.17. The precise status of this conjecture ... is the following: $H^2(M_2, V_\\lambda)$ is either given by the expression in the conjecture, or it contains an additional summand, which is itself a summand of $S_{a-b+2}(-b-1)$.",
+      "route": "verify-math",
+      "route_rationale": "A conjecture; what is checkable is its coherence with 3.5, 3.7 and Theorem 3.13.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::THEOREM::2",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.7,
+        "reasoning": "Coherent with the machinery set up earlier. For $a=b$ even, $H^2(M_2,V_\\lambda)$ is the cokernel of an injective map from the one-dimensional $\\mathbb{Q}(-b-1)$ into $\\mathbb{Q}(-1-b)^{\\oplus s_{a+b+4}}$, i.e. $\\mathbb{Q}(-b-1)^{\\oplus(s_{a+b+4}-1)}$ - exactly the printed expression, with the twist matching 3.7. For the '0 otherwise' half: when $a+b\\ge14$ is even, $a+b+4\\ge18$ is even and $s_{a+b+4}>0$ for every such weight (the only even gap is $k=14$), so Watanabe's injectivity applies to the Eisenstein summand for all $a>b$, and 3.17 correctly localises the whole remaining ambiguity in the cuspidal summand $S_{a-b+2}(-b-1)$. Consistent with Theorem 3.13 (same cokernel computation, different range).",
+        "predicted_error_category": null,
+        "snippet_type": "THEOREM",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.7
+    },
+    {
+      "snippet_id": "paper::EQUATION::10",
+      "snippet_type": "EQUATION",
+      "location": "3.19 Remark",
+      "content": "3.19. Remark. We see that classes in $H^2(M_2, V_{a,b})$ of pure weight (i.e. weight $a+b+2$) occur only for $a = b \\equiv 0 \\pmod 2$, and that the first case where such a class occurs is when $\\lambda = (10,10)$, since 24 is the smallest weight for which the space of cusp forms of $\\mathrm{SL}(2,\\mathbb{Z})$ is of dimension $> 1$. The fact that $H^2(M_2, V_{10,10}) \\cong \\mathbb{Q}(-11)$ is what gives rise to the non-tautological class on $\\overline{M}_{2,20}$ identified by Graber-Pandharipande [GP03] ...",
+      "route": "verify-math-lean",
+      "route_rationale": "A minimality claim about $\\dim S_k > 1$ plus a weight computation - decidable.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::10",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "Lean verifies, from the tabulated cusp-form dimensions, that $s_k\\le1$ for every $k<24$ while $s_{24}=2$ - so $24$ is indeed the smallest weight with $\\dim S_k>1$ - and hence that the multiplicity $s_{2a+4}-1$ of $\\mathbb{Q}(-b-1)$ in $H^2(M_2,V_{a,a})$ is zero for every even $a<10$ and positive at $a=10$, making $\\lambda=(10,10)$ the first pure-weight case. The twist bookkeeping also checks: $b+1=11$, so the class is $\\mathbb{Q}(-11)$, of weight $22=a+b+2$ with $a=b=10$ (pure, as claimed), and $|\\lambda|=20$ matches $\\overline{M}_{2,20}$.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__EQUATION__10_0041opus5.lean",
+          "formal_statement": "theorem first_weight_with_two_cusp_forms (hs : CuspData s) : (∀ k, k < 24 → s k ≤ 1) ∧ 1 < s 24\ntheorem first_pure_class_at_ten (hs : CuspData s) :\n    (∀ a : ℕ, a % 2 = 0 → a < 10 → s (2 * a + 4) - 1 = 0) ∧ 0 < s (2 * 10 + 4) - 1\ntheorem pure_weight_bookkeeping : (10 : ℕ) + 1 = 11 ∧ 2 * 11 = 10 + 10 + 2 ∧ 10 + 10 = 20",
+          "compiler_feedback": "lake env lean Paper/TMP.lean -> exit 0, no diagnostics, no sorry. #print axioms -> [propext, Classical.choice, Quot.sound]",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::EQUATION::11",
+      "snippet_type": "EQUATION",
+      "location": "4.2-4.3",
+      "content": "We define $f_\\lambda = \\sum_i [H^i(M_{2,n}, \\mathbb{Q}) \\otimes_{S_n} \\sigma_\\lambda] \\cdot t^i$ in $K_0(\\mathrm{MHS})[t]$. We write $L$ for the Lefschetz motive ... 4.3. We define similarly $h_\\lambda = \\sum_i [H^i(H_{\\infty, n}, \\mathbb{Q}) \\otimes_{S_n} \\sigma_\\lambda] \\cdot t^i$ ... the expression $\\sum_i [H^i(H_\\infty, V_\\lambda)] \\cdot t^i$ is a rational function of $Lt$, whose denominator is a product of factors $(1 + L^k t^k)$ ($k \\geq 1$) and $(1 - Lt)$, and the denominator is of degree at most $|\\lambda|$ [BDPW23, Remark 10.0.12].",
+      "route": "verify-math",
+      "route_rationale": "Definitions plus a rationality statement quoted from [BDPW23].",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::11",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.5,
+        "reasoning": "Definitional, and consistent with how the tables are presented: Table 4 is tabulated after multiplication by $(1-Lt)(1+Lt)=1-L^2t^2$, which is of the stated shape (one factor $(1-Lt)$ and one factor $(1+L^kt^k)$ with $k=1$) and of degree $2\\le|\\lambda|$ for $|\\lambda|=4,5$; and finite-dimensionality for $|\\lambda|<4$ makes $h_\\lambda$ a polynomial, as claimed. The rationality statement itself is cited.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.5
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::0",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "Table 2. Cohomology of M_{2,n} for n <= 5",
+      "content": "Table 2: f_\\emptyset = 1; f_{(1)} = 1 + Lt^2; f_{(2)} = 1 + Lt^2 + L^5t^5; f_{(1^2)} = Lt^2; f_{(3)} = 1 + Lt^2 + L^2t^3 + L^5t^5; f_{(2,1)} = Lt^2 + L^5t^5; f_{(1^3)} = 0; f_{(4)} = 1 + Lt^2 + L^2t^3 + (L^5+L^3)t^5 + L^6t^6 + L^7t^8; f_{(3,1)} = Lt^2 + L^2t^3 + L^5t^5; f_{(2^2)} = L^3t^4 + (L^5+L^3)t^5; f_{(2,1^2)} = L^5t^6 + L^7t^7; f_{(1^4)} = 0; f_{(5)} = 1 + Lt^2 + L^2t^3 + (L^5+L^3)t^5 + L^6t^6 + 2L^7t^8; f_{(4,1)} = Lt^2 + L^2t^3 + (L^5+L^3)t^5 + (L^6+L^4)t^6 + L^6t^7 + (L^8+2L^7)t^8; f_{(3,2)} = L^2t^3 + L^3t^4 + (L^5+L^3)t^5 + L^4t^6 + L^6t^7 + L^8t^8 + L^8t^9; f_{(3,1^2)} = L^4t^5 + (L^5+L^4)t^6 + (L^7+L^6)t^7 + L^8t^8; f_{(2^2,1)} = L^3t^4 + L^3t^5 + L^5t^6 + L^7t^7; f_{(2,1^3)} = L^5t^6 + L^7t^7; f_{(1^5)} = 0.",
+      "route": "verify-math",
+      "route_rationale": "A tabulated computation whose inputs (Table 1, the full $H^\bullet(M_2,V_\\lambda)$) are not present in this manuscript extract.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::0",
+        "verifier_name": "math-equations",
+        "status": "UNVERIFIABLE",
+        "error_detected": false,
+        "confidence": 0.4,
+        "reasoning": "Cannot be recomputed from the extract: every entry depends on Table 1 ($H^\\bullet(M_2,V_\\lambda)$ for $|\\lambda|\\le12$), which this version of the manuscript does not contain, together with the $S_n$-equivariant structure of $H^\\bullet(F(\\Sigma,n))$. The checks that are available pass: all coefficients are effective classes in $K_0(\\mathrm{MHS})$, as the definition of $f_\\lambda$ requires; $f_\\emptyset=1$ and $f_{(1)}=1+Lt^2$ are mutually consistent, since $H^\\bullet(M_2;\\mathbb{Q})=\\mathbb{Q}$ and the Leray sequence for $M_{2,1}\\to M_2$ contributes only $R^0$ and $R^2=\\mathbb{Q}(-1)$ (the odd-weight $V_1$ has no cohomology on $M_2$); the sign-representation rows $f_{(1^n)}$ vanish for $n\\ge3$; and $L^5t^5$ entries are consistent with $H^2(M_2,V_{3,1})=\\mathbb{Q}(-5)$ from Theorem 3.13 at total degree 5. No internal contradiction was found.",
+        "predicted_error_category": null,
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": []
+      },
+      "status": "UNVERIFIABLE",
+      "error_detected": false,
+      "confidence": 0.4
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::1",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "Tables 3-4. Cohomology of H_{infty,n}",
+      "content": "Table 3 (h_\\lambda, n < 4): \\emptyset: 1; (1): 1 + Lt^2; (2): 1 - Lt + (L^2+L)t^2 - (L^3+L^2)t^3 + L^3t^4 - L^4t^5; (1^2): Lt^2 - L^2t^3 + L^3t^4 - L^4t^5; (3): 1 - Lt + (L^2+L)t^2 - L^3t^3 - L^5t^6; (2,1): Lt^2 - L^2t^3 + L^3t^4 - L^4t^5; (1^3): 0.  Table 4 (h_\\lambda \\cdot (1-Lt)(1+Lt), n = 4,5): (4): 1 - Lt + (L^2+L)t^2 - L^3t^3 + L^3t^5 - (L^5+L^4)t^6 + L^5t^7; (3,1): Lt^2 - (L^5-L^4)t^6; (2^2): L^3t^4 - (L^4-L^3)t^5 + (L^5-L^4)t^6 - (L^6-L^5)t^7; (2,1^2): 0; (1^4): 0; (5): 1 - Lt + (L^2+L)t^2 - L^3t^3 + L^3t^5 - (L^5+L^4)t^6 + 2L^5t^7; (4,1): Lt^2 + L^3t^5 - (L^5-L^4)t^6 + L^5t^7 + L^6t^8; (3,2): L^2t^3 + L^3t^5 + L^4t^6 - (L^6-L^5)t^7 + L^6t^8; (3,1^2): L^4t^5 - (L^5-2L^4)t^6 + (L^6-L^5)t^7 - (L^7-L^6)t^8; (2^2,1): L^3t^4 - (L^4-L^3)t^5 + (L^5-L^4)t^6 - (L^6-2L^5)t^7; (2,1^3): 0; (1^5): 0.",
+      "route": "verify-math",
+      "route_rationale": "Tabulated rational functions depending on [BDPW23] and on the full stable computation; only internal effectivity checks are possible.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::1",
+        "verifier_name": "math-equations",
+        "status": "UNVERIFIABLE",
+        "error_detected": false,
+        "confidence": 0.45,
+        "reasoning": "Not recomputable from the extract, and one tension could not be settled. Taken literally with the definition $h_\\lambda=\\sum_i[H^i(H_{\\infty,n},\\mathbb{Q})\\otimes_{S_n}\\sigma_\\lambda]t^i$ of 4.3, every coefficient must be an effective class, yet four of the seven Table 3 rows carry negative coefficients (e.g. $-Lt$ in the $\\lambda=(2)$ row). All of Table 3 is instead consistent with an alternating convention $\\sum_i(-1)^i[H^i]t^i$ - under which each coefficient is $(-1)^i$ times an effective class - with exactly one exception: the $\\lambda=(3)$ row's final term $-L^5t^6$ sits in even degree and so should be positive. Table 4 cannot be sign-tested, because multiplying by $(1-Lt)(1+Lt)=1-L^2t^2$ mixes signs; and a spot check there is reassuring - dividing the $(3,1)$ numerator $Lt^2-(L^5-L^4)t^6$ by $1-L^2t^2$ gives $Lt^2+L^3t^4+L^4t^6+L^6t^8+\\cdots$, effective. So either the definition in 4.3 omits an alternating sign (making the tables right) or the $\\lambda=(3)$ entry's sign is off; the extract does not decide between them, and Table 2 uses the unsigned convention, so this is recorded as unsettled rather than as an error.",
+        "predicted_error_category": null,
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": []
+      },
+      "status": "UNVERIFIABLE",
+      "error_detected": false,
+      "confidence": 0.45
+    },
+    {
+      "snippet_id": "paper::EQUATION::12",
+      "snippet_type": "EQUATION",
+      "location": "4.1",
+      "content": "The cohomology of $H_{\\infty,n}$ is mixed Tate for all $n$. It is not in general pure, but genuinely mixed; however, the mixed Hodge structure is a direct sum of pure Hodge structures (i.e. there are no nontrivial extensions). The cohomology of $M_{2,n}$ is mixed Tate for $n < 10$, but not for $n \\geq 10$, as can be seen from Table 1. When $n < 6$ it is even a direct sum of pure Hodge structures, as there is no room for any nontrivial extensions in the corresponding cohomology groups appearing in Table 1.",
+      "route": "verify-math",
+      "route_rationale": "Range claims that can be cross-checked against Theorem 3.13.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::12",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.7,
+        "reasoning": "The threshold $n=10$ agrees with Theorem 3.13: the first non-Tate contribution to $H^\\bullet(M_2,V_\\lambda)$ is the cuspidal summand $S_{12}(-1)$ at $\\lambda=(10,0)$, and $V_\\lambda$ with $|\\lambda|=10$ first appears in $R^\\bullet f_*\\mathbb{Q}$ for the forgetful map $M_{2,n}\\to M_2$ when $n\\ge10$. Hence mixed Tate for $n<10$ and not for $n\\ge10$, exactly as stated. The $n<6$ claim is consistent with Table 2 (all entries polynomial in $L$ and $t$ with no room for extensions) but rests on the absent Table 1.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.7
+    }
+  ],
+  "findings": [
+    {
+      "snippet_id": "paper::EQUATION::1",
+      "category": "Formally refuted",
+      "severity": "minor",
+      "confidence": 0.85,
+      "evidence": "The displayed characterisation of a multiplicative decomposition sums the Kunneth projections of the small diagonal over $i+j+k=2d$; the index condition must be $i+j+k=4d$. The small diagonal $\\Delta_{(3)}\\cong X$ has codimension $2d$ in $X^3$, so $[\\Delta_{(3)}]$ has cohomology class in $H^{4d}(X^3)$ and its component in $H^i\\otimes H^j\\otimes H^k$ vanishes unless $i+j+k=4d$. Lean (`printed_identity_fails`, `MATH_VERIFICATION/Paper/Paper/Verified/paper__EQUATION__1_0041opus5.lean`) proves that under that support condition the printed sum is **identically zero** for every $d>0$, while the sum over $i+j+k=4d$ recovers the whole class - so the printed identity in $CH_d(X^3)$ fails for every positive-dimensional $X$, since it would force $[\\Delta_{(3)}]$ to be homologically trivial. The paper's own instance of the identity confirms $4d$: for a curve ($d=1$) it uses the triples $(0,2,2)$, $(1,1,2)$, $(2,0,2)$ and their permutations, all of index sum $4$, never $2$, and equation (1) is exactly the inclusion-exclusion over $\\{(i,j,k)\\in\\{0,1,2\\}^3 : i+j+k=4\\}$ (verified in `paper__EQUATION__2_0041opus5.lean`). The slip is confined to this display: the verbal statement just above it ('vanishes unless $i+j=k$') and every downstream use are correct, so no result of the paper depends on it.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "[\\Delta_{(3)}] = \\sum_{i + j + k = 2d} (\\pi_i \\times \\pi_j \\times \\pi_k)_*[\\Delta_{(3)}] \\in CH_d(X^3)."
+    }
+  ],
+  "verdict": "MINOR_ERRORS",
+  "verdict_confidence": 0.8,
+  "summary": "24 mathematical objects were extracted from Petersen-Tommasi, *Multiplicative Chow-Kunneth decomposition and homology splitting of configuration spaces*: 8 were routed to Lean 4 (all eight returned a verdict - 7 `PASSED`, 1 `REFUTED`, no `FAILED`, so no informal fallback was needed) and 16 to informal review.\n\n**What Lean settled.** One error was formally refuted: the introduction's equivalent characterisation of a multiplicative decomposition sums the Kunneth projections of the small diagonal over $i+j+k=2d$, where the index condition must be $i+j+k=4d$ (the small diagonal has codimension $2d$ in $X^3$, so $[\\Delta_{(3)}]\\in H^{4d}(X^3)$). Lean proves the printed sum is identically zero for every $d>0$, so the printed identity cannot hold for any positive-dimensional $X$. The defect is local to that display: the paper's own worked case - equation (1) for a curve - uses only triples of index sum $4$, and Lean confirms equation (1) is precisely the inclusion-exclusion over $\\{(i,j,k)\\in\\{0,1,2\\}^3:i+j+k=4\\}$, three $\\Delta_{(2)}\\times o_X$ terms minus the three triple-counted $[X]\\times o_X\\times o_X$ terms. Hence `MINOR_ERRORS` and not `CRITICAL_ERRORS`: no stated result rests on the printed index condition.\n\nLean also confirmed the paper's substantive arithmetic: the Tate-twist bookkeeping of Proposition 3.5; that $H^1(M_2,V_\\lambda)\\cong\\mathbb{Q}(-3)$ for $\\lambda=(2,2)$ and vanishes otherwise - the gap $s_{14}=0$ creating no second exception because $2a+4=14$ is unreachable for even $a$; the degree collapse $\\bigoplus_{p+q=3}H^p(M(\\mathbb{Z}),H^q(\\mathfrak{u},V_{a,0}))=H^3(\\mathfrak{u},V_{a,0})$ of 3.10 together with its Poincare-duality indices; the minimality claim that $(a,b)=(11,1)$ is the unique ambiguous $\\lambda$ of weight $\\le12$; all four case conditions of Theorem 3.13 (including that a cuspidal summand can interfere only at $(11,1)$, whose weight 12 is already excluded); and that $24$ is the smallest weight with $\\dim S_k>1$, making $\\lambda=(10,10)$ the first pure-weight class, $\\mathbb{Q}(-11)$ on $\\overline{M}_{2,20}$. In every case the geometric inputs (Harder's and Kostant's formulas, [Pet15], [Pet16], [Wat18], the branching formula) were assumed rather than formalised; what Lean checked was the bookkeeping layered on top of them, which is where such statements go wrong.\n\n**Informal review.** The $\\mathrm{Sp}_4$ matrix shapes of 3.10 were checked by hand and are correct (Klingen parabolic = stabiliser of an isotropic line; Levi $\\cong\\mathrm{SL}_2\\times\\mathbb{G}_m$; intersection with $\\mathrm{SL}_2\\times\\mathrm{SL}_2$ = Borel in the first factor, whole group in the second; $\\dim\\mathfrak{u}=3$, $\\dim\\mathfrak{u}_H=1$). $\\mathrm{vcd}(\\mathrm{Mod}_2)=4g-5=3$, $\\deg\\frac{1}{2g-2}K_X=1$, the Eichler-Shimura weights, and the $n\\ge10$ mixed-Tate threshold (first non-Tate class $S_{12}(-1)$ at $\\lambda=(10,0)$) all check out. The two verifiers never disagreed.\n\n**What remains unsettled.** Two snippets are `UNVERIFIABLE`. Tables 2-4 cannot be recomputed from this extract because Table 1 ($H^\\bullet(M_2,V_\\lambda)$ for $|\\lambda|\\le12$) is missing from it. In Tables 3-4 one tension could not be resolved and is deliberately not reported as a finding: read literally against the definition $h_\\lambda=\\sum_i[H^i(H_{\\infty,n},\\mathbb{Q})\\otimes_{S_n}\\sigma_\\lambda]t^i$ of 4.3 the coefficients must be effective, yet Table 3 carries negative ones; every Table 3 row is consistent with an alternating convention $\\sum_i(-1)^i[H^i]t^i$ except the $\\lambda=(3)$ row's $-L^5t^6$, which sits in even degree. Either 4.3 omits a sign or that one entry's sign is wrong, and the extract does not decide which. Separately, 3.12 twice writes $H^{15}(M_{2,12},\\mathbf{Q})$ where the compactification $\\overline{M}_{2,12}$ is meant (an open moduli space has no boundary to push forward from); the argument itself - weight 15, hence pure, hence restricted from the compactification, contradicting [CLP23, Lemma 7.3] - is sound, and the slip may be an artefact of this plain-text rendering, so it is recorded in the snippet result only.\n\nThe Lean project `MATH_VERIFICATION/Paper` was reused, not created, and is shared with other papers' runs, so it was kept; only per-snippet scratch (`TMP.lean`, `claim.md`) was removed, and the eight proofs are saved as `Paper/Verified/paper__*_0041opus5.lean`."
+}

@@ -1,0 +1,329 @@
+{
+  "paper_name": "paper",
+  "paper_path": "/Users/iacopoghinassi/Documents/Github/Wittgenstein/data/spot-workspace/0019-Extraction_and_characterization_of_biocompatible_hydroxyapatite_(Hap)_from_red_big_eye_fish_bone_Potential_for_biomedica/paper.md",
+  "tag": "opus5",
+  "lean_project": "MATH_VERIFICATION/Paper",
+  "lean_project_kept": true,
+  "totals": {
+    "snippets_extracted": 10,
+    "routed_to_math": 7,
+    "routed_to_lean": 3,
+    "lean_passed": 2,
+    "lean_refuted": 1,
+    "lean_failed": 0,
+    "fallbacks_run": 0,
+    "errors_detected": 3
+  },
+  "results": [
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "1. Introduction (paragraphs 4 and 7)",
+      "content": "Hydroxyapatite, a calcium phosphate mineral with the chemical formula Ca₁₀(PO₄)₆(OH)₂, is the primary mineral phase found in bone tissue. […] The calcium/phosphorus atomic ratio (Ca/P) serves as a fundamental descriptor for these ceramics, with hydroxyapatite (Ca/P = 1.667) and β-tricalcium phosphate (β-TCP, Ca/P = 1.5) being among the most extensively studied compounds [4].",
+      "route": "verify-math-lean",
+      "route_rationale": "Crisp stoichiometric identity: the Ca/P ratio is fully determined by the atom counts in the quoted formulae, so it is exactly formalisable arithmetic.",
+      "lean_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.95,
+        "reasoning": "Formalised the stoichiometric content of the snippet: from Ca₁₀(PO₄)₆(OH)₂ there are $10$ Ca atoms and $6$ P atoms per formula unit (one P per phosphate group), so $\\mathrm{Ca/P} = 10/6 = 1.6\\overline{6}$, which rounds to $1.667$ at three decimal places; and from Ca₃(PO₄)₂ (β-TCP) $\\mathrm{Ca/P} = 3/2 = 1.5$ exactly. Hypotheses assumed: only the atom counts read off the formulae the snippet itself supplies — nothing was added. Lean compiled the conjunction $|10/6 - 1.667| < 0.0005 \\wedge 3/2 = 1.5$ cleanly with no errors, no `sorry` and only the three standard Mathlib axioms. Both ratios the paper reports are therefore correct.",
+        "predicted_error_category": null,
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean (saved as Paper/Verified/paper__MATHEMATICAL_MODEL__0_0019opus5.lean)",
+          "formal_statement": "theorem hap_ca_p_ratio :\n    |(10 : ℚ) / 6 - 1.667| < 0.0005 ∧ (3 : ℚ) / 2 = 1.5 := by\n  norm_num [abs_sub_lt_iff]",
+          "compiler_feedback": "",
+          "axioms": ["propext", "Classical.choice", "Quot.sound"],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::1",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "3. Results and discussion — XRD analysis",
+      "content": "Analysis of surface area, crucial for understanding crystal size, often relies on X-ray diffraction (XRD) techniques. Schwertmann and Latham (1986) established that peak broadening in XRD spectra serves as a reliable parameter for determining mean crystallite dimensions. The Debye-Scherrer equation, frequently employed for this purpose, relates the mean crystallite size (d) to X-ray wavelength (λ), the angle of reflection (θ), and the full width at half maximum (β) of diffraction peaks. The broadening of peaks in XRD patterns can thus provide valuable insights into the crystallinity and grain size of materials. […] The peak widths in XRD spectra indicate that the crystallite size obtained from raw bone is relatively small. Alkaline calcinated bone displays the narrowest peak widths, followed by thermally calcinated and untreated raw bone, suggesting a trend towards increased crystallinity post-treatment.",
+      "route": "verify-math-lean",
+      "route_rationale": "The inference 'narrower peaks ⇒ larger crystallites' is a monotonicity property of the Debye–Scherrer relation and is formalisable as a strict inequality.",
+      "lean_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::1",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.88,
+        "reasoning": "Formalised the step that carries the mathematical load: the paper reads crystallite size off peak width via Debye–Scherrer, $d = K\\lambda/(\\beta\\cos\\theta)$, and concludes that the broadest peaks (raw bone) mean the smallest crystallites and the narrowest peaks (alkaline-treated) the largest. The content of that inference is that $d$ is strictly decreasing in the FWHM $\\beta$. Hypotheses assumed: $K > 0$, $\\lambda > 0$, $\\cos\\theta > 0$ (Bragg angles lie in the first quadrant) and $0 < \\beta_1 < \\beta_2$ — all genuine standing conditions of the Scherrer relation, none of which strengthen the claim. Lean compiled $K\\lambda/(\\beta_2\\cos\\theta) < K\\lambda/(\\beta_1\\cos\\theta)$ cleanly, no `sorry`, standard axioms only. The paper's qualitative peak-width-to-crystallite-size reasoning is therefore mathematically sound, and its internal ordering is self-consistent: raw bone is described as having the broadest peaks and is correspondingly assigned the smallest crystallite size.",
+        "predicted_error_category": null,
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean (saved as Paper/Verified/paper__MATHEMATICAL_MODEL__1_0019opus5.lean)",
+          "formal_statement": "theorem scherrer_size_antitone_in_fwhm\n    (K lam ctheta b₁ b₂ : ℝ)\n    (hK : 0 < K) (hlam : 0 < lam) (hc : 0 < ctheta)\n    (hb₁ : 0 < b₁) (hb : b₁ < b₂) :\n    K * lam / (b₂ * ctheta) < K * lam / (b₁ * ctheta) := by\n  have hb₂ : 0 < b₂ := hb₁.trans hb\n  apply div_lt_div_of_pos_left (by positivity) (by positivity)\n  exact mul_lt_mul_of_pos_right hb hc",
+          "compiler_feedback": "",
+          "axioms": ["propext", "Classical.choice", "Quot.sound"],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.88
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::0",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "3. Results and discussion — XRD / FESEM particle sizing",
+      "content": "While line widths in XRD patterns may resemble those of nanoparticles, the Scherrer equation estimates a crystallite size of 10 nm for mesoporous metal oxides. This estimation aligns with FESEM images depicting spherical mesoporous metal oxide particles with a consistent size of approximately 100 nm.",
+      "route": "verify-math-lean",
+      "route_rationale": "An explicit numeric agreement claim between two independently measured sizes for the same material — refutable by computing the discrepancy.",
+      "lean_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::0",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.93,
+        "reasoning": "The snippet asserts that two independently obtained size figures for the *same* material agree: a Scherrer/XRD crystallite estimate of $d_{\\mathrm{XRD}} = 10$ nm and an FESEM-measured particle size of $d_{\\mathrm{FESEM}} \\approx 100$ nm. To avoid resting the verdict on any particular reading of the vague word 'aligns', I formalised the refutation definition-independently: $100 = 10 \\times 10$, so the two figures stand in ratio exactly $10$; the relative deviation is $|10 - 100|/100 = 9/10$; and therefore the two values fail to agree within *any* relative tolerance $\\varepsilon < 9/10$. Lean compiled this refutation cleanly — no errors, no `sorry`, standard axioms only. A $90\\,\\%$ relative discrepancy, a full order of magnitude, cannot be described as alignment under any reasonable tolerance, so the snippet's agreement claim is formally refuted. Note that a Scherrer crystallite size legitimately *can* be smaller than an FESEM particle size when particles are polycrystalline — but then the figures are not 'aligned', they are reconciled by a mechanism the paper does not invoke.",
+        "predicted_error_category": "Formally refuted",
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": [
+          "Scherrer estimate: 10 nm",
+          "FESEM observation: approximately 100 nm"
+        ],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean (saved as Paper/Verified/paper__FORMULA_BLOCK__0_0019opus5.lean)",
+          "formal_statement": "theorem scherrer_fesem_sizes_disagree :\n    (100 : ℝ) = 10 * 10 ∧\n    |(10 : ℝ) - 100| / 100 = 9 / 10 ∧\n    ∀ ε : ℝ, ε < 9 / 10 → ¬ (|(10 : ℝ) - 100| / 100 ≤ ε) := by\n  refine ⟨by norm_num, by rw [abs_of_nonpos (by norm_num)]; norm_num, ?_⟩\n  intro ε hε hle\n  rw [abs_of_nonpos (by norm_num : (10 : ℝ) - 100 ≤ 0)] at hle\n  norm_num at hle\n  linarith",
+          "compiler_feedback": "",
+          "axioms": ["propext", "Classical.choice", "Quot.sound"],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.93
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::2",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "1. Introduction (paragraphs 3 and 4)",
+      "content": "Bones, provide support, protection, and mobility to our bodies, are intricate compositions of organic and inorganic elements. Comprising roughly 70% minerals and 30% organic matter, bones are essential for maintaining the structural integrity of the body […] In fact, approximately 95% of the mineral content in bone consists of hydroxyapatite crystals [14].",
+      "route": "verify-math",
+      "route_rationale": "Percentage bookkeeping over an empirical composition; checkable by inspection, not a theorem.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::2",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "The composition split is internally consistent: $70\\,\\% + 30\\,\\% = 100\\,\\%$ exhausts the stated organic/inorganic partition with no residue and no overlap. The nested claim is also coherent as a conditional proportion: $95\\,\\%$ is asserted of the *mineral content* specifically, not of whole bone, which would give $0.95 \\times 70\\,\\% = 66.5\\,\\%$ of bone mass as hydroxyapatite — within the mathematically admissible range $[0, 70\\,\\%]$ and consistent with the $70\\,\\%$ mineral figure. No percentage exceeds $100\\,\\%$, no sub-proportion exceeds its parent, and no arithmetic step is performed that could be invalid. Whether the empirical figures match the bone-biology literature is outside this verifier's remit.",
+        "predicted_error_category": null,
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::3",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "3. Results and discussion — XRD peak assignment",
+      "content": "The XRD analysis provided further confirmation of HAp. The prominent peaks at 2θ values of 25.9°, 32.2°, 39.8°, and 46.7° correspond to the crystalline planes (002), (211), (310), and (222) of HAp, respectively. These peaks are in agreement with the standard HAp pattern (JCPDS file no. 09-0432), affirming the high crystallinity and purity of the extracted HAp. […] The highest peak intensity in alkaline calcinated bone occurs at 31.94 degrees (hkl value: 211), whereas for raw bone, it is at 32.4 degrees (hkl: 112).",
+      "route": "verify-math",
+      "route_rationale": "Validating 2θ-to-Miller-index assignments requires the external JCPDS reference pattern; not formalisable as a theorem.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::3",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.6,
+        "reasoning": "The four reported reflections are assigned in strictly increasing $2\\theta$ order and the assignments are consistent with the standard hydroxyapatite pattern (JCPDS 09-0432): $(002) \\approx 25.9^\\circ$, $(211) \\approx 31.8^\\circ$, $(310) \\approx 39.8^\\circ$, $(222) \\approx 46.7^\\circ$. No Bragg-law arithmetic is performed in the snippet that could be invalid, and no index is paired with an angle from a different reflection family. One sub-threshold internal discrepancy is worth recording without flagging: the $(211)$ reflection is placed at $32.2^\\circ$ in the first passage and at $31.94^\\circ$ in the second, a $0.26^\\circ$ difference. Both values are within the normal spread of measured $(211)$ positions for carbonated/non-stoichiometric apatites, and peak-position scatter between a summary sentence and a per-sample measurement is not a derivation-invalidating mathematical error. Reported as an inconsistency to note, not as an erratum-level defect.",
+        "predicted_error_category": null,
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": [
+          "(211) at 32.2° versus (211) at 31.94°"
+        ]
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.6
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::1",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "Abstract and 3. Results and discussion — cytotoxicity / proliferation",
+      "content": "[Abstract] Biocompatibility was assessed using human osteoblast-like MG-63 cells, showing a proliferation rate of 92 % compared to the control. […] [Results] Remarkably, the results indicate that HAp exhibits non-cytotoxic behavior towards osteosarcoma MG-63 cells, with increasing doses correlating with enhanced cell viability. Furthermore, it was observed that MG-63 cells exhibited accelerated growth on treated HAp particles compared to cells cultured on control plates. This suggests a stimulatory effect of HAp on cell proliferation, indicating its potential for promoting tissue regeneration.",
+      "route": "verify-math",
+      "route_rationale": "Consistency of a reported experimental ratio against the qualitative direction claimed for the same data.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::1",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.8,
+        "reasoning": "The snippet reports one quantity and then asserts the opposite inequality for it. The Abstract normalises proliferation to the untreated control, giving $P_{\\mathrm{HAp}}/P_{\\mathrm{control}} = 92\\,\\% = 0.92$, i.e. $P_{\\mathrm{HAp}} < P_{\\mathrm{control}}$ — proliferation on HAp is $8\\,\\%$ *below* control. The Results section, describing the same assay, states that cells 'exhibited accelerated growth on treated HAp particles compared to cells cultured on control plates' and infers 'a stimulatory effect of HAp on cell proliferation', which requires $P_{\\mathrm{HAp}} > P_{\\mathrm{control}}$, i.e. a ratio strictly exceeding $100\\,\\%$. The two statements place the same ratio on opposite sides of unity, and $0.92 > 1$ is false; at most one can hold. The direction of the effect is therefore misreported in one of the two places. Note the narrower conclusion the data do support — $92\\,\\%$ viability relative to control is consistent with the 'non-cytotoxic' finding — so the biocompatibility claim itself survives; what fails is the stronger stimulatory/'accelerated growth' claim and the tissue-regeneration inference drawn from it.",
+        "predicted_error_category": "Sign/Arithmetic error",
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": [
+          "Abstract: proliferation rate of 92 % compared to the control",
+          "Results: accelerated growth on treated HAp particles compared to cells cultured on control plates",
+          "Results: a stimulatory effect of HAp on cell proliferation"
+        ]
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::2",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "3. Results and discussion — SEM morphology / crystal size comparison",
+      "content": "Alkaline hydrolysis produces HAp that is purer and has larger crystals than thermal calcination. […] Alkaline hydrolysis maintains crystal size, while heat calcination agglomerates them. Fig. 2 displays nanoparticles from alkaline hydrolysis of the HAp. Fig. 3 illustrates heat calcination-induced microstructure formation in derived HAp. […] However, heat calcination causes nanoparticle aggregation, giving HAp a microstructure. High process temperatures may cause this. Based on the results, alkaline hydrolysis HAps do not contain nanoparticles. Despite having larger particles than alkaline hydrolysis, thermal calcination eliminated the organic portion. Without altering crystal size, alkaline hydrolysis surpasses thermal calcination. We found that raw bone formed microstructure HAp when thermally calcined and nanostructured particles when alkaline hydrolysed [34].",
+      "route": "verify-math",
+      "route_rationale": "An ordering contradiction over experimental observations; the objects are empirical, so no faithful formal statement exists.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::2",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.88,
+        "reasoning": "Two independent contradictions, both bearing on the paper's central claim.\n\n**(i) The size ordering is asserted in both directions.** Writing $s_A$ for the particle/crystal size of alkaline-hydrolysed HAp and $s_T$ for thermally calcined HAp, the paper states 'Alkaline hydrolysis produces HAp that is purer and has larger crystals than thermal calcination', i.e. $s_A > s_T$; and in the same results discussion 'Despite having larger particles than alkaline hydrolysis, thermal calcination eliminated the organic portion', i.e. $s_T > s_A$. The relation $>$ is asymmetric, so $s_A > s_T$ and $s_T > s_A$ cannot both hold. The rest of the paper resolves the ordering firmly in favour of $s_T > s_A$ — thermal calcination 'causes nanoparticle aggregation, giving HAp a microstructure', alkaline hydrolysis yields 'nanostructured particles', and FESEM puts the alkaline product at $50$–$80$ nm — which makes the 'larger crystals' sentence the erroneous one.\n\n**(ii) The nanoparticle claim is negated mid-paragraph.** 'Based on the results, alkaline hydrolysis HAps do not contain nanoparticles' directly contradicts three statements in its immediate neighbourhood: 'Fig. 2 displays nanoparticles from alkaline hydrolysis of the HAp', 'raw bone formed […] nanostructured particles when alkaline hydrolysed', and the Abstract's FESEM measurement of 'spherical HAp particles with sizes ranging from 50 to 80 nm' — a size that is by definition nanoparticulate. This sentence negates the paper's titular and headline claim that alkaline hydrolysis is a route to *nanostructured* HAp.",
+        "predicted_error_category": "Sign/Arithmetic error",
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": [
+          "Alkaline hydrolysis produces HAp that is purer and has larger crystals than thermal calcination.",
+          "Despite having larger particles than alkaline hydrolysis, thermal calcination eliminated the organic portion.",
+          "Based on the results, alkaline hydrolysis HAps do not contain nanoparticles.",
+          "Fig. 2 displays nanoparticles from alkaline hydrolysis of the HAp."
+        ]
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.88
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::3",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "3. Results and discussion — comparative particle sizes",
+      "content": "FESEM analysis revealed that the HAp particles derived from Priacanthus macracanthus bone exhibit a spherical morphology with an average particle size ranging from 50 to 80 nm. The particle size distribution was relatively narrow, indicating uniformity in particle dimensions. Comparatively, HAp derived from other biological sources, such as bovine bone, typically shows particle sizes in the range of 100–200 nm, while synthetic HAp often has particle sizes below 50 nm. The nanostructured HAp from Priacanthus macracanthus bone thus offers a unique balance of size and uniformity, which could be advantageous for specific biomedical applications where both properties are critical.",
+      "route": "verify-math",
+      "route_rationale": "Interval comparison against literature size ranges; arithmetic is trivial and the reference values are empirical.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::3",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.8,
+        "reasoning": "The interval arithmetic supporting the 'balance' claim is sound. The three ranges are mutually consistent and correctly ordered: synthetic HAp $< 50$ nm, this work's product $[50, 80]$ nm, bovine-derived HAp $[100, 200]$ nm. The claimed intermediate position holds — $[50, 80]$ lies strictly above the synthetic range and strictly below the bovine range, with no overlap in either direction, so describing it as a balance between the two is arithmetically justified. The quoted $50$–$80$ nm also matches the Abstract's figure exactly. 'Unique' is a rhetorical rather than a mathematical claim and is not assessed here.",
+        "predicted_error_category": null,
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::DEFINITION::0",
+      "snippet_type": "DEFINITION",
+      "location": "2.1. Preparation of hydroxyapatite by alkaline (A-HAp) and thermal (T-HAp) calcination",
+      "content": "To eliminate contaminants from the cleaned bones, a solution containing 1% NaOH and C₃H₆O was utilized (with a bone to sodium hydroxide solid/liquid ratio of 1:50). The bones were then rinsed, pulverized, and subjected to baking at 50–60 °C for a period of twenty-four hours. Subsequently, 2 g of pulverized Priacanthus bone was treated with 2 M sodium hydroxide (Sigma Aldrich) at 250 °C for 5 h (with a solid-liquid ratio of 1:30). […] For thermal calcination, 3 g of Priacanthus bone was heated to 900 °C in a silicon chamber for five hours using an electrical muffle furnace (Sisco India) [22].",
+      "route": "verify-math",
+      "route_rationale": "Reaction-parameter bookkeeping checked for arithmetic coherence and cross-section agreement with the Abstract.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::DEFINITION::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "Every quantitative parameter is internally coherent and agrees across the three places it appears. The alkaline route is stated as $2$ g bone, $2$ M NaOH, $250\\,^\\circ$C, $5$ h, solid:liquid $1{:}30$ in the Methods, and the Abstract's '$2$ M sodium hydroxide at $250\\,^\\circ$C for $5$ h' and the Discussion's restatement match it exactly. The derived quantities are physically admissible: a $1{:}30$ ratio on $2$ g gives $60$ mL of $2$ M NaOH, i.e. $0.12$ mol of hydroxide, a reasonable excess for hydrolysing $2$ g of bone. The thermal route's $900\\,^\\circ$C lies inside the $800$–$1100\\,^\\circ$C calcination window the Introduction cites. The differing masses between routes ($2$ g alkaline, $3$ g thermal) and the two distinct ratios ($1{:}50$ for the cleaning step, $1{:}30$ for the hydrolysis step) describe different operations and are not in conflict. No invalid arithmetic and no out-of-range value.",
+        "predicted_error_category": null,
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::DEFINITION::1",
+      "snippet_type": "DEFINITION",
+      "location": "3. Results and discussion — thermal calcination chemistry",
+      "content": "CO₂, CaO, and (CO₃)₂ were kept at a high temperature of 1000 C, whereas dioxygen, calcium oxide, and carbonate ions were eliminated from fishbone using the thermal calcination method [27].",
+      "route": "verify-math",
+      "route_rationale": "Chemical-species nomenclature and a logical assertion; no algebraic or calculus content to check formally.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::DEFINITION::1",
+        "verifier_name": "math-equations",
+        "status": "UNVERIFIABLE",
+        "error_detected": false,
+        "confidence": 0.5,
+        "reasoning": "Outside this verifier's mathematical remit — the sentence contains no algebraic, fractional, calculus or domain-bounded content, so none of the flaggable categories applies and no finding is raised. Recorded for the orchestrator because the passage is nonetheless defective on chemical and logical grounds, which a chemistry or consistency verifier should pick up: (i) the two lists are presented as parallel but do not correspond — CO₂ is carbon dioxide, not 'dioxygen' ($\\mathrm{O_2}$); (ii) '(CO₃)₂' is not a well-formed species, carbonate being $\\mathrm{CO_3^{2-}}$; and (iii) the sentence asserts of the same three species both that they 'were kept' and that they 'were eliminated', which cannot hold simultaneously. These are reported as observations, not as mathematical findings.",
+        "predicted_error_category": null,
+        "snippet_type": "DEFINITION",
+        "contradiction_locations": [
+          "CO₂ glossed as 'dioxygen'",
+          "'(CO₃)₂' as a chemical species",
+          "same species both 'kept' and 'eliminated'"
+        ]
+      },
+      "status": "UNVERIFIABLE",
+      "error_detected": false,
+      "confidence": 0.5
+    }
+  ],
+  "findings": [
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::0",
+      "category": "Formally refuted",
+      "severity": "minor",
+      "confidence": 0.93,
+      "evidence": "Lean refuted the claim that the two size figures agree. The paper reports a Scherrer/XRD crystallite estimate of $10$ nm and an FESEM particle size of $\\approx 100$ nm for the *same* mesoporous metal oxide, then calls the former 'aligned' with the latter. The machine-checked statement is deliberately definition-independent: $100 = 10 \\times 10$, the relative deviation is $|10 - 100|/100 = 9/10$, and therefore the two values agree within **no** relative tolerance $\\varepsilon < 9/10$. A full order of magnitude apart is not agreement. (A Scherrer crystallite size can legitimately fall below an FESEM particle size for polycrystalline particles, but that reconciliation is a mechanism the paper never invokes — it asserts plain alignment.) Severity is minor because the passage concerns a comparison material (Fe-Al mesoporous metal oxides), not the paper's own hydroxyapatite, whose $50$–$80$ nm FESEM result stands independently.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "While line widths in XRD patterns may resemble those of nanoparticles, the Scherrer equation estimates a crystallite size of 10 nm for mesoporous metal oxides. This estimation aligns with FESEM images depicting spherical mesoporous metal oxide particles with a consistent size of approximately 100 nm."
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::2",
+      "category": "Contradictory size ordering",
+      "severity": "critical",
+      "confidence": 0.88,
+      "evidence": "The results discussion asserts the particle-size ordering in both directions and then negates the paper's headline claim outright.\n\n**Ordering.** With $s_A$ the size of alkaline-hydrolysed HAp and $s_T$ that of thermally calcined HAp, the paper states both $s_A > s_T$ (*'Alkaline hydrolysis produces HAp that is purer and has larger crystals than thermal calcination.'*) and $s_T > s_A$ (*'Despite having larger particles than alkaline hydrolysis, thermal calcination eliminated the organic portion.'*). Since $>$ is asymmetric these cannot both hold. The surrounding evidence settles the ordering as $s_T > s_A$ — thermal calcination is repeatedly said to aggregate particles into a microstructure while alkaline hydrolysis yields $50$–$80$ nm nanoparticles — making the 'larger crystals' sentence the incorrect one.\n\n**Negated headline claim.** *'Based on the results, alkaline hydrolysis HAps do not contain nanoparticles'* contradicts three statements in its immediate vicinity — 'Fig. 2 displays nanoparticles from alkaline hydrolysis of the HAp', 'raw bone formed […] nanostructured particles when alkaline hydrolysed', and the Abstract's FESEM measurement of '$50$ to $80$ nm' particles, a size that is nanoparticulate by definition. This is critical: the paper's title and central contribution are the extraction of *nanostructured* HAp by alkaline hydrolysis.",
+      "verifier": "verify-math",
+      "exact_quote": "Based on the results, alkaline hydrolysis HAps do not contain nanoparticles. Despite having larger particles than alkaline hydrolysis, thermal calcination eliminated the organic portion."
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::1",
+      "category": "Inverted effect direction",
+      "severity": "minor",
+      "confidence": 0.8,
+      "evidence": "The reported proliferation ratio and the claimed direction of the effect sit on opposite sides of unity. The Abstract normalises to the untreated control, giving $P_{\\mathrm{HAp}}/P_{\\mathrm{control}} = 92\\,\\% = 0.92 < 1$, i.e. proliferation $8\\,\\%$ *below* control. The Results section, describing the same MG-63 assay, claims cells *'exhibited accelerated growth on treated HAp particles compared to cells cultured on control plates'* and infers *'a stimulatory effect of HAp on cell proliferation'*, which requires that same ratio to exceed $1$. Both cannot hold. Severity is minor because the weaker conclusion the data do support — $92\\,\\%$ viability relative to control is consistent with the paper's 'non-cytotoxic' finding — leaves the biocompatibility claim intact; what does not survive is the stimulatory-growth claim and the tissue-regeneration potential inferred from it.",
+      "verifier": "verify-math",
+      "exact_quote": "Furthermore, it was observed that MG-63 cells exhibited accelerated growth on treated HAp particles compared to cells cultured on control plates. This suggests a stimulatory effect of HAp on cell proliferation, indicating its potential for promoting tissue regeneration."
+    }
+  ],
+  "verdict": "CRITICAL_ERRORS",
+  "verdict_confidence": 0.75,
+  "summary": "This is a materials-chemistry manuscript with **no display mathematics at all** — no numbered equations, theorems, lemmas or proofs. Ten self-contained mathematically verifiable objects were extracted: stoichiometric ratios, the Debye–Scherrer relation and the inferences drawn from it, XRD peak assignments, reaction-parameter bookkeeping, and four quantitative-consistency blocks. Three were routed to Lean 4 and seven to informal review.\n\n**What Lean settled.** Two `PASSED`, one `REFUTED`, no `FAILED` and no `NOT_ATTEMPTED`, so no fallback passes were required. Lean confirmed the stoichiometry is right — $\\mathrm{Ca/P} = 10/6 = 1.667$ for Ca₁₀(PO₄)₆(OH)₂ and $3/2 = 1.5$ for β-TCP, both as printed — and confirmed that the paper's peak-width reasoning is sound, since $d = K\\lambda/(\\beta\\cos\\theta)$ is strictly decreasing in the FWHM $\\beta$, so the broadest peaks (raw bone) do correspond to the smallest crystallites exactly as the paper argues. Lean then **refuted** one numeric agreement claim: a $10$ nm Scherrer estimate is asserted to 'align' with a $\\approx 100$ nm FESEM measurement of the same material, a factor-of-ten, $90\\,\\%$ relative discrepancy that agrees within no tolerance $\\varepsilon < 9/10$.\n\n**What informal review found.** The most serious defect is not formalisable and was caught by `verify-math`: the results discussion states the particle-size ordering between the two synthesis routes in **both** directions ($s_A > s_T$ and $s_T > s_A$), and then asserts outright that *'alkaline hydrolysis HAps do not contain nanoparticles'* — negating, one sentence away from figures and measurements that say the opposite, the paper's titular claim to have produced nanostructured HAp by alkaline hydrolysis. Separately, the Abstract's $92\\,\\%$ proliferation relative to control ($< 1$) is incompatible with the Results section's 'accelerated growth' and 'stimulatory effect' claims ($> 1$) for the same assay.\n\n**What came back clean.** Bone-composition percentages, the comparative particle-size intervals ($<50$ nm synthetic $<$ $50$–$80$ nm this work $<$ $100$–$200$ nm bovine, correctly ordered), and all reaction parameters, which agree exactly across Abstract, Methods and Discussion. The XRD peak-to-Miller-index assignments match JCPDS 09-0432; a $0.26^\\circ$ internal discrepancy for the $(211)$ reflection ($32.2^\\circ$ versus $31.94^\\circ$) was recorded at confidence $0.6$, below the reporting threshold, as ordinary measurement scatter rather than an error.\n\n**No verifier disagreements.** The two arms never addressed the same snippet with opposite conclusions, and no Lean run returned `FAILED`, so no verdict rests on an unsettled formal attempt. One passage was marked `UNVERIFIABLE` as outside the mathematical remit but is worth flagging downstream: *'CO₂, CaO, and (CO₃)₂ were kept at a high temperature of 1000 C, whereas dioxygen, calcium oxide, and carbonate ions were eliminated from fishbone'* mislabels CO₂ as 'dioxygen', writes carbonate as the ill-formed '(CO₃)₂', and asserts the same three species were both kept and eliminated. That is a chemistry/consistency defect, not a mathematical one, and raised no finding here.\n\n**Verdict: CRITICAL_ERRORS**, confidence $0.75$. One confident critical finding (the self-negating nanostructure claim) plus two confident minor ones, including a machine-checked refutation. Confidence is held at $0.75$ rather than higher because the paper's mathematical surface is thin: the formally decidable content was narrow, and the critical finding rests on textual contradiction — strong and quotable, but informal — rather than on Lean evidence.\n\n**Lean project.** `MATH_VERIFICATION/Paper` was **reused, not created** by this run (it already held a built Mathlib and 299 proofs from other papers' runs) and is therefore deliberately kept: `verify-math-lean`'s own rule is that a reused project is not the caller's to delete, and removing it would destroy every other paper's saved proofs. Per-snippet scratch (`TMP.lean`, `claim.md`) was removed; the three proofs from this run are saved as `Paper/Verified/paper__{MATHEMATICAL_MODEL__0,MATHEMATICAL_MODEL__1,FORMULA_BLOCK__0}_0019opus5.lean`."
+}

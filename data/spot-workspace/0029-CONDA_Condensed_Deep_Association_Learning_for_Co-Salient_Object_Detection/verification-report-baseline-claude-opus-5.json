@@ -1,0 +1,78 @@
+{
+  "paper_id": "0029-CONDA_Condensed_Deep_Association_Learning_for_Co-Salient_Object_Detection",
+  "title": "CONDA Condensed Deep Association Learning for Co-Salient Object Detection",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Eq. (14), Section 3.2 (Condensation Operation)",
+      "confidence": 0.4,
+      "supporting_evidence": "Eq. (14) is written as n_s^j(x,y,:) = (h_j,w_j) + Δ_s^j(x,y,:), for x, y ∈ {1,...,K}; x, y ≠ k_c, together with n_s^j(k_c,k_c,:) = (h_j,w_j). The condition 'x, y ≠ k_c' literally excludes every entry whose row OR column index equals k_c (a whole row and a whole column of the K×K grid), leaving those K+K-2 entries of n_s^j undefined. The intended condition is (x,y) ≠ (k_c,k_c).",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0029-CONDA_Condensed_Deep_Association_Learning_for_Co-Salient_Object_Detection::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Eqs. (12)–(15), Section 3.2",
+      "confidence": 0.3,
+      "supporting_evidence": "The offsets Δ_s^j are produced by a linear layer (Eq. 12) and are therefore continuous-valued, yet Eq. (13)/(14) add them to integer pixel coordinates and Eq. (15) performs 'index selection' a_s^j(n_s^j) on the discrete association tensor. Indexing a discrete tensor with fractional coordinates is undefined; no interpolation/sampling step (nor any discretization) is described, so the condensation operation as written cannot be executed or differentiated.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0029-CONDA_Condensed_Deep_Association_Learning_for_Co-Salient_Object_Detection::baseline"
+    },
+    {
+      "error_category": "Statistical reporting",
+      "error_location": "Section 4.2, 'Effectiveness of CAC' (MACs numbers)",
+      "confidence": 0.35,
+      "supporting_evidence": "The paper claims CAC 'reduces the multiply-accumulate operations (MACs) of aggregation networks from 91.38G in the full-pixel PAG to 77.19G', i.e. only ~15% reduction. This is inconsistent with the described condensation: with K=9, each pixel's target set shrinks from H_s×W_s (64×64=4096 at stage 3, 32×32=1024 at stage 4) to 81 positions, i.e. a 12×–50× reduction of the tensor the aggregation convolutions operate on. A ~15% saving cannot follow from the stated condensation, and it also contradicts the motivating claim that full-pixel hyperassociations impose 'substantial computational overhead' that CAC removes.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0029-CONDA_Condensed_Deep_Association_Learning_for_Co-Salient_Object_Detection::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (figure-text)",
+      "error_location": "End of Section 3.2 (Condensation Operation): 'we also illustrate the condensation ... in Figure 2'",
+      "confidence": 0.3,
+      "supporting_evidence": "Figure 2 is introduced as the overall framework ('As shown in Figure 2, CONDA integrates the deep association learning process into an FPN framework'), while the condensation of pixel associations was explicitly said to be shown in Figure 3 ('i.e. A_s(i,h_i,w_i,j,:,:,:) ... as shown in Figure 3'). The later pointer to Figure 2 for the condensation illustration conflicts with this.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0029-CONDA_Condensed_Deep_Association_Learning_for_Co-Salient_Object_Detection::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section 4.2, 'Effectiveness of OCC' (FCC ablation line references)",
+      "confidence": 0.3,
+      "supporting_evidence": "The text states the ablation validates the object-aware design 'by replacing OCC with full-pixel cycle consistency (FCC) loss', which requires comparing the FCC row with the OCC row. However it then says 'Comparing the 5th&6th lines of Table 1, FCC leads to a notable performance decrease', where the 5th line is previously identified as the CAC model without any cycle-consistency loss (OCC is said to be in the 7th line). The cited comparison therefore does not correspond to the ablation it is claimed to validate.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0029-CONDA_Condensed_Deep_Association_Learning_for_Co-Salient_Object_Detection::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Eq. (8) and surrounding text, Section 3.1 (Aggregation Network)",
+      "confidence": 0.25,
+      "supporting_evidence": "The text says the source-dimension aggregation extracts 4D tensors such as A_s^2(:,:,:,j,h_j,w_j,:) ∈ R^{N×H_s×W_s×C'_s} and applies a 3×3 2D convolution on them, but Eq. (8) fixes the image index i (A_s^3(i,:,:,j,h_j,w_j,:) = C_2(A_s^2(i,:,:,j,h_j,w_j,:)) , i = 1,...,N), i.e. operates on a 3D tensor H_s×W_s×C'_s. The dimensionality described in the text does not match the operand of the stated 2D convolution.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0029-CONDA_Condensed_Deep_Association_Learning_for_Co-Salient_Object_Detection::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 6,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (claude-opus-5, taxonomy=default): 6 error(s) reported.",
+  "baseline": {
+    "model": "claude-opus-5",
+    "provider": "anthropic",
+    "taxonomy": "default",
+    "paper_chars": 453206,
+    "truncated": true,
+    "usage": {
+      "input_tokens": 360527,
+      "output_tokens": 22049,
+      "cache_read_input_tokens": 0,
+      "cache_creation_input_tokens": 0
+    }
+  }
+}

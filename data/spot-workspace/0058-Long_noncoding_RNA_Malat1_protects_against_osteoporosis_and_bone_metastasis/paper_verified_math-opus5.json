@@ -1,0 +1,220 @@
+{
+  "paper_name": "paper",
+  "paper_path": "/Users/iacopoghinassi/Documents/Github/Wittgenstein/data/spot-workspace/0058-Long_noncoding_RNA_Malat1_protects_against_osteoporosis_and_bone_metastasis/paper.md",
+  "tag": "opus5",
+  "lean_project": "MATH_VERIFICATION/Paper",
+  "lean_project_kept": true,
+  "totals": {
+    "snippets_extracted": 7,
+    "routed_to_math": 4,
+    "routed_to_lean": 3,
+    "lean_passed": 3,
+    "lean_refuted": 0,
+    "lean_failed": 0,
+    "fallbacks_run": 0,
+    "errors_detected": 0
+  },
+  "results": [
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "Introduction / Results — \"Malat1 deficiency promotes osteoporosis\" and \"Malat1 does not affect osteoblastic bone formation\"",
+      "content": "Osteoporosis, characterized by decreased bone mineral density (BMD), increased bone fragility, and susceptibility to fracture, reflects an imbalance in which osteoclastic bone resorption exceeds osteoblastic bone formation1,2 [...] Quantification of femoral osteoclasts showed that relative to Malat1+/+ mice, the osteoclast numbers per bone perimeter (Oc.N/B.Pm, Fig. 2f) and the osteoclast surface per bone surface (Oc.S/BS, Fig. 2g) were elevated in Malat1−/− mice by approximately 2-fold. [...] we stained bone sections with toluidine blue39 (Supplementary Fig. 3a), which revealed no significant difference in the numbers of osteoblasts per bone perimeter (N.Ob/B.Pm) among Malat1⁺/⁺, Malat1⁻/⁻, and Malat1⁻/⁻;Malat1Tg/Tg mice (Supplementary Fig. 3a, b). [...] Moreover, we found no significant difference in bone formation rates among Malat1⁺/⁺, Malat1⁻/⁻, and Malat1⁻/⁻;Malat1Tg/Tg mice [...] Taken together, our results suggest that Malat1 inhibits osteoclast differentiation and protects against osteoporosis and bone metastasis without affecting osteoblastic bone formation.",
+      "route": "verify-math-lean",
+      "route_rationale": "The paper's central inferential chain is a bone-remodelling balance model: net bone mass change equals formation rate minus resorption rate, and osteoporosis is defined as the regime where resorption exceeds formation. The step from \"resorption up, formation unchanged\" to \"net balance strictly reduced, hence osteoporotic\" is a crisp monotonicity claim and is formalisable.",
+      "lean_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.92,
+        "reasoning": "Formalised the paper's bone-remodelling balance model. Let $F, R \\ge 0$ be the osteoblastic bone-formation and osteoclastic bone-resorption rates in wild-type mice and $F', R'$ the corresponding rates in $Malat1^{-/-}$ mice; net bone balance is $F - R$ and osteoporosis is the condition $R > F$, exactly as the Introduction defines it. The paper's measured premises are $F' = F$ (no significant difference in N.Ob/B.Pm, osteogenic differentiation, or bone formation rate — Supplementary Fig. 3a–g) and $R' > R$ (≈2-fold higher Oc.N/B.Pm and Oc.S/BS, higher serum TRAP5b — Fig. 2e–g and Supplementary Fig. 2h). Lean proved both conclusions the paper draws from these: (a) $F' - R' < F - R$, the net balance is strictly reduced; and (b) under wild-type homeostasis $R = F$, it follows that $F' < R'$, i.e. the knockout satisfies the paper's own osteoporosis criterion. No extra hypotheses were introduced beyond non-negativity of the rates, which is intrinsic to the quantities. The inference the paper makes from its measurements to its osteoporosis conclusion is therefore valid; note that this verifies the logical/quantitative step, not the underlying experimental measurements.",
+        "predicted_error_category": null,
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/0058-Malat1__MATHEMATICAL_MODEL__0_opus5.lean",
+          "formal_statement": "theorem malat1_bone_balance\n    (F R F' R' : ℝ)\n    (hF0 : 0 ≤ F) (hR0 : 0 ≤ R)\n    (hform : F' = F)            -- bone formation unchanged (Suppl. Fig. 3a-g)\n    (hres  : R < R') :          -- bone resorption increased (Fig. 2e-g, 2h-l)\n    (F' - R' < F - R) ∧ (R = F → F' < R') := by\n  subst hform\n  refine ⟨by linarith, ?_⟩\n  intro hbal\n  linarith",
+          "compiler_feedback": "Paper/TMP.lean:14:19: warning: Variable name `hR0` is not explicitly referenced.\n\nHint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:\n  [apply] _hR0\n\nNote: This linter can be disabled with `set_option linter.unusedVariables false`\nEXIT=0\n\nlean_diagnostic_messages (severity=error): {\"partial\":false,\"success\":true,\"items\":[],\"failed_dependencies\":[]}",
+          "axioms": ["propext", "Classical.choice", "Quot.sound"],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.92
+    },
+    {
+      "snippet_id": "paper::EQUATION::0",
+      "snippet_type": "EQUATION",
+      "location": "Methods — \"Micro-computed tomography (μCT) analysis of femurs\"",
+      "content": "Mouse femurs were scanned on a Bruker microCT SkyScan 1276 (Bruker, Kontich, Belgium) with a source voltage of 55 kV, a source current of 200 μA, a filter setting of Al 0.2 mm, and a pixel size of 13 μm at 2016 × 1344. [...] The proximal end of the femur corresponding to a 0–1.3 mm region (consisting of 100 sections over the region of interest) below the growth plate was selected and analyzed by using CTAn software (Version 1.18 8.0+, Bruker microCT, Belgium) to determine the trabecular BMD, trabecular bone volume per tissue volume (BV/TV), trabecular number (Tb.N), and trabecular thickness (Tb.Th).",
+      "route": "verify-math-lean",
+      "route_rationale": "A self-contained quantitative identity relating the stated voxel size, the stated region-of-interest extent, and the stated number of reconstructed sections. Exactly the kind of arithmetic consistency a compiler can settle outright.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::0",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.95,
+        "reasoning": "With an isotropic pixel/voxel size of $13\\ \\mu\\mathrm{m} = 0.013$ mm, a contiguous stack of $100$ sections spans $100 \\times 0.013 = 1.3$ mm, and conversely $1.3 / 0.013 = 100$. Lean proved both directions. The reported scan geometry (13 μm pixel size), the reported region of interest (0–1.3 mm below the growth plate), and the reported slice count (100 sections) are therefore mutually consistent with no rounding slack — the three numbers are not independently chosen, and they agree exactly.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/0058-Malat1__EQUATION__0_opus5.lean",
+          "formal_statement": "/-- 100 contiguous sections at a 13 um pixel size span exactly 1.3 mm. -/\ntheorem muCT_roi_sections :\n    (100 : ℝ) * (13 / 1000) = 1.3 ∧ (1.3 : ℝ) / (13 / 1000) = 100 := by\n  norm_num",
+          "compiler_feedback": "EXIT=0  (no diagnostics of any severity)\n\nlean_verify: {\"axioms\":[\"propext\",\"Classical.choice\",\"Quot.sound\"],\"trust\":\"standard\",\"non_standard_axioms\":[]}",
+          "axioms": ["propext", "Classical.choice", "Quot.sound"],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::EQUATION::1",
+      "snippet_type": "EQUATION",
+      "location": "Discussion / Methods — \"RNA pulldown assay\" (Fig. 6d)",
+      "content": "Considering the pitfalls in using RNAi, large genomic deletion (MALAT1, a single-exon gene, is ~7 kb in mice and ~8 kb in humans), promoter deletion, and RNase H-dependent antisense oligonucleotide approaches to deplete nuclear lncRNAs15,16,66–68 [...] Full-length mouse Malat1 (NR_002847) was divided into six non-overlapping pieces (P1-P6, 1.1–1.2 kb each) and cloned into the pGEM-T vector as previously described22. [...] we performed RNA pulldown assays with six non-overlapping biotinylated fragments of Malat1 (P1–P6; 1.1–1.2 kb each) generated by in vitro transcription22",
+      "route": "verify-math-lean",
+      "route_rationale": "A tiling/summation consistency claim: six non-overlapping pieces, each constrained to a stated length interval, must sum to the stated full-length transcript. Formalisable as a bound on a finite sum.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::1",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.88,
+        "reasoning": "Formalised the partition arithmetic. If six non-overlapping fragments tile the full-length mouse Malat1 transcript and each has length $p_i$ with $1.1 \\le p_i \\le 1.2$ kb, then Lean proved $6.6 \\le \\sum_{i} p_i \\le 7.2$ kb, and separately that the paper's stated full length of $\\sim 7$ kb satisfies $6.6 \\le 7 \\le 7.2$. The six-fragment decomposition at 1.1–1.2 kb per piece is therefore arithmetically consistent with the ~7 kb single-exon mouse gene stated in the Discussion — the stated full length sits comfortably inside the admissible window, and indeed near its midpoint. No inconsistency.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/0058-Malat1__EQUATION__1_opus5.lean",
+          "formal_statement": "theorem malat1_six_fragment_partition\n    (p : Fin 6 → ℝ)\n    (hlo : ∀ i, (1.1 : ℝ) ≤ p i)\n    (hhi : ∀ i, p i ≤ (1.2 : ℝ)) :\n    (6.6 : ℝ) ≤ ∑ i, p i ∧ ∑ i, p i ≤ (7.2 : ℝ) := by\n  constructor\n  · have h : ∑ _i : Fin 6, (1.1 : ℝ) ≤ ∑ i, p i :=\n      Finset.sum_le_sum (fun i _ => hlo i)\n    simp only [Finset.sum_const, Finset.card_univ, Fintype.card_fin,\n      nsmul_eq_mul] at h\n    norm_num at h\n    linarith\n  · have h : ∑ i, p i ≤ ∑ _i : Fin 6, (1.2 : ℝ) :=\n      Finset.sum_le_sum (fun i _ => hhi i)\n    simp only [Finset.sum_const, Finset.card_univ, Fintype.card_fin,\n      nsmul_eq_mul] at h\n    norm_num at h\n    linarith\n\n/-- The stated ~7 kb mouse full length is inside the admissible window. -/\ntheorem malat1_seven_kb_in_window : (6.6 : ℝ) ≤ 7 ∧ (7 : ℝ) ≤ 7.2 := by\n  norm_num",
+          "compiler_feedback": "First attempt (cycle 1) failed:\nPaper/TMP.lean:19:4: error: Type mismatch: After simplification, term\n  h\n has type\n  6 * 1.1 ≤ ∑ i, p i\nbut is expected to have type\n  6.6 ≤ ∑ i, p i\nPaper/TMP.lean:22:4: error: Type mismatch: After simplification, term\n  h\n has type\n  ∑ i, p i ≤ 6 * 1.2\nbut is expected to have type\n  ∑ i, p i ≤ 7.2\nEXIT=1\n\nAfter replacing `simpa using h` with `simp only [...] at h; norm_num at h; linarith` (cycle 2):\nEXIT=0  (no diagnostics of any severity)\n\nlean_verify: {\"axioms\":[\"propext\",\"Classical.choice\",\"Quot.sound\"],\"trust\":\"standard\",\"non_standard_axioms\":[]}",
+          "axioms": ["propext", "Classical.choice", "Quot.sound"],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.88
+    },
+    {
+      "snippet_id": "paper::EQUATION::2",
+      "snippet_type": "EQUATION",
+      "location": "Fig. 1 legend vs. Methods — \"Bulk RNA-seq data analysis\"",
+      "content": "b Volcano plot of genes upregulated (red) or down-regulated (blue) in MGCs relative to CD14⁺ macrophages. Cutoff values: |log₂(fold change)| >1 and adjusted P value < 0.001. Statistical significance was determined by a linear model with Benjamini–Hochberg correction. [...] The DEGs were identified by limma package in R with the following cutoff values: |log₂ (fold change)| > 1 and P value < 0.001.",
+      "route": "verify-math",
+      "route_rationale": "A threshold-criteria comparison between the figure legend and the Methods. The mathematical content is an ordering relation between raw and Benjamini–Hochberg-adjusted p-values; it needs a careful reading, not a formal proof, and the question is one of reporting rather than of derivation.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::2",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.55,
+        "reasoning": "The $|\\log_2(\\text{fold change})| > 1$ criterion is stated identically in both places and is mathematically unobjectionable. There is, however, a genuine discrepancy in the companion significance threshold: the Fig. 1b legend specifies an **adjusted** $P$ value $< 0.001$ (with Benjamini–Hochberg correction), while the Methods section specifies a raw $P$ value $< 0.001$. These are not interchangeable: under Benjamini–Hochberg, $p_{\\text{adj}} = \\min_{k \\ge i}\\{\\,m\\,p_{(k)}/k\\,\\}$ is monotonically $\\ge$ the raw $p$ for every gene, so $\\{p_{\\text{adj}} < 0.001\\} \\subseteq \\{p < 0.001\\}$ and the legend's criterion is strictly the more conservative of the two. The two descriptions therefore define different differentially-expressed-gene sets. This is a reporting inconsistency about which threshold was applied, not an invalid algebraic or calculus step, and it does not propagate into any derivation; the direction of the paper's conclusion (MALAT1 down, osteoclast markers up in MGCs) is unaffected, since that conclusion is independently supported by qPCR in Fig. 1e–h. Per this verifier's remit — flag only derivation-invalidating mathematical mistakes at confidence $\\ge 0.8$ — this does not meet the bar for `error_detected`. Recorded here and in the report summary as an observation for a statistical-reporting reviewer.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [
+          "Fig. 1 legend, panel b: \"adjusted P value < 0.001\"",
+          "Methods, \"Bulk RNA-seq data analysis\": \"P value < 0.001\""
+        ]
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.55
+    },
+    {
+      "snippet_id": "paper::EQUATION::3",
+      "snippet_type": "EQUATION",
+      "location": "Results — \"Malat1 deficiency promotes osteoporosis\" (Fig. 2e–g)",
+      "content": "Quantification of femoral osteoclasts showed that relative to Malat1+/+ mice, the osteoclast numbers per bone perimeter (Oc.N/B.Pm, Fig. 2f) and the osteoclast surface per bone surface (Oc.S/BS, Fig. 2g) were elevated in Malat1−/− mice by approximately 2-fold.",
+      "route": "verify-math",
+      "route_rationale": "A fold-change quantity read off experimental histomorphometry. Unformalisable — its correctness depends on source data not reproduced in the manuscript — so it goes to informal review by construction.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::3",
+        "verifier_name": "math-equations",
+        "status": "UNVERIFIABLE",
+        "error_detected": false,
+        "confidence": 0.3,
+        "reasoning": "The claim is a ratio of two measured histomorphometric quantities, $\\mathrm{Oc.N/B.Pm}$ and $\\mathrm{Oc.S/BS}$, between $Malat1^{-/-}$ and $Malat1^{+/+}$ femurs. The manuscript text does not reproduce the underlying values for Fig. 2f, g — they exist only as bar heights in the figure and in the Source Data file — so the stated $\\approx 2$-fold elevation cannot be checked arithmetically from the manuscript. Cross-checking against the one place where comparable numbers are tabulated in this rendering (Fig. 3k, l, the EO771 tumour-bearing tibia model) gives $\\mathrm{Oc.N/B.Pm}$ of $\\approx 5 \\to \\approx 15$ ($\\approx 3$-fold) and $\\mathrm{Oc.S/BS}$ of $\\approx 15\\% \\to \\approx 35\\%$ ($\\approx 2.3$-fold). Those are a different experiment (6-month-old tumour-bearing tibiae rather than untreated 6-month femurs), so they neither confirm nor contradict the Fig. 2f, g figure; they are at least of the same order and in the same direction. The internal relationship implied by the two Fig. 2 numbers is also self-consistent: if osteoclast number and total osteoclast surface both roughly double, mean osteoclast size is roughly preserved, which is what a \"more osteoclasts, similar morphology\" phenotype predicts. No mathematical error is detectable; the claim is simply not settleable without the source data.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "UNVERIFIABLE",
+      "error_detected": false,
+      "confidence": 0.3
+    },
+    {
+      "snippet_id": "paper::EQUATION::4",
+      "snippet_type": "EQUATION",
+      "location": "Fig. 3a–l — bioluminescent photon-flux quantification (intratibial B16F1 and EO771 models)",
+      "content": "## a\n| Group                  | Photon flux (p/s) |\n| ---------------------- | ----------------- |\n| Malat1+/+              | ~4×10⁷            |\n| Malat1-/-              | ~8×10⁷            |\n| Malat1+/+; Malat1Tg/Tg | ~3×10⁷            |\n\nP = 0.029, P = 0.023\n\n## c\n| Group                  | Photon flux (p/s) |\n| ---------------------- | ----------------- |\n| Malat1+/+              | ~2.5×10⁶          |\n| Malat1-/-              | ~1.5×10⁷          |\n| Malat1+/+; Malat1Tg/Tg | ~2.5×10⁶          |\n\nP = 0.01, P = 0.04\n\n## e\n| Time (d) | Malat1+/+    | Malat1-/-    | Malat1-/-; Malat1Tg/Tg |\n| -------- | ------------ | ------------ | ----------------------- |\n| 0        | ~1×10⁷       | ~1×10⁷       | ~1×10⁷                  |\n| 16       | ~2×10⁷       | ~5×10⁷       | ~2×10⁷                  |\n\nP = 0.19, P = 0.37, P = 0.016, P = 0.036\n\n## g\n| Group                  | Photon flux (p/s) |\n| ---------------------- | ----------------- |\n| Malat1+/+              | ~2×10⁷            |\n| Malat1-/-              | ~6×10⁷            |\n| Malat1-/-; Malat1Tg/Tg | ~2×10⁷            |\n\nP = 0.0083, P = 0.013",
+      "route": "verify-math",
+      "route_rationale": "Numeric experimental readouts, but with enough cross-panel redundancy (in vivo vs. ex vivo, day 0 vs. day 16, three genotypes) that their mutual arithmetic consistency and their consistency with the narrative and the reported p-values can be checked by inspection. Not formalisable — the quantities are measurements, not mathematical objects.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::4",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.6,
+        "reasoning": "Checked every arithmetic and ordinal relation these panels admit against each other and against the narrative. (i) Fig. 3e: the text states \"bioluminescent signals showed no significant difference in baseline levels among the three animal groups on the injection day\" and all three day-0 values are $\\approx 1 \\times 10^7$ p/s; the two non-significant p-values $0.19$ and $0.37$ correspond to the two day-0 pairwise comparisons and the two significant ones $0.016$ and $0.036$ to day 16 — consistent. (ii) Fig. 3e day-16 fold change $Malat1^{-/-}$ vs. $Malat1^{+/+}$ is $5/2 = 2.5\\times$; the matched ex vivo panel Fig. 3g gives $6/2 = 3\\times$ — same direction, same order of magnitude, consistent. (iii) In both models the rescue genotype returns to the wild-type value ($\\approx 3 \\times 10^7$ vs. $\\approx 4 \\times 10^7$ in Fig. 3a; $\\approx 2.5 \\times 10^6$ in both arms of Fig. 3c; $\\approx 2 \\times 10^7$ in Fig. 3e and 3g), matching the stated genetic-rescue conclusion. (iv) Fig. 3a (in vivo, $8/4 = 2\\times$) and Fig. 3c (ex vivo, $1.5\\times10^7 / 2.5\\times10^6 = 6\\times$) differ in magnitude, but these are different measurements — whole-animal in vivo imaging of a tibial lesion includes tissue attenuation and background that compress genotype ratios, and ex vivo imaging follows euthanasia with substrate decay — so neither the magnitude difference nor the absolute-level difference is a mathematical inconsistency. (v) The n values decline from $8, 12, 5$ (in vivo, Fig. 3a) to $7, 10, 5$ (ex vivo endpoint, Fig. 3b–d), consistent with attrition rather than with any discrepancy. (vi) Methods list in vivo imaging at \"days 0, 14, and 25\" while Fig. 3b–d specifies day 26; these are the in vivo and the post-euthanasia ex vivo measurements respectively, so a one-day offset is coherent. One non-mathematical defect: the group labels in the Fig. 3a and 3c tables read \"Malat1+/+; Malat1Tg/Tg\" where the figure legend and the whole remainder of the paper — including the Fig. 3e and 3g tables — read \"Malat1−/−;Malat1Tg/Tg\". This is a transcription artifact of this markdown rendering of the figure, not a numerical error, and it does not affect any quantity. No mathematical error detected.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [
+          "Fig. 3a table, third row label: \"Malat1+/+; Malat1Tg/Tg\" (transcription artifact; legend reads Malat1−/−;Malat1Tg/Tg)",
+          "Fig. 3c table, third row label: \"Malat1+/+; Malat1Tg/Tg\" (transcription artifact; legend reads Malat1−/−;Malat1Tg/Tg)"
+        ]
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.6
+    },
+    {
+      "snippet_id": "paper::DEFINITION::0",
+      "snippet_type": "DEFINITION",
+      "location": "Methods — \"Single-cell RNA-seq data analysis\"",
+      "content": "A global-scaling normalization method (\"LogNormalize\") was used to ensure equal total gene expression in each cell, with the scale factor set to 10,000. The top 2000 variably expressed genes were used in downstream analysis by using the FindVariableFeatures function. The ScaleData function, \"vars.to.regress\" option UMI, and percent mitochondrial content were used to regress out unwanted sources of variation. Principal component analysis incorporating highly variable features was used to reduce the dimensionality of the dataset, and the first 30 PCs were identified for analysis.",
+      "route": "verify-math",
+      "route_rationale": "A definition that asserts a property of a transformation (\"ensure equal total gene expression in each cell\"), so it is checkable rather than mere notation. But the object is a named software routine rather than a stated formula, which makes a faithful formalisation hinge on inventing the implementation — informal review is the right route.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::DEFINITION::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.5,
+        "reasoning": "Seurat's `LogNormalize` computes, for gene $g$ in cell $c$, $y_{gc} = \\ln\\!\\left(1 + s \\cdot x_{gc} / \\sum_{g'} x_{g'c}\\right)$ with scale factor $s = 10^4$ as stated. The claim \"to ensure equal total gene expression in each cell\" is exact for the scaling step: $\\sum_g s\\,x_{gc}/\\sum_{g'} x_{g'c} = s = 10^4$ for every cell $c$, independent of library size. It is loose for the output of the full transform, since $\\ln(1+\\cdot)$ is concave and so $\\sum_g y_{gc}$ depends on how the normalised counts are distributed across genes, not only on their total — two cells with identical $10^4$ totals but different sparsity will have different $\\sum_g y_{gc}$. This is imprecision in a descriptive gloss on a standard, correctly-parameterised pipeline step, not an invalid algebraic or calculus operation, and nothing downstream in the paper depends on post-log column sums being equal (the MALAT1 comparisons in Fig. 4 are per-gene, between cell populations). The method is specified reproducibly: function name, scale factor $10^4$, 2000 variable features, 30 PCs. No error warranting correction.",
+        "predicted_error_category": null,
+        "snippet_type": "DEFINITION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.5
+    }
+  ],
+  "findings": [],
+  "verdict": "NO_ERRORS",
+  "verdict_confidence": 0.78,
+  "summary": "**Scope caveat first.** This is a wet-lab molecular-biology paper (Zhao et al., *Nat Commun* **15**:2384, 2024) on the lncRNA Malat1 in osteoclastogenesis, osteoporosis, and bone metastasis. It contains **no display mathematics whatsoever** — no `$$…$$`, no `\\begin{equation}`, no theorems, lemmas, proofs, or derivations anywhere in the 489-line manuscript (the bulk of the file is base64-embedded figure images). Its claims rest on μCT imaging, histomorphometry, qPCR, immunoblotting, co-IP, ChIP-qPCR, luciferase reporters, bioluminescent imaging, and scRNA-seq — none of which this skill can adjudicate. A clean mathematical verdict here therefore says very little about the paper overall, and should **not** be read as a general endorsement of its conclusions.\n\n**What was extracted and checked.** Seven snippets: the three with genuine formal content went to Lean 4, the four quantitative-but-unformalisable ones to informal review.\n\n*Lean 4 (3/3 PASSED, standard Mathlib axioms only — `propext`, `Classical.choice`, `Quot.sound`; no `sorry`, no `sorryAx`):*\n\n1. `paper::MATHEMATICAL_MODEL::0` — the paper's core inferential step. Modelling net bone balance as $F - R$ (formation minus resorption) and osteoporosis as $R > F$, exactly as the Introduction defines it, Lean proved that the paper's measured premises $F' = F$ (bone formation unchanged, Suppl. Fig. 3a–g) and $R' > R$ (resorption up ≈2-fold, Fig. 2e–g) entail both $F' - R' < F - R$ and — under wild-type homeostasis $R = F$ — the osteoporotic condition $F' < R'$. The paper's logic from its measurements to its conclusion is valid.\n2. `paper::EQUATION::0` — μCT geometry: $100 \\times 13\\ \\mu\\mathrm{m} = 1.3$ mm exactly. The reported pixel size, region of interest, and slice count agree with no rounding slack.\n3. `paper::EQUATION::1` — the six-fragment tiling of mouse Malat1: six non-overlapping pieces at 1.1–1.2 kb each must total $[6.6, 7.2]$ kb, and the Discussion's \"~7 kb in mice\" sits near the midpoint of that window. Consistent.\n\n*Informal (verify-math):* three NO_ERROR, one UNVERIFIABLE. `paper::EQUATION::4` (Fig. 3 photon-flux panels) survived every cross-panel check available — day-0 baselines equal across genotypes and matched to the two non-significant p-values ($0.19$, $0.37$) against the two significant day-16 ones ($0.016$, $0.036$); matched in vivo and ex vivo fold changes ($2.5\\times$ vs. $3\\times$); rescue genotype returning to wild-type levels in all four panels; declining n consistent with attrition. `paper::DEFINITION::0` (Seurat `LogNormalize`, scale factor $10^4$) is correctly parameterised. `paper::EQUATION::3` (the \"approximately 2-fold\" elevation of Oc.N/B.Pm and Oc.S/BS in Fig. 2f, g) is **UNVERIFIABLE**: the underlying values live only in the figure bars and the Source Data file, so the ratio cannot be checked from the manuscript. That is the one unsettled claim in this run.\n\n**No findings.** Nothing reached the $0.7$ confidence bar for `error_detected`, and no Lean run was REFUTED. **No verifier disagreements:** no Lean snippet FAILED, so no fallback was triggered and no snippet carries competing verdicts.\n\n**Two observations below the finding bar, for other verifiers.** (a) *Threshold reporting inconsistency:* the Fig. 1b legend states an **adjusted** $P < 0.001$ cutoff (Benjamini–Hochberg) while the Methods state a raw $P < 0.001$ cutoff. Since BH gives $p_{\\text{adj}} \\ge p$ for every gene, $\\{p_{\\text{adj}} < 0.001\\} \\subseteq \\{p < 0.001\\}$ — the two descriptions define different DEG sets, and the legend's is strictly stricter. This is a statistical-reporting discrepancy, not invalid mathematics, and the Fig. 1 conclusion is independently supported by qPCR (Fig. 1e–h); it belongs to `/verify-statistical` or `/verify-consistency`. (b) *Transcription artifact:* the Fig. 3a and 3c tables in this markdown label the rescue group `Malat1+/+; Malat1Tg/Tg`, whereas the legend and the entire rest of the paper (including the Fig. 3e and 3g tables) read `Malat1−/−;Malat1Tg/Tg`. Almost certainly an OCR artifact of this rendering rather than a defect in the published paper; it affects no quantity.\n\n**Lean project lifecycle.** `PROJECT_NAME` derives to `Paper`, which is the shared project under `MATH_VERIFICATION/Paper` holding a built Mathlib (7.4 GB) and 525+ saved proofs from other papers' runs. Per `verify-math-lean`'s reuse rule — a reused project is not this run's to delete — the final Lean call was pinned with `--keep-lean` and the project was **not** deleted; `lean_project_kept` is `true`, verified on disk. Only per-snippet scratch (`TMP.lean`, `claim.md`) was removed. The three proofs are saved as `Paper/Verified/0058-Malat1__{MATHEMATICAL_MODEL__0,EQUATION__0,EQUATION__1}_opus5.lean`.\n\n**Verdict NO_ERRORS at confidence 0.78.** Every mathematical object the manuscript contains was checked; six of seven snippets settled, three of them by the Lean kernel, and nothing confident remains. Confidence is held below 0.9 because the quantity of mathematics available to check is very small, and because the one UNVERIFIABLE snippet — the 2-fold osteoclast elevation — is load-bearing for the paper's osteoporosis claim and needs the Source Data file to settle."
+}

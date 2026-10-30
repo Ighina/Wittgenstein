@@ -1,0 +1,302 @@
+{
+  "paper_name": "paper",
+  "paper_path": "/Users/iacopoghinassi/Documents/Github/Wittgenstein/data/spot-workspace/0008-A_stretchable,_electroconductive_tissue_adhesive_for_the_treatment_of_neural_injury/paper.md",
+  "tag": "opus5",
+  "lean_project": "MATH_VERIFICATION/Paper",
+  "lean_project_kept": true,
+  "totals": {
+    "snippets_extracted": 10,
+    "routed_to_math": 7,
+    "routed_to_lean": 3,
+    "lean_passed": 3,
+    "lean_refuted": 0,
+    "lean_failed": 0,
+    "fallbacks_run": 0,
+    "errors_detected": 0
+  },
+  "results": [
+    {
+      "snippet_id": "paper::EQUATION::0",
+      "snippet_type": "EQUATION",
+      "location": "2 | MATERIALS AND METHODS — chemical characterization of mELP (Equation 1)",
+      "content": "For quantitative analysis of the degree of methacrylation (DM), an aromatic peak associated with the tryptophan (Trp (W)) residue was utilized as a reference. Then, the area under the peaks related to the methacrylate group and Trp (W) were integrated using MestReNove software. DM was calculated using the following equation (Equation (1)):\n\nDM = (integrated area of methacrylate protons) / (integrated area of reference peak × number of protons in methacrylate group)    (1)\n\nReported application: For quantitative analysis of the DM, an aromatic peak at 7.5 ppm related to Trp (W) residue was used as a reference, and DM was calculated to be approximately 18% for the low methacrylated ELP and 33% for the high methacrylated ELP based on Equation (1).",
+      "route": "verify-math",
+      "route_rationale": "The formula is defined over NMR peak integrals whose proton-count normalisation the paper never pins down, so it rests on undefined domain objects and is not faithfully formalisable.",
+      "lean_result": null,
+      "fallback_result": null,
+      "informal_result": {
+        "snippet_id": "paper::EQUATION::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.65,
+        "reasoning": "Algebraically the printed expression is well formed: $\\mathrm{DM} = A_{\\text{MA}} / (A_{\\text{ref}} \\cdot n) = (A_{\\text{MA}}/n)/A_{\\text{ref}}$, i.e. a per-proton-normalised methacrylate integral divided by the reference integral. There is no invalid cancellation, no fractional-arithmetic error and no sign problem. Two presentational gaps are worth noting but neither is derivation-invalidating. (i) As written the quantity is a dimensionless ratio, yet the Results report $\\mathrm{DM}$ as $18\\%$ and $33\\%$; the $\\times 100$ conversion is implicit. (ii) The reference (Trp) integral is not normalised by its own proton count, and the number of methacrylatable sites per chain does not appear, so the expression is not guaranteed a priori to be bounded by $100\\%$. Both are under-specifications resolvable from context the snippet does not contain, and per the rubric missing context is not an error.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.65
+    },
+    {
+      "snippet_id": "paper::EQUATION::1",
+      "snippet_type": "EQUATION",
+      "location": "2 | MATERIALS AND METHODS — degree of crosslinking (Equation 2)",
+      "content": "The degree of crosslinking of mELP/Bio-IL hydrogel was also calculated using Equation (2), where PAb is the peak area before crosslinking, and PAa is the peak area after crosslinking:\n\ndegree of crosslinking (%) = (PAb − PAa) / PAb × 100      (2)",
+      "route": "verify-math-lean",
+      "route_rationale": "A crisp closed-form percentage; the checkable property — that it lands in $[0,100]$ under the paper's own standing assumptions on NMR peak areas — is formalisable.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::1",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.95,
+        "reasoning": "Formalised Equation (2) as `degreeOfCrosslinking PAb PAa = (PAb - PAa) / PAb * 100` over $\\mathbb{R}$ and proved it lands in $[0,100]$ under the hypotheses the paper's own setting supplies: $PA_b > 0$ (it is the denominator, the pre-crosslinking methacrylate peak), $PA_a \\geq 0$ (a peak integral), and $PA_a \\leq PA_b$ (crosslinking consumes methacrylate groups, so the peak does not grow). No hypothesis was added that is absent from the paper. Lean compiled the file clean: `lake env lean` exit 0, `lean_diagnostic_messages` returned an empty item list, and `lean_verify` on `PaperCrosslinking.degreeOfCrosslinking_mem_Icc` reported only the standard Mathlib axioms `propext`, `Classical.choice`, `Quot.sound` — no `sorryAx`. Equation (2) is therefore a well-defined percentage and contains no domain-constraint violation.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean (saved to Paper/Verified/paper__EQUATION__1_0008opus5.lean)",
+          "formal_statement": "import Mathlib\n\n/-!\npaper::EQUATION::1 — Equation (2) of the manuscript:\n\n  degree of crosslinking (%) = (PAb - PAa) / PAb * 100\n\n`PAb` = NMR peak area before crosslinking, `PAa` = peak area after crosslinking.\nHypotheses carried from the paper: peak integrals are non-negative, the\ndenominator `PAb` is strictly positive, and crosslinking consumes methacrylate\ngroups so `PAa ≤ PAb`.\n\nClaim: the quantity is a genuine percentage, i.e. it lies in `[0, 100]`.\n-/\n\nnamespace PaperCrosslinking\n\nnoncomputable def degreeOfCrosslinking (PAb PAa : ℝ) : ℝ := (PAb - PAa) / PAb * 100\n\ntheorem degreeOfCrosslinking_mem_Icc\n    (PAb PAa : ℝ) (hb : 0 < PAb) (ha : 0 ≤ PAa) (hab : PAa ≤ PAb) :\n    degreeOfCrosslinking PAb PAa ∈ Set.Icc (0 : ℝ) 100 := by\n  have hnum : 0 ≤ PAb - PAa := sub_nonneg.mpr hab\n  have hle : (PAb - PAa) / PAb ≤ 1 := by\n    rw [div_le_one hb]\n    linarith\n  have hge : 0 ≤ (PAb - PAa) / PAb := div_nonneg hnum hb.le\n  constructor\n  · unfold degreeOfCrosslinking; positivity\n  · unfold degreeOfCrosslinking; nlinarith\n\nend PaperCrosslinking\n",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::EQUATION::2",
+      "snippet_type": "EQUATION",
+      "location": "2 | MATERIALS AND METHODS — swelling test (Equation 3)",
+      "content": "The swelling ratio at each time point was calculated as the ratio of the difference in weight of samples weighed at a time interval (wₜ) and initial weight (w₀) to initial weight (w₀) using Equation (3):\n\n$$\\text{swelling ratio}(\\%) = \\frac{w_t - w_0}{w_0} \\times 100 \\qquad (3)$$",
+      "route": "verify-math",
+      "route_rationale": "Elementary algebra; the formula and the prose definition can be matched by inspection.",
+      "lean_result": null,
+      "fallback_result": null,
+      "informal_result": {
+        "snippet_id": "paper::EQUATION::2",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.95,
+        "reasoning": "The printed formula $\\text{swelling ratio}(\\%) = \\frac{w_t - w_0}{w_0} \\times 100$ matches the prose definition — \"the ratio of the difference in weight of samples weighed at a time interval ($w_t$) and initial weight ($w_0$) to initial weight ($w_0$)\" — term for term. $w_0$ is a measured initial dry/crosslinked mass and is strictly positive, so there is no division-by-zero concern, and the $\\times 100$ scaling to a percentage is present (unlike in Equation (1)). The expression correctly returns negative values when $w_t < w_0$, which is exactly what the paper needs and reports: pure mELP hydrogel \"showed shrinkage due to the presence of hydrophobic residues in the ELP backbone.\" No algebraic, sign or domain error.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "2 | MATERIALS AND METHODS — mechanical characterization",
+      "content": "The percentage of maximum stretchability was calculated based on the maximum strain achieved before rupture. Elastic modulus was obtained by calculating the slope of the linear region of the stress–strain curves (0–10% strain), while the toughness was calculated as the area under the stress–strain curve.⁴³,⁴⁴ For the cyclic tensile test, the rectangular hydrogel samples were stretched up to 50% strain at a rate of 1 mm/min, and followed by relaxation up to 0% strain at a similar rate (10 cycles). The energy loss percentage was calculated by measuring the difference between the integrals of the stretching and relaxation curves for each cycle.",
+      "route": "verify-math",
+      "route_rationale": "Definitions tied to measured stress–strain curves rather than to a stated functional form; no crisp formal content to formalise.",
+      "lean_result": null,
+      "fallback_result": null,
+      "informal_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.8,
+        "reasoning": "All three derived quantities are the standard constructions. Elastic modulus as the slope of the linear region of the stress–strain curve over $0$–$10\\%$ strain is Hooke's law applied to the initial regime; toughness as the area under the stress–strain curve, $\\int \\sigma \\, d\\varepsilon$, has units of $\\mathrm{Pa} = \\mathrm{J/m^3}$, consistent with the reported $9553.25 \\pm 1424\\ \\mathrm{J/m^3}$; hysteresis as the gap between the loading and unloading integrals is the standard cyclic-loss measure. One dimensional imprecision: \"the energy loss percentage was calculated by measuring the difference between the integrals of the stretching and relaxation curves\" defines, literally, a difference of integrals, which carries units of energy density, not a percentage — a true percentage requires dividing by the loading integral. The reported $\\sim 2\\%$ makes clear the normalisation was performed; this is a methods-text omission, not an invalid derivation, so it does not meet the erratum bar.",
+        "predicted_error_category": null,
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::1",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "2 | MATERIALS AND METHODS — conductivity measurement",
+      "content": "To determine the conductivity of the hydrogels, a two-probe method of conductivity measurements was employed.⁵⁰ Briefly, mELP/Bio-IL hydrogels were synthesized following the previously described procedure and connected to two metallic electrodes. The electrodes were positioned on opposing sides of the hydrogel and subsequently connected to a potentiostat (model 263A, AMETEK). A direct current (DC) voltage was applied through the electrodes, ranging from -3 to 3 V in 0.03 V increments. The variation in current with changing voltage was measured, and conductivity was calculated using Ohm's law.",
+      "route": "verify-math",
+      "route_rationale": "An instrumentation and geometry claim about a physical measurement, not a formalisable assertion.",
+      "lean_result": null,
+      "fallback_result": null,
+      "informal_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::1",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "The voltage sweep is internally consistent: $-3$ to $3\\ \\mathrm{V}$ in $0.03\\ \\mathrm{V}$ increments is $201$ sample points, and a symmetric DC sweep is the normal way to extract a linear $I$–$V$ slope. Ohm's law yields resistance $R = V/I$ from that slope; converting $R$ to the conductivity $\\sigma = L/(R A)$ reported in $\\mathrm{S/m}$ additionally requires the electrode separation $L$ and cross-sectional area $A$, which the methods text does not state. Since the results are reported in $\\mathrm{S/m}$ the geometric factor was evidently applied, so this is an incomplete methods description rather than a mathematical error. No invalid algebra or domain violation in what is printed.",
+        "predicted_error_category": null,
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::0",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "Abstract and 3 | RESULTS AND DISCUSSION — adhesion strength",
+      "content": "Abstract claim: Adhesion tests revealed adhesive strength ~10 times higher than commercially available tissue adhesive, Evicel®.\n\nSupporting results: For example, while pure mELP hydrogel (control) showed an adhesion strength in the range of 30–35 kPa, mELP/Bio-IL hydrogels containing 11% and 15% (v/v) Bio-IL showed tissue adhesion strengths of around 55 and 115 kPa, respectively. For all formulations, the engineered hydrogels demonstrated significantly improved adhesion performance compared to the existing literature⁶⁵ and commercial surgical glue, Evicel®, which exhibited an adhesive strength of approximately 10 kPa toward the rat peripheral nerve tissue.",
+      "route": "verify-math",
+      "route_rationale": "A single ratio of two reported values, checkable by inspection.",
+      "lean_result": null,
+      "fallback_result": null,
+      "informal_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "The abstract's multiplier is arithmetically supported. The best formulation ($15\\%$ (v/v) Bio-IL) is reported at $\\sim 115\\ \\mathrm{kPa}$ and Evicel® at $\\sim 10\\ \\mathrm{kPa}$, giving $115/10 = 11.5$, which rounds consistently to the claimed \"$\\sim 10$ times higher.\" The claim is stated for the engineered adhesive at its best formulation, which is the value used; the weaker formulations ($30$–$35\\ \\mathrm{kPa}$ for pure mELP, $\\sim 55\\ \\mathrm{kPa}$ at $11\\%$ Bio-IL) are reported separately in the Results and are not folded into the abstract multiplier. No arithmetic error.",
+        "predicted_error_category": null,
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::1",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "3 | RESULTS AND DISCUSSION — mechanical properties, and Conclusion",
+      "content": "Results: The elastic modulus of mELP/Bio-IL hydrogels, with a total mELP concentration of 15% (w/v), remained nearly unchanged (between 2 and 4 kPa) after introducing different concentrations of Bio-IL up to 11% (v/v). Further increase in Bio-IL concentration to 15% (v/v) significantly increased the elastic modulus to 17.31 ± 8.37 kPa.\n\nConclusion: Notably, the elastic modulus of these adhesive hydrogels aligned closely with that of normal soft tissue, ranging from 1.8 to 15 kPa.",
+      "route": "verify-math-lean",
+      "route_rationale": "Interval-membership arithmetic over reported values — formally decidable, and the one place where a numeric inconsistency would be sharp.",
+      "lean_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::1",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.6,
+        "reasoning": "The Conclusion's phrase \"ranging from 1.8 to 15 kPa\" is grammatically ambiguous — the nearest antecedent is \"normal soft tissue\", but it could be read as describing the hydrogels — so instead of forcing one reading into a formal statement (which the faithfulness gate forbids, since the containment reading would be trivially refutable and the similarity reading is not a formal predicate), both quantitative readings were settled. Lean proved: (i) `mean_not_mem_statedBand` — the reported mean $17.31\\ \\mathrm{kPa}$ for the $15\\%$ (v/v) Bio-IL formulation does **not** lie in $[1.8, 15]$; (ii) `oneSD_inter_statedBand_nonempty` — the one-SD interval $[17.31 - 8.37,\\ 17.31 + 8.37] = [8.94,\\ 25.68]$ does intersect $[1.8, 15]$; (iii) `lowBioIL_subset_statedBand` — the $2$–$4\\ \\mathrm{kPa}$ moduli of the $\\leq 11\\%$ Bio-IL formulations do lie inside $[1.8, 15]$. Clean compile: `lake env lean` exit 0, empty `lean_diagnostic_messages`, and `lean_verify` on both main theorems showed only `propext`, `Classical.choice`, `Quot.sound` — no `sorryAx`. Verdict: because the band is most naturally read as the soft-tissue reference range and the measurement's spread overlaps it substantially, the Conclusion is not mathematically contradicted; recorded as `NO_ERROR` with the $17.31\\ \\mathrm{kPa}$ mean lying $2.31\\ \\mathrm{kPa}$ above the band's top noted as a wording imprecision, not an error.",
+        "predicted_error_category": null,
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean (saved to Paper/Verified/paper__FORMULA_BLOCK__1_0008opus5.lean)",
+          "formal_statement": "import Mathlib\n\n/-!\npaper::FORMULA_BLOCK::1 — elastic-modulus range consistency.\n\nResults report a mean modulus of `17.31 ± 8.37` kPa for the 15% (v/v) Bio-IL\nformulation; the Conclusion states a range of `1.8` to `15` kPa.  The antecedent\nof \"ranging from 1.8 to 15 kPa\" is ambiguous, so both quantitative readings are\nsettled formally.\n-/\n\nnamespace PaperModulus\n\n/-- The stated band of the Conclusion, in kPa. -/\ndef statedBand : Set ℝ := Set.Icc 1.8 15\n\n/-- Reported mean modulus of the 15% (v/v) Bio-IL formulation, in kPa. -/\ndef meanModulus : ℝ := 17.31\n\n/-- Reported standard deviation, in kPa. -/\ndef sdModulus : ℝ := 8.37\n\n/-- Reading A (the band describes the hydrogels): the reported mean lies OUTSIDE\nthe stated band, so that reading is numerically violated. -/\ntheorem mean_not_mem_statedBand : meanModulus ∉ statedBand := by\n  simp only [statedBand, meanModulus, Set.mem_Icc, not_and, not_le]\n  intro _\n  norm_num\n\n/-- Reading B (the band describes normal soft tissue): the one-SD interval around\nthe reported mean does meet the stated band, so a claim of close alignment is not\nnumerically contradicted. -/\ntheorem oneSD_inter_statedBand_nonempty :\n    (Set.Icc (meanModulus - sdModulus) (meanModulus + sdModulus) ∩ statedBand).Nonempty := by\n  refine ⟨15, ?_, ?_⟩\n  · simp only [meanModulus, sdModulus, Set.mem_Icc]\n    norm_num\n  · simp only [statedBand, Set.mem_Icc]\n    norm_num\n\n/-- The moduli of the formulations up to 11% (v/v) Bio-IL, reported as \"between 2\nand 4 kPa\", do lie inside the stated band. -/\ntheorem lowBioIL_subset_statedBand : Set.Icc (2 : ℝ) 4 ⊆ statedBand := by\n  intro x hx\n  simp only [statedBand, Set.mem_Icc] at hx ⊢\n  constructor <;> [linarith [hx.1]; linarith [hx.2]]\n\nend PaperModulus\n",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.6
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::2",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "3 | RESULTS AND DISCUSSION — conductivity, and Conclusion",
+      "content": "Results: the conductivity of the pure mELP hydrogel was around 0.02 S/m, while the incorporation of 7% and 15% (v/v) Bio-IL increased the conductivity to 0.05 and 0.08 S/m, respectively (Figure 3d). Given that the conductivity of nerve tissue is ~0.08–1.3 S/m, our material, with conductivity levels similar to nerve tissue, is capable of effectively transmitting electrical signals to neurons.\n\nConclusion: The synthesized hydrogel exhibited conductivity between 0.02 and 0.08 S/m and a stretchability of more than 200%.",
+      "route": "verify-math-lean",
+      "route_rationale": "Interval-overlap arithmetic over two explicitly stated numeric ranges — formally decidable.",
+      "lean_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::2",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.7,
+        "reasoning": "\"Similar\" is not a formal predicate, so the formalisable content is the relation between the two stated ranges: the hydrogel band $[0.02, 0.08]\\ \\mathrm{S/m}$ and the cited nerve-tissue band $[0.08, 1.3]\\ \\mathrm{S/m}$. Lean proved: (i) `bands_inter_eq_singleton` — the two bands intersect in exactly the single point $\\{0.08\\}$, so the overlap has empty interior; (ii) `hydrogelBand_not_subset_nerveBand` — the hydrogel band is not contained in the nerve band; (iii) `lowFormulations_below_nerveBand` — the pure-mELP ($0.02$) and $7\\%$ Bio-IL ($0.05$) values lie strictly below the nerve band; (iv) `best_mem_nerveBand` — the $15\\%$ Bio-IL value $0.08$ does lie in the nerve band, at its lower endpoint. Clean compile: `lake env lean` exit 0, empty `lean_diagnostic_messages`, `lean_verify` on `bands_inter_eq_singleton` reporting only the three standard Mathlib axioms. Verdict: the sentence \"our material, with conductivity levels similar to nerve tissue\" is a boundary match — true for the best formulation at the bottom edge of the cited range, and roughly $16\\times$ below its top — so it is an optimistic but not mathematically false characterisation. Recorded `NO_ERROR`; the formal result is a quantitative qualification of the claim, not a refutation of it.",
+        "predicted_error_category": null,
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean (saved to Paper/Verified/paper__FORMULA_BLOCK__2_0008opus5.lean)",
+          "formal_statement": "import Mathlib\n\n/-!\npaper::FORMULA_BLOCK::2 — conductivity of the engineered hydrogel versus the cited\nconductivity of nerve tissue.\n\nReported hydrogel conductivities: `0.02` (pure mELP), `0.05` (7% Bio-IL) and `0.08`\nS/m (15% Bio-IL); the Conclusion states the band `[0.02, 0.08]` S/m.  The cited\nnerve-tissue band is `[0.08, 1.3]` S/m.  \"Similar\" is not a formal predicate, so\nwhat is settled here is the relation between the two stated intervals.\n-/\n\nnamespace PaperConductivity\n\n/-- Conductivity band of the engineered hydrogels, in S/m. -/\ndef hydrogelBand : Set ℝ := Set.Icc 0.02 0.08\n\n/-- Cited conductivity band of nerve tissue, in S/m. -/\ndef nerveBand : Set ℝ := Set.Icc 0.08 1.3\n\n/-- The two stated bands meet in exactly one point, `0.08` S/m: the overlap has\nempty interior. -/\ntheorem bands_inter_eq_singleton : hydrogelBand ∩ nerveBand = {(0.08 : ℝ)} := by\n  ext x\n  simp only [hydrogelBand, nerveBand, Set.mem_inter_iff, Set.mem_Icc, Set.mem_singleton_iff]\n  constructor\n  · intro ⟨⟨_, h2⟩, ⟨h3, _⟩⟩\n    linarith\n  · intro h\n    subst h\n    norm_num\n\n/-- The hydrogel band is therefore not contained in the nerve-tissue band. -/\ntheorem hydrogelBand_not_subset_nerveBand : ¬ hydrogelBand ⊆ nerveBand := by\n  intro hsub\n  have h : (0.02 : ℝ) ∈ hydrogelBand := by\n    simp only [hydrogelBand, Set.mem_Icc]; norm_num\n  have := hsub h\n  simp only [nerveBand, Set.mem_Icc] at this\n  linarith [this.1]\n\n/-- The pure-mELP and 7% Bio-IL conductivities both lie strictly below the cited\nnerve-tissue band. -/\ntheorem lowFormulations_below_nerveBand :\n    (0.02 : ℝ) < 0.08 ∧ (0.05 : ℝ) < 0.08 := by norm_num\n\n/-- The 15% (v/v) Bio-IL formulation's conductivity does lie in the nerve-tissue\nband, at its lower endpoint. -/\ntheorem best_mem_nerveBand : (0.08 : ℝ) ∈ nerveBand := by\n  simp only [nerveBand, Set.mem_Icc]; norm_num\n\nend PaperConductivity\n",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.7
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::3",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "3 | RESULTS AND DISCUSSION — swelling behaviour",
+      "content": "For instance, mELP/Bio-IL hydrogel containing 7% (v/v) Bio-IL swelled by approximately 25%, whereas the hydrogel with 15% (v/v) Bio-IL showed a swelling ratio of around 145% within 2 h of incubation. For example, mELP/Bio-IL hydrogel with 11% (v/v) Bio-IL exhibited swelling of approximately 30%, while hydrogel containing 15% (v/v) Bio-IL showed swelling in the range of around 85%. Altogether, the swelling ratios obtained for all formulations fall within the clinically acceptable range (less than 300%), ensuring sufficient hydration and nutrient exchange while minimizing tissue damage or inflammation.^64-66",
+      "route": "verify-math",
+      "route_rationale": "Bound comparisons against reported values; checkable by inspection.",
+      "lean_result": null,
+      "fallback_result": null,
+      "informal_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::3",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "Every numeric relation asserted here holds. The largest reported swelling ratio is $\\sim 145\\%$ ($15\\%$ (v/v) Bio-IL at $2$ h), and $145 < 300$, so the claim that \"the swelling ratios obtained for all formulations fall within the clinically acceptable range (less than $300\\%$)\" is satisfied. The monotonicity claim is also consistent within each comparison regime: at equilibrium $11\\%$ Bio-IL gives $\\sim 30\\%$ and $15\\%$ gives $\\sim 85\\%$, increasing with concentration; at $2$ h, $7\\%$ gives $\\sim 25\\%$ and $15\\%$ gives $\\sim 145\\%$, likewise increasing. The $2$ h and equilibrium figures are never compared across regimes, so the apparent tension between $145\\%$ at $2$ h and $85\\%$ at equilibrium for the same formulation is explained by the paper's own described shrinking phase after $4$ h, not a contradiction. No arithmetic or domain error.",
+        "predicted_error_category": null,
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::4",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "3 | RESULTS AND DISCUSSION — stretchability, and Conclusion",
+      "content": "Results: Extensibility within the range of 400% was also obtained for the pure mELP scaffold. However, with the addition of Bio-IL, the stretchability decreased to ~200%, closely matching that of rat peripheral nerve tissue (Figure 2f).\n\nConclusion: The synthesized hydrogel exhibited conductivity between 0.02 and 0.08 S/m and a stretchability of more than 200%.",
+      "route": "verify-math",
+      "route_rationale": "Bound comparison against a reported value; checkable by inspection.",
+      "lean_result": null,
+      "fallback_result": null,
+      "informal_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::4",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.75,
+        "reasoning": "The Results state that adding Bio-IL reduced stretchability from $\\sim 400\\%$ (pure mELP) to $\\sim 200\\%$, \"closely matching that of rat peripheral nerve tissue\", while the Conclusion claims \"a stretchability of more than $200\\%$.\" Strictly, $\\sim 200\\%$ does not entail $> 200\\%$; the Conclusion's strict inequality is at the boundary of what the Results support. This is a rounding/wording imprecision at a boundary, and the pure mELP formulation at $\\sim 400\\%$ does satisfy $> 200\\%$, so the Conclusion's statement about \"the synthesized hydrogel\" is not strictly false. No invalid algebra, no sign or domain error; well below the erratum bar.",
+        "predicted_error_category": null,
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.75
+    }
+  ],
+  "findings": [],
+  "verdict": "NO_ERRORS",
+  "verdict_confidence": 0.74,
+  "summary": "This is an experimental biomaterials manuscript (a stretchable, electroconductive mELP/Bio-IL tissue adhesive for nerve repair); its mathematical surface is thin. Ten self-contained mathematically verifiable objects were extracted: the three numbered methods formulas (degree of methacrylation, degree of crosslinking, swelling ratio), two derived-quantity models (mechanical metrics from stress–strain curves; conductivity via Ohm's law), and five numeric-consistency blocks linking Results figures to Abstract and Conclusion claims. Seven went to `/verify-math` and three to `/verify-math-lean`.\n\n**What Lean settled.** All three Lean snippets `PASSED` — clean compile (`lake env lean` exit 0), empty `lean_diagnostic_messages`, and `lean_verify` showing only the standard Mathlib axioms `propext`, `Classical.choice`, `Quot.sound` with no `sorryAx`. (1) Equation (2) is a well-defined percentage: $(PA_b - PA_a)/PA_b \\times 100 \\in [0,100]$ under the paper's own assumptions $PA_b > 0$, $PA_a \\geq 0$, $PA_a \\leq PA_b$. (2) The reported mean modulus $17.31\\ \\mathrm{kPa}$ lies outside $[1.8, 15]\\ \\mathrm{kPa}$, but its one-SD interval $[8.94, 25.68]$ meets that band and the $\\leq 11\\%$ Bio-IL moduli ($2$–$4\\ \\mathrm{kPa}$) sit inside it. (3) The hydrogel conductivity band $[0.02, 0.08]\\ \\mathrm{S/m}$ meets the cited nerve-tissue band $[0.08, 1.3]\\ \\mathrm{S/m}$ in exactly the single point $\\{0.08\\}$, so only the best formulation reaches the nerve range, at its lower endpoint.\n\n**What Lean did not settle.** Nothing was `FAILED` or `NOT_ATTEMPTED`, so no informal fallbacks were needed and there are no unsettled claims. The two verifiers did not disagree on any snippet.\n\n**Outcome.** No mathematical error at or above confidence $0.7$ was found, so `findings` is empty. Four imprecisions were recorded below the erratum bar and are worth an author's attention rather than a correction: Equation (1) returns a dimensionless ratio yet $DM$ is reported as $18\\%$/$33\\%$ (the $\\times 100$ and the reference-peak proton normalisation are implicit); \"energy loss percentage\" is defined as a bare difference of integrals, which has units of energy density until divided by the loading integral; the Conclusion's $1.8$–$15\\ \\mathrm{kPa}$ band excludes the reported $17.31\\ \\mathrm{kPa}$ mean under the reading where that band describes the hydrogels rather than soft tissue; and the Conclusion's \"more than $200\\%$\" stretchability is a strict inequality where the Results report $\\sim 200\\%$. One non-mathematical inconsistency fell outside this skill's scope and is flagged for `/verify-statistical`: Section 2.11 states error bars are \"mean ± standard deviation (SD)\" while the Figure 2 caption states \"error bars indicate the standard error of the means\".\n\n**Verdict** `NO_ERRORS` at confidence $0.74$. The confidence is moderate rather than high not because anything looked wrong, but because the paper contains almost no formal mathematics: three machine-checked certificates and seven clean informal reviews over definitional formulas and numeric-consistency checks is the whole of what was available to check. The paper's substantive claims are empirical and lie outside a mathematical verifier's reach.\n\n**Lean project.** `MATH_VERIFICATION/Paper` was reused, not created, and is shared by every `paper.md` run in this repository, so it was kept (`lean_project_kept: true`) per `verify-math-lean`'s rule that a reused project is not the run's to delete. Only per-snippet scratch (`TMP.lean`, `claim.md`) was removed; the three proofs are saved as `Paper/Verified/paper__{EQUATION__1,FORMULA_BLOCK__1,FORMULA_BLOCK__2}_0008opus5.lean`."
+}

@@ -1,0 +1,146 @@
+{
+  "policy": "TOOL_ROUTING_POLICY.md",
+  "routes": [
+    {
+      "candidate_id": "paper::CAND::0",
+      "route": "hybrid",
+      "status": "ROUTED",
+      "gate": "2",
+      "detector_hint": "symbolic",
+      "overruled_hint": true,
+      "rationale": "Gate 2: claim_content asserts an EQUALITY of two $\\mathbb{Z}_p$-submodules of $\\mathbb{Z}_p^{\\oplus4}$ universally quantified over $a,b,c\\in\\mathbb{Z}_p$ (policy Lean triggers: 'for all', 'equality'), and the instance space (small odd $p$, small integers $a,b,c$ with $a+b\\equiv0\\bmod p$, $a+b\\neq0$) is cheaply enumerable, so Python probes for a counterexample first and Lean settles the surviving general statement. Detector hint 'symbolic' overruled towards hybrid because a bare symbolic replay would not decide the universally-quantified module equality on its own.",
+      "probe_plan": "In exact arithmetic over $\\mathbb{Z}$/$\\mathbb{Q}$ (use Fraction, never floats): fix the four exponent-vector generators $g_1=(1,a-c,0,0)$, $g_2=(0,1,-1,1)$, $g_3=(0,1,1,0)$ and the target $v=(2,\\,a-b-c,\\,a+b-c,\\,a+b+c)$. (1) With free symbols $a,b,c$ in sympy, solve $v=\\lambda_1 g_1+\\lambda_2 g_2+\\lambda_3 g_3$ from the $\\gamma$-, $z$- and $y$-coordinates and substitute into the $x$-coordinate; report the resulting necessary condition on $a,b,c$. (2) Enumerate odd primes $p\\in\\{3,5,7,11\\}$ and all integers $a,b,c$ with $|a|,|b|,|c|\\le 3p$ satisfying $a+b\\equiv0\\bmod p$, $a+b\\neq0$, $a-c\\not\\equiv0\\bmod p$, $b+c\\not\\equiv0\\bmod p$; for each, decide whether $v$ lies in the $\\mathbb{Z}_p$-span of $g_1,g_2,g_3$ by solving over $\\mathbb{Q}$ and testing that every $\\lambda_i$ has $p$-adic valuation $\\ge 0$. Report any instance where membership fails (that refutes the paper's equality) and any where it holds. (3) Also compute, for the same instances, the reduced generator $\\gamma x^{t}$ of $\\langle J(\\gamma)\\gamma, xy^{-1}z, xy\\rangle$ and compare $t$ with $a-c$.",
+      "formal_target": "For all $a,b,c,\\lambda_1,\\lambda_2,\\lambda_3\\in\\mathbb{Q}$: if $\\lambda_1\\cdot(1,a-c,0,0)+\\lambda_2\\cdot(0,1,-1,1)+\\lambda_3\\cdot(0,1,1,0) = (2,\\;a-b-c,\\;a+b-c,\\;a+b+c)$ componentwise, then $4\\,(a+b)=0$. (Equivalently: the vector $J(\\gamma)\\gamma$ lies in the span of the three generators only when $a+b=0$, so for $a+b\\neq0$ the two subgroups of (4.5) are distinct.)"
+    },
+    {
+      "candidate_id": "paper::CAND::1",
+      "route": "python",
+      "status": "ROUTED",
+      "gate": "1",
+      "detector_hint": "proof_step",
+      "overruled_hint": true,
+      "rationale": "Gate 1: a single symbolic determinant computation plus one concrete witness decides it — compute $\\det$ of the displayed $3\\times3$ block, check it equals $-((a+b+c)^3+(a+b-c)^3)$, and exhibit $(a,b,c)$ mod $p$ with $|K|\\equiv0$ for which $K'\\bmod p$ has rank $<6$, so $\\mathcal{K}(G)\\neq0$. Detector hint 'proof_step' overruled: the inference is settled by recomputation, not by close reading.",
+      "probe_plan": "With sympy: (1) compute $\\det\\begin{bmatrix}a+b-c&0&-a-b-c\\\\a+b+c&a+b-c&0\\\\0&a+b+c&-a-b+c\\end{bmatrix}$ symbolically and simplify $-\\det$; check it equals $(a+b+c)^3+(a+b-c)^3$ and also $2(a+b)((a+b)^2+3c^2)$. (2) For $p\\in\\{3,5,7,11,13\\}$ enumerate all $(a,b,c)\\in\\mathbb{F}_p^3$ and compute $\\mathrm{rank}(K'\\bmod p)$ for the full $6\\times6$ matrix $K'$ given in the proof; tabulate rank $=6$ against whether $(a+b+c)^3+(a+b-c)^3\\equiv0\\bmod p$. Report whether full rank correlates with $\\not\\equiv0$ or with $\\equiv0$.",
+      "formal_target": null
+    },
+    {
+      "candidate_id": "paper::CAND::2",
+      "route": "python",
+      "status": "ROUTED",
+      "gate": "1",
+      "detector_hint": "symbolic",
+      "overruled_hint": false,
+      "rationale": "Gate 1: one concrete computation decides it — pick $(a,b,c)$ mod $p$ with $\\det$ of the $3\\times3$ block a unit and compare $\\dim_{\\mathbb{F}_p}\\mathrm{coker}(\\overline{A'})$ with $4-\\mathrm{rank}\\,\\overline{A'}$ against the three asserted rank values.",
+      "probe_plan": "With numpy/sympy over $\\mathbb{F}_p$ for $p\\in\\{3,5,7,11\\}$: enumerate all $(a,b,c)\\in\\mathbb{F}_p^3$; for each form the $4\\times4$ matrix $\\overline{A'}=\\begin{bmatrix}1&0&0&0\\\\0&a&b&c\\\\0&-c&a&b\\\\0&-b&-c&a\\end{bmatrix}$ and the $3\\times3$ block $\\overline{A}$; compute $\\mathrm{rank}\\,\\overline{A'}$, $\\mathrm{rank}\\,\\overline{A}$ and $d:=4-\\mathrm{rank}\\,\\overline{A'}$ (which equals $\\dim_{\\mathbb{F}_p}\\mathrm{coker}$). Check whether $d=0 \\iff \\mathrm{rank}\\,\\overline{A'}=3$ (the paper's claim) or $\\iff \\mathrm{rank}\\,\\overline{A'}=4$, and likewise for $d=1$ and $d=2$; also verify $\\mathrm{rank}\\,\\overline{A'}=1+\\mathrm{rank}\\,\\overline{A}$ and $\\det\\overline{A}=a^3-b^3+c^3+3abc=(a-b+c)((a^2+bc)+(b^2-ac)+(c^2+ab))$.",
+      "formal_target": null
+    },
+    {
+      "candidate_id": "paper::CAND::3",
+      "route": "python",
+      "status": "ROUTED",
+      "gate": "1",
+      "detector_hint": "symbolic",
+      "overruled_hint": false,
+      "rationale": "Gate 1: a one-line symbolic substitution reproduces the step — substitute $c=b-a$ into $2(a+b)((a+b)^2+3c^2)$ and into $a^2+bc$, $b^2-ac$, $c^2+ab$, then compare with the printed $8(a+b)(a-ab+b^2)$ and $a-ab+b^2$.",
+      "probe_plan": "With sympy: let $a,b$ be symbols and set $c=b-a$. (1) Expand and factor $|K|=2(a+b)((a+b)^2+3c^2)$ and compare with $8(a+b)(a-a b+b^2)$ and with $8(a+b)(a^2-ab+b^2)$; report which matches identically. (2) Simplify $a^2+bc$, $b^2-ac$, $c^2+ab$ under $c=b-a$ and report the common value. (3) As a sanity check on homogeneity, evaluate both candidate expressions at $(a,b)=(1,1),(2,1),(1,2),(3,2)$ and show the numeric disagreement.",
+      "formal_target": null
+    },
+    {
+      "candidate_id": "paper::CAND::4",
+      "route": "python",
+      "status": "ROUTED",
+      "gate": "1",
+      "detector_hint": "proof_step",
+      "overruled_hint": true,
+      "rationale": "Gate 1: the instance space is a finite enumeration over $\\mathbb{F}_p^3$ — check directly whether the stated hypotheses of Lemma 4.2.2(ii) ever admit $c\\equiv0$, and whether $|K|\\not\\equiv0$ follows in the case $c\\equiv0$ or in the case $c\\not\\equiv0$. Detector hint 'proof_step' overruled: an exhaustive finite check settles it.",
+      "probe_plan": "For $p\\in\\{3,5,7,11,13,17\\}$ enumerate all $(a,b,c)\\in\\mathbb{F}_p^3$ satisfying the hypotheses of Lemma 4.2.2(ii): $a+b\\not\\equiv0$, $a-b+c\\not\\equiv0$, $(a^2+bc)+(c^2+ab)\\equiv0$, $(b^2-ac)+(c^2+ab)\\equiv0$. For each surviving triple report: whether $c\\equiv0$ is ever possible; the value of $|K|=2(a+b)((a+b)^2+3c^2)$; and whether $|K|\\equiv 2(a+b)c(a-b+c)$ holds. Conclude for which of the two cases ($c\\equiv0$ / $c\\not\\equiv0$) the implication '$a-b+c\\not\\equiv0$ and $a+b\\not\\equiv0$ $\\Rightarrow$ $|K|\\not\\equiv0$' is the correct reading.",
+      "formal_target": null
+    },
+    {
+      "candidate_id": "paper::CAND::5",
+      "route": "informal",
+      "status": "ROUTED",
+      "gate": "4",
+      "detector_hint": "proof_step",
+      "overruled_hint": false,
+      "rationale": "Gate 4: the defect is a structural inconsistency between a paragraph's announced goal and the conclusion it actually reaches about ramification of $p$ in a $\\mathbb{Z}_p$-extension, together with which hypothesis Corollary 2.3.3 needs. No computation and no formalisable statement reaches it; it is settled by reading the paragraph against Corollary 2.3.3.",
+      "probe_plan": null,
+      "formal_target": null
+    },
+    {
+      "candidate_id": "paper::CAND::6",
+      "route": "python",
+      "status": "ROUTED",
+      "gate": "1",
+      "detector_hint": "symbolic",
+      "overruled_hint": false,
+      "rationale": "Gate 1: a bare symbolic exponent comparison of two products of powers decides it.",
+      "probe_plan": "With sympy, treat $y,z$ as symbols with free exponents: expand $(y^{a+b-c}z^{a+b-c})^{c}$ and $(y^{a+b-c}z^{a+b+c})^{c}$, and compare each against the asserted left-hand side $y^{c(a+b-c)}z^{c(a+b+c)}$ by matching exponents of $y$ and of $z$ as polynomials in $a,b,c$. Report which bracket reproduces the left-hand side, and give one numeric triple (e.g. $a=1,b=2,c=3$) showing the $z$-exponents differ for the printed version.",
+      "formal_target": null
+    },
+    {
+      "candidate_id": "paper::CAND::7",
+      "route": "python",
+      "status": "ROUTED",
+      "gate": "1",
+      "detector_hint": "symbolic",
+      "overruled_hint": false,
+      "rationale": "Gate 1: a bare symbolic exponent comparison of two products of powers decides it.",
+      "probe_plan": "With sympy, treat $y,z$ as symbols with free exponents: expand $(y^{a+b-c}z^{a+b+c})^{-(a+b+c)}$ and $(y^{a+b-c}z^{a+b+c})^{-(a+b-c)}$, and compare the exponents of $y$ and $z$ against the asserted left-hand side $y^{-(a+b-c)^2}z^{-(a+b-c)(a+b+c)}$ as polynomials in $a,b,c$. Report which exponent on the bracket reproduces the left-hand side, with one numeric triple exhibiting the mismatch for the printed version.",
+      "formal_target": null
+    },
+    {
+      "candidate_id": "paper::CAND::8",
+      "route": "python",
+      "status": "ROUTED",
+      "gate": "1",
+      "detector_hint": "numeric",
+      "overruled_hint": false,
+      "rationale": "Gate 1: a numeric recomputation from the paper's own stated inputs decides it — substitute $r_1=0$, $r_2=n/2$ and $\\nu\\in\\{0,1\\}$ into Corollary 2.2.3's radicand and evaluate the bound at $n=2,4,6$.",
+      "probe_plan": "Compute $1+8(r_1+r_2+\\nu-1)$ with $r_1=0$, $r_2=n/2$ symbolically in $n$ and $\\nu$; show it equals $4n+8\\nu-7$ and compare with the printed radicand $4n-7$. Then evaluate $(1+\\sqrt{4n+8\\nu-7})/2$ exactly (sympy, not floats) for $n\\in\\{2,4,6\\}$ and $\\nu\\in\\{0,1\\}$ and report for which combinations the bound is $<3$ (i.e. gives $\\dim\\le2$) and for which it is $\\ge3$. Flag the case $n=6,\\nu=1$ specifically.",
+      "formal_target": null
+    },
+    {
+      "candidate_id": "paper::CAND::9",
+      "route": "informal",
+      "status": "ROUTED",
+      "gate": "4",
+      "detector_hint": "proof_step",
+      "overruled_hint": false,
+      "rationale": "Gate 4: the suspected defect is an unjustified chain of inferences about inertia, splitting and decomposition behaviour across a tower $k\\subset k_\\infty\\subset P_\\infty Q_\\infty$, plus an apparent self-contradiction between consecutive sentences. The objects (decomposition/inertia groups in $\\mathbb{Z}_p$-extensions of a degree-6 CM field) have no Mathlib counterpart and the group-theoretic skeleton given in claim_content does not pin down the field-theoretic step, so the escalation guard forbids lean; close reading is the only route that reaches it.",
+      "probe_plan": null,
+      "formal_target": null
+    },
+    {
+      "candidate_id": "paper::CAND::10",
+      "route": "informal",
+      "status": "ROUTED",
+      "gate": "4",
+      "detector_hint": "proof_step",
+      "overruled_hint": false,
+      "rationale": "Gate 4: the defect is a misidentification of which Galois group Corollary 2.3.3 controls ($\\mathrm{Gal}(L'/k_\\infty)$ versus $\\mathrm{Gal}(L'/\\widetilde{k})$) inside a proof by contradiction. It is a structural mismatch between a cited result and its application, not a computation; formalising it would require inventing the field-theoretic setup the paper leaves implicit.",
+      "probe_plan": null,
+      "formal_target": null
+    },
+    {
+      "candidate_id": "paper::CAND::11",
+      "route": "python",
+      "status": "ROUTED",
+      "gate": "1",
+      "detector_hint": "symbolic",
+      "overruled_hint": false,
+      "rationale": "Gate 1: one symbolic computation decides it — read the coordinate vector of $[\\gamma,y][x,y]^{a}[y,z]^{-c}$ off the stated basis, apply the paper's own row operations to both the printed and the corrected row 2, and compare with the paper's displayed reduced matrix; a rank computation mod $p$ supplies a concrete witness.",
+      "probe_plan": "Encode each of the six listed commutator images as a coordinate vector in the basis $\\{[\\gamma,x],[\\gamma,y],[\\gamma,z],[x,y],[y,z],[z,x]\\}$ and compare with the printed rows of $K'$. Then apply the row operations 'add row $i$ to row $i+3$' ($i=1,2,3$) to the printed $K'$ and to the variant with row 2 replaced by $(0,1,0,a,-c,0)$, and test symbolically which reproduces the paper's displayed reduced rows 4,5,6. Finally enumerate all $(a,b,c)\\in\\mathbb{F}_p^3$ for $p\\in\\{3,5,7,11,13\\}$ and report how often $\\mathrm{rank}$ of the printed and corrected matrices differ mod $p$.",
+      "formal_target": null
+    }
+  ],
+  "totals": {
+    "python": 8,
+    "lean": 0,
+    "hybrid": 1,
+    "informal": 3,
+    "none": 0
+  },
+  "policy_conflicts": [],
+  "note": "paper::CAND::11 routed during Step 4 after being found while verifying paper::CAND::1."
+}

@@ -1,0 +1,200 @@
+{
+  "policy": "TOOL_ROUTING_POLICY.md",
+  "routes": [
+    {
+      "candidate_id": "0004-A_Simple,_Nearly-Optimal_Algorithm_for_Differentially_Private_All-Pairs_Shortest_Distances::CAND::0",
+      "route": "informal",
+      "status": "ROUTED",
+      "gate": "4",
+      "detector_hint": "proof_step",
+      "overruled_hint": false,
+      "rationale": "Gate 4: the defect is a lemma invoked outside its stated conditions (Lemma 3.2 is proved for a tree supplied as fixed public input; here the tree is a shortest path tree of the private weights). Escalation guard blocks lean/hybrid: a faithful Lean statement would need a full formal model of the Sealfon centroid mechanism and of epsilon-DP for graph mechanisms, which Mathlib does not supply and claim_content does not pin down.",
+      "probe_plan": null,
+      "formal_target": null
+    },
+    {
+      "candidate_id": "0004-A_Simple,_Nearly-Optimal_Algorithm_for_Differentially_Private_All-Pairs_Shortest_Distances::CAND::1",
+      "route": "hybrid",
+      "status": "ROUTED",
+      "gate": "2",
+      "detector_hint": "general_claim",
+      "overruled_hint": false,
+      "rationale": "Gate 2: the claim is universally quantified over all graphs and all noise draws (policy trigger: 'for all' / an inequality that must hold in general), and its instance space is cheaply samplable -- small graphs with many parallel <=t-hop paths, simulated Laplace noise. Python searches for the lower-deviation counterexample first; the surviving deterministic concentration statement is handed to Lean.",
+      "probe_plan": "Build graphs with N vertex-disjoint u-v paths of exactly t edges each (so d_G^{(t)} is the min of N independent sums of t Lap(1/eps) perturbations). For t in {4,16,64,256} and N in {1,10,100,10000}, sample the noise and measure the empirical lower deviation d_{Gtilde}^{(t)}(u,v) - d_G^{(t)}(u,v). Fit its magnitude against sqrt(t)*log(n/gamma)/eps (the lemma's claim) and against t*sqrt(log n)/eps and t*log(n/gamma)/eps (the edge-wise bound). Also compute exactly, by numerical integration, the median of min of N i.i.d. sums of t Lap(1) variables, and check whether it grows like sqrt(t*log N) rather than sqrt(t).",
+      "formal_target": "For every b>0, t in N and N in N, if S_1,...,S_N are independent, each the sum of t i.i.d. Lap(b) variables, then the median of min_{j<=N} S_j is at most -c * b * sqrt(t * log N) for an absolute constant c>0; consequently a concentration bound of the form |min_j S_j| = O(b sqrt(t) log(1/gamma)) that is uniform in N cannot hold."
+    },
+    {
+      "candidate_id": "0004-A_Simple,_Nearly-Optimal_Algorithm_for_Differentially_Private_All-Pairs_Shortest_Distances::CAND::2",
+      "route": "hybrid",
+      "status": "ROUTED",
+      "gate": "2",
+      "detector_hint": "proof_step",
+      "overruled_hint": true,
+      "rationale": "Hint was proof_step, but claim_content states a fully quantified metric implication with an enumerable instance space, so Gate 2 fires rather than Gate 4: 'for all finite weighted graphs, all level sets A^m_l and all pairs u,v, if w = p_l(u) and w in B(v) then v in C^m(w)' (policy triggers: universal quantification; an implication that must hold in general). Python searches small weighted graphs for a configuration refuting it; the surviving statement is a purely metric proposition Lean can state faithfully.",
+      "probe_plan": "Enumerate/randomly search finite weighted graphs with n <= 8 vertices and integer weights in [1,6], together with level sets A^m_l of size 2..3 and an A_{l+1} with A^m_{l+1} subset of A^m_l. For each, run the Thorup-Zwick swapping procedure of Section 4.2 to termination, record the terminal w, u, v, and test the three predicates: (i) w is the closest vertex of A^m_l to u; (ii) w in B(v), i.e. d(w,v) < d(v,p_{l+1}(v)); (iii) v in C^m(w), i.e. d(w,v) < d(v, A^m_l minus {w}). Report any instance with (i) and (ii) true and (iii) false.",
+      "formal_target": "Let (X,d) be a finite metric space, let A' subset A subset X be finite with |A| >= 2, and for x in X let pA(x) be a nearest point of A' to x. Define C(w) = {y in X : d(w,y) < d(y, A minus {w})} and B(y) = {z in X : d(z,y) < d(y, pA(y))}. Then for all u,v in X and w in A: if d(w,u) = d(u,A) and w in B(v), it follows that v in C(w)."
+    },
+    {
+      "candidate_id": "0004-A_Simple,_Nearly-Optimal_Algorithm_for_Differentially_Private_All-Pairs_Shortest_Distances::CAND::3",
+      "route": "python",
+      "status": "ROUTED",
+      "gate": "1",
+      "detector_hint": "symbolic",
+      "overruled_hint": false,
+      "rationale": "Gate 1: an asymptotic bookkeeping identity that is reproduced symbolically and compared line to line -- substitute the per-tree budget eps' = eps/(t*k) with t = ceil(100 n^{1/k} log n) into Corollary 4.1's O(log^{1.5}(n) log(n/gamma')/eps') and read off the exponent of log(n).",
+      "probe_plan": "With sympy, set t = 100*n**(1/k)*log(n), eps_p = eps/(t*k), gamma_p = gamma/(t*k), and form E = log(n)**Rational(3,2)*log(n/gamma_p)/eps_p. Simplify E and extract the exponent of log(n) in the prefactor (the factor multiplying log(n*t*k/gamma)). Compare with the paper's displayed prefactor k*n**(1/k)*log(n)**Rational(3,2) and with the final claimed k*n**(1/k)*log(n)**Rational(5,2)*log(k)*log(1/gamma). Evaluate both numerically at n = 2**10, 2**20, 2**30 and k = 2,3,5 to confirm the ratio is Theta(log n).",
+      "formal_target": null
+    },
+    {
+      "candidate_id": "0004-A_Simple,_Nearly-Optimal_Algorithm_for_Differentially_Private_All-Pairs_Shortest_Distances::CAND::4",
+      "route": "informal",
+      "status": "ROUTED",
+      "gate": "4",
+      "detector_hint": "proof_step",
+      "overruled_hint": false,
+      "rationale": "Gate 4: as with candidate 0, the defect is that Corollary 4.1 is applied to trees that are functions of the private weight vector (clusters defined by distance comparisons, within-cluster shortest path trees, a minimum-weight Kruskal completion). The escalation guard blocks lean/hybrid -- epsilon-DP of this composed mechanism has no Mathlib counterpart and claim_content does not define the mechanism to the precision a faithful formalisation needs.",
+      "probe_plan": null,
+      "formal_target": null
+    },
+    {
+      "candidate_id": "0004-A_Simple,_Nearly-Optimal_Algorithm_for_Differentially_Private_All-Pairs_Shortest_Distances::CAND::5",
+      "route": "informal",
+      "status": "ROUTED",
+      "gate": "4",
+      "detector_hint": "general_claim",
+      "overruled_hint": true,
+      "rationale": "Hint was general_claim, but Gate 4 fires: the alleged defect is that the definition of B(u) is not well-formed (a free, unquantified index i), i.e. the object the claim quantifies over is not pinned down. The escalation guard is explicit that a claim depending on an object with no definition downgrades to informal -- there is nothing unambiguous for Lean to state, and nothing numeric for Python to compute.",
+      "probe_plan": null,
+      "formal_target": null
+    },
+    {
+      "candidate_id": "0004-A_Simple,_Nearly-Optimal_Algorithm_for_Differentially_Private_All-Pairs_Shortest_Distances::CAND::6",
+      "route": "python",
+      "status": "ROUTED",
+      "gate": "1",
+      "detector_hint": "symbolic",
+      "overruled_hint": false,
+      "rationale": "Gate 1: a side condition on specific stated inputs that one computation decides -- evaluate |A^r_i| * t = n^{1-(i+1)/k} * ceil(100 n^{1/k} log n) against n over the paper's own admitted range 2 <= k <= floor(log n / log 2).",
+      "probe_plan": "For n in {2**10, 2**16, 2**20, 2**30} and every integer k in [2, floor(log2(n))], and every level i in [1, k-1], compute A = n**(1-(i+1)/k), t = ceil(100 * n**(1/k) * log(n)) and the product A*t, and report the (n,k,i) triples where A*t > n. Also compute the actual constant 1 + A*t/n to see how far E[X_i] >= (t/2)|A^r_i| is from holding, and check whether the downstream conclusion |A_i| >= (t/4) n^{1-(i+1)/k} survives with the true constant. Use both natural log and log base 2 for log(n), since the paper mixes bases.",
+      "formal_target": null
+    },
+    {
+      "candidate_id": "0004-A_Simple,_Nearly-Optimal_Algorithm_for_Differentially_Private_All-Pairs_Shortest_Distances::CAND::7",
+      "route": "python",
+      "status": "ROUTED",
+      "gate": "1",
+      "detector_hint": "proof_step",
+      "overruled_hint": true,
+      "rationale": "Hint was proof_step, but Gate 1 fires: the step asserts explicit probabilities -- (1-j/n)^{|A^r_i|-1} for a without-replacement sample, and (1-1/(2|A^r_i|))^{|A_{i+1}|} across dependent events -- and these are 'a probability asserted to lie in a range it can be shown to leave', decidable by exact enumeration at small parameters.",
+      "probe_plan": "For small n (6..10), small |A^r_i| (2..4) and |A_{i+1}| (2..5), enumerate exactly all without-replacement samples (and all nested pairs A^r_{i+1} subset A^r_i with A^r_{i+1} subset A_{i+1}) and compute the EXACT probabilities P[all y in A^r_i minus {w} have O_u(y) > j] and P[d(u, p_{i+1}(u)) <= d(u, A^r_i minus {w})]. Compare each with the paper's product-form expression and with the final bound 1 - (1 - 1/(2|A^r_i|))^{|A_{i+1}|}; report whether the paper's expression is an upper bound, a lower bound, or neither (i.e. whether the inequality direction the proof needs is preserved despite the dependence).",
+      "formal_target": null
+    },
+    {
+      "candidate_id": "0004-A_Simple,_Nearly-Optimal_Algorithm_for_Differentially_Private_All-Pairs_Shortest_Distances::CAND::8",
+      "route": "python",
+      "status": "ROUTED",
+      "gate": "1",
+      "detector_hint": "symbolic",
+      "overruled_hint": false,
+      "rationale": "Gate 1: the same symbolic bookkeeping as candidate 3 but under advanced composition -- substitute |T| = t*k with t = ceil(100 n^{1/k} log n) into Lemma 2.2's eps' = eps/(2 sqrt(2 |T| log(2/delta))) and Corollary 4.1's error, then read off the exponent of log(n).",
+      "probe_plan": "With sympy, set t = 100*n**(1/k)*log(n), K = t*k, eps_p = eps/(2*sqrt(2*K*log(2/delta))), gamma_p = gamma/K, and form E = log(n)**Rational(3,2)*log(n/gamma_p)/eps_p. Simplify and extract the exponent of log(n) in the prefactor multiplying sqrt(k)*n**(1/(2*k))*sqrt(log(2/delta)). Compare with the claimed log(n)**Rational(5,2). Evaluate numerically at n = 2**20, k in {2,3,5}, delta = 1e-6 to confirm the ratio against the claim is Theta(sqrt(log n)).",
+      "formal_target": null
+    },
+    {
+      "candidate_id": "0004-A_Simple,_Nearly-Optimal_Algorithm_for_Differentially_Private_All-Pairs_Shortest_Distances::CAND::9",
+      "route": "python",
+      "status": "ROUTED",
+      "gate": "1",
+      "detector_hint": "symbolic",
+      "overruled_hint": false,
+      "rationale": "Gate 1: a one-line symbolic comparison of two closed forms -- is sqrt(k * n^{1/(2k)}) equal to sqrt(k) * n^{1/(2k)}, and which of the two does sqrt(K) with K = k n^{1/k} (the advanced-composition factor over Lemma 4.1's k n^{1/k} trees) equal?",
+      "probe_plan": "With sympy, simplify sqrt(k*n**(1/(2*k))), sqrt(k)*n**(1/(2*k)) and sqrt(k*n**(1/k)); verify sqrt(k*n**(1/(2*k))) == sqrt(k)*n**(1/(4*k)) and sqrt(k*n**(1/k)) == sqrt(k)*n**(1/(2*k)). Evaluate all three at n = 2**20 and k in {2,3,4,8} to exhibit the numerical gap, and confirm which form the advanced-composition count sqrt(K) produces.",
+      "formal_target": null
+    },
+    {
+      "candidate_id": "0004-A_Simple,_Nearly-Optimal_Algorithm_for_Differentially_Private_All-Pairs_Shortest_Distances::CAND::10",
+      "route": "python",
+      "status": "ROUTED",
+      "gate": "1",
+      "detector_hint": "numeric",
+      "overruled_hint": false,
+      "rationale": "Gate 1: a count recomputed from the paper's own index ranges -- the trees are T^r_i for i in [k-1] and r in [t] with t = ceil(100 n^{1/k} log n), so evaluate |T| and compare with the asserted t*k = 100 k n^{1/k} log(n).",
+      "probe_plan": "Compute the cardinality of {(i,r) : i in range(1,k), r in range(1,t+1)} for k in {2,...,10} and t = ceil(100*n**(1/k)*log(n)) at n in {2**10, 2**20}; compare with t*k and with 100*k*n**(1/k)*log(n) exactly (ceiling included). Report the relative gaps and the direction (whether t*k over- or under-counts), since the count is used as the composition denominator eps/(t*k) and as a union-bound multiplicity.",
+      "formal_target": null
+    },
+    {
+      "candidate_id": "0004-A_Simple,_Nearly-Optimal_Algorithm_for_Differentially_Private_All-Pairs_Shortest_Distances::CAND::11",
+      "route": "informal",
+      "status": "ROUTED",
+      "gate": "4",
+      "detector_hint": "proof_step",
+      "overruled_hint": false,
+      "rationale": "Gate 4: the defect is that the proof's only displayed bound compares the output with itself (dtilde^{(t)} was DEFINED as d_{Gtilde}^{(t)}), so the displayed step does not establish the stated lemma. That is a reading of what the proof does and does not prove -- a structural gap, with no quantity to compute and nothing but a trivially true identity to formalise.",
+      "probe_plan": null,
+      "formal_target": null
+    },
+    {
+      "candidate_id": "0004-A_Simple,_Nearly-Optimal_Algorithm_for_Differentially_Private_All-Pairs_Shortest_Distances::CAND::12",
+      "route": "informal",
+      "status": "ROUTED",
+      "gate": "4",
+      "detector_hint": "general_claim",
+      "overruled_hint": true,
+      "rationale": "Hint was general_claim, but Gate 4 fires via the escalation guard: the alleged defect is that the maximum in the lemma statement is ill-defined (the summand is |infinity - infinity| for pairs with h(u,v) > t). There is no value to recompute, and a faithful Lean statement would have to invent the missing restriction h(u,v) <= t -- which, the guard notes, would verify a different claim.",
+      "probe_plan": null,
+      "formal_target": null
+    },
+    {
+      "candidate_id": "0004-A_Simple,_Nearly-Optimal_Algorithm_for_Differentially_Private_All-Pairs_Shortest_Distances::CAND::13",
+      "route": "informal",
+      "status": "ROUTED",
+      "gate": "4",
+      "detector_hint": "proof_step",
+      "overruled_hint": false,
+      "rationale": "Gate 4: the defect is a non-exhaustive case analysis in an induction (the partition is V_0,...,V_t but only i in [t] is treated), i.e. a structural gap in how the argument covers its own cases. No computation reaches it, and formalising the repaired induction would verify the fixed proof rather than the one in the paper.",
+      "probe_plan": null,
+      "formal_target": null
+    },
+    {
+      "candidate_id": "0004-A_Simple,_Nearly-Optimal_Algorithm_for_Differentially_Private_All-Pairs_Shortest_Distances::CAND::14",
+      "route": "python",
+      "status": "ROUTED",
+      "gate": "1",
+      "detector_hint": "proof_step",
+      "overruled_hint": true,
+      "rationale": "Hint was proof_step, but Gate 1 fires: the claim is distributional and exactly checkable at small parameters -- is |A_i| really Binomial(n, p_i), and does the lower-tail bound P[X <= E[X]/2] <= exp(-E[X]/8) that Lemma 2.5 supplies for a binomial still hold for the true (without-replacement, unioned-over-r) law of |A_i|?",
+      "probe_plan": "For n in {6,...,12}, fixed sample size m = |A^r_i| in {1,...,4} and t in {1,...,5}, compute the EXACT distribution of |A_i| where A_i is the union of t independent uniform m-subsets of [n] (by exhaustive enumeration or by exact dynamic programming over occupancy). Compare it with Binomial(n, 1-(1-m/n)**t): check equality of the pmf (expect inequality), equality of the mean (expect equality), and whether the lower tail P[|A_i| <= E/2] is bounded by exp(-E/8). Report whether the true law is lower-tail dominated by the binomial (which would make the proof's substitution harmless) or not.",
+      "formal_target": null
+    },
+    {
+      "candidate_id": "0004-A_Simple,_Nearly-Optimal_Algorithm_for_Differentially_Private_All-Pairs_Shortest_Distances::CAND::15",
+      "route": "python",
+      "status": "ROUTED",
+      "gate": "1",
+      "detector_hint": "symbolic",
+      "overruled_hint": false,
+      "rationale": "Gate 1: a closed form checked by substitution -- put s = sqrt(n)/(log(n) sqrt(log(2/delta))) into the paper's bounds (5) and (2) and read off the exponent of log(2/delta) in each, comparing with the claimed sqrt(log(2/delta)).",
+      "probe_plan": "With sympy, set s = sqrt(n)/(log(n)*sqrt(L)) where L = log(2/delta); form B5 = sqrt(s)*log(n)**Rational(3,2)*sqrt(L)*log(2*s*n/gamma) and B2 = sqrt(n/s)*log(n)**Rational(3,2)*log(1/gamma); simplify both and extract the exponents of n, log(n) and L. Compare with the claimed n**Rational(1,4)*log(n)**2*sqrt(L)*log(1/gamma). Also re-optimise s symbolically by solving sqrt(s)*sqrt(L) = sqrt(n/s) for s, and report the resulting exponent of L in the balanced error.",
+      "formal_target": null
+    },
+    {
+      "candidate_id": "0004-A_Simple,_Nearly-Optimal_Algorithm_for_Differentially_Private_All-Pairs_Shortest_Distances::CAND::16",
+      "route": "python",
+      "status": "ROUTED",
+      "gate": "1",
+      "detector_hint": "proof_step",
+      "overruled_hint": true,
+      "rationale": "Hint was proof_step, but Gate 1 fires on the sensitivity question: the l1 sensitivity of the map w -> (all n^2 shortest distances) is a quantity recomputable from one concrete pair of neighboring graphs, so a single witness decides whether it is 1 or can be Theta(n^2).",
+      "probe_plan": "Construct small connected weighted graphs (paths, stars, cliques on n = 3..8 vertices with unit weights). For each, pick one edge e and form the neighbor w' = w + 1*indicator(e) (so ||w - w'||_1 = 1), recompute all n^2 shortest distances with Floyd-Warshall in both graphs, and compute the l1 norm of the difference. Report max over graphs and edges of that l1 norm, and its growth in n; compare with 1. Separately verify that the l1 sensitivity of the identity map w -> w is exactly 1, which is what licenses Lap(1/eps) per edge.",
+      "formal_target": null
+    }
+  ],
+  "totals": {
+    "python": 9,
+    "lean": 0,
+    "hybrid": 2,
+    "informal": 6,
+    "none": 0
+  },
+  "policy_conflicts": []
+}

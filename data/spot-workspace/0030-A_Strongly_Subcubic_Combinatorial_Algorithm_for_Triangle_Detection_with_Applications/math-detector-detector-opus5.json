@@ -1,0 +1,110 @@
+{
+  "paper_id": "0030-A_Strongly_Subcubic_Combinatorial_Algorithm_for_Triangle_Detection_with_Applications",
+  "title": "A Strongly Subcubic Combinatorial Algorithm for Triangle Detection with Applications",
+  "stage": "detector",
+  "candidates": [
+    {
+      "candidate_id": "0030-A_Strongly_Subcubic_Combinatorial_Algorithm_for_Triangle_Detection_with_Applications::CAND::0",
+      "error_location": "Proof of Theorem 2, Case 2.1 of the case analysis for BFS⁺",
+      "exact_quote": "Case 2.1: Exactly one vertex, namely a, appears on level 1. Then b and c appear on the next\nlevel (level 2) of the BFS tree. Assuming that b is discovered before c, the triangle {a, b, c} is\ndetected while scanning the adjacency list of b.",
+      "claim_content": "Setting: G=(V,E) is an undirected graph with n vertices and m edges. BFS⁺ is a modified Breadth-First-Search from a start vertex s that is asserted elsewhere in the paper to run in O(m) time and to report a triangle if one is 'detected' while scanning adjacency lists. T={a,b,c} is a fixed triangle of G (ab, ac, bc ∈ E). The start vertex s satisfies s ∉ {a,b,c} and s ∈ N(a), so a lies on level 1 of the BFS tree rooted at s. The paper's claim: if a is the ONLY vertex of T on level 1, then b and c lie on level 2 and 'the triangle {a,b,c} is detected while scanning the adjacency list of b'. Note that level 1 may contain many vertices other than a (all neighbours of s), and in BFS each vertex of level 2 is assigned a single parent, namely whichever level-1 vertex first scans it. Question: is it true that any O(m)-time BFS-based scan necessarily detects the triangle {a,b,c} in this configuration, given that b's BFS parent may be some level-1 vertex d ≠ a and c's BFS parent may be some level-1 vertex e ≠ a, and the edge bc joins two vertices of the same level whose common neighbour a is not recorded as the parent of either?",
+      "suspected_defect": "The argument tacitly assumes that b (and c) are discovered from a, i.e. that a is the BFS parent of b and/or c. In general b and c can be discovered from other level-1 vertices, so when the edge bc is scanned the only O(1)-accessible information (levels, single parents) does not exhibit a common neighbour, and the triangle {a,b,c} need not be detected. Since this case is exactly the 'favorable scenario' the whole algorithm relies on, the claimed correctness (and hence the O(n^{7/3}) triangle-detection result and everything derived from it) is not established. A concrete counterexample graph should be sought.",
+      "check_kind": "proof_step",
+      "confidence": 0.7,
+      "severity": "critical"
+    },
+    {
+      "candidate_id": "0030-A_Strongly_Subcubic_Combinatorial_Algorithm_for_Triangle_Detection_with_Applications::CAND::1",
+      "error_location": "Proof of Theorem 2, statement 'if s ∈ A then BFS⁺(s) finds a triangle'",
+      "exact_quote": "It remains to show that if s ∈ A then BFS⁺(s) finds a triangle in G (not necessarily T, unless\nT is the unique triangle in G).",
+      "claim_content": "Claim to be verified: Let G=(V,E) be an undirected graph containing a triangle T={a,b,c}, and let A = N⁺({a,b,c}) = {a,b,c} ∪ N(a) ∪ N(b) ∪ N(c) (closed neighbourhood). The paper asserts that for EVERY s ∈ A, a single breadth-first search from s, running in O(m) time and only performing O(1) work per scanned edge (checking levels/parents/adjacency of a constant number of already-known vertices), finds some triangle of G. Equivalently: whenever the start vertex is at distance ≤ 1 from a triangle, an O(m)-time BFS-based procedure is guaranteed to report a triangle. Is this general claim true?",
+      "suspected_defect": "This is the load-bearing lemma of the paper, but no concrete BFS⁺ rule is proved to achieve it. Triangles whose two 'far' vertices lie on the same BFS level with distinct BFS parents (as can happen in Case 2.1) are not exposed by any constant-work-per-edge test; detecting them appears to require checking many pairs of neighbours of a level-1 vertex, which breaks the O(m) time bound. A counterexample graph with a start vertex adjacent to a triangle in which no BFS-local test fires would refute the claim.",
+      "check_kind": "general_claim",
+      "confidence": 0.6,
+      "severity": "critical"
+    },
+    {
+      "candidate_id": "0030-A_Strongly_Subcubic_Combinatorial_Algorithm_for_Triangle_Detection_with_Applications::CAND::2",
+      "error_location": "Time analysis of TRIANGLE-DETECTION-1, Phase II",
+      "exact_quote": "Phase II (lines 6–9) takes $O(mn/x)$ time; indeed, each BFS$^+$ takes $O(m)$ time on a connected graph with $m$ edges and there are $O(n/x)$ such calls.",
+      "claim_content": "Claim: the modified search BFS⁺(s), which during a breadth-first search from s must additionally detect a triangle in each of the configurations described in the paper (root's two children adjacent; two level-2 vertices adjacent to a common level-1 vertex; two level-1 vertices adjacent), runs in O(m) time on a graph with m edges. Hypotheses: G is an undirected graph with n vertices, m edges; the adjacency matrix is available so a single edge test costs O(1); BFS⁺ is called ⌈70n/x⌉ times with x = ⌊m^{1/3}⌋, giving the claimed Phase-II bound O(mn/x).",
+      "suspected_defect": "A BFS that detects a triangle formed by two vertices on the same level together with a common neighbour on the previous level cannot, in general, do so with O(1) work per edge, since a level-2 vertex may have many level-1 neighbours while BFS stores only one parent. Either the O(m) per-call bound or the detection guarantee must fail; the paper never specifies and analyses the extra work (the pseudocode of BFS⁺ is not given in the text).",
+      "check_kind": "proof_step",
+      "confidence": 0.5,
+      "severity": "critical"
+    },
+    {
+      "candidate_id": "0030-A_Strongly_Subcubic_Combinatorial_Algorithm_for_Triangle_Detection_with_Applications::CAND::3",
+      "error_location": "Proof of Theorem 3 (BMM in Õ(n^{25/9}))",
+      "exact_quote": "Substituting β = 7/3 and using O(nm^{-1/3} log n) random trials in TRIANGLE-DETECTION-1 yields the claimed bound.",
+      "claim_content": "Theorem 3 claims: there is a randomized algorithm computing the Boolean product of two n×n matrices with high probability in O(n^{25/9} log n) time. Its proof invokes the reduction of V. V. Williams and R. Williams: if there is a T(n)=O(n^β) time (deterministic) triangle-detection algorithm for n-vertex graphs, 2 ≤ β ≤ 3, then BMM can be computed with high probability in O(n^{2+β/3} log n) time. Here the triangle subroutine substituted is the paper's randomized algorithm, whose running time after boosting the success probability (increasing the number of random start vertices from ⌈70n/x⌉ to O((n/x) log n), i.e. 'O(n m^{-1/3} log n) random trials') becomes O(n^{7/3} log n) rather than O(n^{7/3}). Question: does substituting a subroutine of running time n^{7/3} log n into a reduction whose cost is O(n^{2+β/3} log n) for a β-time subroutine yield O(n^{25/9} log n), or O(n^{25/9} log² n)?",
+      "suspected_defect": "The log n factor arising from boosting the randomized triangle subroutine appears to multiply the log n factor already present in the Williams–Williams reduction, giving O(n^{25/9} log² n); the stated bound O(n^{25/9} log n) seems to drop one logarithmic factor.",
+      "check_kind": "proof_step",
+      "confidence": 0.3,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "0030-A_Strongly_Subcubic_Combinatorial_Algorithm_for_Triangle_Detection_with_Applications::CAND::4",
+      "error_location": "Max-Cut section (before Theorem 5): counting of weight triples",
+      "exact_quote": "There are less than \\(m^3\\) possible triples \\((z_{01}, z_{12}, z_{20})\\) to consider",
+      "claim_content": "In the Max-Cut algorithm, G=(V,E) has |E|=m edges; V is split into V_0,V_1,V_2; the auxiliary graph H has one vertex per subset X_i ⊆ V_i and a directed edge from X_i to X_j (j=i+1 mod 3) of integer weight w(X_i,X_j) equal to a number of cut edges of G, hence an integer in the range 0,1,...,m. The algorithm enumerates all triples (z_{01},z_{12},z_{20}) of possible edge-weights. The paper asserts there are 'less than m^3' such triples.",
+      "suspected_defect": "Each weight ranges over {0,1,...,m}, so the number of triples is (m+1)^3 > m^3, not less than m^3. The subsequent union-bound computation 'm^3 · 10^{-30} · m^{-3} = 10^{-30}' also uses exactly m^3 triples; with (m+1)^3 triples the error bound is slightly larger than 10^{-30}.",
+      "check_kind": "numeric",
+      "confidence": 0.35,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "0030-A_Strongly_Subcubic_Combinatorial_Algorithm_for_Triangle_Detection_with_Applications::CAND::5",
+      "error_location": "Probability analysis of TRIANGLE-DETECTION-1 (after the displayed bound on Prob(E))",
+      "exact_quote": "by applying the standard inequality 1 − x ≤ e^(−x) for 0 ≤ x ≤ 1/2. Indeed, we have x/n ≤ 1/2 for n ≥ 4.",
+      "claim_content": "In TRIANGLE-DETECTION-1 the threshold is x = ⌊m^{1/3}⌋ where m = |E| ≤ n(n−1)/2, and the analysis needs (1 − x/n)^{70n/x} ≤ e^{−70}. Two sub-claims are made: (i) the inequality 1 − t ≤ e^{−t} is valid for 0 ≤ t ≤ 1/2; (ii) with x = ⌊m^{1/3}⌋ and m ≤ n(n−1)/2 one has x/n ≤ 1/2 for all n ≥ 4.",
+      "suspected_defect": "Sub-claim (i) is stated with an unnecessary restriction (1 − t ≤ e^{−t} holds for all real t), which is harmless, but sub-claim (ii) is an arithmetic assertion that should be checked: x/n ≤ ⌊(n(n−1)/2)^{1/3}⌋/n, which is ≈ 0.794 n^{−1/3} ≤ 1/2 only when n^{1/3} ≥ 1.587, i.e. right at n = 4. The bound is borderline and may fail for some small n (e.g. n = 5, m = 10 gives x = 2, x/n = 0.4; n = 4 needs checking).",
+      "check_kind": "numeric",
+      "confidence": 0.15,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "0030-A_Strongly_Subcubic_Combinatorial_Algorithm_for_Triangle_Detection_with_Applications::CAND::6",
+      "error_location": "TRIANGLE-DETECTION-1, line 1 and line 6",
+      "exact_quote": "1 x ← ⌊m¹/³⌋",
+      "claim_content": "The algorithm sets x ← ⌊m^{1/3}⌋ where m = |E|, and then in line 6 picks ⌈70n/x⌉ random vertices. The correctness argument requires every vertex of a triangle to have degree > x after Phase I, and the time analysis requires Phase I to cost O(nx²) and Phase II O(mn/x). Question: is the algorithm well defined for small m (e.g. m ≤ 7, where ⌊m^{1/3}⌋ = 1, or m = 0, where x = 0 makes ⌈70n/x⌉ undefined), and does the stated O(m^{2/3}n) bound hold in those regimes (with x = 1 the number of BFS calls is 70n, giving Θ(mn) time)?",
+      "suspected_defect": "For m = 0 the quantity ⌈70n/x⌉ divides by zero; for small m the number of random trials ⌈70n/x⌉ can exceed n and the Phase-II bound O(mn/x) = O(m^{2/3}n) degenerates (e.g. x = 1 gives Θ(mn), not O(m^{2/3}n) unless m^{1/3} = Θ(1) is absorbed in constants). A boundary-case defect in the parameter setting.",
+      "check_kind": "numeric",
+      "confidence": 0.2,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "0030-A_Strongly_Subcubic_Combinatorial_Algorithm_for_Triangle_Detection_with_Applications::CAND::7",
+      "error_location": "Applications section: clique detection bounds in terms of m",
+      "exact_quote": "Similarly, we obtain randomized combinatorial algorithms for detecting a \\( K_9 \\) in \\( O(n^7) \\) time, or in \\( O(m^{7/2}) \\) time; and for detecting a \\( K_{10} \\) in \\( O(n^8) \\) time, or in \\( O(m^4) \\) time.",
+      "claim_content": "Assuming (as the paper does) a randomized triangle-detection algorithm running in O(N^{7/3}) time on an N-vertex graph, the paper asserts: (a) K_9 can be detected in O(n^7) time and in O(m^{7/2}) time; (b) K_{10} can be detected in O(n^8) time and in O(m^4) time, where n = |V| and m = |E|. For (a) the auxiliary-graph ('triangle method') construction uses one auxiliary vertex per triangle of G, of which there are at most O(m^{3/2}), giving (m^{3/2})^{7/3} = m^{7/2}; for the n-bound, (n^3)^{7/3} = n^7. For (b), K_{10} = K_{3·3+1} is handled as 'n times a K_9 computation', giving O(n·n^7) = O(n^8); in terms of m the naive bound would be O(n·m^{7/2}), which for n = Θ(m) is Θ(m^{9/2}) > m^4. Is the stated O(m^4) bound for K_{10} justified?",
+      "suspected_defect": "The m-bound for K_{10} does not follow from the stated reduction (n calls of the K_9 algorithm) without an additional high-degree/low-degree balancing argument, which the paper does not give. As written, the natural bound is O(n·m^{7/2}) = O(m^{9/2}) for sparse graphs, not O(m^4).",
+      "check_kind": "numeric",
+      "confidence": 0.2,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "0030-A_Strongly_Subcubic_Combinatorial_Algorithm_for_Triangle_Detection_with_Applications::CAND::8",
+      "error_location": "Proof of Theorem 2, Case 2.2",
+      "exact_quote": "Case 2.2: At least two vertices of T, say, a and b, appear on level 1. This means that sa, sb ∈ E.\nSince we also have ab ∈ E, {s, a, b} is a triangle in G that is detected while scanning the adjacency\nlist of a, assuming that a, b (and possibly c) are discovered in this order.",
+      "claim_content": "Hypotheses: BFS⁺ is run from start vertex s in an undirected graph G; T={a,b,c} is a triangle; s ∉ T; at least two vertices of T, say a and b, lie on level 1 of the BFS tree rooted at s (hence sa, sb ∈ E), and ab ∈ E. Claimed conclusion: the triangle {s,a,b} is detected 'while scanning the adjacency list of a'. For this, the modified BFS must, upon scanning the edge ab where both a and b are on level 1 (both children of the root s), report the triangle. Is this detection rule consistent with the other detection rule needed in Case 2.1 (an edge between two level-2 vertices sharing a level-1 neighbour), and can both be implemented in O(1) time per scanned edge so that BFS⁺ still runs in O(m) time?",
+      "suspected_defect": "The paper never states the actual detection rule of BFS⁺ (the pseudocode appears only in a figure), so the case analysis asserts detection in three structurally different configurations without exhibiting one rule that handles all of them within the claimed O(m) time bound. In particular the level-1/level-1 rule (same parent = root) does not generalize to the level-2/level-2 configuration of Case 2.1 where parents may differ.",
+      "check_kind": "proof_step",
+      "confidence": 0.35,
+      "severity": "critical"
+    }
+  ],
+  "detector": {
+    "model": "claude-opus-5",
+    "provider": "anthropic",
+    "mode": "lenient-high-recall",
+    "paper_chars": 70941,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 49691,
+      "output_tokens": 29547,
+      "cache_read_input_tokens": 0,
+      "cache_creation_input_tokens": 0
+    }
+  }
+}

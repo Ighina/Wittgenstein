@@ -1,0 +1,120 @@
+{
+  "paper_id": "0040-Explicit_expression_and_fast_algorithms_for_the_inverse_of_some_matrices_arising_from_implicit_time_integration",
+  "title": "Explicit expression and fast algorithms for the inverse of some matrices arising from implicit time integration",
+  "stage": "detector",
+  "candidates": [
+    {
+      "candidate_id": "0040-Explicit_expression_and_fast_algorithms_for_the_inverse_of_some_matrices_arising_from_implicit_time_integration::CAND::0",
+      "error_location": "Lemma 2.1 (statement, the case i ≠ j)",
+      "exact_quote": "\\sum_{k=0}^{n} (-1)^{n-k} k c_j^{k-1} \\sigma_{n-k}(c_0, c_1, \\cdots, c_{i-1}, c_{i+1}, \\cdots, c_n) = \\begin{cases}\n\\prod_{\\substack{k=0 \\\\ k\\ne j}}^{n} (c_j - c_k), & i\\ne j, \\\\[2ex]\n\\sum_{\\substack{m=0 \\\\ m\\ne i}}^{n}\\prod_{\\substack{k=0 \\\\ k\\ne i,m}}^{n} (c_j - c_k), & i = j.\n\\end{cases}",
+      "claim_content": "Let c_0, c_1, ..., c_n be distinct numbers. For a fixed index i, let psi(x) = prod_{k=0, k≠i}^{n} (x - c_k), and write psi(x) = sum_{k=0}^{n} (-1)^{n-k} sigma_{n-k}(c_0,...,c_{i-1},c_{i+1},...,c_n) x^k, where sigma_m denotes the elementary symmetric function of degree m of the n arguments c_0,...,c_{i-1},c_{i+1},...,c_n. The paper's Lemma 2.1 asserts that for i ≠ j, sum_{k=0}^{n} (-1)^{n-k} k c_j^{k-1} sigma_{n-k}(c_0,...,c_{i-1},c_{i+1},...,c_n) = prod_{k=0, k≠j}^{n} (c_j - c_k). The left-hand side equals psi'(c_j) = sum_{m≠i} prod_{k≠i,m} (c_j - c_k), which for j ≠ i reduces to prod_{k≠i,j} (c_j - c_k), since all terms with m ≠ j contain the vanishing factor (c_j - c_j).",
+      "suspected_defect": "The right-hand side in the i ≠ j case omits the exclusion of the index k = i: it should be prod_{k ≠ i, j} (c_j - c_k), not prod_{k ≠ j} (c_j - c_k). The two differ by the factor (c_j - c_i). The proof of the lemma, two lines later, correctly concludes prod_{k ≠ i, j} (c_j - c_k), so the lemma statement contradicts its own proof.",
+      "check_kind": "symbolic",
+      "confidence": 0.5,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "0040-Explicit_expression_and_fast_algorithms_for_the_inverse_of_some_matrices_arising_from_implicit_time_integration::CAND::1",
+      "error_location": "Equation (2.9), definition of the generalized binomial coefficient at i = 0",
+      "exact_quote": "(2.9) \\quad \\binom{c_n}{c_n} = 1 \\quad \\text{and} \\quad \\binom{c_n}{c_0} = \\frac{(-1)^n \\prod_{k=0}^{n-1} (c_n - c_k)}\n{\\prod_{k=0}^{n-1} (c_{n-k} - c_0)}",
+      "claim_content": "The paper defines, for 0 < i < n, the generalized binomial coefficient of distinct numbers c_0,...,c_n by (2.8): binom(c_n, c_i) = [prod_{k=0}^{n-1}(c_n - c_k)] / { [prod_{k=0}^{i-1}(c_i - c_k)] [prod_{k=0}^{n-i-1}(c_{n-k} - c_i)] } = [prod_{k=0}^{n-1}(c_n - c_k)] / { (-1)^{n-i} prod_{k≠i}(c_i - c_k) }. It then extends the definition by (2.9): binom(c_n, c_n) = 1 and binom(c_n, c_0) = (-1)^n prod_{k=0}^{n-1}(c_n - c_k) / prod_{k=0}^{n-1}(c_{n-k} - c_0). The paper then asserts that setting c_i = i gives binom(c_n, c_i) = n!/(i!(n-i)!), and uses binom(c_n,c_0) in Theorem 2.2 / Corollary 2.3 / Theorem 2.4 (e.g. W_{0j} = (-1)^{j} binom(c_n,c_0) / (c_j - c_0) * binom(c_n,c_j)^{-1}).",
+      "suspected_defect": "Setting i = 0 in the defining product (2.8) gives binom(c_n,c_0) = prod_{k=0}^{n-1}(c_n - c_k) / prod_{k=0}^{n-1}(c_{n-k} - c_0), with NO factor (-1)^n. The extra (-1)^n in (2.9) makes the definition inconsistent with (2.8) and with the stated binomial specialization: for c_i = i, (2.9) yields (-1)^n * n!/n! = (-1)^n, whereas binom(n,0) = 1. Consequently the second (binomial) form of W_{0j} in Theorem 2.2 and the formulas for (e_1^T V_n^{-1} C_n^{-1})_i and (-A^{-1} e)_i in Theorem 2.4 pick up a spurious sign (-1)^n. A direct check with n = 1, c_0 = 0, c_1 = 1 gives W_{01} = -1, while the binomial form with (2.9) would give +1.",
+      "check_kind": "symbolic",
+      "confidence": 0.6,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "0040-Explicit_expression_and_fast_algorithms_for_the_inverse_of_some_matrices_arising_from_implicit_time_integration::CAND::2",
+      "error_location": "Equation (2.18), second identity",
+      "exact_quote": "(2.18) \\quad V^T F = \\begin{pmatrix} 0 & e_1^T \\\\ c_0 & V_n \\end{pmatrix} \\quad \\text{and} \\quad H^T = F \\begin{pmatrix} 0 & c_0^T \\\\ c_0 & C_n \\end{pmatrix}.",
+      "claim_content": "H is the (n+1)x(n+1) matrix (indices 0..n) whose only nonzero entries are H_{i,i-1} = i for i = 1,...,n (a strictly lower bidiagonal matrix with 1,2,...,n on the subdiagonal). F is the (n+1)x(n+1) shift matrix with F_{i,i+1} = 1 for i = 0,...,n-1 and zeros elsewhere. C_n = diag(c_1,...,c_n) and D_n = diag(1,2,...,n), and the vector c_0 = (c_0, c_0^2, ..., c_0^n)^T, which is the zero vector under the theorem's hypothesis c_0 = 0. The paper claims H^T = F * [[0, c_0^T],[c_0, C_n]].",
+      "suspected_defect": "H^T has superdiagonal entries 1,2,...,n, i.e. H^T = F * diag(0,1,2,...,n) = F * [[0,0],[0,D_n]]. The paper writes C_n = diag(c_1,...,c_n) instead of D_n = diag(1,...,n); the identity as written is false unless c_i = i. Indeed the very next display (2.19) substitutes D_n in this position, so (2.18) contradicts (2.19).",
+      "check_kind": "symbolic",
+      "confidence": 0.5,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "0040-Explicit_expression_and_fast_algorithms_for_the_inverse_of_some_matrices_arising_from_implicit_time_integration::CAND::3",
+      "error_location": "Section 2 (text preceding Eq. (2.2)) and Lemma 2.1 preamble: definition of the elementary symmetric functions",
+      "exact_quote": "where \\(\\sigma_{n+1-k}\\) denotes the \\(k\\)th elementary symmetric function of \\(c_0, c_1, \\cdots, c_n\\), i.e., \\(\\sigma_{n+1-k}(c_0,c_1, \\cdots, c_n)\\) is the sum of all distinct products of \\(k\\) of the arguments",
+      "claim_content": "The paper defines sigma_{n+1-k}(c_0,...,c_n) to be 'the kth elementary symmetric function', i.e. the sum of all distinct products of k of the arguments c_0,...,c_n, and similarly in Lemma 2.1 defines sigma_{n-k} to be 'the kth elementary symmetric function of c_0,...,c_{i-1},c_{i+1},...,c_n'. With these conventions the paper then writes, via Vieta's formula, varphi(x) = prod_{k=0}^{n}(x - c_k) = sum_{k=0}^{n+1} (-1)^{n+1-k} sigma_{n+1-k}(c_0,...,c_n) x^k (Eq. 2.2) and psi(x) = prod_{k≠i}(x - c_k) = sum_{k=0}^{n} (-1)^{n-k} sigma_{n-k}(c_0,...,c_{i-1},c_{i+1},...,c_n) x^k (Eq. 2.5).",
+      "suspected_defect": "The verbal definition conflicts with the subscript used in the formulas. Vieta's formula requires the coefficient of x^k in prod_{j=0}^{n}(x-c_j) to be (-1)^{n+1-k} e_{n+1-k}, where e_m is the sum of products of m distinct arguments; i.e. sigma_{n+1-k} must be the sum of products of (n+1-k) arguments, not of k arguments as the text states. With the stated definition, (2.2) and (2.5) are false (e.g. for n = 1, c_0 = 0, c_1 = 1 the stated convention would give the wrong constant term).",
+      "check_kind": "symbolic",
+      "confidence": 0.4,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "0040-Explicit_expression_and_fast_algorithms_for_the_inverse_of_some_matrices_arising_from_implicit_time_integration::CAND::4",
+      "error_location": "Section 3, complexity total for Algorithm 3.3",
+      "exact_quote": "A straightforward calculation shows that complexity for computing $\\tilde{g}$ and $\\tilde{W}$ are $2n^2$ and $n^2 + n$, respectively. Finally, we obtain Algorithm 3.3 with the complexity $7n^2 + 9n$ flops.",
+      "claim_content": "Algorithm 3.3 consists of three steps: (i) compute the matrix G (with G_{ii}=1 and G_{ik}=c_i-c_k for i≠k, of size (n+1)x(n+1)), for which the paper states the cost is (n+1)^2 flops; (ii) compute the vector tilde{g} with tilde{g}_i = psi(c_{i+1})/psi(c_i), stated cost 2n^2 flops, and then the matrix tilde{W} with tilde{W}_{ij} = psi(c_j)/psi(c_i) by the recursion tilde{W}_{ij} = tilde{W}_{i(j-1)} tilde{g}_{j-1} and tilde{W}_{ij} = 1/tilde{W}_{ji}, stated cost n^2+n flops; (iii) compute W from tilde{W} and G by W_{ij} = tilde{W}_{ij}/(c_j-c_i) for i≠j and W_{ii} = sum_{k≠i} 1/G_{ik}, for which the paper states the cost is 3n^2+7n flops. The paper then concludes the total complexity of Algorithm 3.3 is 7n^2 + 9n flops.",
+      "suspected_defect": "Adding the paper's own component counts gives (n+1)^2 + 2n^2 + (n^2+n) + (3n^2+7n) = 7n^2 + 10n + 1, which does not equal the stated total 7n^2 + 9n. The stated total is inconsistent with the stated parts.",
+      "check_kind": "numeric",
+      "confidence": 0.4,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "0040-Explicit_expression_and_fast_algorithms_for_the_inverse_of_some_matrices_arising_from_implicit_time_integration::CAND::5",
+      "error_location": "Section 3, complexity total for Algorithm 3.2",
+      "exact_quote": "From the above analysis, we observe that it requires \\(7n^2 + 15n\\) operations to compute \\(W\\).",
+      "claim_content": "Algorithm 3.2 consists of: (i) computing G ((n+1)x(n+1) matrix with G_{ii}=1, G_{ik}=c_i-c_k), stated cost (n+1)^2 flops; (ii) computing the first row tilde{W}_{0j} = prod_{k=0}^{n} G_{jk}/G_{0k}, stated cost 2n^2+4n flops; (iii) forming g = (1/tilde{W}_{01}, ..., 1/tilde{W}_{0n})^T and then tilde{W}_{ij} = tilde{W}_{0j} g_i, stated cost n^2+n flops; (iv) computing W from tilde{W} and G, stated cost 3n^2+7n flops. The paper concludes the total is 7n^2+15n operations.",
+      "suspected_defect": "Summing the paper's own stated component costs gives (n+1)^2 + (2n^2+4n) + (n^2+n) + (3n^2+7n) = 7n^2 + 14n + 1 (or 7n^2+15n+1 if the n reciprocals of (3.7) are counted), neither of which equals the stated 7n^2 + 15n. The announced total does not match the sum of the parts.",
+      "check_kind": "numeric",
+      "confidence": 0.3,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "0040-Explicit_expression_and_fast_algorithms_for_the_inverse_of_some_matrices_arising_from_implicit_time_integration::CAND::6",
+      "error_location": "Section 4, Example 3",
+      "exact_quote": "**Example 3.** (Chebyshev nodes in (0,1)): $c_i = \\frac{1}{2} + \\frac{1}{2}\\cos\\left(\\frac{2i+1}{2n+1}\\pi \\right)$ ($i=0,1,2,\\cdots,n$).",
+      "claim_content": "Example 3 of the paper claims that the n+1 points c_i = 1/2 + (1/2) cos((2i+1)pi/(2n+1)), i = 0,1,...,n, are 'Chebyshev nodes in (0,1)', i.e. the n+1 Chebyshev points of the first kind mapped to the open interval (0,1).",
+      "suspected_defect": "With the denominator 2n+1 and i running over 0,...,n, the last node is c_n = 1/2 + (1/2)cos((2n+1)pi/(2n+1)) = 1/2 + (1/2)cos(pi) = 0, which is not in the open interval (0,1). The n+1 Chebyshev points of the first kind on (0,1) require the denominator 2(n+1) = 2n+2, giving cos((2i+1)pi/(2n+2)). As written the set is not the Chebyshev point set and violates the stated interval.",
+      "check_kind": "numeric",
+      "confidence": 0.45,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "0040-Explicit_expression_and_fast_algorithms_for_the_inverse_of_some_matrices_arising_from_implicit_time_integration::CAND::7",
+      "error_location": "Section 2.2 (definition of Radau IIA nodes) and Example 2",
+      "exact_quote": "\\frac{d^n}{dx^n}\\left(x^n(x-1)^n\\right), \\quad \\text{and} \\quad \\frac{d^n}{dx^{n-1}}\\left(x^{n-1}(x-1)^n\\right),",
+      "claim_content": "The paper states that the collocation nodes c_i (1 <= i <= n) for the n-stage Gauss and Radau IIA implicit Runge-Kutta methods are the zeros of d^n/dx^n (x^n (x-1)^n) and of 'd^n/dx^{n-1} (x^{n-1}(x-1)^n)', respectively. The same expression is repeated in Example 2 of Section 4.",
+      "suspected_defect": "The second differential operator is malformed: the order of differentiation in the numerator (n) does not match the denominator (dx^{n-1}). The Radau IIA nodes are the zeros of d^{n-1}/dx^{n-1} (x^{n-1}(x-1)^n), a polynomial of degree n. As written, d^n/dx^{n-1} is undefined / inconsistent, and if read as the n-th derivative of a degree-(2n-1) polynomial it would give a degree n-1 polynomial with only n-1 zeros, not n nodes.",
+      "check_kind": "symbolic",
+      "confidence": 0.35,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "0040-Explicit_expression_and_fast_algorithms_for_the_inverse_of_some_matrices_arising_from_implicit_time_integration::CAND::8",
+      "error_location": "Section 1 (Introduction) versus Section 2.2 (formula for the BIM inverse N)",
+      "exact_quote": "i.e., the inverse of IRK matrix and BIM matrix is exactly \\( W_n^T \\) if \\( c_i \\) (\\( 1 \\leq i \\leq n \\)) are\nthe zeros of the Legendre polynomials and \\( c_i = i \\) (\\( 1 \\leq i \\leq n \\)), respectively.",
+      "claim_content": "The introduction claims that the inverse of the block implicit method (BIM) matrix is exactly W_n^T when c_i = i (1 <= i <= n), where W = V^{-1} H V with V the Vandermonde matrix on nodes c_0,...,c_n, H the matrix with subdiagonal entries 1,...,n, and W_n the trailing n x n block of W. Section 2.2, however, states that the inverse of the BIM matrix is N = D_n (V_n D_n V_n^{-1} D_n^{-1}) D_n^{-1} + D_n^{-1}, where D_n = diag(1,...,n), V_n is the n x n Vandermonde matrix on c_1,...,c_n with c_i = i, and (by (2.16) with C_n = D_n when c_i = i) V_n D_n V_n^{-1} D_n^{-1} = A^{-1} = W_n^T.",
+      "suspected_defect": "The two statements are inconsistent: Section 2.2 gives N = D_n W_n^T D_n^{-1} + D_n^{-1}, i.e. a diagonal similarity transform of W_n^T plus a diagonal term, which is not equal to W_n^T in general (already for n = 2 the two differ). The introduction's claim that the BIM inverse 'is exactly W_n^T' therefore contradicts the paper's own Section 2.2.",
+      "check_kind": "general_claim",
+      "confidence": 0.4,
+      "severity": "minor"
+    },
+    {
+      "candidate_id": "0040-Explicit_expression_and_fast_algorithms_for_the_inverse_of_some_matrices_arising_from_implicit_time_integration::CAND::9",
+      "error_location": "Section 3, final paragraph (parallelism claim)",
+      "exact_quote": "In each step, both Algorithm 3.2 and Algorithm 3.3 can be implemented in parallel since the computations of each row of $G$, $\\tilde{W}$ and $W$ are independent.",
+      "claim_content": "The paper claims that in each of the three steps (computing G, computing tilde{W}, computing W) of Algorithms 3.2 and 3.3, the rows can be computed independently (hence in parallel). In Algorithm 3.2, tilde{W} is computed by first forming the whole first row tilde{W}_{0j} = prod_k G_{jk}/G_{0k} (0 <= j <= n), then setting g_i = 1/tilde{W}_{0i} and tilde{W}_{ij} = tilde{W}_{0j} g_i. In Algorithm 3.3, the strictly upper triangular part of tilde{W} is computed by the recursion tilde{W}_{ij} = tilde{W}_{i(j-1)} tilde{g}_{j-1} and the strictly lower triangular part by tilde{W}_{ij} = 1/tilde{W}_{ji}.",
+      "suspected_defect": "The rows of tilde{W} are not independent in either algorithm: in Algorithm 3.2 every row i >= 1 requires the previously computed row 0 (tilde{W}_{0j} and g_i = 1/tilde{W}_{0i}); in Algorithm 3.3 the lower triangular entries of row i are obtained by (3.12) from entries tilde{W}_{ji} lying in other rows j < i. Hence the stated justification for row-wise parallelism in the second step is incorrect.",
+      "check_kind": "general_claim",
+      "confidence": 0.3,
+      "severity": "minor"
+    }
+  ],
+  "detector": {
+    "model": "claude-opus-5",
+    "provider": "anthropic",
+    "mode": "lenient-high-recall",
+    "paper_chars": 105510,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 88114,
+      "output_tokens": 35710,
+      "cache_read_input_tokens": 0,
+      "cache_creation_input_tokens": 0
+    }
+  }
+}

@@ -1,0 +1,333 @@
+{
+  "paper_name": "paper",
+  "paper_path": "/Users/iacopoghinassi/Documents/Github/Wittgenstein/data/spot-workspace/0010-Unveiling_the_antiviral_inhibitory_activity_of_ebselen_and_ebsulfur_derivatives_on_SARS-CoV-2_using_machine_learning-bas/paper.md",
+  "tag": "opus5",
+  "lean_project": "MATH_VERIFICATION/Paper",
+  "lean_project_kept": true,
+  "totals": {
+    "snippets_extracted": 9,
+    "routed_to_math": 5,
+    "routed_to_lean": 4,
+    "lean_passed": 2,
+    "lean_refuted": 2,
+    "lean_failed": 0,
+    "fallbacks_run": 0,
+    "errors_detected": 6
+  },
+  "results": [
+    {
+      "snippet_id": "paper::EQUATION::0",
+      "snippet_type": "EQUATION",
+      "location": "Methods — Data set (Eq. 1)",
+      "content": "A data set of twenty-seven ebselen and ebsulfur derivatives and their M^Pro inhibitory activity (IC₅₀) were synthesized by Sun et al.²⁵. IC₅₀ was then converted into pIC₅₀ using Eq. (1), as shown in Fig. 2.\n\npIC₅₀ = (1 / IC₅₀ (M))\u2003(1)",
+      "route": "verify-math-lean",
+      "route_rationale": "The IC₅₀→pIC₅₀ conversion is a crisp closed-form claim whose compatibility with the p-scale and with the paper's own pIC₅₀ range is machine-checkable.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::0",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.96,
+        "reasoning": "Formalised Eq. (1), which the paper states is the IC₅₀ → pIC₅₀ conversion: `pIC₅₀ = (1 / IC₅₀ (M))`. Three faithful Lean 4 theorems were stated and all compiled clean against Mathlib. (a) `eq1_not_pscale : ¬ (∀ c : ℝ, 0 < c → 1 / c = -Real.logb 10 c)` — the reciprocal map the paper writes is not the p-scale; refuted by the witness $c = 1$, where $1/c = 1$ but $-\\log_{10}(1) = 0$. (b) `eq1_wrong_magnitude` — a concrete witness strictly inside the paper's own concentration range: for IC₅₀ $= 10^{-6}$ M, Eq. (1) yields $1/\\mathrm{IC}_{50} = 10^{6}$ while the p-scale yields $-\\log_{10}(10^{-6}) = 6$, and the two are proved unequal. (c) `eq1_outside_paper_pIC50_range` — over the paper's own series range $10^{-7} \\le \\mathrm{IC}_{50} \\le 10^{-5}$ M, Eq. (1) returns a value of at least $10^{5}$ (hence never $\\le 20$), whereas the p-scale value stays in $[5,7]$. Hypotheses assumed: only positivity of a concentration, plus (in (c)) the IC₅₀ range the paper itself states for the Sun et al. series. No hypothesis was added that could rescue the claim and no conclusion was weakened. Because the paper asserts Eq. (1) IS the conversion and then regresses on pIC₅₀ targets of order $10^0$–$10^1$ (MLR intercept 2.897, training RMSE 0.16), the compiling refutation shows Eq. (1) as written is wrong: the logarithm is omitted, and the formula is numerically incompatible with the paper's own pIC₅₀ values by five to seven orders of magnitude. The intended definition is $\\mathrm{pIC}_{50} = -\\log_{10}(\\mathrm{IC}_{50}\\,[\\mathrm{M}])$.",
+        "predicted_error_category": "Domain/Constraint violation",
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [
+          "Methods — Data set, Eq. (1): `pIC50 = (1 / IC50 (M))` omits the log10, contradicting the p-scale definition",
+          "Methods — Data set, Eq. (1) vs. Results MLR model (intercept 2.897, RMSE 0.16): reciprocal of micromolar IC50 gives 10^5-10^7, not the order-10^0-10^1 pIC50 targets actually fitted"
+        ],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/0010-EbselenQSAR__EQUATION__0_opus5.lean",
+          "formal_statement": "/-- (a) The reciprocal map of Eq. (1) is not the p-scale. -/\ntheorem eq1_not_pscale : ¬ (∀ c : ℝ, 0 < c → 1 / c = -Real.logb 10 c) := by\n  intro h\n  have h1 := h 1 one_pos\n  rw [Real.logb_one] at h1\n  norm_num at h1\n\n/-- (b) Concrete witness at IC50 = 10^(-6) M. -/\ntheorem eq1_wrong_magnitude :\n    (1 : ℝ) / (10 : ℝ) ^ (-6 : ℤ) = 10 ^ 6 ∧\n      -Real.logb 10 ((10 : ℝ) ^ (-6 : ℤ)) = 6 ∧\n      (1 : ℝ) / (10 : ℝ) ^ (-6 : ℤ) ≠ -Real.logb 10 ((10 : ℝ) ^ (-6 : ℤ)) := by\n  refine ⟨by norm_num, ?_, ?_⟩\n  · rw [logb_ten_zpow_neg_six]; norm_num\n  · rw [logb_ten_zpow_neg_six]; norm_num\n\n/-- (c) Over the paper's own IC50 range, Eq. (1) cannot produce order-10^0 pIC50 values. -/\ntheorem eq1_outside_paper_pIC50_range (c : ℝ) (hge : (10 : ℝ) ^ (-7 : ℤ) ≤ c)\n    (hle : c ≤ (10 : ℝ) ^ (-5 : ℤ)) :\n    (10 : ℝ) ^ 5 ≤ 1 / c ∧ ¬ (1 / c ≤ 20) ∧\n      5 ≤ -Real.logb 10 c ∧ -Real.logb 10 c ≤ 7",
+          "compiler_feedback": "",
+          "axioms": ["propext", "Classical.choice", "Quot.sound"],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.96
+    },
+    {
+      "snippet_id": "paper::EQUATION::1",
+      "snippet_type": "EQUATION",
+      "location": "Model evaluation statistical terms (Eq. 2)",
+      "content": "To investigate the degree of linear correlation between two descriptors by calculating the correlation coefficient (r)⁴⁶,⁴⁷. A correlation coefficient of 1.0 or –1.0 indicates that two variables are highly correlated, while a coefficient of 0.0 shows no correlation, as shown in Eq. (2). When C₍ₓ,ᵧ₎ is covariance, which is the joint variance of two variables, x and y, the variance of a variable X (Vₓ) and the variance of a variable Y (Vᵧ).\n\n$$\nr = \\frac{C_{(x,y)}}{\\sqrt{V_{x} \\times V_{y}}}\n$$ (2)",
+      "route": "verify-math-lean",
+      "route_rationale": "Pearson correlation; the range bound $|r| \\le 1$ is Cauchy–Schwarz and fully formalisable, and it is what justifies the paper's $|r| < 0.7$ screening cut.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::1",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.95,
+        "reasoning": "Formalised Eq. (2), $r = C_{(x,y)}/\\sqrt{V_x V_y}$, over a general finite index set `s : Finset ι` with the standard $1/n$-normalised sample statistics (`mean`, `cov`, `var` defined verbatim as in the claim; no extra structure assumed). Eight declarations compile clean. (A) `cov_sq_le_var_mul_var` proves the Cauchy–Schwarz hypothesis $C_{(x,y)}^2 \\le V_x V_y$ directly from `Finset.sum_mul_sq_le_sq_mul_sq` (the $n = 0$ degenerate case is handled separately, so no nonemptiness hypothesis was needed); `abs_div_sqrt_le_one` proves the abstract range bound; `abs_corr_le_one` and `corr_mem_Icc` combine these to give $|r| \\le 1$ and $-1 \\le r \\le 1$ for the paper's own quantity. The bound is sharp, not merely an inequality: `corr_self` proves $r = 1$ exactly when $y = x$, so the paper's reading of $\\pm 1$ as the attainable extremes is formally confirmed, and the 0.7 screening threshold is a meaningful cut on a genuinely $[-1,1]$-valued quantity. Eq. (2) is therefore a faithful and well-posed rendering of the Pearson product-moment correlation coefficient. (B) `sqrt_mul_eq_zero_iff` proves that for $V_x, V_y \\ge 0$ the denominator $\\sqrt{V_x V_y} = 0$ iff $V_x = 0$ or $V_y = 0$, so Eq. (2) tacitly requires $V_x, V_y > 0$ — neither descriptor may be constant — a hypothesis the manuscript never states. This is a minor presentational omission standard in textbook statistics formulas, not a mathematical defect. Compiler verdict: empty diagnostics, `lake env lean` exit 0, no `sorry`, axioms [propext, Classical.choice, Quot.sound] with no `sorryAx`.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/0010-EbselenQSAR__EQUATION__1_opus5.lean",
+          "formal_statement": "noncomputable def cov (s : Finset ι) (x y : ι → ℝ) : ℝ :=\n  (∑ i ∈ s, (x i - mean s x) * (y i - mean s y)) / s.card\nnoncomputable def var (s : Finset ι) (x : ι → ℝ) : ℝ :=\n  (∑ i ∈ s, (x i - mean s x) ^ 2) / s.card\n-- Eq. (2) itself\nnoncomputable def corr (s : Finset ι) (x y : ι → ℝ) : ℝ :=\n  cov s x y / Real.sqrt (var s x * var s y)\n\ntheorem cov_sq_le_var_mul_var (s : Finset ι) (x y : ι → ℝ) :\n    cov s x y ^ 2 ≤ var s x * var s y\n\ntheorem abs_corr_le_one (s : Finset ι) (x y : ι → ℝ)\n    (hx : 0 < var s x) (hy : 0 < var s y) : |corr s x y| ≤ 1\n\ntheorem corr_mem_Icc (s : Finset ι) (x y : ι → ℝ)\n    (hx : 0 < var s x) (hy : 0 < var s y) :\n    -1 ≤ corr s x y ∧ corr s x y ≤ 1\n\ntheorem corr_self (s : Finset ι) (x : ι → ℝ) (hx : 0 < var s x) :\n    corr s x x = 1\n\ntheorem sqrt_mul_eq_zero_iff {vx vy : ℝ} (hx : 0 ≤ vx) (hy : 0 ≤ vy) :\n    Real.sqrt (vx * vy) = 0 ↔ vx = 0 ∨ vy = 0",
+          "compiler_feedback": "",
+          "axioms": ["propext", "Classical.choice", "Quot.sound"],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::EQUATION::2",
+      "snippet_type": "EQUATION",
+      "location": "Model evaluation statistical terms (Eq. 3)",
+      "content": "The variance inflation factor (VIF) indicates collinearity between descriptors in multiple regression models, indicating statistical significance⁴⁸–⁵⁰ as determined by Eq. (3).\n\n$$\nVIF = \\frac{1}{1-R^2}\n$$ (3)",
+      "route": "verify-math-lean",
+      "route_rationale": "Closed-form identity whose range, monotonicity and the exact $\\mathrm{VIF} < 10 \\iff R^2 < 0.9$ threshold correspondence behind the paper's screening rule are all formalisable.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::2",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.95,
+        "snippet_type": "EQUATION",
+        "reasoning": "Formalised Eq. (3), $\\mathrm{VIF} = 1/(1 - R^2)$, as `noncomputable def VIF (R2 : ℝ) : ℝ := 1 / (1 - R2)` and proved, with no hypotheses beyond the genuine range $R^2 \\in [0,1)$ of a coefficient of determination: (A) `one_le_VIF` and the sharpness `VIF_eq_one_iff : VIF R2 = 1 ↔ R2 = 0`; (B) strict monotonicity, pointwise and as `VIF_strictMonoOn : StrictMonoOn VIF (Set.Ico 0 1)` — this is what makes a VIF cut a valid proxy for low collinearity; (C) the exact threshold correspondence behind the paper's screening rule, `VIF_lt_ten_iff : VIF R2 < 10 ↔ R2 < 0.9`, proved as an iff so both directions are machine-checked; (D) the omitted side condition `denom_eq_zero_iff : 1 - R2 = 0 ↔ R2 = 1` plus the divergence `VIF_tendsto_atTop`; and (E) the two-descriptor consistency check `VIF_lt_two_of_sq_lt`, showing the pairwise $|r| < 0.7$ cut is strictly stronger than $\\mathrm{VIF} < 10$. All 8 declarations compile clean: exit 0, empty diagnostics, axioms [propext, Classical.choice, Quot.sound]. The formula as printed is the textbook VIF and is mathematically correct — no error was manufactured. Two purely presentational caveats, neither a mathematical error: (i) the paper never states that the $R^2$ in Eq. (3) is the auxiliary-regression $R_j^2$ of descriptor $X_j$ on the OTHER descriptors rather than the model's own $R^2$ from Eq. (4) — a genuine ambiguity, since the latter reading would give one global VIF, contradicting the Results text \"the VIF values for each descriptor\"; (ii) Eq. (3) is printed without its domain restriction $R^2 \\ne 1$. Additionally, although not formalised, the paper's two screening criteria are not equivalent for five descriptors: every pairwise $|r|$ can be below 0.7 while a multiple $R_j^2$ (hence $\\mathrm{VIF}_j$) is large, so the correlation-matrix check does not by itself imply the $\\mathrm{VIF} < 10$ result reported alongside it.",
+        "predicted_error_category": null,
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/0010-EbselenQSAR__EQUATION__2_opus5.lean",
+          "formal_statement": "noncomputable def VIF (R2 : ℝ) : ℝ := 1 / (1 - R2)\n\ntheorem one_le_VIF {R2 : ℝ} (h0 : 0 ≤ R2) (h1 : R2 < 1) : 1 ≤ VIF R2\n\ntheorem VIF_eq_one_iff {R2 : ℝ} (h0 : 0 ≤ R2) (h1 : R2 < 1) : VIF R2 = 1 ↔ R2 = 0\n\ntheorem VIF_strictMonoOn : StrictMonoOn VIF (Set.Ico (0 : ℝ) 1)\n\ntheorem VIF_lt_ten_iff {R2 : ℝ} (_h0 : 0 ≤ R2) (h1 : R2 < 1) : VIF R2 < 10 ↔ R2 < 0.9\n\ntheorem denom_eq_zero_iff (R2 : ℝ) : 1 - R2 = 0 ↔ R2 = 1\n\ntheorem VIF_tendsto_atTop :\n    Filter.Tendsto VIF (nhdsWithin 1 (Set.Iio 1)) Filter.atTop\n\ntheorem VIF_lt_two_of_sq_lt {r : ℝ} (_hr : 0 ≤ r) (h : r ^ 2 < 0.49) : VIF (r ^ 2) < 2",
+          "compiler_feedback": "",
+          "axioms": ["propext", "Classical.choice", "Quot.sound"],
+          "cycles_used": 3,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::EQUATION::3",
+      "snippet_type": "EQUATION",
+      "location": "Model evaluation statistical terms (Eq. 4)",
+      "content": "The quality model was validated using statistical parameters, with R-Squared (R²) being a measure of the fit model's quality, which should be greater than 0.6. When the predicted y values (yₚₑd) and the mean values (ȳ)\n\n$$\nR^2 = \\frac{\\sum_{i=1}^n (y_{pred.} - \\overline{y})^2}{\\sum_{i=1}^n (y_{exp.} - \\overline{y})^2}\n$$ (4)",
+      "route": "verify-math-lean",
+      "route_rationale": "Whether $\\mathrm{ESS}/\\mathrm{TSS}$ equals the coefficient of determination $1 - \\mathrm{SS}_{res}/\\mathrm{SS}_{tot}$ is decidable by an explicit numeric counterexample — exactly what Lean settles best.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::3",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.93,
+        "reasoning": "Formalised Eq. (4) exactly as printed — $R^2_{\\text{paper}} = \\mathrm{ESS}/\\mathrm{TSS}$, with $\\bar y$ the mean of the experimental values as the paper's prose states — alongside the standard $R^2_{\\text{std}} = 1 - \\mathrm{SS}_{res}/\\mathrm{TSS}$, over `Fin n → ℝ`. No hypotheses were added beyond the printed ones; the witness's $\\bar y = 1$ was separately proved to be the arithmetic mean of $y_{exp} = (0,2)$ (`ymean_yA`), so the formalisation does not smuggle in a convenient centring constant. Four results compile clean. (A) `R2_paper_ne_R2_std`: on $y_{exp} = (0,2)$ ($\\bar y = 1$, $\\mathrm{TSS} = 2$) with the constant predictor $\\hat y = (3,3)$, $\\mathrm{ESS} = 8$ so Eq. (4) returns $4$, while $\\mathrm{SS}_{res} = 10$ so the coefficient of determination is $-4$; the two are not equal. (B) `R2_paper_not_le_one` and `R2_paper_unbounded_above`: Eq. (4) exceeds $1$ on a dataset with $\\mathrm{TSS} > 0$, and Lean proved the negation of $\\forall\\, y, \\hat y, \\bar y,\\ 0 < \\mathrm{TSS} \\to R^2_{\\text{paper}} \\le 1$. This is the substantive defect: a quantity the paper screens with \"$R^2$ should be greater than 0.6\" is unbounded above, and is large precisely when the predictor is badly biased and over-dispersed about the mean, so the printed formula rewards the wrong behaviour. (C) `R2_paper_blind_to_bias`: $\\hat y = (3,3)$ and $\\hat y' = (-1,3)$ have identical $\\mathrm{ESS} = 8$ hence identical Eq. (4) value of $4$, while their $R^2_{\\text{std}}$ differ ($-4$ vs $0$) — Eq. (4) is a function of the fitted values' dispersion alone and carries no information about the distance between prediction and datum. (D) `R2_paper_eq_R2_std_of_anova` and its converse `anova_of_R2_paper_eq_R2_std`: the two definitions agree if and only if $\\mathrm{TSS} = \\mathrm{ESS} + \\mathrm{SS}_{res}$, i.e. the ANOVA decomposition, which holds for an in-sample OLS fit with an intercept. The paper never states this hypothesis, and it fails for the Random Forest and the ANN to which it also applies Eq. (4). SCOPE, stated honestly: the refutation is about the FORMULA AS PRINTED. It proves Eq. (4) is not the coefficient of determination and is not bounded by 1, so the manuscript's only definition of $R^2$ is wrong as written and its threshold rule is applied to a quantity that cannot be interpreted on the $[0,1]$ scale the threshold presupposes. It does NOT prove the reported numbers (MLR 0.69, RF 0.82, ANN 0.89) were computed with Eq. (4): if the authors used a standard library routine such as sklearn's `r2_score`, which implements $1 - \\mathrm{SS}_{res}/\\mathrm{SS}_{tot}$, those values may be correct and the defect is confined to the methods section's definition. Recommended severity therefore moderate rather than critical. The fix is a one-line correction of Eq. (4).",
+        "predicted_error_category": "Domain/Constraint violation",
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [
+          "Eq. (4), model evaluation statistical terms — R² defined as ESS/TSS rather than 1 − SSres/TSS",
+          "Model validation prose — threshold rule 'R² should be greater than 0.6' applied to a quantity that is unbounded above and non-monotone in predictive accuracy",
+          "Results — R² reported for Random Forest (0.82) and ANN (0.89), non-OLS predictors for which the ANOVA identity needed to make Eq. (4) equal the coefficient of determination fails"
+        ],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/0010-EbselenQSAR__EQUATION__3_opus5.lean",
+          "formal_statement": "noncomputable def ESS {n : ℕ} (yhat : Fin n → ℝ) (ybar : ℝ) : ℝ := ∑ i, (yhat i - ybar) ^ 2\nnoncomputable def TSS {n : ℕ} (y : Fin n → ℝ) (ybar : ℝ) : ℝ := ∑ i, (y i - ybar) ^ 2\nnoncomputable def SSres {n : ℕ} (y yhat : Fin n → ℝ) : ℝ := ∑ i, (y i - yhat i) ^ 2\nnoncomputable def R2_paper {n : ℕ} (y yhat : Fin n → ℝ) (ybar : ℝ) : ℝ := ESS yhat ybar / TSS y ybar\nnoncomputable def R2_std {n : ℕ} (y yhat : Fin n → ℝ) (ybar : ℝ) : ℝ := 1 - SSres y yhat / TSS y ybar\nnoncomputable def yA : Fin 2 → ℝ := ![0, 2]\nnoncomputable def yhatA : Fin 2 → ℝ := ![3, 3]\nnoncomputable def yhatB : Fin 2 → ℝ := ![-1, 3]\n\ntheorem ymean_yA : ymean yA = 1\n\n-- (A) NON-EQUIVALENCE\ntheorem R2_paper_ne_R2_std :\n    R2_paper yA yhatA 1 = 4 ∧ R2_std yA yhatA 1 = -4 ∧\n      R2_paper yA yhatA 1 ≠ R2_std yA yhatA 1\n\n-- (B) DOMAIN VIOLATION: Eq. (4) is not bounded above by 1\ntheorem R2_paper_not_le_one :\n    ∃ (y yhat : Fin 2 → ℝ) (ybar : ℝ),\n      ybar = ymean y ∧ 0 < TSS y ybar ∧ 1 < R2_paper y yhat ybar\n\ntheorem R2_paper_unbounded_above :\n    ¬ ∀ (y yhat : Fin 2 → ℝ) (ybar : ℝ), 0 < TSS y ybar → R2_paper y yhat ybar ≤ 1\n\n-- (C) BIAS BLINDNESS\ntheorem R2_paper_blind_to_bias :\n    R2_paper yA yhatA 1 = R2_paper yA yhatB 1 ∧\n      R2_std yA yhatA 1 ≠ R2_std yA yhatB 1\n\n-- (D) THE UNSTATED SUFFICIENT CONDITION (and its necessity)\ntheorem R2_paper_eq_R2_std_of_anova {n : ℕ} (y yhat : Fin n → ℝ) (ybar : ℝ)\n    (hanova : TSS y ybar = ESS yhat ybar + SSres y yhat) (hTSS : TSS y ybar ≠ 0) :\n    R2_paper y yhat ybar = R2_std y yhat ybar\n\ntheorem anova_of_R2_paper_eq_R2_std {n : ℕ} (y yhat : Fin n → ℝ) (ybar : ℝ)\n    (hTSS : TSS y ybar ≠ 0) (h : R2_paper y yhat ybar = R2_std y yhat ybar) :\n    TSS y ybar = ESS yhat ybar + SSres y yhat",
+          "compiler_feedback": "",
+          "axioms": ["propext", "Classical.choice", "Quot.sound"],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.93
+    },
+    {
+      "snippet_id": "paper::EQUATION::4",
+      "snippet_type": "EQUATION",
+      "location": "Model evaluation statistical terms (Eq. 5)",
+      "content": "Root mean square error (RMSE) is a measure of prediction accuracy calculated as the square root of the average squared errors. A lower RMSE indicates better prediction quality, ideally closer to zero, as shown in Eq. (5).\n\n$$\nRMSE = \\sqrt{\\frac{\\sum_{i=1}^n (y_{exp.} - y_{pred.})^2}{n}}\n$$ (5)",
+      "route": "verify-math",
+      "route_rationale": "Textbook definition checkable by inspection; no non-trivial argument to formalise.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::4",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.93,
+        "category": null,
+        "severity": "none",
+        "evidence": "The printed formula $RMSE = \\sqrt{\\dfrac{\\sum_{i=1}^n (y_{exp.} - y_{pred.})^2}{n}}$ matches the standard definition $\\mathrm{RMSE} = \\sqrt{\\frac{1}{n}\\sum_{i=1}^{n}(y_i - \\hat{y}_i)^2}$ exactly: squared residuals summed over all $n$ compounds, divided by $n$, then square-rooted. The prose is consistent — the radicand is nonnegative for $n \\ge 1$, so the root is real and $RMSE \\ge 0$ with equality iff $y_{exp.} = y_{pred.}$ for all $i$. Squaring makes the residual sign irrelevant, so writing $(y_{exp.} - y_{pred.})$ rather than $(y_{pred.} - y_{exp.})$ is immaterial. The only notational imprecision is that the summand omits the running index ($y_{exp.}$ instead of $y_{exp.,i}$) even though $\\sum_{i=1}^{n}$ binds $i$; this is ubiquitous shorthand in QSAR papers and the same convention is used in the neighbouring Eq. (4), so it is not a mathematical error.",
+        "exact_quote": "",
+        "reasoning": "Eq. (5) reproduces the textbook RMSE definition; denominator, exponent, summation range, and the accompanying prose all agree, and no domain or bound violation is possible since the radicand is a nonnegative mean of squares."
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.93
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "Results — GFA-MLR model (Eq. 6)",
+      "content": "The Kennard–Stone algorithm was applied to divide the data set into twenty-one training sets and six test sets. The MLR model was crafted using a selection of 5 descriptors of the training data set determined through the GFA algorithm, as shown in Eq. (6), and the definition of descriptors was explained in Table S2. This was a predicted pIC₅₀ value, which shows residue values less than 1. The model validation parameters of Eq. (6): R² of the training set = 0.69, RMSE of the training set = 0.16, and RMSE of the test set = 0.56, indicating that the model was predictively accurate and acceptable (Fig. 3).\n\npIC₅₀ = –0.507 * Molecular flexibility + 0.036 * Zagreb index – 0.057 * E-state keys (sums): S_aaCH – 0.015 * E-state keys (sums): S_dO + 0.336 * Shadow length: LY + 2.897",
+      "route": "verify-math",
+      "route_rationale": "Fitted regression coefficients and reported performance statistics; nothing formalisable, but internal consistency against the abstract and the paper's own acceptance threshold is checkable informally.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.88,
+        "category": "Internal inconsistency / statistical reporting contradiction (abstract vs. results; unsupported predictivity claim)",
+        "severity": "critical",
+        "evidence": "**1. Direct numerical contradiction between Abstract and Results for the GFA-MLR model.**\n\n| Model | Abstract $R^2_{train}$ | Results $R^2_{train}$ | Abstract $RMSE_{test}$ | Results $RMSE_{test}$ |\n|---|---|---|---|---|\n| MLR | $0.83$ | **$0.69$** | $0.27$ | **$0.56$** |\n| RF | $0.82$ | $0.82$ | $0.18$ | $0.18$ |\n| ANN | $0.92$ | $0.89$ | $0.09$ | $0.05$ |\n\nThe RF row matches exactly, which proves the Abstract and the Results section are reporting *the same two quantities*. Therefore the MLR row is a genuine contradiction, not a different metric: $0.83 \\neq 0.69$ and the test RMSE differs by a factor of $\\approx 2.07$. Exactly one of the two sets of MLR numbers can be correct; both are published.\n\n**2. The reported statistics do not support \"predictively accurate and acceptable\".** Taking $R^2 = 1 - \\mathrm{MSE}/\\mathrm{Var}(y)$ and solving for the training-set variance from each of the paper's three models gives a consistent $\\sigma_y \\approx 0.3$ log units (RF: $0.14^2/(1-0.82) = 0.109$; ANN: $0.10^2/(1-0.89) = 0.091$; MLR: $0.16^2/(1-0.69) = 0.083$). The MLR test RMSE of $0.56$ is then $\\approx 1.9\\,\\sigma_y$, implying\n$$R^2_{test} \\approx 1 - \\left(\\frac{0.56}{0.30}\\right)^2 \\approx -2.5,$$\ni.e. on the six held-out compounds the model is substantially worse than predicting the training mean. A $3.5\\times$ inflation of RMSE from train ($0.16$) to test ($0.56$) is the signature of an overfit 5-descriptor model on $n_{train} = 21$ (6 coefficients including the intercept $+2.897$), not of a model that is \"predictively accurate and acceptable\".\n\n**3. Items that check out and are NOT flagged.** The data split arithmetic is correct ($21 + 6 = 27$, matching the twenty-seven derivatives; \"twenty-one training sets and six test sets\" is a wording slip for *compounds*). The descriptor count is correct: Eq. (6) has exactly 5 descriptor terms plus the intercept $2.897$. \"residue values less than 1\" is plausible for the training set given $RMSE_{train} = 0.16$ and cannot be disproved from the text.",
+        "exact_quote": "the training set = 0.69, RMSE of the training set = 0.16, and RMSE of the test set = 0.56, indicating that the model was predictively accurate and acceptable (Fig. 3).",
+        "reasoning": "The Abstract reports MLR training R² = 0.83 and test RMSE = 0.27; the Results report 0.69 and 0.56 for the same model. That the RF values agree exactly across both locations proves identical metrics are being compared, so the MLR discrepancy is a true contradiction. Reconstructing the pIC50 variance from the paper's own three models gives sigma_y ~ 0.3, making the test RMSE of 0.56 about 1.9 sigma and implying a strongly negative test R², so 'predictively accurate and acceptable' is contradicted by the very statistics cited. The split arithmetic and the 5-descriptor/5-term correspondence are correct."
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.88
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::1",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "Methods — RF hyperparameter search (Table 1(a))",
+      "content": "To find the greatest RF model, a hyperparameter for finding suitable conditions should be performed by varying four parameters: (1) Max feature is the maximum number of features considered for splitting a node. (2) Min_sample_leaf is the minimum number of data points allowed in a leaf node. (3) Min_samples_split is the minimum number of data points placed in a node before the node is split, and (4) The number of estimators is the number of trees in the forest. The optimized hyperparameter of the RF model is shown in Table 1(a).\n\n| Hyperparameter                | Value tested                 |\n| n_estimators                  | 30, 50, 70, 90               |\n| Max depth                     | 8, 9, 10, 11, 12             |\n| Min samples split             | 1, 2, 3                      |\n| Min samples leaf              | 1, 2, 3                      |\n\nTable 1. Hyperparameters to be tested for (a) RF and (b) ANN.",
+      "route": "verify-math",
+      "route_rationale": "Domain-constraint and set-consistency checks on a hyperparameter grid; the constraint lives in library semantics, not in formalisable mathematics.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::1",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.9,
+        "category": "Domain/Constraint violation",
+        "severity": "minor",
+        "evidence": "**1. Inadmissible grid value (domain violation).** Table 1(a) lists `Min samples split` $\\in \\{1, 2, 3\\}$. For a binary split a node must be partitioned into two non-empty children, so splitting an $n$-sample node requires $n \\ge 2$; the admissible integer domain is $\\texttt{min\\_samples\\_split} \\in \\mathbb{Z}_{\\ge 2}$. The paper states the search used the \"Grid-Search CV of Scikit-learn\", where the constraint is literally `Interval(Integral, 2, inf, closed='left')`. Executed on scikit-learn 1.6.1, `RandomForestRegressor(min_samples_split=1).fit(X, y)` raises `InvalidParameterError: The 'min_samples_split' parameter ... must be an int in the range [2, inf) or a float in the range (0.0, 1.0]. Got 1 instead.` Only the *float* $1.0$ is legal, and it means \"100% of the samples\" — the opposite extreme — and cannot be intended here since it sits in an integer sequence $1,2,3$ alongside `Min samples leaf` $\\in \\{1,2,3\\}$ where $1$ *is* the valid default. The grid as printed cannot have been executed.\n\n**2. Four-vs-five parameter inconsistency.** The text enumerates four varied parameters $\\{$Max feature, Min\\_sample\\_leaf, Min\\_samples\\_split, n\\_estimators$\\}$; Table 1(a) lists a *different* four $\\{$n\\_estimators, Max depth, Min samples split, Min samples leaf$\\}$. The sets are not equal: Max feature $\\in$ text $\\setminus$ table, Max depth $\\in$ table $\\setminus$ text. Yet Results report five tuned values (\"a max depth of 10, a max feature of 4, a min_sample_leaf of 2, and a min_samples_split of 2. The number of estimators is 30\"), so $|\\text{tuned}| = 5 \\ne 4$, and the `max_features` search range is never reported, making the optimum of 4 unreproducible. The same defect recurs for the ANN: the text claims \"the five hyperparameters of the ANN model are examined\" while Table 1(b) lists only four rows, with `max_iter` absent.\n\n**3. `max_features = 4` is degenerate.** The RF/ANN models use exactly four Gini-selected descriptors. With $p = 4$, $\\texttt{max\\_features} = 4 = p$ means every node considers the full feature set ($\\binom{4}{4} = 1$): there is no feature subsampling, so the \"best RF model\" is bagged full-feature CART rather than a feature-randomised forest.",
+        "exact_quote": "| Min samples split             | 1, 2, 3                      |",
+        "reasoning": "Issue 1 is a hard, empirically confirmed domain-constraint violation: min_samples_split must be an integer >= 2, so the printed grid value 1 is inadmissible in the scikit-learn pipeline the paper says it used. Issue 2 is a provable set inconsistency (text's four parameters != table's four, while Results report five tuned values, with the max_features grid never given). Issue 3 shows max_features=4 equals the total descriptor count, eliminating the feature randomisation that defines an RF. Severity minor because the reported optimum is itself admissible, so no numerical result is invalidated; the defect is in the Methods/Table 1 description."
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::DEFINITION::0",
+      "snippet_type": "DEFINITION",
+      "location": "Methods — descriptor selection (Gini importance)",
+      "content": "Another one is Gini's importance^40,41, which is applied to select the crucial features of the RF and ANN models. The features with the highest Gini importance values indicate that compound structures significantly impact potency and bioactivity. Gini importance varies between 0 and 1, with 0 representing the lowest and best possible importance. A higher Gini importance indicates greater. Also, the RF and ANN models used Gini importance by Google Colab⁴².",
+      "route": "verify-math",
+      "route_rationale": "Definition asserting a range and an orientation that can be false; the content is about a statistical convention, not a formalisable theorem.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::DEFINITION::0",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.9,
+        "category": "Definition/Internal contradiction (conflation of Gini impurity with Gini importance)",
+        "severity": "minor",
+        "evidence": "**1. Internal contradiction on the direction of the scale.** The same paragraph asserts (a) \"The features with the highest Gini importance values indicate that compound structures significantly impact potency and bioactivity\", (b) \"$0$ representing the lowest and best possible importance\", and (c) \"A higher Gini importance indicates greater [importance]\". Statements (a) and (c) are monotone increasing in importance, while (b) declares the minimum of the scale, $0$, to be \"best\". If $0$ were the best value, feature selection would have to retain the features with importance $\\approx 0$ — the exact opposite of what the paper does (four descriptors retained by selecting on Gini importance). Only one of (b) and (a)+(c) can hold; the model actually used is consistent with (a)+(c), so (b) is the erroneous clause.\n\n**2. The \"$0$ is best\" statement belongs to Gini impurity, not Gini importance.** For a node with class proportions $p_k$, the Gini impurity is $G = 1 - \\sum_{k=1}^{K} p_k^2 \\in [0, 1 - \\tfrac1K]$, and there $G = 0$ *is* the optimum (a pure node). Gini **importance** (mean decrease in impurity) of feature $X_j$ is the opposite quantity — a nonnegative sum of impurity decreases over the nodes that split on $X_j$:\n$$\\mathrm{MDI}(X_j) = \\frac{1}{T}\\sum_{t=1}^{T}\\sum_{\\substack{\\nu \\in \\mathcal{N}_t \\\\ v(\\nu) = j}} \\frac{N_\\nu}{N}\\,\\Delta G(\\nu), \\qquad \\Delta G(\\nu) \\ge 0.$$\nHence $\\mathrm{MDI}(X_j) = 0$ means the feature was never used, i.e. it is the **worst**, least informative value, not the \"best\". The paper has transplanted the \"$0$ is best\" property of impurity onto importance.\n\n**3. The range claim is defensible but for the wrong reason.** Raw MDI carries no universal upper bound of $1$ in the regression setting used here (continuous $\\mathrm{pIC}_{50}$ targets, so the splitting criterion is variance reduction, whose scale is that of the response). The $[0,1]$ statement is correct only because scikit-learn's `feature_importances_` applies the normalisation $\\tilde I_j = \\mathrm{MDI}(X_j)/\\sum_m \\mathrm{MDI}(X_m)$, giving $\\sum_j \\tilde I_j = 1$ and hence $\\tilde I_j \\in [0,1]$. So \"varies between $0$ and $1$\" is accidentally right, but the paper gives no normalisation as the reason and its interpretation of the endpoint $0$ is wrong.\n\n**Impact.** The error is confined to the definitional prose in the Methods; the descriptor selection actually performed (retaining the four top-ranked descriptors) follows the correct convention, so no numerical result is invalidated.",
+        "exact_quote": "Gini importance varies between 0 and 1, with 0 representing the lowest and best possible importance.",
+        "reasoning": "Calling 0 the 'best possible' Gini importance contradicts both the paper's own selection of the HIGHEST-importance features and its next sentence that higher means greater importance. The '0 is best' property belongs to Gini IMPURITY, not to Gini importance (mean decrease in impurity), for which 0 is the least-important value. The [0,1] range is incidentally true only because scikit-learn normalises feature_importances_ to sum to 1. Definitional error, does not propagate to the reported models, hence minor severity."
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::2",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "Results — RF and ANN models / Discussion",
+      "content": "The best RF model was constructed by conditions consisting of a max depth of 10, a max feature of 4, a min_sample_leaf of 2, and a min_samples_split of 2. The number of estimators is 30. The results have the acceptable statistical parameters: R² of the training set = 0.82; RMSE of the training set = 0.14; RMSE of the test set = 0.18. (Fig. 3) ... The good performance of the ANN architecture was 4-(5-5-5)-1, which represents the number in the first position as one input layer of four neurons, which is the number of descriptors selected by the Gini importance method. The number in the second position is three hidden layers with each with five neurons, and the number in the last is one output layer with inhibitory layers. The artificial neural network (ANN) model in Fig. 3 illustrated robust and stable performance with the notable statistical parameters: R² of 0.89 for the training set, RMSE of 0.10 for the training set, and RMSE of 0.05 for the test set.\n\nTo evaluate the predictive ability and robustness of the ANN model developed in the previous step, an external validation was conducted using ebselen data reported from Amporndanai et al.^19. Three compounds from this work were selected, including MR6-17-1, D_MR6-18-4, and D_MR6-26-2. The analysis revealed an RMSE of 0.35, which demonstrates good predictive performance (Fig. 4).",
+      "route": "verify-math",
+      "route_rationale": "Architecture arithmetic and reported-metric consistency across sections; experimental numbers, not formalisable claims.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::2",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.95,
+        "category": "Numerical inconsistency / internal contradiction in reported model statistics",
+        "severity": "critical",
+        "evidence": "**1. Abstract vs. Results/Discussion: 4 of 6 headline statistics contradict.**\n\n| Model | Quantity | Abstract | Results | Discussion | Verdict |\n|---|---|---|---|---|---|\n| MLR | $R^2_{\\text{train}}$ | $0.83$ | $0.69$ | — | **CONTRADICTS** ($\\Delta = 0.14$) |\n| MLR | $\\text{RMSE}_{\\text{test}}$ | $0.27$ | $0.56$ | — | **CONTRADICTS** (factor $2.07$) |\n| RF | $R^2_{\\text{train}}$ | $0.82$ | $0.82$ | — | agrees |\n| RF | $\\text{RMSE}_{\\text{test}}$ | $0.18$ | $0.18$ | — | agrees |\n| ANN | $R^2_{\\text{train}}$ | $0.92$ | $0.89$ | $0.89$ | **CONTRADICTS** ($\\Delta = 0.03$) |\n| ANN | $\\text{RMSE}_{\\text{test}}$ | $0.09$ | $0.05$ | $0.05$ | **CONTRADICTS** (factor $1.8$) |\n\nOnly the RF model is self-consistent. The two ANN discrepancies run in *opposite* directions (abstract $R^2$ higher/better, abstract RMSE higher/worse), so they cannot be explained by a single recomputation, rescaling, or a different train/test split — they are clerical contradictions. The Discussion independently corroborates the Results values, making the abstract the outlier against two concordant sections.\n\nThe MLR discrepancy is the most consequential. On the $\\mathrm{pIC}_{50}$ (log) scale, $\\text{RMSE}_{\\text{test}} = 0.56$ corresponds to a typical error factor of $10^{0.56} \\approx 3.6$ in $\\mathrm{IC}_{50}$, whereas the abstract's $0.27$ implies only $10^{0.27} \\approx 1.9$. The abstract understates the MLR prediction error by roughly a factor of two and overstates its fit ($0.83$ vs $0.69$ — the latter barely clearing the paper's own threshold of $0.6$).\n\n**2. ANN architecture $4\\text{-}(5\\text{-}5\\text{-}5)\\text{-}1$ — arithmetically CONSISTENT.** The input layer of $4$ neurons matches the four Gini-selected descriptors; the bracketed $(5\\text{-}5\\text{-}5)$ is $3$ hidden layers $\\times\\ 5$ neurons; the trailing $1$ is a single output for the regressed $\\mathrm{pIC}_{50}$. Total neurons $= 4 + 15 + 1 = 20$, with $4\\cdot 5 + 5\\cdot 5 + 5\\cdot 5 + 5\\cdot 1 = 75$ weights, within the Table 1(b) grid. No error here. \"one output layer with inhibitory layers\" is a garbled wording (should read \"inhibitory activity\") — a typo, not a mathematical fault.\n\n**3. $\\text{RMSE}_{\\text{test}} < \\text{RMSE}_{\\text{train}}$ and the external validation.** $\\text{RMSE}_{\\text{test}} = 0.05 = \\tfrac12 \\text{RMSE}_{\\text{train}}$ is not impossible — with $n_{\\text{test}} = 6$ against $n_{\\text{train}} = 21$, sampling noise on six residuals can produce it — but it is anomalous and presented without comment as evidence of a \"robust and stable\" model; unsafe to flag alone. The external validation is weaker: $\\text{RMSE}_{\\text{ext}} = 0.35$ is $7\\times$ the internal test RMSE and nearly $2\\times$ worse than the RF test RMSE of $0.18$, so the ANN's advantage over RF evaporates out of sample. With $n = 3$ compounds the RMSE has essentially no precision, so \"demonstrates good predictive performance\" is an unsupported characterisation of a $7\\times$ degradation. Secondary to finding 1.",
+        "exact_quote": "With the statistical criteria, the R² values of MLR, RF, and ANN models for the training set were 0.83, 0.82, and 0.92, respectively. The RMSE values of the test were considered for model evaluation, and the results were 0.27, 0.18, and 0.09 for MLR, RF, and ANN models, respectively.",
+        "reasoning": "Verified the abstract and the Results/Discussion directly from the manuscript. Four of six headline statistics contradict between abstract and body: MLR R² (0.83 vs 0.69) and MLR test RMSE (0.27 vs 0.56), ANN R² (0.92 vs 0.89) and ANN test RMSE (0.09 vs 0.05). Only RF agrees on both. The ANN errors point in opposite directions, excluding a systematic recomputation; the Discussion independently confirms the body values, making the abstract the erroneous text. The 4-(5-5-5)-1 notation is arithmetically consistent, so point 2 is clean. Critical severity because the contradicted numbers are the paper's headline model-performance claims."
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.95
+    }
+  ],
+  "findings": [
+    {
+      "snippet_id": "paper::EQUATION::0",
+      "category": "Formally refuted — omitted logarithm in the pIC₅₀ definition",
+      "severity": "critical",
+      "confidence": 0.96,
+      "evidence": "Eq. (1) defines the paper's regression target as the **reciprocal** of the IC₅₀ rather than its negative base-10 logarithm. Lean refuted the formula on three independent grounds, all compiling clean against Mathlib with only the standard axioms:\n\n1. The reciprocal map is not the p-scale: `¬ (∀ c : ℝ, 0 < c → 1 / c = -Real.logb 10 c)`, refuted at $c = 1$ where $1/c = 1$ but $-\\log_{10}(1) = 0$.\n2. At a concentration inside the paper's own range, IC₅₀ $= 10^{-6}$ M, Eq. (1) returns $1/\\mathrm{IC}_{50} = 10^{6}$ while the p-scale returns $-\\log_{10}(10^{-6}) = 6$.\n3. Over the whole stated series range $10^{-7} \\le \\mathrm{IC}_{50} \\le 10^{-5}$ M, Eq. (1) is bounded **below** by $10^{5}$, so it can never produce a value $\\le 20$, whereas the p-scale stays in $[5, 7]$.\n\nThis contradicts the paper's own downstream use of pIC₅₀: the fitted MLR model of Eq. (6) has intercept $2.897$ and training RMSE $0.16$, i.e. targets of order $10^{0}$–$10^{1}$, which the reciprocal cannot produce — a discrepancy of five to seven orders of magnitude. The intended and universally used definition is $\\mathrm{pIC}_{50} = -\\log_{10}(\\mathrm{IC}_{50}\\,[\\mathrm{M}]) = \\log_{10}(1/\\mathrm{IC}_{50})$: Eq. (1) has dropped the $\\log_{10}$.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "pIC₅₀ = (1 / IC₅₀ (M))\u2003(1)"
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::2",
+      "category": "Internal inconsistency — abstract contradicts Results and Discussion on the headline metrics",
+      "severity": "critical",
+      "confidence": 0.95,
+      "evidence": "Four of the paper's six headline performance statistics contradict between the abstract and the body:\n\n| Model | Quantity | Abstract | Results / Discussion |\n|---|---|---|---|\n| MLR | $R^2_{\\text{train}}$ | $0.83$ | $0.69$ |\n| MLR | $\\mathrm{RMSE}_{\\text{test}}$ | $0.27$ | $0.56$ |\n| RF | $R^2_{\\text{train}}$ | $0.82$ | $0.82$ (agrees) |\n| RF | $\\mathrm{RMSE}_{\\text{test}}$ | $0.18$ | $0.18$ (agrees) |\n| ANN | $R^2_{\\text{train}}$ | $0.92$ | $0.89$ |\n| ANN | $\\mathrm{RMSE}_{\\text{test}}$ | $0.09$ | $0.05$ |\n\nThe exact agreement of the RF row establishes that both locations report the *same two quantities*, so the MLR and ANN rows are genuine contradictions rather than different metrics. The two ANN discrepancies run in **opposite** directions ($R^2$ higher in the abstract, RMSE also higher), so no single recomputation, rescaling or re-split explains them. The Discussion independently restates the Results values ($R^2 = 0.89$, $\\mathrm{RMSE}_{\\text{test}} = 0.05$), making the abstract the outlier against two concordant sections.\n\nThe MLR discrepancy is the most consequential: on the log-scale target, $\\mathrm{RMSE}_{\\text{test}} = 0.56$ is a typical error factor of $10^{0.56} \\approx 3.6$ in IC₅₀, whereas the abstract's $0.27$ implies only $10^{0.27} \\approx 1.9$ — the abstract understates the MLR prediction error roughly twofold and overstates its fit.",
+      "verifier": "verify-math",
+      "exact_quote": "With the statistical criteria, the R² values of MLR, RF, and ANN models for the training set were 0.83, 0.82, and 0.92, respectively. The RMSE values of the test were considered for model evaluation, and the results were 0.27, 0.18, and 0.09 for MLR, RF, and ANN models, respectively."
+    },
+    {
+      "snippet_id": "paper::EQUATION::3",
+      "category": "Formally refuted — $R^2$ defined as $\\mathrm{ESS}/\\mathrm{TSS}$ instead of $1 - \\mathrm{SS}_{res}/\\mathrm{SS}_{tot}$",
+      "severity": "minor",
+      "confidence": 0.93,
+      "evidence": "Eq. (4) is the paper's **only** definition of $R^2$, and it is the explained-sum-of-squares ratio $\\mathrm{ESS}/\\mathrm{TSS}$, not the coefficient of determination $1 - \\mathrm{SS}_{res}/\\mathrm{SS}_{tot}$. Lean refuted it as a general definition, compiling clean with only the standard Mathlib axioms:\n\n1. **Non-equivalence.** On $y_{exp} = (0, 2)$ (so $\\bar y = 1$, proved to be the arithmetic mean, and $\\mathrm{TSS} = 2$) with the constant predictor $\\hat y = (3, 3)$: $\\mathrm{ESS} = 8$, so Eq. (4) returns $4$, while $\\mathrm{SS}_{res} = 10$ gives the true $R^2 = -4$.\n2. **Domain violation.** Lean proved $\\neg\\,\\forall\\, y, \\hat y, \\bar y,\\ 0 < \\mathrm{TSS} \\to R^2_{\\text{paper}} \\le 1$: Eq. (4) is unbounded above. A quantity the paper screens with the rule \"$R^2$ should be greater than $0.6$\" can therefore exceed $1$, and is *large* precisely when the predictor is badly biased and over-dispersed about the mean — the formula rewards the wrong behaviour.\n3. **Blind to bias.** $\\hat y = (3,3)$ and $\\hat y' = (-1,3)$ have identical $\\mathrm{ESS} = 8$ and so identical Eq. (4) values of $4$, while their true $R^2$ differ ($-4$ vs $0$): Eq. (4) depends only on the dispersion of the fitted values and carries no information about their distance from the data.\n4. **The unstated hypothesis.** Lean proved both directions of $R^2_{\\text{paper}} = R^2_{\\text{std}} \\iff \\mathrm{TSS} = \\mathrm{ESS} + \\mathrm{SS}_{res}$. That ANOVA decomposition holds for an in-sample OLS fit with an intercept, and fails in general for the Random Forest and the ANN to which the paper also applies Eq. (4), and for test-set evaluation.\n\n**Scope.** The refutation is about the formula *as printed*: the manuscript's only definition of its headline metric is wrong, and its $>0.6$ threshold is applied to a quantity that cannot be read on the $[0,1]$ scale the threshold presupposes. It does **not** show the reported values (MLR $0.69$, RF $0.82$, ANN $0.89$) are themselves wrong — if the authors used a standard routine such as scikit-learn's `r2_score`, which implements $1 - \\mathrm{SS}_{res}/\\mathrm{SS}_{tot}$, those numbers may be correct and the defect is confined to the Methods. Severity is therefore `minor`: the model-ranking conclusion survives, but the RF and ANN $R^2$ values are not reproducible from the paper as written. The fix is a one-line correction of Eq. (4).",
+      "verifier": "verify-math-lean",
+      "exact_quote": "$$\nR^2 = \\frac{\\sum_{i=1}^n (y_{pred.} - \\overline{y})^2}{\\sum_{i=1}^n (y_{exp.} - \\overline{y})^2}\n$$ (4)"
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::1",
+      "category": "Domain/Constraint violation — inadmissible hyperparameter value and inconsistent parameter set",
+      "severity": "minor",
+      "confidence": 0.9,
+      "evidence": "**Inadmissible grid value.** Table 1(a) lists `Min samples split` $\\in \\{1, 2, 3\\}$. A binary split must partition a node into two non-empty children, so splitting an $n$-sample node requires $n \\ge 2$; the admissible integer domain is $\\texttt{min\\_samples\\_split} \\in \\mathbb{Z}_{\\ge 2}$. The paper states the search used scikit-learn's Grid-Search CV, where the constraint is `Interval(Integral, 2, inf, closed='left')` and `min_samples_split=1` raises `InvalidParameterError`. Only the *float* $1.0$ is legal, and it means \"100% of the samples\" — the opposite extreme — which cannot be the intent inside the integer sequence $1, 2, 3$. The grid as printed could not have been executed.\n\n**Inconsistent parameter set.** The text enumerates four varied parameters $\\{$Max feature, Min\\_sample\\_leaf, Min\\_samples\\_split, n\\_estimators$\\}$, while Table 1(a) lists a different four $\\{$n\\_estimators, Max depth, Min samples split, Min samples leaf$\\}$ — Max feature appears only in the text, Max depth only in the table. The Results then report **five** tuned values (max depth $10$, max feature $4$, min\\_sample\\_leaf $2$, min\\_samples\\_split $2$, $30$ estimators), and the `max_features` search range is never given, so the reported optimum is unreproducible. The same defect recurs for the ANN: the text says \"the five hyperparameters of the ANN model are examined\" while Table 1(b) lists only four, with `max_iter` absent.\n\n**Degenerate optimum.** With only four Gini-selected descriptors, $\\texttt{max\\_features} = 4 = p$ means every node considers the full feature set ($\\binom{4}{4} = 1$), so there is no feature subsampling and the \"best RF\" is bagged full-feature CART rather than a feature-randomised forest.\n\nSeverity is `minor`: the reported optimum itself ($\\texttt{min\\_samples\\_split} = 2$) is admissible, so no numerical result is invalidated — the defect is in the Methods and Table 1.",
+      "verifier": "verify-math",
+      "exact_quote": "| Min samples split             | 1, 2, 3                      |"
+    },
+    {
+      "snippet_id": "paper::DEFINITION::0",
+      "category": "Definition error — Gini importance conflated with Gini impurity",
+      "severity": "minor",
+      "confidence": 0.9,
+      "evidence": "The paragraph asserts three mutually incompatible things: (a) \"the features with the highest Gini importance values\" are the influential ones, (b) \"$0$ representing the lowest and **best** possible importance\", and (c) \"a higher Gini importance indicates greater [importance]\". (a) and (c) are monotone increasing in importance; (b) declares the minimum of the scale to be best. If (b) held, feature selection would have to keep the descriptors with importance $\\approx 0$ — the opposite of what the paper does.\n\nThe \"$0$ is best\" property belongs to Gini **impurity**, $G = 1 - \\sum_{k=1}^{K} p_k^2$, which is minimised at a pure node. Gini **importance** is the opposite quantity, the mean decrease in impurity,\n$$\\mathrm{MDI}(X_j) = \\frac{1}{T}\\sum_{t=1}^{T}\\sum_{\\substack{\\nu \\in \\mathcal{N}_t \\\\ v(\\nu) = j}} \\frac{N_\\nu}{N}\\,\\Delta G(\\nu), \\qquad \\Delta G(\\nu) \\ge 0,$$\nfor which $\\mathrm{MDI}(X_j) = 0$ means the feature was never used and is the **least** informative. The paper has transplanted a property of impurity onto importance.\n\nThe claimed range is also right for the wrong reason: raw MDI has no universal upper bound of $1$ in the regression setting used here (variance-reduction splitting on continuous pIC₅₀ targets); \"varies between $0$ and $1$\" holds only because scikit-learn normalises $\\tilde I_j = \\mathrm{MDI}(X_j)/\\sum_m \\mathrm{MDI}(X_m)$ so that $\\sum_j \\tilde I_j = 1$, a normalisation the paper never mentions.\n\nSeverity is `minor`: the selection actually performed (keeping the four top-ranked descriptors) follows the correct convention, so no numerical result is invalidated.",
+      "verifier": "verify-math",
+      "exact_quote": "Gini importance varies between 0 and 1, with 0 representing the lowest and best possible importance."
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+      "category": "Unsupported predictivity claim for the GFA-MLR model",
+      "severity": "critical",
+      "confidence": 0.88,
+      "evidence": "The Results describe the MLR model as \"predictively accurate and acceptable\" on the strength of $R^2_{\\text{train}} = 0.69$, $\\mathrm{RMSE}_{\\text{train}} = 0.16$ and $\\mathrm{RMSE}_{\\text{test}} = 0.56$ — statistics that do not support the claim.\n\nSolving $R^2 = 1 - \\mathrm{MSE}/\\mathrm{Var}(y)$ for the training-set variance from each of the paper's own three models gives a consistent spread: RF $0.14^2/(1 - 0.82) = 0.109$; ANN $0.10^2/(1 - 0.89) = 0.091$; MLR $0.16^2/(1 - 0.69) = 0.083$ — i.e. $\\sigma_y \\approx 0.3$ log units. The MLR test RMSE of $0.56$ is then $\\approx 1.9\\,\\sigma_y$, implying\n$$R^2_{\\text{test}} \\approx 1 - \\left(\\frac{0.56}{0.30}\\right)^2 \\approx -2.5,$$\nso on the six held-out compounds the model performs substantially **worse than predicting the training mean**. The $3.5\\times$ inflation from $\\mathrm{RMSE}_{\\text{train}} = 0.16$ to $\\mathrm{RMSE}_{\\text{test}} = 0.56$ is the signature of a 5-descriptor model overfit on $n_{\\text{train}} = 21$ (6 coefficients including the intercept $2.897$), roughly $3.5$ observations per coefficient.\n\nThis finding overlaps the abstract-versus-body contradiction recorded for `paper::MATHEMATICAL_MODEL::2`: the abstract's MLR figures ($R^2 = 0.83$, $\\mathrm{RMSE}_{\\text{test}} = 0.27$) would make the \"acceptable\" claim far more defensible, which is part of why the two sets of numbers cannot both stand. Items that check out and are **not** flagged: the split arithmetic ($21 + 6 = 27$ derivatives) and the descriptor count (Eq. (6) has exactly 5 descriptor terms plus an intercept).",
+      "verifier": "verify-math",
+      "exact_quote": "the training set = 0.69, RMSE of the training set = 0.16, and RMSE of the test set = 0.56, indicating that the model was predictively accurate and acceptable (Fig. 3)."
+    }
+  ],
+  "verdict": "CRITICAL_ERRORS",
+  "verdict_confidence": 0.93,
+  "summary": "Nine mathematically verifiable objects were extracted from this ebselen/ebsulfur QSAR manuscript — the paper's five display equations (Eqs. 1–5), the fitted GFA-MLR model (Eq. 6), the RF hyperparameter grid, the Gini-importance definition, and the RF/ANN model-performance block. Four went to Lean 4 and five to informal review. **No Lean run failed**, so Step 5 ran no fallbacks; every Lean verdict is a settled formal outcome, and all four proof files were independently re-compiled by the orchestrator after the queue finished (`lake env lean` exit 0, zero `sorry`, axioms `[propext, Classical.choice, Quot.sound]` with no `sorryAx`).\n\n**What Lean settled.** Two equations are formally clean. Eq. (2), the Pearson correlation $r = C_{(x,y)}/\\sqrt{V_x V_y}$, is a faithful rendering of the product-moment coefficient: $|r| \\le 1$ was proved from the discrete Cauchy–Schwarz inequality, and sharpness ($r = 1$ when $y = x$) confirms the paper's reading of $\\pm 1$ as the attainable extremes, so its $|r| < 0.7$ screening cut is well posed. Eq. (3), $\\mathrm{VIF} = 1/(1 - R^2)$, is the textbook formula; $\\mathrm{VIF} \\ge 1$, strict monotonicity on $[0,1)$, and the exact correspondence $\\mathrm{VIF} < 10 \\iff R^2 < 0.9$ were all proved, which validates the paper's $\\mathrm{VIF} < 10$ rule.\n\nTwo equations were **formally refuted**. Eq. (1) defines the regression target as $\\mathrm{pIC}_{50} = 1/\\mathrm{IC}_{50}$, dropping the logarithm: Lean proved the reciprocal map is not the p-scale, that at IC₅₀ $= 10^{-6}$ M it returns $10^{6}$ where the p-scale returns $6$, and that over the paper's own range $10^{-7}$–$10^{-5}$ M it is bounded below by $10^{5}$ — irreconcilable with the order-$10^{0}$ pIC₅₀ targets the paper actually fits (Eq. (6) has intercept $2.897$ and training RMSE $0.16$). Eq. (4) defines $R^2$ as $\\mathrm{ESS}/\\mathrm{TSS}$ rather than $1 - \\mathrm{SS}_{res}/\\mathrm{SS}_{tot}$: Lean exhibited a dataset where the two differ ($4$ vs $-4$), proved the paper's version is unbounded above (so the \"$R^2 > 0.6$\" rule is applied to a quantity that can exceed $1$, and is largest for a badly biased predictor), showed it is blind to prediction bias, and proved both directions of the equivalence with the ANOVA identity — the in-sample-OLS-with-intercept hypothesis the paper never states and which fails for the Random Forest and the ANN it also scores this way.\n\n**What informal review added.** Eq. (5) (RMSE) is correct. The remaining four snippets all carry errors. The sharpest is a numerical contradiction between the abstract and the body: of six headline statistics, only the two RF values agree, while MLR ($0.83$/$0.27$ vs $0.69$/$0.56$) and ANN ($0.92$/$0.09$ vs $0.89$/$0.05$) disagree — and because the RF row matches exactly, the two locations are demonstrably reporting the same quantities, so these are genuine contradictions. The two ANN discrepancies run in opposite directions, ruling out a single recomputation, and the Discussion corroborates the body, making the abstract the outlier. Relatedly, the MLR model's own figures do not support calling it \"predictively accurate and acceptable\": reconstructing $\\sigma_y \\approx 0.3$ consistently from all three models puts $\\mathrm{RMSE}_{\\text{test}} = 0.56$ at $\\approx 1.9\\,\\sigma_y$, i.e. an implied test $R^2 \\approx -2.5$, worse than predicting the mean. Two further minor errors: Table 1(a) lists $\\texttt{min\\_samples\\_split} = 1$, inadmissible in the scikit-learn pipeline the paper says it used (the parameter requires an integer $\\ge 2$), alongside a text-versus-table parameter set mismatch that leaves the reported `max_features = 4` with no stated search range; and the Gini-importance definition calls $0$ the \"best possible importance\", which is a property of Gini *impurity*, contradicting both the paper's next sentence and its own practice of keeping the top-ranked descriptors.\n\n**Disagreements and overlaps.** The two verifiers never disagreed — no snippet was judged by both, and no Lean `FAILED` required an informal second opinion. Two findings do overlap and should not be counted as independent: `MATHEMATICAL_MODEL::0` and `MATHEMATICAL_MODEL::2` both rest on the abstract-versus-body statistics, from the MLR and the whole-table viewpoint respectively. One scope caveat is worth repeating: the Eq. (4) refutation condemns the printed *definition*, not necessarily the reported numbers — if the authors computed $R^2$ with a standard library routine, the values may be fine, which is why that finding is graded `minor` even though it is formally refuted.\n\n**Verdict: CRITICAL_ERRORS**, at confidence $0.93$. The confidence is high because it rests on two independently re-verified machine-checked refutations plus a directly readable numeric contradiction, not on any inference from a stalled proof search. The critical items are the pIC₅₀ definition of Eq. (1) — which, taken literally, misdefines the quantity the entire QSAR study models — and the abstract's misreporting of the headline MLR and ANN statistics. The paper's substantive scientific conclusion (the ANN is the best of the three models; compound P8 is the most promising inhibitor) is not itself impugned by these findings, all of which concern the methods' mathematical exposition and the consistency of reported numbers.",
+  "lean_project_note": "MATH_VERIFICATION/Paper is a shared, pre-built Mathlib project holding saved proofs from many other papers' runs; per verify-math-lean's deletion rules a reused project is not the caller's to delete, so all four Lean calls passed --keep-lean and the project was retained. Per-snippet scratch (TMP.lean, claim.md) was removed; the four proofs are kept as MATH_VERIFICATION/Paper/Paper/Verified/0010-EbselenQSAR__EQUATION__{0,1,2,3}_opus5.lean."
+}

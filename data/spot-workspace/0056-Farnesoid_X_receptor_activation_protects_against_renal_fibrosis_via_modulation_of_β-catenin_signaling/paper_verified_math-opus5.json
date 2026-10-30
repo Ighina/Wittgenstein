@@ -1,0 +1,381 @@
+{
+  "paper_name": "paper",
+  "paper_path": "/Users/iacopoghinassi/Documents/Github/Wittgenstein/data/spot-workspace/0056-Farnesoid_X_receptor_activation_protects_against_renal_fibrosis_via_modulation_of_β-catenin_signaling/paper.md",
+  "tag": "opus5",
+  "lean_project": "MATH_VERIFICATION/Paper",
+  "lean_project_kept": true,
+  "totals": {
+    "snippets_extracted": 13,
+    "routed_to_math": 9,
+    "routed_to_lean": 4,
+    "lean_passed": 1,
+    "lean_refuted": 3,
+    "lean_failed": 0,
+    "lean_not_attempted": 0,
+    "fallbacks_run": 0,
+    "errors_detected": 3
+  },
+  "results": [
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::0",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "Results — Inhibition of β-catenin signaling decreases fibronectin induction (Figure 3A–B)",
+      "content": "\"As shown in Figure 3A and B, ICG-001 induced inhibition of β-catenin signaling and attenuated 1.6-fold fibronectin production by ox-LDL, which was similar to the effect of inhibition of this pathway by FXR activation.\" Figure 3B reports relative fibronectin levels DMSO $= 1.0$, DMSO + ox-LDL $= 2.0$, ICG-001 + ox-LDL $= 1.25$, GW4064 + ox-LDL $= 1.25$. NRK-52E cells pretreated with ICG-001 $10\\,\\mu$M or GW4064 $5\\,\\mu$M for 30 min, then ox-LDL $50\\,\\mu$g/mL for 24 h.",
+      "route": "verify-math-lean",
+      "route_rationale": "Crisp rational identity: the stated $1.6$-fold attenuation is checkable against the Figure 3B panel values printed in the manuscript.",
+      "lean_result": {
+        "lean_status": "PASSED",
+        "project": "MATH_VERIFICATION/Paper",
+        "file": "Paper/TMP.lean",
+        "archived_as": "Paper/Verified/0056-FXRBetaCatenin__FORMULA_BLOCK__0_opus5.lean",
+        "formal_statement": "theorem icg_attenuation_is_1_6 : fnOxLDL / fnICG = 8/5 := by\n  unfold fnOxLDL fnICG\n  norm_num",
+        "compiler_feedback": "",
+        "axioms": [
+          "propext",
+          "Classical.choice",
+          "Quot.sound"
+        ],
+        "cycles_used": 1,
+        "project_kept": true
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9,
+      "reasoning": "Formalised the attenuation factor as the ratio of the ox-LDL fibronectin level to the ICG-001 + ox-LDL level from Figure 3B: $2.00/1.25 = 8/5 = 1.6$. Lean accepted this exactly, and also accepted the parallel GW4064 arm ($2.00/1.25 = 1.6$), which matches the paper's claim that the two effects were \"similar\". A companion theorem confirms $1.6$ is *not* the ox-LDL induction over baseline ($2.00/1.00 = 2$), so the paper's $1.6$ can only be the attenuation ratio — and under that reading it is arithmetically correct. Exit 0, no severity-1 diagnostics (only four whitespace style-linter warnings), no `sorryAx`; axioms are the three standard Mathlib ones."
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::1",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "Results — FXR inhibits β-catenin-mediated transcription (Figure 3G)",
+      "content": "\"We also explored the β-catenin-mediated transcriptional activity in a TOPflash luciferase reporter system, which demonstrated that exogenous FXR inhibited the 1.7-fold transcriptional activity induced by ox-LDL (Figure 3G).\" Figure 3G reports relative TOPflash activity pcDNA3 $= 1.0$, pcDNA3 + ox-LDL $= 2.0$, pFXR + ox-LDL $= 1.25$ (Figure 3 legend: \"Relative luciferase is reported (n = 6) and values shown are means ± S.E.M, *p < 0.05\").",
+      "route": "verify-math-lean",
+      "route_rationale": "Closed-form consistency check between the stated $1.7$-fold factor and the Figure 3G panel values.",
+      "lean_result": {
+        "lean_status": "REFUTED",
+        "project": "MATH_VERIFICATION/Paper",
+        "file": "Paper/TMP.lean",
+        "archived_as": "Paper/Verified/0056-FXRBetaCatenin__FORMULA_BLOCK__1_opus5.lean",
+        "formal_statement": "theorem stated_factor_refuted :\n    ¬ (tfOx / tfBase = stated ∨ tfOx / tfFXROx = stated) := by\n  simp only [tfOx, tfBase, tfFXROx, stated]\n  norm_num",
+        "compiler_feedback": "",
+        "axioms": [
+          "propext",
+          "Classical.choice",
+          "Quot.sound"
+        ],
+        "cycles_used": 2,
+        "project_kept": true
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.75,
+      "reasoning": "There are only two readings of \"the 1.7-fold transcriptional activity induced by ox-LDL\" available from Figure 3G: (a) the induction over baseline, $2.00/1.00 = 2$; or (b) the attenuation achieved by FXR, $2.00/1.25 = 1.6$. Lean proved the negation of the disjunction — neither reading equals $1.7$ — with standard axioms only, exit 0 and no severity-1 diagnostics. A companion theorem records the two factors Figure 3G does support ($2$ and $8/5$). The same sentence pattern recurs in the paper for FXR siRNA ($1.3$ stated vs $1.4$ plotted, see paper::FORMULA_BLOCK::2), consistent with imprecise transcription of figure values into the text rather than a wrong analysis. Confidence held at $0.75$ rather than the $\\geq 0.9$ a pure refutation would carry, because the premises are the Figure 3G bar values as rendered in the manuscript markdown, which is a lossy digitisation of a bar chart; the arithmetic is certain but the premise is not. The qualitative conclusion (exogenous FXR suppresses ox-LDL-induced β-catenin transcription) is unaffected.",
+      "predicted_error_category": "Formally refuted"
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::2",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "Results — FXR knockdown increases β-catenin transcription (Figure 3H–J)",
+      "content": "\"Then, NRK-52E cells were co-transfected with TOPflash reporter plasmid and either FXR siRNA with or without β-catenin siRNA, which confirmed that FXR siRNA could increase 1.3-fold β-catenin transcriptional activity; then, co-transfected with β-catenin siRNA, FXR siRNA did not increase the β-catenin transcriptional activity (Figure 3H–J).\" Figure 3J reports control siRNA $= 1.0$, FXR siRNA $= 1.4$, β-catenin siRNA $= 1.0$, FXR siRNA + β-catenin siRNA $= 1.0$.",
+      "route": "verify-math",
+      "route_rationale": "A $1.3$ vs $1.4$ gap turns entirely on how the bar chart is digitised, not on an identity; no faithful formal statement is available.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::2",
+        "verifier_name": "math-equations",
+        "status": "UNVERIFIABLE",
+        "error_detected": false,
+        "confidence": 0.3,
+        "reasoning": "The text's $1.3$-fold does not match the $\\approx 1.4$ plotted for FXR siRNA in Figure 3J, a discrepancy of about $7\\%$. This cannot be adjudicated: the Figure 3J values available in the manuscript source are an approximate transcription of a bar chart, and a $1.3/1.4$ gap is well inside that transcription error. The internal logic of the claim is sound — FXR siRNA raises activity above the control baseline of $1.0$, and the double knockdown returns it to $1.0$, so the epistasis argument (FXR acts through β-catenin) holds on either number. This is not an algebraic, calculus or domain error of the kind this verifier flags.",
+        "predicted_error_category": null,
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": []
+      },
+      "status": "UNVERIFIABLE",
+      "error_detected": false,
+      "confidence": 0.3,
+      "reasoning": "See fallback_result: text/figure mismatch of $1.3$ vs $\\approx 1.4$ is within bar-chart digitisation error and does not affect the epistasis argument."
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::3",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "Methods — Animal experiments / Abstract — Results",
+      "content": "Methods: \"Twenty-four male C57 BL/6J mice (5 weeks, weight 20 g) were purchased… After 3 weeks, the mice were randomly divided into 4 groups… At 15 weeks of age, one mouse in the HFD group was found dead in a cage… After a 12-week treatment, all mice were euthanized… Urine specimens were collected on Monday morning of week 20.\" Results: \"we examined β-catenin protein expression and localization in 20-week mice\". Abstract: \"Mice were fed by a 60% kcal fat diet for 20 weeks developed the typical traits of metabolic syndrome with subsequent renal lipid accumulation and renal injury.\"",
+      "route": "verify-math-lean",
+      "route_rationale": "Pure integer timeline arithmetic over explicitly stated week counts; formally decidable.",
+      "lean_result": {
+        "lean_status": "REFUTED",
+        "project": "MATH_VERIFICATION/Paper",
+        "file": "Paper/TMP.lean",
+        "archived_as": "Paper/Verified/0056-FXRBetaCatenin__FORMULA_BLOCK__3_opus5.lean",
+        "formal_statement": "theorem abstract_diet_duration_refuted :\n    ¬ (abstractDiet = treatment ∨ dietStartAge + abstractDiet = reportedEndpointAge) := by\n  simp only [abstractDiet, treatment, dietStartAge, arrivalAge, acclim,\n    reportedEndpointAge]\n  norm_num",
+        "compiler_feedback": "",
+        "axioms": [
+          "propext"
+        ],
+        "cycles_used": 1,
+        "project_kept": true
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.72,
+      "reasoning": "Lean first confirmed the Methods timeline is internally consistent: mice arrive at 5 weeks of age, are randomised onto diet after 3 weeks of acclimatisation ($5 + 3 = 8$ weeks of age), and a 12-week treatment ends at $8 + 12 = 20$ weeks of age — matching \"20-week mice\" and \"week 20\". It also confirmed the interim death at 15 weeks of age falls inside the treatment window ($8 < 15 < 20$). It then refuted the Abstract's feeding duration: $20 \\neq 12$, and $8 + 20 = 28 \\neq 20$, so a 20-week high-fat-diet exposure is incompatible with both the stated 12-week treatment and the reported 20-week endpoint age. The actual high-fat-diet exposure is 12 weeks, not 20. Exit 0, no severity-1 diagnostics, no `sorryAx`, axiom `propext` only. Confidence $0.72$ rather than higher because \"for 20 weeks\" admits a charitable reading of \"until week 20\", under which the sentence is merely loose phrasing instead of an arithmetic error; on the plain reading it is wrong. Severity is minor — nothing in the mechanistic conclusions depends on the exposure length.",
+      "predicted_error_category": "Sign/Arithmetic error"
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::4",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "Methods — Animal experiments",
+      "content": "\"Twenty-four male C57 BL/6J mice… the mice were randomly divided into 4 groups: a 10% fat diet group (Control group, n = 6)…; a 60% high fat diet (HFD) group… (n = 6); a HFD group with 0.1% CDCA (n = 6)…; and a 30 mg/kg INT-747 group (n = 6)… At 15 weeks of age, one mouse in the HFD group was found dead in a cage.\" Figure 6F legend: \"The positive area of Masson and Sirius red were calculated (F) (n = 5)\". Figure 3 and Figure 4 legends report $n = 6$ and $n = 3$ respectively for cell-culture experiments.",
+      "route": "verify-math",
+      "route_rationale": "Group accounting with an attrition event; needs judgement about which reported $n$ is pre- or post-attrition rather than a formal identity.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::4",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "The allocation adds up exactly: $4 \\times 6 = 24$, matching the twenty-four mice purchased. The single death in the HFD group reduces that arm to $n = 5$ at the 20-week endpoint, giving $23$ animals analysed, and the $n = 5$ reported in the Figure 6F legend is consistent with post-attrition histology counts. The $n = 6$ figures in the Methods describe randomisation-time group sizes, which is standard and not a contradiction. No arithmetic or domain error.",
+        "predicted_error_category": null,
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85,
+      "reasoning": "See fallback_result: $4 \\times 6 = 24$ matches the cohort, and the post-attrition $n = 5$ in Figure 6F is consistent with the single reported death."
+    },
+    {
+      "snippet_id": "paper::EQUATION::0",
+      "snippet_type": "EQUATION",
+      "location": "Results — FXR activation in HFD-fed mice (Figure 5G–H)",
+      "content": "Results: \"had more severe renal injury, with a remarkable increase in albuminuria (37.1 ± 3.79 vs. 23.24 ± 4.77 mg/g), serum creatinine (4.8 ± 1.3 vs. 1.11 μmol/L) and BUN levels (10.7 ± 1.81 vs. 7.5 ± 1.39 mmol/L).\" Figure 5 panel labels: \"Graph G: Serum BUN (mmol/L)\" and \"Graph H: Serum Creatinine (mmol/L)\".",
+      "route": "verify-math-lean",
+      "route_rationale": "Unit-conversion identity; the SI prefix relation $1\\ \\mathrm{mmol/L} = 1000\\ \\mu\\mathrm{mol/L}$ makes this formally decidable.",
+      "lean_result": {
+        "lean_status": "REFUTED",
+        "project": "MATH_VERIFICATION/Paper",
+        "file": "Paper/TMP.lean",
+        "archived_as": "Paper/Verified/0056-FXRBetaCatenin__EQUATION__0_opus5.lean",
+        "formal_statement": "theorem creatinine_units_refuted :\n    creatHFD * mmol ≠ creatHFD * umol ∧ creatCTL * mmol ≠ creatCTL * umol := by\n  unfold creatHFD creatCTL mmol umol\n  norm_num",
+        "compiler_feedback": "",
+        "axioms": [
+          "propext",
+          "Classical.choice",
+          "Quot.sound"
+        ],
+        "cycles_used": 2,
+        "project_kept": true
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.82,
+      "reasoning": "The same two numerals, $4.8$ and $1.11$, are labelled $\\mu$mol/L in the Results text and mmol/L on the Figure 5H axis. Lean refuted the claim that both labels denote the same concentration, and quantified the gap exactly: $4.8\\ \\mathrm{mmol/L} = 1000 \\times 4.8\\ \\mu\\mathrm{mol/L}$, likewise for $1.11$. BUN is labelled mmol/L in both text and Figure 5G, so creatinine is the only panel affected and the error is a unit-labelling slip, not a systematic one. Lean also recorded that $1.11\\ \\mu\\mathrm{mol/L}$ lies below any plausible murine serum-creatinine reference interval (roughly $20$–$80\\ \\mu\\mathrm{mol/L}$), so at least one label must be wrong independently of the text/figure comparison; and that the between-group fold change $4.8/1.11 \\approx 4.32$ is unit-invariant, so the \"remarkable increase\" conclusion survives. Exit 0, no severity-1 diagnostics, no `sorryAx`, standard axioms. Severity minor.",
+      "predicted_error_category": "Domain/Constraint violation"
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::5",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "Methods — Animal experiments (diet composition)",
+      "content": "\"A high fat diet (HFD) usually includes 60 kcal % fat, 20 kcal % protein, and 20 kcal % carbohydrate, respectively [24].\" The control arm is \"a 10% fat diet group\".",
+      "route": "verify-math",
+      "route_rationale": "Trivial energy partition a careful reader checks by inspection.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::5",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.95,
+        "reasoning": "The macronutrient energy partition sums correctly: $60 + 20 + 20 = 100$ kcal%, so the diet specification is complete and consistent, with every share inside $[0, 100]$. The control diet is specified as 10% fat without its remaining shares, which is an omission rather than an arithmetic error.",
+        "predicted_error_category": null,
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.95,
+      "reasoning": "See fallback_result."
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::6",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "Results — FXR activation in HFD-fed mice (Figure 5)",
+      "content": "\"Compared to mice treated with control diet, HFD-fed mice had higher body weight (49.01 ± 1.89 g vs. 27.59 ± 1.62 g), higher total cholesterol (5.73 ± 0.65 vs. 2.55 ± 0.64 mmol/L), higher LDL-cholesterol (0.46 ± 0.11 vs. 0.19 ± 0.07 mmol/L), and had more severe renal injury, with a remarkable increase in albuminuria (37.1 ± 3.79 vs. 23.24 ± 4.77 mg/g), serum creatinine (4.8 ± 1.3 vs. 1.11 μmol/L) and BUN levels (10.7 ± 1.81 vs. 7.5 ± 1.39 mmol/L).\" Values are means ± S.E.M.",
+      "route": "verify-math",
+      "route_rationale": "Mean ± SEM group comparisons over experimental data; no formal content to state.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::6",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.8,
+        "reasoning": "Every reported pair is internally coherent. All means are positive and all SEMs are small relative to their means, so no interval crosses an impossible bound. The lipid fractions are mutually consistent: LDL-c is $0.46/5.73 \\approx 8.0\\%$ of total cholesterol in the HFD arm and $0.19/2.55 \\approx 7.5\\%$ in controls, both plausible for mice, where HDL dominates total cholesterol — so the LDL-c values do not exceed the total they are a part of. The control serum-creatinine entry omits its SEM (\"1.11\" with no ± term), a reporting omission rather than a mathematical error. The unit-labelling problem affecting the creatinine numbers is reported separately under paper::EQUATION::0.",
+        "predicted_error_category": null,
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.8,
+      "reasoning": "See fallback_result."
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::7",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "Results — β-catenin signaling in HFD mice (Figure 8B–D)",
+      "content": "\"Compared to control mice, quantitative determination revealed a ~5-fold induction of fibronectin protein, ~4-fold induction of the relative abundance of phosphorylated β-catenin (Ser 675) protein, and 1.3-fold induction of α-SMA protein in HFD mice (Figure 8B–D).\"",
+      "route": "verify-math",
+      "route_rationale": "Approximate fold inductions with no underlying numbers supplied anywhere in the manuscript.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::7",
+        "verifier_name": "math-equations",
+        "status": "UNVERIFIABLE",
+        "error_detected": false,
+        "confidence": 0.2,
+        "reasoning": "The three fold inductions are reported only as summary figures; Figure 8B–D supplies no numeric values in the manuscript source against which they could be recomputed. All three are positive and greater than $1$, consistent with the stated direction of effect, and nothing here is mathematically impossible. With no accessible denominators there is no identity to check.",
+        "predicted_error_category": null,
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": []
+      },
+      "status": "UNVERIFIABLE",
+      "error_detected": false,
+      "confidence": 0.2,
+      "reasoning": "See fallback_result."
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::8",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "Figure 6F — Masson and Sirius red positive area",
+      "content": "Figure 6F reports positive staining area as a relative level (%): Masson — CTL $\\approx 0$, HFD $\\approx 20$, CDCA $\\approx 8$, INT-747 $\\approx 6$; Sirius red — CTL $\\approx 0$, HFD $\\approx 12$, CDCA $\\approx 6$, INT-747 $\\approx 4$. Legend: \"The positive area of Masson and Sirius red were calculated (F) (n = 5). Values shown are means ± S.E.M. *p < 0.05.\"",
+      "route": "verify-math",
+      "route_rationale": "Percentages read off a bar chart; unformalisable without the underlying measurements.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::8",
+        "verifier_name": "math-equations",
+        "status": "UNVERIFIABLE",
+        "error_detected": false,
+        "confidence": 0.25,
+        "reasoning": "All values lie inside the admissible $[0, 100]$ range for a percentage area, and the ordering (HFD highest, both agonist arms intermediate, control lowest) is internally consistent across the two independent fibrosis stains. The near-zero control values are biologically surprising, since normal kidney contains some interstitial collagen, but the bar heights available in the manuscript source are an approximate rendering of a chart, so this cannot be distinguished from a baseline-normalised axis or from transcription error. No checkable identity is asserted.",
+        "predicted_error_category": null,
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": []
+      },
+      "status": "UNVERIFIABLE",
+      "error_detected": false,
+      "confidence": 0.25,
+      "reasoning": "See fallback_result."
+    },
+    {
+      "snippet_id": "paper::DEFINITION::0",
+      "snippet_type": "DEFINITION",
+      "location": "Results — The AF1 domain of FXR mediates the interaction",
+      "content": "\"To identify the specific domain, which could mediate the interaction with β-catenin… we constructed a Flag tagged full length FXR, a AF1 domain deletion mutant defined as pDEL-FXR (124–469), and β-catenin… We found that the full length FXR could inhibit β-catenin mediated transcription activity, while the pDEL-FXR without the N-terminal AF1 domain did not have any effect on β-catenin mediated TOPflash reporter activity (Figure 4H).\" The domain order is given as \"a N-terminal AF1 domain, a DNA binding domain (DBD), a hinge domain, a ligand binding domain (LBD), and a C-terminal AF2 domain\" (Figure 4G).",
+      "route": "verify-math",
+      "route_rationale": "Residue-range arithmetic plus a well-definedness assertion about the construct; checkable by inspection.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::DEFINITION::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.8,
+        "reasoning": "The construct is well defined as a residue interval. Rat FXR (NR1H4) is a 469-residue protein, so $[124, 469]$ is a valid non-empty sub-interval of $[1, 469]$ spanning $469 - 124 + 1 = 346$ residues, and its complement $[1, 123]$ is the N-terminal segment the paper says was deleted. That complement is consistent with the stated domain order, in which AF1 is N-terminal to the DBD. The deletion is therefore internally coherent, and the inference drawn from it (AF1 is required for the inhibitory effect) is a biological conclusion outside this verifier's remit.",
+        "predicted_error_category": null,
+        "snippet_type": "DEFINITION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.8,
+      "reasoning": "See fallback_result."
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::9",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "Methods — Statistical analysis",
+      "content": "\"All statistical analyses were performed using SPSS statistics version 22.0… One-way analysis of variance (1-way ANOVA) was used for multiple group comparisons. The Student-Newman-Keuls post-hoc test was used for post-hoc analyses. A p-value <0.05 was deemed to indicate statistical significance.\" Reported group sizes are $n = 6$ (Figure 3), $n = 3$ (Figure 4), $n = 5$ (Figure 6F), and four in vivo groups of $n = 6$ at randomisation.",
+      "route": "verify-math",
+      "route_rationale": "Test-design validity; a statistical judgement with no formal mathematical content.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::9",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.75,
+        "reasoning": "The design is mathematically admissible. One-way ANOVA with Student-Newman-Keuls post-hoc comparison is an appropriate and self-consistent choice for the four-group single-factor layout used here, and the stated $\\alpha = 0.05$ threshold lies in $(0, 1)$. Degrees of freedom are not reported but are well defined for every quoted group size: with four groups of $n = 6$, $\\mathrm{df} = (3, 20)$, and all quoted $n$ exceed $1$, so no test is degenerate. The small $n = 3$ in Figure 4 limits power rather than making any computation impossible, and no test statistic or p-value is reported in a form that could be checked for arithmetic impossibility.",
+        "predicted_error_category": null,
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.75,
+      "reasoning": "See fallback_result."
+    },
+    {
+      "snippet_id": "paper::EQUATION::1",
+      "snippet_type": "EQUATION",
+      "location": "Methods — Immunofluorescence / histology (section thickness)",
+      "content": "\"Kidney cryosections (3 μM) were fixed with 4% paraformaldehyde for 15 min…\" and, for the paraffin histology, \"Renal specimens were fixed overnight with 4% paraformaldehyde at 4 °C, then paraffin-embedded and 3-micron sections were prepared.\"",
+      "route": "verify-math",
+      "route_rationale": "Dimensional check on a stated quantity; resolvable by inspection.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::1",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.6,
+        "reasoning": "Taken literally the two statements are dimensionally incompatible: $\\mu$M is micromolar, a concentration, and cannot measure a section thickness, whereas the parallel paraffin passage gives \"3-micron sections\". The intended unit is plainly $\\mu$m, and the magnitude $3$ agrees between the two passages, so this is a notational slip of the kind this verifier is instructed never to flag — no quantity is miscomputed and nothing downstream depends on it. Recorded for completeness, not flagged.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.6,
+      "reasoning": "See fallback_result."
+    }
+  ],
+  "findings": [
+    {
+      "snippet_id": "paper::EQUATION::0",
+      "category": "Inconsistent units",
+      "severity": "minor",
+      "confidence": 0.82,
+      "evidence": "The Results text reports serum creatinine as $4.8 \\pm 1.3$ vs $1.11\\ \\mu\\mathrm{mol/L}$, while the corresponding Figure 5H axis is labelled mmol/L. Lean refuted the claim that one numeral can carry both labels and fixed the gap at exactly $1000\\times$: $4.8\\ \\mathrm{mmol/L} = 1000 \\times 4.8\\ \\mu\\mathrm{mol/L}$. BUN is labelled mmol/L in both the text and Figure 5G, so creatinine is the only affected panel. Independently, $1.11\\ \\mu\\mathrm{mol/L}$ falls below any plausible murine serum-creatinine reference interval (roughly $20$–$80\\ \\mu\\mathrm{mol/L}$), so at least one label must be wrong. The between-group fold change $4.8/1.11 \\approx 4.32$ is unit-invariant, so the reported \"remarkable increase\" in renal injury stands.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "serum creatinine (4.8 ± 1.3 vs. 1.11 μmol/L)"
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::1",
+      "category": "Formally refuted",
+      "severity": "minor",
+      "confidence": 0.75,
+      "evidence": "Figure 3G reports relative TOPflash activity of $1.0$ (pcDNA3), $2.0$ (pcDNA3 + ox-LDL) and $1.25$ (pFXR + ox-LDL). Lean proved that neither available reading of the text's \"$1.7$-fold\" matches: the induction over baseline is $2.00/1.00 = 2$, and the attenuation achieved by FXR is $2.00/1.25 = 1.6$. The negation of the disjunction $2/1 = 1.7 \\lor 2/1.25 = 1.7$ compiles clean on standard axioms. The companion claim at paper::FORMULA_BLOCK::2 shows the same pattern ($1.3$ in text vs $\\approx 1.4$ plotted), pointing to imprecise transcription of figure values rather than a flawed analysis. The direction of effect, and hence the paper's conclusion that FXR suppresses ox-LDL-induced β-catenin transcription, is unaffected.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "which demonstrated that exogenous FXR inhibited the 1.7-fold transcriptional activity induced by ox-LDL (Figure 3G)"
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::3",
+      "category": "Internally inconsistent timeline",
+      "severity": "minor",
+      "confidence": 0.72,
+      "evidence": "The Methods timeline is self-consistent and Lean confirmed it: arrival at $5$ weeks of age, randomisation onto diet after $3$ weeks ($5 + 3 = 8$), and a $12$-week treatment ending at $8 + 12 = 20$ weeks of age, matching \"20-week mice\" and \"week 20\". The Abstract's $20$-week feeding period is incompatible with that: $20 \\neq 12$, and a $20$-week exposure begun at $8$ weeks of age would end at $8 + 20 = 28$ weeks, not $20$. The actual high-fat-diet exposure is $12$ weeks. Nothing in the mechanistic conclusions depends on the exposure length; a charitable reading of \"for 20 weeks\" as \"until week 20\" would reduce this to loose phrasing, which is why confidence is held below $0.8$.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "Mice were fed by a 60% kcal fat diet for 20 weeks developed the typical traits of metabolic syndrome"
+    }
+  ],
+  "verdict": "MINOR_ERRORS",
+  "verdict_confidence": 0.7,
+  "summary": "This is a molecular-biology manuscript (FXR activation, β-catenin signaling and renal fibrosis) and it contains **no formal mathematics**: a full pass over the source found no display math (`$$`, `` ```math ``, `\\begin{equation|align|gather}`) and no theorem, lemma, proposition, corollary or proof environment anywhere. The mathematically verifiable surface is therefore the paper's quantitative claim layer, and all 13 extracted snippets come from it: fold-change arithmetic against the figure panels, the animal-study timeline, cohort accounting, unit and dimensional labelling, diet energy partition, residue-range arithmetic for the pDEL-FXR construct, and the statistical design.\n\nFour snippets were crisp enough to formalise and all four reached a definitive Lean verdict, with no `FAILED` and no `NOT_ATTEMPTED`, so no informal fallback was triggered. Lean **confirmed** the $1.6$-fold ICG-001 attenuation claim as exactly $2.00/1.25$ against the Figure 3B values, and separately confirmed that the Methods animal timeline is internally coherent ($5 + 3 = 8$ weeks of age at diet start, $8 + 12 = 20$ at the reported endpoint, with the interim death at 15 weeks inside the window).\n\nLean **refuted** three consistency claims, each recorded as a minor finding. (i) The text's \"$1.7$-fold\" TOPflash induction matches neither reading of Figure 3G: the induction over baseline is $2$ and the FXR attenuation is $1.6$. (ii) The Abstract's $20$-week high-fat-diet exposure contradicts the Methods' $12$-week treatment, since $8 + 20 = 28 \\neq 20$. (iii) Serum creatinine carries $\\mu$mol/L in the text and mmol/L on the Figure 5H axis, a discrepancy of exactly $1000\\times$, with the text's $1.11\\ \\mu\\mathrm{mol/L}$ control mean also falling below any plausible murine reference interval; BUN is labelled mmol/L consistently in both places, so the slip is confined to the creatinine panel.\n\nAll three refutations are presentation-level: each is arithmetically certain, but none touches the paper's mechanistic conclusions, whose direction of effect survives in every case (the creatinine fold change is unit-invariant; the FXR suppression of β-catenin transcription is unaffected by the exact fold value; the exposure length is not load-bearing). Confidences are capped at $0.72$–$0.82$ rather than the $\\geq 0.9$ a pure formal refutation would normally carry, because for two of the three the premises are figure values digitised from bar charts in the manuscript source — the arithmetic is machine-checked, the premise is not. A fourth text/figure mismatch of the same kind ($1.3$ stated vs $\\approx 1.4$ plotted for FXR siRNA, paper::FORMULA_BLOCK::2) was left `UNVERIFIABLE` at confidence $0.3$ for exactly that reason, and the pattern across all four suggests loose transcription of figure values into prose rather than any analytical error.\n\nSix snippets came back clean (diet energy partition $60 + 20 + 20 = 100$; cohort accounting $4 \\times 6 = 24$ with post-attrition $n = 5$ in Figure 6F; the mean ± SEM phenotype table, whose LDL-c values are a consistent $\\approx 8\\%$ of total cholesterol; the pDEL-FXR $[124, 469]$ residue interval; the ANOVA design; and the \"3 μM\" section-thickness slip, which is dimensionally wrong but a pure notational typo and so not flagged). Two more were `UNVERIFIABLE` for want of any underlying numbers (the Figure 8B–D fold inductions and the Figure 6F staining percentages). No verifier disagreement arose, since no Lean run failed and no fallback was needed.\n\nVerdict **MINOR_ERRORS** at confidence $0.7$: three internal inconsistencies are confirmed by machine-checked arithmetic, but every one of them is a reporting defect rather than a mathematical flaw in the science, and the paper has no formal mathematical claims that could be checked more deeply. The verdict is not **NO_ERRORS** because the three findings are real and sit above the $0.7$ reporting threshold; it is not **CRITICAL_ERRORS** because none of them invalidates a main claim.\n\nLean project note: `MATH_VERIFICATION/Paper` already existed and was **reused, not created**, by this run. Per the skill's deletion rules a reused project is not ours to remove, so it was treated as `--keep-lean` even on the final call: per-snippet scratch (`TMP.lean`, `claim.md`) was cleared and the four proofs archived under `Paper/Verified/0056-FXRBetaCatenin__*_opus5.lean`.\n\nField convention: the schema gives each result only `lean_result` and `fallback_result`, so the nine verify-math-routed snippets carry their primary informal verdict in `fallback_result`; `fallbacks_run` counts only Step-5 retries of a Lean `FAILED`, of which there were none."
+}

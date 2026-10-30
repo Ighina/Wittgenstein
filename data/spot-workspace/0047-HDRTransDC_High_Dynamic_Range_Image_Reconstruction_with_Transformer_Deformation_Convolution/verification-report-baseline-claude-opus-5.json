@@ -1,0 +1,62 @@
+{
+  "paper_id": "0047-HDRTransDC_High_Dynamic_Range_Image_Reconstruction_with_Transformer_Deformation_Convolution",
+  "title": "HDRTransDC High Dynamic Range Image Reconstruction with Transformer Deformation Convolution",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Section 3.2 (DWFB description, after Eq. (5))",
+      "confidence": 0.5,
+      "supporting_evidence": "The paper repeatedly claims the DWFB 'spatially and adaptively selects useful information across frames' (Abstract, Sec. 3, contributions), yet immediately after generating the dynamic weight it states: 'we use the weight Δw that is shared in spatial dimension and fully connected in channel dimension'. A weight shared across the spatial dimension is by definition not spatially adaptive; this directly contradicts the stated motivation (that convolutions 'share fusion weights across the entire feature' and therefore cannot 'spatially and dynamically highlight the information of an appropriate image').",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0047-HDRTransDC_High_Dynamic_Range_Image_Reconstruction_with_Transformer_Deformation_Convolution::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Eq. (2)–(3), Transformer Offset Estimator",
+      "confidence": 0.4,
+      "supporting_evidence": "Q is generated from the reference tokens Z_ref while K and V are generated from the non-reference tokens Z_non (Eq. 2), which makes the operation a cross-attention; nevertheless Eq. (3) and the surrounding text describe it as 'multi-headed self-attention (MSA)'. Furthermore, the residual in Eq. (3) adds Z_non to an attention output whose queries come from Z_ref, which is inconsistent with the stated goal of producing offsets that describe the ref-to-non-ref correspondence and is never justified.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0047-HDRTransDC_High_Dynamic_Range_Image_Reconstruction_with_Transformer_Deformation_Convolution::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Section 3.1, positional encoding in TOE",
+      "confidence": 0.3,
+      "supporting_evidence": "The text argues 'Because the final offsets represent the position difference between the extracted features and the generated feature, we add the learnable absolute positional encoding Pos on the non-reference features F_non'. If the offsets encode a positional *difference* between reference and non-reference locations, positional information must be available in both the query (reference) and key (non-reference) branches; adding positional encoding only to the non-reference features is inconsistent with the stated rationale.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0047-HDRTransDC_High_Dynamic_Range_Image_Reconstruction_with_Transformer_Deformation_Convolution::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Eq. (4)",
+      "confidence": 0.25,
+      "supporting_evidence": "The deformable-convolution formulation F^a_non(p) = Σ_k m_k · F_non(p + p_k + ΔP(p,k)) omits the learned modulation/mask term of (modulated) deformable convolution and treats m_k only as a fixed kernel weight; as written the equation is a plain convolution with learned sampling offsets, so the claimed ability to 'compensate for occluded content' by weighting the sampled long-range content is not expressed by the stated equation.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0047-HDRTransDC_High_Dynamic_Range_Image_Reconstruction_with_Transformer_Deformation_Convolution::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 4,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (claude-opus-5, taxonomy=default): 4 error(s) reported.",
+  "baseline": {
+    "model": "claude-opus-5",
+    "provider": "anthropic",
+    "taxonomy": "default",
+    "paper_chars": 936218,
+    "truncated": true,
+    "usage": {
+      "input_tokens": 366205,
+      "output_tokens": 6458,
+      "cache_read_input_tokens": 0,
+      "cache_creation_input_tokens": 0
+    }
+  }
+}

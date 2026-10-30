@@ -1,0 +1,248 @@
+{
+  "paper_name": "paper",
+  "paper_path": "/Users/iacopoghinassi/Documents/Github/Wittgenstein/data/spot-workspace/0064-The_impact_understanding_of_exosome_therapy_in_COVID-19_and_preparations_for_the_future_approaches_in_dealing_with_infec/paper.md",
+  "tag": "opus5",
+  "lean_project": "MATH_VERIFICATION/Paper",
+  "lean_project_kept": true,
+  "totals": {
+    "snippets_extracted": 7,
+    "routed_to_math": 3,
+    "routed_to_lean": 4,
+    "lean_passed": 3,
+    "lean_refuted": 1,
+    "lean_failed": 0,
+    "fallbacks_run": 0,
+    "errors_detected": 2
+  },
+  "results": [
+    {
+      "snippet_id": "paper::EQUATION::0",
+      "snippet_type": "EQUATION",
+      "location": "Methods — MTT assay (cytotoxicity of exosomes)",
+      "content": "The cytotoxic activity of exosomes was then evaluated by a standard MTT assay. The optical absorbance at 570 nm was measured using a microplate reader (ELISA reader, ELX808, BioTek). The results were reported as the rate of viability based on the concentration curve. All tests were performed in three iterations. The relative cell viability was calculated as follows: Relative cell viability (%) = (ODs/ODc) × 100. [Symbols: ODs = optical density of the exosome-treated sample at 570 nm; ODc = optical density of the untreated control.]",
+      "route": "verify-math",
+      "route_rationale": "Standard normalisation identity; a careful reader can check it by inspection, and there is no non-trivial argument for Lean to settle.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::EQUATION::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "$\\text{Relative viability (\\%)} = (\\mathrm{OD}_s/\\mathrm{OD}_c)\\times 100$ is the conventional MTT normalisation. It is dimensionally sound (a ratio of two absorbances is dimensionless, scaled to a percentage), well defined whenever $\\mathrm{OD}_c \\neq 0$ — guaranteed in practice by the presence of a viable untreated control — and maps $\\mathrm{OD}_s = \\mathrm{OD}_c$ to exactly $100\\%$ as intended. No algebraic, sign, or domain defect. Note only that the formula is not background-subtracted (no blank term), but an unsubtracted ratio is a legitimate and widely published convention, not an error.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::EQUATION::1",
+      "snippet_type": "EQUATION",
+      "location": "Table 5 caption — \"Comparing cytokine levels after exosome treatment using Wilcoxon\"",
+      "content": "Table 5 caption: \"IQR, Interquartile range; ... Z: z-score; r: effect size (it is calculated via Z/√N; r figures are interpreted based on the following definition: 0.1 = small effect, 0.3 = medium effect, 0.5 = large effect); α = 0.05; P-values < 0.05 are significant; n = 5.\" Table 5 body reports, for every significant paired comparison (IL-6, IFN-γ and IL-17, in both the healthy and the patient arm): Z = -2.023, P-value = 0.043, r = 0.64.",
+      "route": "verify-math-lean",
+      "route_rationale": "A closed-form identity, $r = Z/\\sqrt{N}$, evaluated against concrete reported numerals — exactly the kind of crisp arithmetic claim a machine-checked verdict settles better than inspection.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::1",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "I formalised the arithmetic content of the caption's effect-size definition: with $|Z| = 2.023$, which value of $N$ reproduces the reported $r = 0.64$? Lean proves $0.6395 < 2.023/\\sqrt{10} < 0.6400$ and $0.9047 < 2.023/\\sqrt{5} < 0.9049$. So the reported $r = 0.64$ is reproduced exactly by $N = 10$ — the total number of observations, $2n$, which is the standard Rosenthal convention for $r$ in a Wilcoxon signed-rank test — and is **not** what the caption's own stated $n = 5$ would give ($0.90$). Because $N = 2n$ is the accepted convention, the reported effect sizes are correct and internally consistent; what the caption leaves underspecified is only that its $N$ is $2n$, not the $n = 5$ printed two clauses later. That is a notational ambiguity in the caption, not a computational error, so this is recorded as NO_ERROR. No hypotheses beyond the literal numerals were assumed.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean (saved to Paper/Verified/paper__EQUATION__1_0064opus5.lean)",
+          "formal_statement": "theorem effect_size_r_requires_N_ten :\n    (0.6395 < (2.023 : ℝ) / Real.sqrt 10 ∧ (2.023 : ℝ) / Real.sqrt 10 < 0.6400) ∧\n    (0.9047 < (2.023 : ℝ) / Real.sqrt 5  ∧ (2.023 : ℝ) / Real.sqrt 5  < 0.9049) := by\n  have h10 : (0 : ℝ) < Real.sqrt 10 := Real.sqrt_pos.mpr (by norm_num)\n  have s10 : Real.sqrt 10 ^ 2 = 10 := Real.sq_sqrt (by norm_num)\n  have h5 : (0 : ℝ) < Real.sqrt 5 := Real.sqrt_pos.mpr (by norm_num)\n  have s5 : Real.sqrt 5 ^ 2 = 5 := Real.sq_sqrt (by norm_num)\n  refine ⟨⟨?_, ?_⟩, ?_, ?_⟩\n  · rw [lt_div_iff₀ h10]; nlinarith [s10, h10]\n  · rw [div_lt_iff₀ h10]; nlinarith [s10, h10]\n  · rw [lt_div_iff₀ h5]; nlinarith [s5, h5]\n  · rw [div_lt_iff₀ h5]; nlinarith [s5, h5]",
+          "compiler_feedback": "",
+          "axioms": ["propext", "Classical.choice", "Quot.sound"],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "Table 5 — Wilcoxon signed-rank comparison of cytokine levels after exosome treatment",
+      "content": "Table 5 reports, for each significant within-subject comparison of cytokine level before vs. after exosome treatment (n = 5 pairs): Z = -2.023, P-value = 0.043, r = 0.64. Footnotes: \"aWilcoxon Signed Ranks Test, based on negative ranks; The sum of negative ranks equals the sum of positive ranks; bBased on negative ranks; cBased on positive ranks; dBased on positive ranks; Z: z-score\" — i.e. for the significant rows all five signed differences share one sign, so the signed-rank statistic is W = 15 (or 0). The model under test is the standard normal approximation Z = (W - n(n+1)/4) / sqrt(n(n+1)(2n+1)/24).",
+      "route": "verify-math-lean",
+      "route_rationale": "A checkable closed-form test statistic: whether the printed $Z$ follows from the stated $n$ and sign pattern is a real arithmetic claim, not a matter of judgement.",
+      "lean_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "I formalised the Wilcoxon signed-rank normal approximation at the paper's own parameters: $n = 5$ pairs, all five signed differences of one sign (stated by the table's footnotes), hence $W^{+} = 15$, giving $Z = (15 - n(n+1)/4)/\\sqrt{n(n+1)(2n+1)/24} = (15-7.5)/\\sqrt{13.75}$. Lean proves this lies in $(2.0225, 2.0227)$, i.e. $|Z| = 2.0226\\ldots$, which matches the reported $Z = -2.023$ to every printed digit. The accompanying $P = 0.043$ is likewise the two-sided asymptotic tail $2(1-\\Phi(2.0226)) = 0.0431$ that SPSS reports by default. Table 5 is therefore internally consistent. Worth recording, though not an error: with only $n = 5$ pairs the *exact* two-sided significance floor is $2/2^5 = 0.0625 > 0.05$, so the asymptotic $P = 0.043$ is an artefact of the normal approximation at a sample size where it does not apply — a power/interpretation caveat, not a computational mistake, and the paper does label the test as asymptotic via its z-scores. Hypotheses assumed: only $n = 5$ and the one-sign pattern the paper itself states; no tie correction, none being applicable.",
+        "predicted_error_category": null,
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean (saved to Paper/Verified/paper__MATHEMATICAL_MODEL__0_0064opus5.lean)",
+          "formal_statement": "theorem wilcoxon_z_matches_reported :\n    2.0225 < ((15 : ℝ) - 5 * 6 / 4) / Real.sqrt (5 * 6 * 11 / 24) ∧\n    ((15 : ℝ) - 5 * 6 / 4) / Real.sqrt (5 * 6 * 11 / 24) < 2.0227 := by\n  have hv : (5 : ℝ) * 6 * 11 / 24 = 13.75 := by norm_num\n  rw [hv]\n  have hp : (0 : ℝ) < Real.sqrt 13.75 := Real.sqrt_pos.mpr (by norm_num)\n  have hs : Real.sqrt 13.75 ^ 2 = 13.75 := Real.sq_sqrt (by norm_num)\n  constructor\n  · rw [lt_div_iff₀ hp]; nlinarith [hs, hp]\n  · rw [div_lt_iff₀ hp]; nlinarith [hs, hp]",
+          "compiler_feedback": "",
+          "axioms": ["propext", "Classical.choice", "Quot.sound"],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::1",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "Abstract and Results / Methods — statistical analysis",
+      "content": "Abstract: \"Notably, the cytokine levels were significantly elevated in the COVID-19 patients compared to the control group P-values were <0.001, 0.001, 0.008, and 0.008 for TNF-α, IL-6, IL-17, and IFN-γ, respectively.\" Methods: \"An independent sample t-test was employed to compare the mean values between patient and healthy participants. For data with a nonparametric distribution, the Mann–Whitney U test was used for analysis. A P-value of less than 0.05 was considered statistically significant.\" Design: five COVID-19 patients and five healthy controls, i.e. n1 = n2 = 5. The checkable claim is whether the reported P-values are attainable under the tests the paper says it used at these sample sizes.",
+      "route": "verify-math-lean",
+      "route_rationale": "The attainable exact $p$-value grid at $n_1=n_2=5$ is a combinatorial fact ($\\binom{10}{5}$), formalisable and decisive about whether the reported values are even reachable.",
+      "lean_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::1",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.8,
+        "reasoning": "For a two-sided **exact** Mann–Whitney/Wilcoxon rank-sum test with $n_1 = n_2 = 5$, the permutation null has $\\binom{10}{5}$ equally likely rank allocations. Lean proves $\\binom{10}{5} = 252$ and $0.0079 < 2/252 < 0.0080$, so the smallest attainable two-sided $p$-value is $2/252 = 1/126 \\approx 0.00794$. This is decisive in two directions. (i) The two reported values of $p = 0.008$ (IL-17, IFN-γ) sit **exactly** on that floor — they are precisely what a maximally separated rank-sum test on $5$ vs. $5$ returns, so they are internally consistent rather than suspicious. (ii) Lean also proves $0.001 < 2/252$, so $p = 0.001$ and $p < 0.001$ (IL-6, TNF-α) are **unattainable** by the exact rank test; they are consistent only with the parametric independent-samples $t$-test, which the Methods do state was used for normally distributed variables. The reported $p$-value set is therefore coherent with the declared test-selection rule (Shapiro–Wilk, then $t$-test or Mann–Whitney). No error. Hypotheses assumed: $n_1 = n_2 = 5$ as stated, no ties, exact permutation null.",
+        "predicted_error_category": null,
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean (saved to Paper/Verified/paper__MATHEMATICAL_MODEL__1_0064opus5.lean)",
+          "formal_statement": "theorem mannwhitney_exact_p_floor_n5 :\n    Nat.choose 10 5 = 252 ∧\n    (0.0079 : ℝ) < 2 / (Nat.choose 10 5 : ℝ) ∧\n    (2 : ℝ) / (Nat.choose 10 5 : ℝ) < 0.0080 ∧\n    (0.001 : ℝ) < 2 / (Nat.choose 10 5 : ℝ) := by\n  refine ⟨by decide, ?_, ?_, ?_⟩ <;>\n    simp only [show Nat.choose 10 5 = 252 from by decide] <;> norm_num",
+          "compiler_feedback": "",
+          "axioms": ["propext", "Classical.choice", "Quot.sound"],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::0",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "Results — Determination of the dose",
+      "content": "\"Determination of the dose. The assay was employed to identify the optimal dose of the isolated exosomes after 72 h (Fig. 7). Various doses of 10 µg/ml, 20 µg/ml, 40 µg/ml, and 60 µg/ml were evaluated for this purpose. Despite the differences in the calculated viability of the samples not being statistically significant, a dose of 40 µg/mL (the highest dose) was selected as the optimal dose for subsequent experiments.\" The checkable claim: 40 is the largest element of the evaluated dose set {10, 20, 40, 60}.",
+      "route": "verify-math-lean",
+      "route_rationale": "An exactly formalisable ordering claim over a four-element set, and one that looks false — the ideal target for a compiling refutation rather than an informal opinion.",
+      "lean_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::0",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.95,
+        "reasoning": "The paper lists the evaluated doses as $\\{10, 20, 40, 60\\}$ µg/mL and then describes the selected $40$ µg/mL as \"the highest dose\". I formalised the dose set verbatim as `doses : Finset ℕ := {10, 20, 40, 60}` and proved the **negation** of the paper's claim: `¬ (∀ d ∈ doses, d ≤ 40)`, since $60 \\in \\text{doses}$ and $60 > 40$. The same theorem exhibits the true maximum, proving $60 \\in \\text{doses}$ and $\\forall d \\in \\text{doses},\\, d \\le 60$. The refutation compiles clean on standard Mathlib axioms only, so this is a REFUTED verdict, not a failed proof search. The error matters beyond bookkeeping because it is the paper's stated *selection rationale*: viability differences were not significant, therefore (the argument runs) take the highest dose — but the dose actually taken was the second-highest, leaving the choice of $40$ µg/mL unjustified by the reasoning given. Either the parenthetical is wrong, or $60$ µg/mL was dropped for an unreported reason, or the dose set is misreported. The downstream cytokine experiments all use $40$ µg/mL, so the numeric value in use is unambiguous and the study's results are not themselves invalidated.",
+        "predicted_error_category": "Formally refuted",
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": [
+          "Results — Determination of the dose: \"Various doses of 10 µg/ml, 20 µg/ml, 40 µg/ml, and 60 µg/ml were evaluated for this purpose.\"",
+          "Results — Determination of the dose: \"a dose of 40 µg/mL (the highest dose) was selected as the optimal dose\""
+        ],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/TMP.lean (saved to Paper/Verified/paper__FORMULA_BLOCK__0_0064opus5.lean)",
+          "formal_statement": "def doses : Finset ℕ := {10, 20, 40, 60}\n\ntheorem dose_highest_claim_refuted :\n    ¬ (∀ d ∈ doses, d ≤ 40) ∧\n    ((60 : ℕ) ∈ doses ∧ ∀ d ∈ doses, d ≤ 60) := by\n  refine ⟨?_, by decide, ?_⟩\n  · intro h\n    have : (60 : ℕ) ≤ 40 := h 60 (by decide)\n    omega\n  · decide",
+          "compiler_feedback": "",
+          "axioms": ["propext", "Classical.choice", "Quot.sound"],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::DEFINITION::0",
+      "snippet_type": "DEFINITION",
+      "location": "Methods — Dynamic light scattering (DLS)",
+      "content": "\"The size of the exosomes was determined using DLS with a Zeta device (Malvern Instruments, UK). PBS, with a refractive index of 33.1 and viscosity of 1.08, was used as the solvent. These parameters are essential for the device software to analyze the data.\" Related result: \"The DLS analysis revealed that the average size of the exosomes was 89.65 nm, with measurements taken at a constant temperature of 25°C (Fig. 5).\" The claim under test is the asserted value of the solvent's refractive index, which the paper itself declares is an input the sizing computation depends on.",
+      "route": "verify-math",
+      "route_rationale": "A physical-constant bound, not a theorem: judging $n = 33.1$ needs domain knowledge of refractive indices, which has no faithful formal rendering.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::DEFINITION::0",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.8,
+        "reasoning": "A refractive index is defined as $n = c/v$, the ratio of the vacuum speed of light to the phase velocity in the medium. For PBS — an aqueous buffer — the accepted value at visible wavelengths is $n \\approx 1.334$, essentially that of water; the largest refractive indices of any solid at optical frequencies are below $5$. The stated $n = 33.1$ would require light to propagate through saline $33$ times slower than through vacuum, which is physically impossible for an aqueous medium, so the printed value violates the domain constraint on $n$ by more than an order of magnitude. The value is almost certainly a decimal-point slip for $1.331$ (or a transcription of $1.33$ with the point lost). This matters because the paper itself states these are the parameters \"essential for the device software to analyze the data\": in DLS the hydrodynamic diameter is obtained from the Stokes–Einstein relation $d_H = k_B T / (3\\pi\\eta D)$ with $D$ recovered from the autocorrelation decay $\\Gamma = D q^2$ and the scattering vector $q = (4\\pi n/\\lambda)\\sin(\\theta/2)$, so $n$ enters the fit directly through $q^2 \\propto n^2$. As printed, the configuration is not reproducible. Severity is held at minor rather than critical: the companion viscosity $\\eta = 1.08$ is plausible for PBS in cP, the reported $89.65$ nm is consistent with the independent FESEM/TEM observation of spherical vesicles under $100$ nm, and nothing in the paper's cytokine conclusions depends on the DLS number — which together indicate a reporting slip rather than a mis-executed measurement.",
+        "predicted_error_category": "Domain/Constraint violation",
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": [
+          "Methods — DLS: \"PBS, with a refractive index of 33.1 and viscosity of 1.08, was used as the solvent.\""
+        ]
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.8
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::2",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "Results (exosome characterisation) and Methods — BCA protein assay",
+      "content": "Results: \"Additionally, the protein concentration was quantified using the BCA method. The resulting value, determined from the protein concentration standard curve depicted in Fig. 4, was measured to be 3482 μg/mL.\" Methods: \"The total exosome content was extracted for quantification with a Bicinchoninic (BCA) Acid Protein Assay Kit (DNA Biotech, Iran), consisting of a standard solution, copper, and BCA reagents. The standard curve was plotted at different levels (50–250 µg/mL) against bovine serum albumin (BSA) as the standard solution. The exosomes and standard solutions were separately mixed with a mixture of copper and BCA reagents at a ratio of 1:50 and incubated at 60 °C for 60 min.\" The checkable claim: a value of 3482 µg/mL is read off a calibration function fitted on the interval [50, 250] µg/mL.",
+      "route": "verify-math",
+      "route_rationale": "The issue is whether a value may be read off a calibration curve outside its fitted interval — an assay-methodology judgement with no crisp formal content.",
+      "lean_result": null,
+      "fallback_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::2",
+        "verifier_name": "math-equations",
+        "status": "UNVERIFIABLE",
+        "error_detected": false,
+        "confidence": 0.6,
+        "reasoning": "The reported concentration $3482\\ \\mu\\mathrm{g/mL}$ lies outside the interval on which the calibration function was fitted: $3482 / 250 \\approx 13.9$, so the value sits about $14\\times$ above the top BSA standard. Evaluating a regression outside its fitted domain is extrapolation, not interpolation, and for BCA specifically the absorbance–concentration response flattens well before that range, so a linear fit on $[50, 250]$ has no validity at $3482$. That would be a genuine domain violation — **if** the assayed sample really were at $3482\\ \\mu\\mathrm{g/mL}$ when read. The snippet cannot settle that, because the standard practice is to dilute the sample into the calibrated range and multiply the back-calculated value by the dilution factor, which yields exactly this kind of large final number from an in-range reading. The Methods report a $1{:}50$ sample-to-reagent ratio (a reaction stoichiometry, not a sample dilution) and report a five-fold dilution only for the separate DLS measurement, so no BCA dilution factor is stated either way. Per this skill's threshold I therefore decline to flag: the defect is unreported methodological detail, and the alternative reading in which the arithmetic is correct is at least as likely. Recorded as an unsettled claim.",
+        "predicted_error_category": null,
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": []
+      },
+      "status": "UNVERIFIABLE",
+      "error_detected": false,
+      "confidence": 0.6
+    }
+  ],
+  "findings": [
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::0",
+      "category": "Formally refuted",
+      "severity": "minor",
+      "confidence": 0.95,
+      "evidence": "The paper lists the evaluated exosome doses as $\\{10, 20, 40, 60\\}$ µg/mL and then calls the selected $40$ µg/mL \"the highest dose\". Lean compiled a refutation of exactly that claim: with `doses : Finset ℕ := {10, 20, 40, 60}`, the theorem `dose_highest_claim_refuted` proves `¬ (∀ d ∈ doses, d ≤ 40)` — because $60 \\in \\text{doses}$ and $60 > 40$ — and in the same statement exhibits the true maximum, `(60 : ℕ) ∈ doses ∧ ∀ d ∈ doses, d ≤ 60`. The proof depends only on `propext`, `Classical.choice` and `Quot.sound`, with no `sorryAx`. The consequence is not merely a mislabel: this sentence *is* the dose-selection rationale — viability differences were not statistically significant, therefore take the highest dose — yet the dose taken was the second-highest, so the choice of $40$ µg/mL is left unsupported by the reasoning given. Either the parenthetical is wrong, or $60$ µg/mL was excluded for an unreported reason, or the dose set is misreported. Severity is minor because every downstream experiment unambiguously uses $40$ µg/mL, so the cytokine results themselves are unaffected.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "a dose of 40 µg/mL (the highest dose) was selected as the optimal dose for subsequent experiments."
+    },
+    {
+      "snippet_id": "paper::DEFINITION::0",
+      "category": "Domain/Constraint violation",
+      "severity": "minor",
+      "confidence": 0.8,
+      "evidence": "The DLS Methods declare a solvent refractive index of $33.1$ for PBS. Since $n = c/v$, and PBS is an aqueous buffer with the accepted value $n \\approx 1.334$ at visible wavelengths, $n = 33.1$ is physically impossible — no material has an optical refractive index above about $5$. The value is almost certainly a lost decimal point for $1.331$. It is not inert: the paper states these are the parameters \"essential for the device software to analyze the data\", and in DLS the refractive index enters the hydrodynamic-diameter fit directly through the scattering vector $q = \\tfrac{4\\pi n}{\\lambda}\\sin(\\theta/2)$ with $\\Gamma = D q^2$ feeding $d_H = k_B T/(3\\pi\\eta D)$, so as printed the measurement is not reproducible. Severity is minor because the companion viscosity $1.08$ is plausible for PBS in cP, and the resulting $89.65$ nm agrees with the independent FESEM/TEM finding of spherical vesicles below $100$ nm — the signature of a transcription slip rather than a corrupted measurement.",
+      "verifier": "verify-math",
+      "exact_quote": "PBS, with a refractive index of 33.1 and viscosity of 1.08, was used as the solvent."
+    }
+  ],
+  "verdict": "MINOR_ERRORS",
+  "verdict_confidence": 0.75,
+  "summary": "This is a wet-lab/clinical manuscript on hUC-MSC-derived exosome therapy in COVID-19 and contains no formal mathematics whatsoever — no display math, no LaTeX environments, no theorems, lemmas or proofs. Mathematical verification therefore reduced to the paper's quantitative apparatus: its statistical reporting, its two stated formulae, and its numeric methodological parameters. Seven self-contained objects were extracted and all seven were checked; four went to Lean and three to informal review, and no verifier failed, so no Step-5 fallback was required and no snippet is unsettled for want of a verdict.\n\n**What Lean settled.** Three proofs PASSED and corroborate the paper. (i) The Wilcoxon signed-rank $Z$ in Table 5 is exactly right: for $n = 5$ pairs with all five signed differences of one sign (as the table's own footnotes state), $(15 - n(n+1)/4)/\\sqrt{n(n+1)(2n+1)/24} \\in (2.0225, 2.0227)$, matching the printed $Z = -2.023$ to every digit, with $P = 0.043$ the corresponding two-sided asymptotic tail. (ii) The abstract's $p$-value set is coherent with the declared test-selection rule: $\\binom{10}{5} = 252$, so the exact two-sided Mann–Whitney floor at $n_1 = n_2 = 5$ is $2/252 \\approx 0.00794$, which means the two reported $p = 0.008$ values sit precisely on that floor, while $p = 0.001$ and $p < 0.001$ are unattainable by the rank test and are consistent only with the $t$-test the Methods also describe using. (iii) The Table 5 effect sizes check out: $2.023/\\sqrt{10} \\in (0.6395, 0.6400)$ reproduces the reported $r = 0.64$ under the standard Rosenthal convention $N = 2n$, whereas the caption's own $n = 5$ would give $0.90$ — a caption that underspecifies its $N$, not a miscomputation.\n\n**What Lean refuted.** One REFUTED verdict, the single hard finding of the run: the paper evaluates doses $\\{10, 20, 40, 60\\}$ µg/mL and then calls the chosen $40$ µg/mL \"the highest dose\". Lean compiled `¬ (∀ d ∈ doses, d ≤ 40)` on standard axioms alone and exhibited $60$ as the actual maximum. This is the paper's stated selection rationale rather than a passing remark — \"differences not significant, so take the highest dose\" does not justify taking the second-highest — so the choice of $40$ µg/mL is left unexplained, though every downstream experiment uses that value unambiguously and the cytokine results stand.\n\n**What informal review added.** A second minor finding: the DLS solvent refractive index is given as $33.1$, physically impossible for an aqueous buffer ($n_{\\mathrm{PBS}} \\approx 1.334$; no optical material exceeds $\\approx 5$) and evidently a lost decimal point for $1.331$. Because $n$ enters the hydrodynamic-diameter fit through $q = (4\\pi n/\\lambda)\\sin(\\theta/2)$, the configuration as printed is not reproducible — but the reported $89.65$ nm agrees with the independent FESEM/TEM sizing, indicating a transcription slip rather than a bad measurement. One snippet was left unsettled: the BCA protein concentration of $3482$ µg/mL read off a curve calibrated only over $50$–$250$ µg/mL is a $\\approx 14\\times$ extrapolation, which would be a real domain violation if the sample were read undiluted, but no BCA dilution factor is reported either way and the in-range-plus-dilution reading is at least as likely, so it is recorded as UNVERIFIABLE at confidence $0.6$ rather than flagged.\n\n**Disagreements.** None. No snippet received both a Lean and a fallback verdict, since nothing came back FAILED or NOT_ATTEMPTED, so there was no opportunity for the two verifiers to conflict.\n\n**Verdict.** MINOR_ERRORS: two confident findings, both minor, one of them machine-refuted. Confidence in that verdict is moderate ($0.75$) rather than high for a reason worth stating plainly — the two defects found are a mislabelled dose and a mistyped physical constant, and the paper's substantive claims (that exosome treatment suppresses pro-inflammatory cytokine release in COVID-19 PBMCs) are empirical, resting on $n = 5$ per group, and are simply not the kind of claim this skill can adjudicate. A clean mathematical bill of health here says the arithmetic and the reported test statistics hold up; it says nothing about whether the biology replicates, and the very small sample size means the asymptotic $P = 0.043$ values rest on a normal approximation that is weak at $n = 5$ (the exact signed-rank floor there being $2/2^5 = 0.0625 > 0.05$). Note also that this manuscript's markdown renders fifteen figures and Tables 1–3 as embedded images, and attaches the Table 4 (paired $t$-test) caption to the Table 5 (Wilcoxon) body; the paired-$t$-test numbers were consequently not available as text and were not checked.\n\n**Lean project.** `MATH_VERIFICATION/Paper` was reused, not created by this run — it is shared by every `paper.md` across the workspaces and holds a built Mathlib plus dozens of other papers' saved proofs — so per `verify-math-lean`'s reuse rule it was deliberately **not** deleted, and `lean_project_kept` is `true`. Only this run's scratch (`TMP.lean`, `claim.md`) was removed; the four proofs are preserved as `Paper/Verified/paper__{EQUATION__1,MATHEMATICAL_MODEL__0,MATHEMATICAL_MODEL__1,FORMULA_BLOCK__0}_0064opus5.lean`."
+}

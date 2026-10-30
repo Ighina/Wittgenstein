@@ -1,0 +1,537 @@
+{
+  "paper_name": "paper",
+  "tag": "opus5",
+  "paper_path": "/Users/iacopoghinassi/Documents/Github/Wittgenstein/data/spot-workspace/0061-Multi-Antenna_Towards_Inband_Shift_Keying/paper.md",
+  "lean_project": "MATH_VERIFICATION/Paper",
+  "lean_project_kept": true,
+  "totals": {
+    "snippets_extracted": 16,
+    "routed_to_math": 6,
+    "routed_to_lean": 10,
+    "lean_passed": 10,
+    "lean_refuted": 0,
+    "lean_failed": 0,
+    "fallbacks_run": 0,
+    "errors_detected": 0
+  },
+  "results": [
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "Introduction",
+      "content": "Transmit beamforming is a spatial repetition code. On each antenna, the same data is transmitted. If there are N transmit antennas, the code rate is 1/N. Coherent superposition in the vicinity of the receiver improves the signal-to-noise ratio (SNR) by a factor of N. In time domain, data symbols are conveniently separated by orthogonality via pulse shaping.\n\nInformation theory does not care, if we exchange space and time on an additive white Gaussian noise (AWGN) channel. It just means to give the variables in the mathematical model of the channel another physical meaning. [...]\n\nLet all data be repeated T times. The rate of this temporal repetition code is 1/T. Coherent superposition within the receiver improves the SNR by a factor of T. In spatial domain, data symbols can be conveniently separated by orthogonality via frequency multiplex, if each subcarrier is transmitted over a different antenna.",
+      "route": "verify-math",
+      "route_rationale": "A modelling claim about an antenna array and a channel model, not a theorem with formal content; the quantitative core ($N$-fold and $T$-fold gain) is standard and checkable by inspection.",
+      "lean_result": null,
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85,
+      "math_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "Both gain statements are the standard ones and are stated consistently. Beamforming: with total radiated power $P$ split over $N$ antennas, each contributes amplitude $\\sqrt{P/N}$ and coherent superposition at the receiver gives amplitude $N\\sqrt{P/N} = \\sqrt{NP}$, hence received power $NP$ — an $N$-fold SNR gain against a rate penalty of $1/N$, exactly as written. Temporal repetition: combining $T$ noisy copies of the same symbol raises the SNR $T$-fold at rate $1/T$, the exact dual. The space/time exchange argument is also sound for a memoryless AWGN channel, where the capacity depends only on the number of channel uses and the per-use SNR, not on which physical dimension indexes them. The two separation mechanisms are correctly swapped as well (pulse shaping in time ↔ frequency multiplex in space), and the claim that each subcarrier rides a different antenna is what makes the dual construction realisable. No arithmetic or logical error.",
+        "predicted_error_category": null,
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": []
+      }
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::1",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "Introduction",
+      "content": "For low-rate repetition coding, it is not an issue to leave the amplitude dimension of the signal unused and utilize the phase only. After all, a repetition code only utilizes one out of many dimensions in signal-space. On the AWGN channel, restricting to phase modulation has a very similar effect as a repetition code of rate one half, if the SNR is high. For low SNR, i.e. for critical link budget, the effect vanishes.",
+      "route": "verify-math-lean",
+      "route_rationale": "Two asymptotic statements about capacity ratios — formalisable as limits at $0^+$ and at $\\infty$, and the whole motivation for using constant-envelope modulation rests on them.",
+      "lean_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::1",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "Modelled the unrestricted complex AWGN rate as $C(x)=\\log_2(1+x)$ and the phase-only / one-real-dimension rate — which is also exactly the rate of a rate-$1/2$ repetition code at the same average power — as $C_{1/2}(x)=\\tfrac12\\log_2(1+2x)$. Lean proved both halves of the paper's sentence: $C_{1/2}(x)/C(x) \\to 1/2$ as $x\\to\\infty$ (the high-SNR loss is a factor of two, i.e. \"very similar effect as a repetition code of rate one half\") and $C_{1/2}(x)/C(x) \\to 1$ as $x\\to 0^+$ (\"for low SNR … the effect vanishes\"). The high-SNR half was squeezed between $1$ and $1+\\log 2/\\log(1+x)$; the low-SNR half reuses the slope-of-$\\log(1+x)$ limit. The identification of phase-only signalling with rate-$1/2$ repetition is the paper's own framing, not an added hypothesis, and no extra constraints were imposed. Compiles clean: exit 0, no severity-1 diagnostic, no `sorry`, standard axioms only.",
+        "predicted_error_category": null,
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__MATHEMATICAL_MODEL__1_0061opus5.lean",
+          "formal_statement": "theorem matisk_phase_restriction :\n    Tendsto (fun x : ℝ => (1 / 2) * Real.logb 2 (1 + 2 * x) / Real.logb 2 (1 + x))\n      atTop (𝓝 (1 / 2)) ∧\n    Tendsto (fun x : ℝ => (1 / 2) * Real.logb 2 (1 + 2 * x) / Real.logb 2 (1 + x))\n      (𝓝[>] (0 : ℝ)) (𝓝 1)",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 3,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::EQUATION::0",
+      "snippet_type": "EQUATION",
+      "location": "II. Repetition Coded GMSK",
+      "content": "Data rate $R$ is fundamentally related to SNR. For the complex-valued AWGN channel, the relation is well-investigated and given by\n$$R = \\log_2(1 + \\mathrm{SNR})\\tag{1}$$",
+      "route": "verify-math",
+      "route_rationale": "Eq. (1) is the quoted Shannon capacity of the complex AWGN channel — a cited standard result used as a definition, with no derivation of its own to formalise.",
+      "lean_result": null,
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.93,
+      "math_result": {
+        "snippet_id": "paper::EQUATION::0",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.93,
+        "reasoning": "Eq. (1) states the capacity of the complex-valued AWGN channel as $R = \\log_2(1+\\mathrm{SNR})$ bit per complex channel use. This is the standard Shannon–Hartley expression for a complex (two-real-dimensional) Gaussian channel and is reproduced correctly, including the base-2 logarithm that makes $R$ a bit rate. The paper uses it only as the reference point for the low-SNR expansion in Eq. (2) and for the \"repetition code of rate one half\" comparison in the Introduction; both downstream uses are consistent with this form. Nothing in the snippet is an algebraic manipulation that could be invalid.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      }
+    },
+    {
+      "snippet_id": "paper::EQUATION::1",
+      "snippet_type": "EQUATION",
+      "location": "II. Repetition Coded GMSK",
+      "content": "If the link budget is critical, SNR is low, that means SNR ≪ 1. In that case, the logarithm in (1) is well approximated by a linear function. We have\n$$R \\approx \\frac{\\mathrm{SNR}}{\\ln 2}\\tag{2}$$\n(with (1) being $R = \\log_2(1+\\mathrm{SNR})$).",
+      "route": "verify-math-lean",
+      "route_rationale": "A crisp asymptotic claim — the first-order expansion of $\\log_2(1+x)$ at $x=0$ — exactly the kind of limit a Lean proof settles outright.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::1",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.95,
+        "reasoning": "Formalised Eq. (2) as the statement that the claimed linear approximation is asymptotically exact at low SNR: $\\lim_{x\\to 0^+}\\log_2(1+x)\\big/(x/\\ln 2) = 1$. No hypotheses beyond $x>0$ were assumed, and $x>0$ is forced by SNR being a signal-to-noise ratio, so the statement is faithful rather than strengthened. The proof identifies the ratio with the slope of $x\\mapsto\\log(1+x)$ at $0$ and uses `hasDerivAt_iff_tendsto_slope`; the factor $\\ln 2$ cancels exactly, which is precisely the content of the paper's $\\approx \\mathrm{SNR}/\\ln 2$ (the common slip of writing $\\mathrm{SNR}\\cdot\\ln 2$ is not present). Lean compiled the file with exit 0, no severity-1 diagnostic, no `sorry`, and `#print axioms` returned only the three standard Mathlib axioms.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__EQUATION__1_0061opus5.lean",
+          "formal_statement": "theorem matisk_low_snr_linear_approx :\n    Tendsto (fun x : ℝ => Real.logb 2 (1 + x) / (x / Real.log 2))\n      (𝓝[>] (0 : ℝ)) (𝓝 1)",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::2",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "II. Repetition Coded GMSK (GSM frequency correction burst)",
+      "content": "Fig. 1 shows the short-term spectrum of GSM during the frequency correction burst which contains 148 consecutive 0-bits [5]. [...] For the all-one codeword, the short-term spectrum looks very similar. The frequency shift is not towards lower frequencies, but also upwards. This is as GSM uses differential precoding. Thus, a sequence of 148 1-bits is first converted into a sequence of at least 147 0-symbols before it is fed into the modulator. For a duration of at least 142 symbols¹, the instantaneous frequency is identical. However, the waveform is phase-shifted by $\\pi$.\n\n¹GMSK modulation contains memory of up to 5 symbols.",
+      "route": "verify-math-lean",
+      "route_rationale": "Exact counting over a bit run through a differential precoder, plus the subtraction of the modulator memory — small, crisp, and the kind of off-by-one a compiler settles for good.",
+      "lean_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::2",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "Formalised the precoder as $d_k = b_k \\oplus b_{k-1}$ and proved that if $b$ is constant across the 148 indices $0,\\ldots,147$ then $d_k$ is the constant symbol at each of the 147 indices $1,\\ldots,147$ — Lean certified the cardinality $|[1,148)| = 147$ as well as the constancy, so the paper's \"at least 147 0-symbols\" from 148 bits is exactly right (one symbol is lost because the first bit has no predecessor inside the burst). Lean then certified $147 - 5 = 142$, so the paper's \"at least 142 symbols\" of constant instantaneous frequency follows from its own footnote that GMSK carries memory of up to 5 symbols. As a cross-check outside Lean, 142 is also the number of fixed bits in the GSM frequency-correction burst (3 tail + 142 fixed + 3 tail = 148), so the two routes to the figure agree. The accompanying remark that the all-zero and all-one codewords differ by a phase shift of $\\pi$ is consistent: the two precoded streams differ only in the first symbol, whose mapping differs by $\\pi/2 - (-\\pi/2) = \\pi$. Compiles clean, standard axioms only.",
+        "predicted_error_category": null,
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__MATHEMATICAL_MODEL__2_0061opus5.lean",
+          "formal_statement": "theorem matisk_gsm_fcb (b d : ℕ → Bool) (c : Bool)\n    (hconst : ∀ k, k < 148 → b k = c)\n    (hdiff : ∀ k, d (k + 1) = xor (b (k + 1)) (b k)) :\n    ((Finset.Ico 1 148).card = 147) ∧\n    (∀ k ∈ Finset.Ico 1 148, d k = false) ∧\n    (147 - 5 = 142)",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::EQUATION::2",
+      "snippet_type": "EQUATION",
+      "location": "II. Repetition Coded GMSK (Eq. 3 and the code/mapping equivalence)",
+      "content": "As MSK maps a logical 0 to a phase shift of $\\phi = \\frac{\\pi}{2}$ and a logical 1 to a phase shift of $\\phi = -\\frac{\\pi}{2}$, it results in a lowering of the instantaneous frequency. [...] Instead of changing the code, we could alternatively change the mapping. Let us use the code $\\mathcal{R}_u$ for all subcarriers. However, for the subcarriers in the upper sideband, we use the mapping\n$$\\phi(s) = \\begin{cases}\\frac{\\pi}{2} & \\text{for } s = 0\\\\ -\\frac{\\pi}{2} & \\text{for } s = 1\\end{cases}\\tag{3}$$\nFor subcarriers in the lower sideband, we use the mapping $-\\phi(s)$. Clearly, this gives the same result, as the two codes just differ in the sign of the symbols fed into the modulator. (Here $\\mathcal{R}_u = \\{0000\\ldots, 1111\\ldots\\}$ and $\\mathcal{R}_l = \\{1010\\ldots, 0101\\ldots\\}$.)",
+      "route": "verify-math",
+      "route_rationale": "The substance is an equivalence between two signalling conventions for a CPFSK modulator, argued in prose; there is no closed-form identity to put to the compiler without inventing a waveform model the paper never writes down.",
+      "lean_result": null,
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.86,
+      "math_result": {
+        "snippet_id": "paper::EQUATION::2",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.86,
+        "reasoning": "Checked the asserted equivalence symbol by symbol. Under the paper's differential precoder (the modulator symbol is the XOR of consecutive code bits), $\\mathcal{R}_u = \\{0000\\ldots,1111\\ldots\\}$ precodes to an all-zero symbol stream, while $\\mathcal{R}_l = \\{1010\\ldots,0101\\ldots\\}$ precodes to an all-one stream. Original scheme, lower sideband: $\\mathcal{R}_l$ with mapping $\\phi$ gives $\\phi(1) = -\\pi/2$ per symbol. Alternative scheme, lower sideband: $\\mathcal{R}_u$ with mapping $-\\phi$ gives $-\\phi(0) = -\\pi/2$ per symbol. The two agree, so \"this gives the same result\" is correct, and the upper-sideband branch is literally unchanged. The phrase \"the two codes just differ in the sign of the symbols fed into the modulator\" is a loose but accurate description of that coincidence. Eq. (3) itself is a definition and matches the MSK convention stated in the surrounding text ($0 \\mapsto +\\pi/2$, $1 \\mapsto -\\pi/2$), which in turn is what makes the all-one codeword lower the instantaneous frequency. No algebraic or sign error.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      }
+    },
+    {
+      "snippet_id": "paper::EQUATION::3",
+      "snippet_type": "EQUATION",
+      "location": "II. Repetition Coded GMSK (Eq. 4)",
+      "content": "We can correct the frequency shift by an offset to the phase shifts, as instantaneous frequency is the derivative of the phase. This means, we use the mappings\n$$\\phi_u(s) = \\phi(s) - \\frac{\\pi}{2} = \\begin{cases}0 & \\text{for } s = 0\\\\ -\\pi & \\text{for } s = 1\\end{cases}$$\n$$\\phi_l(s) = \\frac{\\pi}{2} - \\phi(s) = \\begin{cases}0 & \\text{for } s = 0\\\\ \\pi & \\text{for } s = 1\\end{cases}\\tag{4}$$\nfor the upper and the lower sideband, respectively. Here, it is important to note that a phase shift by $\\pi$ and by $-\\pi$ are not identical in CPFSK.",
+      "route": "verify-math-lean",
+      "route_rationale": "Closed-form case values derived from Eq. (3) by an additive offset — exact, sign-sensitive arithmetic that the compiler settles without ambiguity.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::3",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.95,
+        "reasoning": "Formalised Eq. (4) directly from the Eq. (3) hypotheses $\\phi(0)=\\pi/2$ and $\\phi(1)=-\\pi/2$, and asked Lean for all four tabulated values plus the three design properties the paper leans on: (i) $\\phi_u(0)=\\phi_l(0)=0$, so the repeated symbol now produces no phase shift and the constant frequency offset visible in Fig. 1 is indeed removed; (ii) $\\phi_u(1)=-\\pi<0<\\pi=\\phi_l(1)$, so the non-zero excursion points downwards on upper-sideband subcarriers and upwards on lower-sideband ones — in both cases towards the centre of the band, which is what the construction is for; (iii) $\\phi_u(1) = \\phi_l(1) - 2\\pi$, the congruence that makes the two indistinguishable after sampling. Note that $\\phi_l = \\pi/2 - \\phi$ is an offset applied to the lower-sideband mapping $-\\phi$, not to $\\phi$, which is consistent with the preceding paragraph. All four tabulated values and all three properties compiled clean: exit 0, no severity-1 diagnostic, no `sorry`, standard axioms only.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__EQUATION__3_0061opus5.lean",
+          "formal_statement": "theorem matisk_eq4_phase_offsets (φ : ℕ → ℝ)\n    (h0 : φ 0 = π / 2) (h1 : φ 1 = -(π / 2)) :\n    (φ 0 - π / 2 = 0) ∧ (φ 1 - π / 2 = -π) ∧\n    (π / 2 - φ 0 = 0) ∧ (π / 2 - φ 1 = π) ∧\n    (φ 1 - π / 2 < 0) ∧ (0 < π / 2 - φ 1) ∧\n    (φ 1 - π / 2 = (π / 2 - φ 1) - 2 * π)",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::3",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "II. Repetition Coded GMSK (quaternary GMSK)",
+      "content": "Instead of the phase shifts ±π/2, we have phase shifts from the set {±π/4, ±3π/4} and apply Gray mapping. Both quadrature components can be demodulated independently from each other [8]. For the QPSK example above, the maximal frequency deviation is 3π/4 instead of π/2. This results in an at most 37% wider (slightly above the shoulder of the first sidelobe) spectrum as shown in Fig. 2. However, it doubles data rate. This is a boost in spectral efficiency of at least 46% that was not realized.",
+      "route": "verify-math-lean",
+      "route_rationale": "A two-step numerical inference (bandwidth factor × rate factor → efficiency factor) that a compiler can check exactly, including the rounding.",
+      "lean_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::3",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.88,
+        "reasoning": "Lean certified the chain. The phase-shift ratio $(3\\pi/4)/(\\pi/2) = 3/2$ is exact. The efficiency gain for a bandwidth growth factor $\\beta$ and a doubled rate is $2/\\beta$, which is monotonically decreasing, so over $\\beta \\le 1.37$ the worst case is $\\beta = 1.37$ — which is why the paper can say \"at least\". The worst-case value is $2/1.37 = 1.45985\\ldots$, and Lean confirmed $|2/1.37 - 1.46| < 1.5\\cdot10^{-4}$, i.e. the quoted \"+46 %\" is the correct two-significant-figure rounding of the number the paper's own premises produce. Lean also confirmed the hairline fact that $2/1.37 < 1.46$ exactly, so the literal wording \"at least 46 %\" overstates the bound by 0.015 percentage points. That is a rounding artefact of the figure-read-off \"37 %\" and not a mathematical error: it changes no conclusion, and the premise 37 % is itself quoted to two digits. The 37 % figure was independently sanity-checked against Fig. 2, where the quaternary and binary GMSK curves cross $-35$ dB at roughly 295 kHz and 215 kHz respectively, a ratio of 1.37. Compiles clean, standard axioms only.",
+        "predicted_error_category": null,
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__MATHEMATICAL_MODEL__3_0061opus5.lean",
+          "formal_statement": "theorem matisk_quaternary_efficiency :\n    ((3 * π / 4) / (π / 2) = 3 / 2) ∧\n    (∀ β : ℝ, 0 < β → β ≤ 1.37 → (2:ℝ) / 1.37 ≤ 2 / β) ∧\n    (|(2:ℝ) / 1.37 - 1.46| < 0.00015) ∧\n    ((2:ℝ) / 1.37 < 1.46)",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.88
+    },
+    {
+      "snippet_id": "paper::EQUATION::4",
+      "snippet_type": "EQUATION",
+      "location": "III. Generalization (phase-shift constellation)",
+      "content": "Differential precoding converts any constellation of phases into a constellation of phase shifts. Any regular PSK constellation with $M$ points is mapped onto the set of phase shifts\n$$\\mathcal{P} = \\left\\{0, \\frac{2\\pi}{M}, \\ldots, \\frac{2\\pi(M - 1)}{M}\\right\\}.$$\nWhile a symbol is repeated, no phase shift occurs and the instantaneous frequency keeps constant.",
+      "route": "verify-math",
+      "route_rationale": "A definition of the precoded shift set rather than an assertion that could fail; its one checkable consequence (the $0$ element for a repeated symbol) is immediate by inspection.",
+      "lean_result": null,
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9,
+      "math_result": {
+        "snippet_id": "paper::EQUATION::4",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "The difference of two points of a regular $M$-PSK constellation has argument $2\\pi(k-l)/M$, and as $k-l$ ranges over $\\mathbb{Z}_M$ this is exactly $\\mathcal{P} = \\{0, 2\\pi/M, \\ldots, 2\\pi(M-1)/M\\}$ — the set is closed and complete, with no element missing or duplicated. The companion sentence is also correct and is the hinge of the whole construction: a repeated symbol gives difference $0$, hence zero phase shift, hence an instantaneous frequency equal to the nominal subcarrier frequency. This is consistent with Eq. (4), where the offsets were introduced precisely so that the repeated symbol maps to $0$ rather than to the uncorrected $+\\pi/2$ of plain MSK. No error.",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": []
+      }
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::4",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "III.A Antenna/Subcarrier-Dependent Constellation",
+      "content": "We can optimize the spectral shape without influencing the performance, e.g., error and information rate, of a digital communication system. In discrete time, a phase shift by $\\phi$ and by $\\phi + 2\\pi$ cannot be distinguished. In continuous time, however, the output signals of a CPFSK modulator differ. For the latter case, the instantaneous frequency is larger than for the former. This influences the spectral shape. [Section II: \"a phase shift by $\\pi$ and by $-\\pi$ are not identical in CPFSK. A positive phase shift means that the instantaneous frequency is temporarily increased, while a negative phase shift means that it is temporarily reduced.\"]",
+      "route": "verify-math-lean",
+      "route_rationale": "Both halves are crisp: an exact identity for the sampled complex exponential and a strict inequality for the mean instantaneous frequency.",
+      "lean_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::4",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.93,
+        "reasoning": "Lean proved both halves of the claim and the Section II specialisation. Discrete time: $e^{i(\\phi+2\\pi)} = e^{i\\phi}$ for every real $\\phi$, so the two shifts are genuinely indistinguishable after sampling — which is what licenses the free choice of $\\omega$ in $\\mathcal{P}(\\omega)$ without touching error or information rate. Continuous time: with the mean instantaneous frequency over a symbol period $T>0$ modelled as $\\phi/(2\\pi T)$, the shift $\\phi+2\\pi$ gives a strictly larger value, and Lean certified the gap is exactly the symbol rate $1/T$. Specialising $\\phi = -\\pi$ recovers Section II's remark: $e^{i\\pi} = e^{-i\\pi}$ while $-\\pi/(2\\pi T) < \\pi/(2\\pi T)$, so $+\\pi$ and $-\\pi$ really are distinct in CPFSK and distinguishable only through the instantaneous frequency, hence through the spectrum. The identification of mean instantaneous frequency with $\\Delta\\phi/(2\\pi T)$ is the paper's own (\"instantaneous frequency is the derivative of the phase\"), not an invented hypothesis. Compiles clean, standard axioms only.",
+        "predicted_error_category": null,
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__MATHEMATICAL_MODEL__4_0061opus5.lean",
+          "formal_statement": "theorem matisk_two_pi_shift (φ T : ℝ) (hT : 0 < T) :\n    Complex.exp (Complex.I * (φ + 2 * π)) = Complex.exp (Complex.I * φ) ∧\n    φ / (2 * π * T) < (φ + 2 * π) / (2 * π * T) ∧\n    (φ + 2 * π) / (2 * π * T) - φ / (2 * π * T) = 1 / T ∧\n    (Complex.exp (Complex.I * π) = Complex.exp (Complex.I * (-π)) ∧\n      (-π) / (2 * π * T) < π / (2 * π * T))",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.93
+    },
+    {
+      "snippet_id": "paper::EQUATION::5",
+      "snippet_type": "EQUATION",
+      "location": "III.A Antenna/Subcarrier-Dependent Constellation",
+      "content": "In discrete time, a phase shift by $\\phi$ and by $\\phi + 2\\pi$ cannot be distinguished. [...] Consider the general set of PSK phase shifts\n$$\\mathcal{P}(\\omega) = \\left\\{0, \\frac{2\\pi}{M} - 2\\pi\\omega_1, \\ldots, \\frac{2\\pi(M - 1)}{M} - 2\\pi\\omega_{M-1}\\right\\},$$\nfor some binary vector $\\omega = [\\omega_1, \\ldots, \\omega_{M-1}] \\in \\{0, 1\\}^{M-1}$. For each subcarrier, we can find the optimal vector $\\omega$, such that the spectrum of the aggregated signal of all subcarriers is most confined.\n\nFor the leftmost subcarrier the optimal choice is the all-zero vector, if the number of subcarriers is large. For the rightmost subcarrier, it is the all one-vector. This is, as we prefer the sidelobes to appear towards the center of the channel band.",
+      "route": "verify-math-lean",
+      "route_rationale": "The mod-$2\\pi$ congruence and the sign of every element of $\\mathcal{P}(\\omega)$ for $\\omega = 0$ and $\\omega = \\mathbf{1}$ are exactly formalisable, and they are what the leftmost/rightmost optimality argument rests on.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::5",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.92,
+        "reasoning": "Formalised $\\mathcal{P}(\\omega)_k = 2\\pi k/M - 2\\pi\\omega_k$ against $\\mathcal{P}_k = 2\\pi k/M$ for $\\omega_k \\in \\{0,1\\}$ and proved four things. (i) Every element differs from its $\\mathcal{P}$ counterpart by an integer multiple of $2\\pi$, so all $2^{M-1}$ variants carry the same data in discrete time — the paper's justification for being free to choose $\\omega$ per subcarrier. (ii) For $\\omega = 0$ every shift is $\\ge 0$: all frequency excursions point upwards, i.e. towards the band centre for the *leftmost* subcarrier. (iii) For $\\omega = \\mathbf{1}$ and $k<M$ every shift is $\\le 0$: excursions point downwards, towards the centre for the *rightmost* subcarrier. So the paper's assignment of all-zero to the leftmost and all-one to the rightmost is the one consistent with its own stated preference, and it also agrees with the binary specialisation $M=2$, where $\\omega=0$ reproduces $\\phi_l = \\{0,\\pi\\}$ and $\\omega=\\mathbf{1}$ reproduces $\\phi_u = \\{0,-\\pi\\}$ of Eq. (4). (iv) The mirrored shift $-\\mathcal{P}_k$ is attainable only when $2k = M$ — the $\\pm\\pi$ element — which is the formal reason the centre subcarrier cannot be made symmetric. A first draft that asserted the mirrored shift is *never* attainable failed to compile at exactly the $2k=M$ case; the statement was corrected to the iff above rather than weakened, and that corrected version compiles clean (exit 0, no severity-1 diagnostic, no `sorry`, standard axioms only).",
+        "predicted_error_category": null,
+        "snippet_type": "EQUATION",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__EQUATION__5_0061opus5.lean",
+          "formal_statement": "theorem matisk_P_omega (M : ℕ) (hM : 0 < M) (ω : ℕ → ℕ)\n    (hω : ∀ k, ω k = 0 ∨ ω k = 1) :\n    (∀ k, ∃ n : ℤ, Pw M ω k - P M k = 2 * π * n) ∧\n    ((∀ j, ω j = 0) → ∀ k, 0 ≤ Pw M ω k) ∧\n    ((∀ j, ω j = 1) → ∀ k, k < M → Pw M ω k ≤ 0) ∧\n    (∀ k, 0 < k → (Pw M ω k = -(P M k) ↔ (ω k = 1 ∧ 2 * k = M)))",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.92
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::5",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "III.C Subcarrier Separation",
+      "content": "Ideally, the subcarriers are spaced in such a way that they can be easily demodulated via fast Fourier transform (FFT) [11] while keeping the inter-carrier interference at a minimum.\n\nFor $N$ subcarriers, the rate $R$ of the repetition code should be slightly smaller than $1/N$. If we repeat for $T > N$ times, the frequency pulse has time to decay such that the instantaneous frequency is constant for $N$ symbol periods. In that case, we can sample the received signal, window it for $N$ symbol periods and perfectly separate the N subcarriers via FFT.\n\nIn practice, some crosstalk may remain. The frequency pulse may not have fully decayed or channel dispersion may jeopardize the orthogonality. These effects can be counteracted by slightly reducing the rate R, as demonstrated in Section IV.",
+      "route": "verify-math-lean",
+      "route_rationale": "A stated sufficient condition ($T > N$) for a concrete geometric fact about how much of a repetition block is free of the frequency pulse — precisely the kind of implication worth putting to a compiler.",
+      "lean_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::5",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.6,
+        "reasoning": "Formalised the geometry the paragraph describes: inside a repetition block of $T$ chip periods whose first $L$ are occupied by the decaying frequency pulse, the instantaneous frequency is constant over $T-L$ chip periods, and an $N$-chip FFT window fits iff $T \\ge N + L$. Lean certified that equivalence, and also that for any pulse length $L \\ge 2$ there exist $T > N$ with $T - L < N$ — so the paper's stated condition \"$T > N$\" is **not** sufficient on its own for the conclusion it is offered for; it is sufficient only for $L \\le 1$. Lean then certified that the paper's own Section IV parameters fall inside that gap: $N = 64$, $T = 70$ gives $T > N$, but with the quoted 91.4 ns pulse against the 800/70 ns chip period only $800 - 91.4 = 708.6$ ns of the symbol period carries a constant instantaneous frequency, while the FFT window needs $64\\cdot(800/70) = 731.43$ ns; $T \\ge 72$ would be required. This is visible in Fig. 5, where the flat stretch between successive transitions is about 690 ns. I am **not** flagging this as an error: the very next paragraph of the paper retracts the idealisation (\"In practice, some crosstalk may remain. The frequency pulse may not have fully decayed\"), Section IV says only \"largely decayed\", and the reported finite SIR of 34.4 dB is quantitatively what a two-chip-in-64 shortfall would produce ($\\approx 30$ dB). The word \"perfectly\" and the justification given for $T = 70$ are therefore loose rather than wrong, and no conclusion depends on them. Compiles clean, standard axioms only.",
+        "predicted_error_category": null,
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__MATHEMATICAL_MODEL__5_0061opus5.lean",
+          "formal_statement": "theorem matisk_fft_window_condition :\n    (∀ N T L : ℤ, (N ≤ T - L ↔ N + L ≤ T)) ∧\n    (∀ L : ℤ, 1 < L → ∃ N T : ℤ, N < T ∧ T - L < N) ∧\n    ((64 : ℤ) < 70 ∧ ¬ ((64 : ℤ) + 8 ≤ 70) ∧ (70 : ℤ) - 8 < 64) ∧\n    (((800 : ℝ) - 91.4) < 64 * (800 / 70))",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.6
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::6",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "IV. Numerical results",
+      "content": "We target the spectral mask of 5G downlink at 100 MHz channel bandwidth. We choose a transmit array with N = 64 antennas/subcarriers and QPSK modulation at a symbol rate of 1.25 Msymbols/s on each subcarrier resulting in a total data rate of 160 Mbit/s. The corresponding symbol period is 800 ns. We take a Gaussian filtered rectangular pulse like in the GSM standard [7] but with time-bandwidth product of 0.1 and scale it in time to fit the new data rate. This leads to a pulse duration of 91.4 ns.\n\nIn order to have the GMSK pulse largely decayed before the FFT window starts, we set T = 70. This results in a subcarrier spacing of 1.37 MHz. This is, by far, wide enough to be insensitive to Doppler-induced frequency shifts.",
+      "route": "verify-math-lean",
+      "route_rationale": "A closed set of numbers that must agree with one another; exactly the place a transposed or mis-scaled figure would show up, and exactly what a compiler can settle.",
+      "lean_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::6",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.9,
+        "reasoning": "Every quoted number is mutually consistent, and Lean certified each link. $1/1.25\\,\\mathrm{MHz} = 800$ ns reproduces the stated symbol period. $64 \\times 1.25\\,\\mathrm{Msym/s} \\times 2\\,\\mathrm{bit/sym} = 160\\,\\mathrm{Mbit/s}$ reproduces the stated total rate for QPSK. The repetition factor $T=70$ puts the chip rate at $70 \\times 1.25 = 87.5\\,\\mathrm{Mchip/s}$, so the FFT bin spacing over an $N=64$ chip window is $87.5/64 = 1.3672\\,\\mathrm{MHz}$ — Lean confirmed this is within 0.005 MHz of the quoted 1.37 MHz. The occupied bandwidth is then $64 \\times 1.3672 = 87.5\\,\\mathrm{MHz} \\le 100\\,\\mathrm{MHz}$, so the design does fit the targeted 5G channel, and this matches Fig. 6, whose aggregate spectrum spans roughly $\\pm 45$ MHz, and Fig. 5, whose instantaneous frequencies span $\\pm 43$ MHz. The chip period is $800/70 = 11.43$ ns and the quoted 91.4 ns pulse is 8 chip periods to within 0.3 %, a plausible truncation for a Gaussian of time-bandwidth product 0.1. Fig. 5 independently confirms the 800 ns symbol period: it is captioned for 1.25 symbol periods and spans 1000 ns. No inconsistency anywhere in the parameter set. Compiles clean, standard axioms only.",
+        "predicted_error_category": null,
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__MATHEMATICAL_MODEL__6_0061opus5.lean",
+          "formal_statement": "theorem matisk_section_iv_parameters :\n    ((1 : ℝ) / 1.25 = 0.8) ∧\n    ((64 : ℝ) * 1.25 * 2 = 160) ∧\n    (|(70 : ℝ) * 1.25 / 64 - 1.37| < 0.005) ∧\n    ((64 : ℝ) * (70 * 1.25 / 64) = 87.5 ∧ (87.5 : ℝ) ≤ 100) ∧\n    (|(800 : ℝ) / 70 - 11.43| < 0.005) ∧\n    (|(91.4 : ℝ) / (800 / 70) - 8| < 0.01)",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 1,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.9
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::9",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "IV. Numerical results / V. Conclusions",
+      "content": "The more antennas are utilized, the larger the symbol period, as the overall bandwidth is divided into more subbands. This makes MA-TISK the more robust against channel dispersion the more antennas are used. [...] MA-TISK is the more sensitive to multipath propagation the fewer antennas are deployed. This makes MA-TISK the more competitive the higher the carrier frequency.",
+      "route": "verify-math",
+      "route_rationale": "A scaling argument about a physical channel; the inverse proportionality is checkable by inspection but the robustness conclusion rests on propagation modelling that cannot be formalised from what the paper states.",
+      "lean_result": null,
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.82,
+      "math_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::9",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.82,
+        "reasoning": "The scaling is right. With the overall bandwidth $W$ held fixed and split into $N$ subbands, the per-subcarrier spacing is $W/N$ and the information symbol period is therefore proportional to $N/W$, growing with $N$ — as the Section IV numbers bear out ($W = 87.5$ MHz, $N = 64$, spacing 1.37 MHz, information symbol period 800 ns; halving $N$ at fixed $W$ would halve it). A longer symbol period means the channel's delay spread occupies a smaller fraction of a symbol, hence less inter-symbol interference from dispersion, so the robustness conclusion follows from the scaling. The Conclusions restate the same monotonicity in the contrapositive direction (fewer antennas, more sensitivity), so the two passages agree rather than conflict. The further step to \"more competitive the higher the carrier frequency\" is an engineering judgement about mmWave/THz link budgets rather than a mathematical claim, and is not contradicted by anything in the paper. No error.",
+        "predicted_error_category": null,
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": []
+      }
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::8",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "IV. Numerical results (power spectral density)",
+      "content": "Furthermore, the asymmetry of the PSD at the leftmost and rightmost subcarriers is evident. Even the spectrum of the centered carrier is not symmetric, as it performs phase shifts by –π, but not by +π. The overall spectrum shows significantly less sidelobes than the spectra of the individual subcarriers. This is a direct result of the in-band direction of the frequency deviations.",
+      "route": "verify-math",
+      "route_rationale": "A statement about the shape of a simulated power spectral density; the only crisply checkable part is the constellation argument behind it, which the $\\mathcal{P}(\\omega)$ Lean result already settles.",
+      "lean_result": null,
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85,
+      "math_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::8",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "The stated reason is correct and is corroborated by the formal result proved for `paper::EQUATION::5`. For $M=4$ the heuristic of Section III-A (minimise the maximal deviation of the instantaneous frequency from the band centre) selects $\\mathcal{P}(\\omega) = \\{0, \\pi/2, -\\pi/2, \\pm\\pi\\}$ for the centred subcarrier: the $\\pi/2$ element is preferred over $-3\\pi/2$, the $3\\pi/2$ element is replaced by $-\\pi/2$, and the $\\pi$ element is a tie between $+\\pi$ and $-\\pi$. Since $\\omega_2$ is a single bit, exactly one of the two signs can be realised — Lean confirmed that the mirrored shift is attainable only at $2k = M$, i.e. only for this $\\pm\\pi$ element — so the centred subcarrier's shift set is necessarily asymmetric no matter which sign is picked. The paper's choice of $-\\pi$ is consistent with Fig. 6, where the centre subcarrier's sidelobes run predominantly to the left. The accompanying claim that the aggregate spectrum has fewer sidelobes than its constituents is also consistent with Fig. 6 (the green aggregate is close to rectangular while individual subcarriers show $-20$ dB skirts), and follows from the sidelobes of each subcarrier falling inside the band occupied by its neighbours. No error.",
+        "predicted_error_category": null,
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": []
+      }
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::7",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "IV. Numerical results",
+      "content": "The temporal combining gain is 18.1 dB. Note that the temporal combining gain can slightly exceed 18 dB as $T = 70 > N = 64$. Setting $T > N$ is spectrally wasteful. However, it reduces inter-carrier interference, cf. Table I. Note that linear single-carrier modulation is also spectrally wasteful due to the roll-off factor.",
+      "route": "verify-math-lean",
+      "route_rationale": "A decibel claim with an explicit numerical threshold and an explicit reason ($T > N$); both can be pinned down exactly in logarithms.",
+      "lean_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::7",
+        "verifier_name": "math-lean",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "Lean certified the three inequalities the sentence needs. $10\\log_{10}64 = 18.06\\,\\mathrm{dB}$, so the $N$-fold combining gain of the 64-chip FFT window really is \"18 dB\" — Lean bounded $|10\\log_{10}64 - 18| < 0.1$. The reported 18.1 dB strictly exceeds it ($10\\log_{10}64 < 18.1$), so \"slightly exceed 18 dB\" is correct, and it lies strictly below the $T$-fold ceiling $10\\log_{10}70 = 18.45\\,\\mathrm{dB}$ ($18.1 < 10\\log_{10}70 < 18.5$), so the value is consistent with a gain between $N$-fold and $T$-fold combining — which is what $T = 70 > N = 64$ is offered as the reason for. All four bounds were derived from exact integer power comparisons ($64^{100} < 10^{181} < 70^{100}$, $10^{179} < 64^{100}$, $70^{100} < 10^{185}$) pushed through strict monotonicity of $\\log$, so no floating-point slack is involved. The causal wording is slightly loose — the combining gain is capped by the $N$-chip window rather than driven by $T$, and 18.1 dB is within 0.04 dB of $10\\log_{10}64$ — but the arithmetic as stated holds and nothing downstream depends on the distinction. Compiles clean, standard axioms only.",
+        "predicted_error_category": null,
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "PASSED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__MATHEMATICAL_MODEL__7_0061opus5.lean",
+          "formal_statement": "theorem matisk_combining_gain :\n    (10 * Real.logb 10 64 < 18.1) ∧\n    ((18.1 : ℝ) < 10 * Real.logb 10 70) ∧\n    (|10 * Real.logb 10 64 - 18| < 0.1) ∧\n    (10 * Real.logb 10 70 < 18.5)",
+          "compiler_feedback": "",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    }
+  ],
+  "findings": [],
+  "verdict": "NO_ERRORS",
+  "verdict_confidence": 0.78,
+  "summary": "Mathematical verification of *Multi-antenna towards inband shift keying* (MA-TISK). Sixteen self-contained mathematical objects were extracted: the two rate relations of Section II, the four phase-mapping equations (Eqs. 3-4 and the sets $\\mathcal{P}$, $\\mathcal{P}(\\omega)$), and ten modelling claims spanning the space/time repetition duality, the GSM frequency-correction-burst counting, the quaternary-GMSK efficiency arithmetic, the FFT subcarrier-separation condition and the whole Section IV parameter set. Ten were routed to Lean 4 and **all ten compiled clean** (exit 0, no `sorry`, only the three standard Mathlib axioms); the remaining six were reviewed informally and came back clean as well. No error was detected at or above the reporting threshold, so `findings` is empty and the verdict is `NO_ERRORS`.\n\n**What Lean settled.** Eq. (2)'s low-SNR expansion is exact in the limit ($\\log_2(1+x)\\big/(x/\\ln 2)\\to 1$ as $x\\to0^+$ — the $\\ln 2$ is in the right place). Eq. (4)'s four case values follow exactly from Eq. (3), with $\\phi_u(1)=-\\pi$ and $\\phi_l(1)=+\\pi$ pointing the frequency excursion towards the band centre on both sidebands and differing by exactly $2\\pi$. The generalised set $\\mathcal{P}(\\omega)$ is congruent to $\\mathcal{P}$ modulo $2\\pi$ element by element, is non-negative for $\\omega=0$ and non-positive for $\\omega=\\mathbf{1}$, so the paper's assignment of the all-zero vector to the leftmost subcarrier and the all-one vector to the rightmost is the one its own stated preference requires — and it specialises at $M=2$ exactly to $\\phi_l$ and $\\phi_u$ of Eq. (4), a non-trivial consistency check between Sections II and III. The Introduction's claim that phase-only signalling behaves like a rate-$1/2$ repetition code was confirmed in both regimes: the rate ratio tends to $1/2$ at high SNR and to $1$ at low SNR. The GSM counting (148 bits $\\to$ 147 precoded symbols $\\to$ 142 symbols of constant instantaneous frequency against a 5-symbol memory) is exact. So is the Section IV parameter set: $1/1.25\\,\\mathrm{MHz}=800\\,\\mathrm{ns}$, $64\\times1.25\\times2=160\\,\\mathrm{Mbit/s}$, $70\\times1.25/64=1.3672\\approx1.37\\,\\mathrm{MHz}$ subcarrier spacing, and an occupied bandwidth of $87.5\\,\\mathrm{MHz}$ inside the targeted $100\\,\\mathrm{MHz}$ channel — all of which agree with Figs. 5 and 6. The combining-gain claim is sound too: $10\\log_{10}64=18.06\\,\\mathrm{dB}$, so the reported $18.1\\,\\mathrm{dB}$ does \"slightly exceed 18 dB\" and sits below the $T$-fold ceiling $10\\log_{10}70=18.45\\,\\mathrm{dB}$.\n\n**Two loose spots, neither reportable.** (i) Section III-C states that \"$T > N$\" suffices for the instantaneous frequency to be constant over $N$ symbol periods. Lean certified that the correct condition is $T \\ge N + L$ for a frequency pulse of length $L$, and that the paper's own numbers sit in the gap: with $N=64$, $T=70$ and a 91.4 ns pulse against an 11.43 ns chip period, only $800-91.4=708.6\\,\\mathrm{ns}$ of each symbol carries a constant frequency while the FFT window needs $64\\cdot(800/70)=731.4\\,\\mathrm{ns}$; $T\\ge72$ would be required. This is not flagged as an error because the paper retracts the idealisation in the very next paragraph (\"the frequency pulse may not have fully decayed\"), says only \"largely decayed\" in Section IV, and reports a finite SIR of 34.4 dB that is quantitatively what a two-chip-in-64 shortfall produces. (ii) The quaternary-GMSK chain gives $2/1.37=1.45985\\ldots$, so the literal wording \"at least 46 %\" overstates its own premise by 0.015 percentage points — a pure two-significant-figure rounding artefact, since the \"37 %\" input is itself read off Fig. 2.\n\n**Limits of this run.** No verifier disagreed with another, and no Lean run failed, so no informal fallback was needed. What remains unsettled is the paper's actual contribution, which is simulation-based: the shapes in Figs. 2, 3 and 6, the 34.4 dB and 8 dB SIR figures, and Table I (absent from the converted markdown) are empirical results no formal or informal mathematical check can confirm. The verdict confidence reflects that: the mathematics around the construction is machine-checked and sound, but the spectral-confinement claim the paper is built on was not independently reproduced."
+}

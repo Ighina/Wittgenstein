@@ -1,0 +1,131 @@
+{
+  "tag": "opus5",
+  "paper_name": "paper",
+  "paper_path": "/Users/iacopoghinassi/Documents/Github/Wittgenstein/data/spot-workspace/0043-MSP-MVS_Multi-granularity_Segmentation_Prior_Guided_Multi-View_Stereo/paper.md",
+  "lean_project": null,
+  "lean_project_kept": false,
+  "totals": {
+    "snippets_extracted": 4,
+    "routed_to_math": 4,
+    "routed_to_lean": 0,
+    "lean_passed": 0,
+    "lean_refuted": 0,
+    "lean_failed": 0,
+    "fallbacks_run": 0,
+    "errors_detected": 1
+  },
+  "results": [
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "Anchor Equidistribution (method description)",
+      "content": "Although edge-confined patch deformation effectively improves the reliability of deformed patches compared to APD-MVS, it may cause the loss of anchors within sectors fully enclosed by depth edges. Addressing this, we propose adaptive equidistribution, which uniformly divides the homogeneous area of each unreliable pixel into eight sectors based on the number of its surrounding reliable pixels to recover previously-discarded anchors.",
+      "route": "verify-math",
+      "route_rationale": "Prose statement of a geometric partition model with no accompanying formula. It rests on domain objects the manuscript never pins down (homogeneous area, anchor, depth edge), so it is unformalisable; verify-math-lean's faithfulness gate would return NOT_ATTEMPTED.",
+      "lean_result": null,
+      "fallback_result": null,
+      "verify_math_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+        "verifier_name": "math-equations",
+        "status": "UNVERIFIABLE",
+        "error_detected": false,
+        "confidence": 0.3,
+        "reasoning": "There is no equation, derivation, or quantitative definition in this excerpt — the defining formula for the sector partition was stripped during the markdown conversion of this manuscript. The only internal tension is the phrase 'uniformly divides ... into eight sectors based on the number of its surrounding reliable pixels', which juxtaposes a fixed sector count (eight) with a data-dependent criterion. That is resolvable under the natural reading that the count is fixed at eight while the sector *boundaries/orientation* are adapted to the distribution of surrounding reliable pixels — which is precisely what 'adaptive equidistribution' denotes and is consistent with the abstract's 'more uniformly distributed anchors'. No derivation-invalidating mistake can be demonstrated from the text available.",
+        "predicted_error_category": null,
+        "snippet_type": "MATHEMATICAL_MODEL",
+        "contradiction_locations": []
+      },
+      "status": "UNVERIFIABLE",
+      "error_detected": false,
+      "confidence": 0.3
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::0",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "Ablation Study — Multi-granularity Segmentation Prior",
+      "content": "Multi-granularity Segmentation Prior  Regarding segmentation prior, we separately remove SAM prior (w/o. SAM), multi-granularity SAM prior (w/o. Her), aggregation (w/o. Agr.), and edge correction (w/o. CRF.). Compared to w/o. SAM, w/o. Her. which only introduce single-granularity SAM prior led to notable improvements, validating the effectiveness of depth edges for patch deformation. Additionally, Both w/o. Her. and w/o. Agr. produce similar better results than w/o. CRF., yet are inferior to MSP-MVS, indicating that both multi-granularity SAM prior and aggregation are equally crucial than edge correction.",
+      "route": "verify-math",
+      "route_rationale": "A two-step inference chain over measured ablation metrics presented as one unit. It is an empirical claim about experimental data, which verify-math-lean explicitly excludes; formalising 'crucial' would require inventing the very hypothesis under test.",
+      "lean_result": null,
+      "fallback_result": null,
+      "verify_math_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::0",
+        "verifier_name": "math-equations",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.82,
+        "reasoning": "The excerpt makes two ordering inferences from the same ablation table. The first is sound; the second inverts the direction of the inference.\n\n**The convention the paper itself uses.** In an ablation, let $s(\\cdot)$ be the reported score and let $s^\\ast = s(\\text{MSP-MVS})$ be the full model. Removing component $X$ yields $s(\\text{w/o }X)$, and the importance of $X$ is the degradation $\\Delta_X = s^\\ast - s(\\text{w/o }X)$. Hence\n$$s(\\text{w/o }X) < s(\\text{w/o }Y) \\;\\Longleftrightarrow\\; \\Delta_X > \\Delta_Y \\;\\Longleftrightarrow\\; X \\text{ is more crucial than } Y.$$\nThe paper applies exactly this rule correctly twice elsewhere: 'w/o. Cls. slightly outperformed w/o. Avg. ... implying that sector averaging contribute more than anchor clustering', and 'w/o. Var. yields better results than w/o. Cst., suggesting that cost plays a more critical role than variance'. In both, the variant that scores *worse* identifies the *more* important component.\n\n**First inference (correct).** Premise: $s(\\text{w/o Her}) > s(\\text{w/o SAM})$. Since w/o SAM has no SAM prior and w/o Her has a single-granularity one, this gives $\\Delta_{\\text{SAM}} > \\Delta_{\\text{Her}} \\geq 0$, so introducing depth edges helps. The conclusion 'validating the effectiveness of depth edges for patch deformation' follows.\n\n**Second inference (inverted).** Premise as printed: $s(\\text{w/o Her}) \\approx s(\\text{w/o Agr}) > s(\\text{w/o CRF})$, all $< s^\\ast$. Applying the rule above:\n$$s(\\text{w/o CRF}) < s(\\text{w/o Her}) \\approx s(\\text{w/o Agr}) \\;\\Longrightarrow\\; \\Delta_{\\text{CRF}} > \\Delta_{\\text{Her}} \\approx \\Delta_{\\text{Agr}}.$$\nThe correct conclusion is therefore that **edge correction is the most crucial of the three**, with multi-granularity SAM prior and aggregation equally crucial *as each other* but *less* crucial than edge correction. The paper instead concludes 'both multi-granularity SAM prior and aggregation are equally crucial than edge correction'. Neither available reading of that garbled comparative survives the premise: read as 'more crucial than edge correction' it is the exact inversion of $\\Delta_{\\text{CRF}} > \\Delta_{\\text{Her}}$; read as 'equally crucial as edge correction' it is still false, because $s(\\text{w/o CRF})$ is strictly worse and so $\\Delta_{\\text{CRF}}$ is strictly larger.\n\nThe diagnosis is strengthened by the fact that the inversion is local: the first inference *in the same paragraph* is correct, and both sibling ablation paragraphs apply the rule correctly. This is an inferential error, not a uniform grammatical quirk of the manuscript.\n\n**Residual uncertainty.** The sentence is ungrammatical ('equally crucial than'), and the underlying ablation table was stripped from this markdown, so the premise ordering can only be read off the prose. A charitable reading in which the clause asserts no direction at all cannot be fully excluded — hence confidence 0.82 rather than higher.",
+        "predicted_error_category": "Calculus/Proof error",
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": [
+          "indicating that both multi-granularity SAM prior and aggregation are equally crucial than edge correction"
+        ]
+      },
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.82
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::1",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "Ablation Study — Anchor Equidistribution",
+      "content": "Anchor Equidistribution  Concerning anchor selection, we respectively remove sector averaging (w/o. Avg.), anchor clustering (w/o. Cls.) and both (w/o. Equ.). w/o. Equ. has neither sector averaging nor anchor clustering achieves the worst results. w/o. Cls. slightly outperformed w/o. Avg., yet fell short to MSP-MVS, implying that sector averaging contribute more than anchor clustering.",
+      "route": "verify-math",
+      "route_rationale": "Empirical ordering inference over ablation metrics; same unformalisability grounds as FORMULA_BLOCK::0.",
+      "lean_result": null,
+      "fallback_result": null,
+      "verify_math_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::1",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "Both inferences are sound under the standard ablation rule $s(\\text{w/o }X) < s(\\text{w/o }Y) \\Longleftrightarrow \\Delta_X > \\Delta_Y$. (i) Removing both components gives the worst score, consistent with $\\Delta_{\\{\\text{Avg},\\text{Cls}\\}} \\geq \\max(\\Delta_{\\text{Avg}}, \\Delta_{\\text{Cls}})$. (ii) From $s(\\text{w/o Cls}) > s(\\text{w/o Avg})$ it follows that $\\Delta_{\\text{Avg}} > \\Delta_{\\text{Cls}}$, i.e. sector averaging contributes more than anchor clustering — exactly what the text concludes. The direction of the inference is correct.",
+        "predicted_error_category": null,
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::2",
+      "snippet_type": "FORMULA_BLOCK",
+      "location": "Ablation Study — Iterative Local Search Optimization",
+      "content": "Iterative Local Search Optimization  For candidate optimization, we respectively eliminated the variance component in ILS (w/o. Var.), the cost component in ILS (w/o. Cst.), and both (w/o. ILS). Due to the absence of ILS, w/o. ILS achieves the poorest outcomes. w/o. Var. yields better results than w/o. Cst., suggesting that cost plays a more critical role than variance during candidate optimization.",
+      "route": "verify-math",
+      "route_rationale": "Empirical ordering inference over ablation metrics; same unformalisability grounds as FORMULA_BLOCK::0.",
+      "lean_result": null,
+      "fallback_result": null,
+      "verify_math_result": {
+        "snippet_id": "paper::FORMULA_BLOCK::2",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.85,
+        "reasoning": "Both inferences are sound. (i) Removing both components (w/o. ILS) gives the poorest outcome, consistent with the joint degradation dominating each individual one. (ii) From $s(\\text{w/o Var}) > s(\\text{w/o Cst})$ it follows that $\\Delta_{\\text{Cst}} > \\Delta_{\\text{Var}}$, i.e. the cost component is more critical than the variance component — exactly what the text concludes. The direction of the inference matches the standard ablation rule.",
+        "predicted_error_category": null,
+        "snippet_type": "FORMULA_BLOCK",
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.85
+    }
+  ],
+  "findings": [
+    {
+      "snippet_id": "paper::FORMULA_BLOCK::0",
+      "category": "Inverted inference from ablation ordering",
+      "severity": "minor",
+      "confidence": 0.82,
+      "evidence": "The ablation rule the paper itself applies correctly twice is $s(\\text{w/o }X) < s(\\text{w/o }Y) \\Longleftrightarrow \\Delta_X > \\Delta_Y$, where $\\Delta_X = s^\\ast - s(\\text{w/o }X)$ is the degradation caused by removing component $X$. The stated premise is $s(\\text{w/o Her}) \\approx s(\\text{w/o Agr}) > s(\\text{w/o CRF})$, which yields $\\Delta_{\\text{CRF}} > \\Delta_{\\text{Her}} \\approx \\Delta_{\\text{Agr}}$ — i.e. **edge correction is the most crucial** of the three components. The paper concludes the opposite, that multi-granularity SAM prior and aggregation are 'equally crucial than edge correction'. Both readings of that comparative fail: 'more crucial than' is the exact inversion, and 'equally crucial as' is still contradicted because $s(\\text{w/o CRF})$ is strictly worse. The inversion is localised — the first inference in the same paragraph ('validating the effectiveness of depth edges') is correct, and the sibling paragraphs on Anchor Equidistribution and ILS both apply the rule correctly.",
+      "verifier": "verify-math",
+      "exact_quote": "Additionally, Both w/o. Her. and w/o. Agr. produce similar better results than w/o. CRF., yet are inferior to MSP-MVS, indicating that both multi-granularity SAM prior and aggregation are equally crucial than edge correction."
+    }
+  ],
+  "verdict": "MINOR_ERRORS",
+  "verdict_confidence": 0.62,
+  "summary": "**Scope caveat first.** This markdown rendering of MSP-MVS contains **no mathematics in the usual sense** — a scan for `$`, ``` ```math ```, `\\begin{equation|align|gather}`, and for the words theorem/lemma/proposition/proof returned zero hits. Every display equation, figure, and table was stripped during conversion from the source PDF (arXiv 2407.19323v3). There are therefore no theorems, lemmas, proofs, closed-form identities, bounds, or derivations to check, and the paper's actual mathematical content (the aggregation score, the patch-deformation and ILS objectives) survives only as prose description.\n\n**What was extracted and checked.** Four snippets met the self-containment bar: one prose statement of a geometric partition model (`MATHEMATICAL_MODEL::0`, the eight-sector adaptive equidistribution) and the three ablation paragraphs (`FORMULA_BLOCK::0..2`), each of which presents a genuine, checkable inference chain from reported metric orderings to a claim about component importance.\n\n**Lean.** `LEAN_QUEUE` was empty, so **N = 0** and, per the skill's `N == 0` case, **no Lean project was created and no Lean call was made**. All four snippets fall squarely inside `verify-math-lean`'s own exclusion list: the model snippet rests on domain objects the paper never pins down, and the three ablation inferences are empirical claims about experimental data whose formalisation would require inventing the definition of 'crucial' — the faithfulness gate. Routing them to Lean would have produced four `NOT_ATTEMPTED` verdicts at the cost of a multi-gigabyte build. The pre-existing shared project at `MATH_VERIFICATION/Paper` was **not touched, not reused, and not deleted**. No fallbacks were needed, since there were no `FAILED` or `NOT_ATTEMPTED` Lean results to fall back from. There is consequently **no formal evidence in this report** — every verdict below is informal.\n\n**Result.** One confident error, in the Multi-granularity Segmentation Prior ablation. The paper establishes a clear inference convention — the variant that scores *worse* identifies the *more* important component — and applies it correctly in the Anchor Equidistribution paragraph ('sector averaging contribute more than anchor clustering') and the ILS paragraph ('cost plays a more critical role than variance'). Applying that same convention to the premise $s(\\text{w/o Her}) \\approx s(\\text{w/o Agr}) > s(\\text{w/o CRF})$ gives $\\Delta_{\\text{CRF}} > \\Delta_{\\text{Her}} \\approx \\Delta_{\\text{Agr}}$: edge correction is the *most* crucial of the three. The paper concludes the reverse. Notably the inversion is confined to the final clause — the first inference in the very same paragraph is sound — which argues against writing it off as a translation artefact, though the sentence's ungrammatical 'equally crucial than' and the absence of the underlying table cap confidence at 0.82.\n\n**Severity and verdict.** Graded `minor`: the error invalidates a stated conclusion about the *relative* importance of three ablated components, but the method itself and the headline claims (best F1 and completeness on ETH3D and TNT Intermediate, second-best on TNT Advanced) do not depend on it. Verdict `MINOR_ERRORS`. `verdict_confidence` is held to 0.62 rather than tracking the finding's 0.82: no snippet received machine-checked treatment, 1 of 4 snippets came back `UNVERIFIABLE`, and — most importantly — the paper's real mathematics was absent from the input, so a clean bill of health on what remained is weak evidence that the manuscript's equations are sound. Re-running against the source PDF, where the display equations survive, would be needed to actually exercise the Lean arm.\n\n**Out-of-scope observation, recorded but not counted as a finding.** The manuscript body is internally spliced: the abstract, related-work, method, ablation, and conclusion sections describe MSP-MVS, but paragraphs 15, 17, 19, 21 and contributions 1–3 describe a different paper, TSAR-MVS (joint hypothesis filter, iterative correlation refinement, textureless-aware segmentation) and explicitly say 'we propose TSAR-MVS'. This is a cross-section consistency defect, not a mathematical one; `/verify-cross-section-consistency` is the right verifier for it."
+}

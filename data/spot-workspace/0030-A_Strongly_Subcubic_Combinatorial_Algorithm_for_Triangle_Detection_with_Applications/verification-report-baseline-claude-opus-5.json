@@ -1,0 +1,118 @@
+{
+  "paper_id": "0030-A_Strongly_Subcubic_Combinatorial_Algorithm_for_Triangle_Detection_with_Applications",
+  "title": "A Strongly Subcubic Combinatorial Algorithm for Triangle Detection with Applications",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Proof of Theorem 2, Case 2.1 of the case analysis (s ∉ {a,b,c})",
+      "confidence": 0.78,
+      "supporting_evidence": "The proof asserts: 'Case 2.1: Exactly one vertex, namely a, appears on level 1. Then b and c appear on the next level (level 2) ... the triangle {a,b,c} is detected while scanning the adjacency list of b.' This is unjustified. Level 1 of the BFS tree from s contains all of N(s), which may be many vertices; b and c, although both on level 2, may have BFS parents different from a (and different from each other). When the search scans b's adjacency list and encounters the already-discovered same-level vertex c, nothing in a BFS state (which stores only one parent per vertex) certifies a common level-1 neighbour, so the triangle {a,b,c} need not be detected. The case analysis therefore does not establish 'if s ∈ A then BFS⁺(s) finds a triangle', which is the crux of the whole paper.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0030-A_Strongly_Subcubic_Combinatorial_Algorithm_for_Triangle_Detection_with_Applications::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Time analysis of Phase II ('each BFS⁺ takes O(m) time') together with the description of BFS⁺/Step 12",
+      "confidence": 0.6,
+      "supporting_evidence": "The algorithm needs BFS⁺ to certify, for an edge between two vertices of the same level, that they share a neighbour on the preceding level (see Case 2.1). Such a check cannot in general be performed within the claimed O(m) per BFS budget (verifying a common neighbour for each 'non-tree' edge costs up to O(min(deg)) per edge, i.e. up to Θ(m·√m) or Θ(n·m)). Hence BFS⁺ is either O(m) and incorrect, or correct and super-linear; the stated O(mn/x) bound for Phase II, and consequently the O(m^{2/3}n)=O(n^{7/3}) bound, does not follow.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0030-A_Strongly_Subcubic_Combinatorial_Algorithm_for_Triangle_Detection_with_Applications::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Introduction ('these results represent the greatest advance in triangle detection in over 45 years and the greatest advance in Boolean matrix multiplication in over 50 years') and Abstract ('invalidates several conjectures')",
+      "confidence": 0.55,
+      "supporting_evidence": "These sweeping claims (refuting the combinatorial BMM/k-clique conjectures, 'first truly subcubic combinatorial algorithm for BMM', 'greatest advance in 50 years') rest entirely on Theorem 2, whose correctness proof has a gap (Case 2.1). With the central lemma unproven, all downstream conclusions (Theorems 3, 4, 5 and the application section) are unsupported, yet they are stated as established facts.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0030-A_Strongly_Subcubic_Combinatorial_Algorithm_for_Triangle_Detection_with_Applications::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Proof of Theorem 3 (O(n^{25/9} log n) bound)",
+      "confidence": 0.45,
+      "supporting_evidence": "The proof boosts the success probability by 'using O(nm^{-1/3} log n) random trials in TRIANGLE-DETECTION-1', i.e. the triangle-detection subroutine now costs O(n^{7/3} log n), not O(n^β) with β=7/3. Plugging a T(n)=O(n^{7/3} log n) subroutine into the cited reduction, whose bound is O(n^{2+β/3} log n), yields O(n^{25/9} log² n), not the claimed O(n^{25/9} log n); the extra logarithmic factor from amplification is dropped.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0030-A_Strongly_Subcubic_Combinatorial_Algorithm_for_Triangle_Detection_with_Applications::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Derivation of the O(m^{4/3}) bound via Lemma 1 ('whose probability of error is as claimed')",
+      "confidence": 0.4,
+      "supporting_evidence": "Lemma 1 (Abboud–Williams) reduces a graph with arbitrary n to many subproblems on O(m)-node graphs, so the randomized triangle detector is invoked polynomially many times. The failure probability must then be union-bounded over all invocations, so the resulting algorithm does not inherit the single-run bound of 10^{-30} without increasing the number of trials (and hence the running time by a logarithmic factor). The paper simply asserts the error bound is unchanged.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0030-A_Strongly_Subcubic_Combinatorial_Algorithm_for_Triangle_Detection_with_Applications::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Applications section, K6 paragraph ('O(n^{4.751}) or O(m^{2.372})')",
+      "confidence": 0.4,
+      "supporting_evidence": "With the value ω < 2.372 adopted earlier in the paper (used to write n^{ω+1}=n^{3.372} and m^{2ω/(ω+1)}=m^{1.407}), the K6 bound n^{2ω} evaluates to n^{4.744}, not n^{4.751} (which corresponds to the obsolete ω≈2.3755). The exponents quoted for the same quantity are mutually inconsistent across the paper.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0030-A_Strongly_Subcubic_Combinatorial_Algorithm_for_Triangle_Detection_with_Applications::baseline"
+    },
+    {
+      "error_category": "Citation / attribution",
+      "error_location": "Applications section, K4 paragraph ('the fastest known algorithm for detecting a K4, due to Alon, Yuster, and Zwick, runs in O(n^{ω+1})')",
+      "confidence": 0.4,
+      "supporting_evidence": "The O(n^{ω+1}) bound for K4 detection is the Nešetřil–Poljak construction, not a result of Alon–Yuster–Zwick; moreover it is not the fastest known: Eisenbrand and Grandoni [18] (cited elsewhere in this very paper) improved K4 detection below n^{ω+1} using rectangular matrix multiplication. The baseline against which the claimed O(n^{10/3}) improvement is measured is therefore both misattributed and outdated.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0030-A_Strongly_Subcubic_Combinatorial_Algorithm_for_Triangle_Detection_with_Applications::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Introduction (BMM paragraph) vs. 'Definitions and notations'",
+      "confidence": 0.35,
+      "supporting_evidence": "The notation section states 'The Õ notation hides poly(log) factors, whereas the Ô notation hides poly(log log) factors', but in the BMM paragraph the paper writes 'Here the Õ notation hides poly(log log n) factors' for the Bansal–Williams/Chan/Yu bounds. The same symbol is given two contradictory meanings.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0030-A_Strongly_Subcubic_Combinatorial_Algorithm_for_Triangle_Detection_with_Applications::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Section on R. R. Williams' question ('Our Theorem 2 gives a positive answer to both questions')",
+      "confidence": 0.35,
+      "supporting_evidence": "The quoted question has two parts; the first ('Is there a randomized 3-clique detection algorithm running in O(n^{3−ε})?') was already answered affirmatively in 1978 by Itai–Rodeh's O(n^ω) algorithm (as the paper itself states earlier), so Theorem 2 cannot be the first positive answer to it. In Williams' context the question concerns the weighted/optimum-weight triangle variant, which an unweighted detection algorithm does not solve. The claim to answer 'both questions' misrepresents the cited open problem.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0030-A_Strongly_Subcubic_Combinatorial_Algorithm_for_Triangle_Detection_with_Applications::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Applications section, K10 bound ('detecting a K10 in O(n^8) time, or in O(m^4) time')",
+      "confidence": 0.3,
+      "supporting_evidence": "No derivation is given for the m-parameterized K10 bound. The natural reduction (one extra vertex plus K9 detection via an auxiliary graph on m^{3/2} vertices) yields O(n·m^{7/2}), which can be as large as m^{4.5}, not m^4; the stated m^4 only coincides with n^8 in the dense case m=Θ(n²) and is unsupported in general.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0030-A_Strongly_Subcubic_Combinatorial_Algorithm_for_Triangle_Detection_with_Applications::baseline"
+    },
+    {
+      "error_category": "Citation / attribution",
+      "error_location": "References [4] and [5]",
+      "confidence": 0.3,
+      "supporting_evidence": "[4] and [5] are the same paper (Abboud and V. V. Williams, 'Popular conjectures imply strong lower bounds for dynamic problems'), listed once as FOCS 2014 and once as the arXiv preprint, and cited as if distinct sources; Lemma 1 is attributed only to [5].",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0030-A_Strongly_Subcubic_Combinatorial_Algorithm_for_Triangle_Detection_with_Applications::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 11,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (claude-opus-5, taxonomy=default): 11 error(s) reported.",
+  "baseline": {
+    "model": "claude-opus-5",
+    "provider": "anthropic",
+    "taxonomy": "default",
+    "paper_chars": 70941,
+    "truncated": false,
+    "usage": {
+      "input_tokens": 48897,
+      "output_tokens": 24841,
+      "cache_read_input_tokens": 0,
+      "cache_creation_input_tokens": 0
+    }
+  }
+}

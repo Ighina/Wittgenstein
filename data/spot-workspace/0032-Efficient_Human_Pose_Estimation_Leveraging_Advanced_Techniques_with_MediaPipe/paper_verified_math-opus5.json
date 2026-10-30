@@ -1,0 +1,183 @@
+{
+  "paper_name": "paper",
+  "paper_path": "/Users/iacopoghinassi/Documents/Github/Wittgenstein/data/spot-workspace/0032-Efficient_Human_Pose_Estimation_Leveraging_Advanced_Techniques_with_MediaPipe/paper.md",
+  "tag": "opus5",
+  "lean_project": "MATH_VERIFICATION/Paper",
+  "lean_project_kept": true,
+  "totals": {
+    "snippets_extracted": 5,
+    "routed_to_math": 3,
+    "routed_to_lean": 2,
+    "lean_passed": 0,
+    "lean_refuted": 2,
+    "lean_failed": 0,
+    "fallbacks_run": 0,
+    "errors_detected": 2
+  },
+  "results": [
+    {
+      "snippet_id": "paper::EQUATION::0",
+      "snippet_type": "EQUATION",
+      "location": "3. Methodology — System architecture / joint-angle computation",
+      "content": "Our pose estimation pipeline calculates the angle between three key points: shoulder, elbow, and wrist. The angle is computed using the arctangent function as follows:\n\nangle = arctan2(c_y - b_y, c_x - b_x) - arctan2(a_y - b_y, a_x - b_x)\n\nwhere (a_x, a_y), (b_x, b_y), and (c_x, c_y) represent the coordinates of the shoulder, elbow, and wrist landmarks, respectively. The resulting angle is converted from radians to degrees for further analysis.",
+      "route": "verify-math-lean",
+      "route_rationale": "A crisp planar-geometry identity: does the printed arctan2 difference equal the shoulder-elbow-wrist angle? Formalisable, and correctness turns on the range/wrap-around argument rather than on arithmetic.",
+      "lean_result": {
+        "snippet_id": "paper::EQUATION::0",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.85,
+        "reasoning": "Formalised the paper's Section-3 identity universally, as stated: `atan2` was defined as the genuine two-argument arctangent (`atan2 y x = Complex.arg (x + y*I)`, principal value in $(-\\pi,\\pi]$), `paperAngle` as the printed difference, and the intended quantity as `EuclideanGeometry.angle a b c` (the angle at the elbow vertex $b$, which by definition lies in $[0,\\pi]$). No extra hypotheses were assumed: the paper places no restriction on the landmark configuration. Lean compiled a proof of the **negation** of the universal identity. The witness is shoulder $a=(1,0)$, elbow $b=(0,0)$, wrist $c=(0,-1)$: there $\\mathrm{atan2}(-1,0)-\\mathrm{atan2}(0,1) = -\\pi/2 - 0 = -\\pi/2 < 0$, whereas any geometric angle is nonnegative (here it is $\\pi/2$). The printed expression ranges over $(-2\\pi, 2\\pi)$; recovering the joint angle requires the absolute value and the $360^\\circ - \\theta$ reflection that the paper omits, and which the reference MediaPipe curl-counter implementation performs. The paper's text ('The resulting angle is converted from radians to degrees for further analysis') states no such normalisation.",
+        "predicted_error_category": "Domain/Constraint violation",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__EQUATION__0_0032opus5.lean (formalised in Paper/TMP.lean, moved after the verdict)",
+          "formal_statement": "theorem paper_angle_formula_refuted :\n    ¬ (∀ a₁ a₂ b₁ b₂ c₁ c₂ : ℝ,\n        paperAngle a₁ a₂ b₁ b₂ c₁ c₂\n          = EuclideanGeometry.angle (pt a₁ a₂) (pt b₁ b₂) (pt c₁ c₂)) := by",
+          "compiler_feedback": "lean_diagnostic_messages: [] (no errors, no warnings, no 'declaration uses sorry')\nlean_verify paper_angle_formula_refuted: axioms = [propext, Classical.choice, Quot.sound]; non_standard_axioms = []; trust = standard\nlake env lean Paper/TMP.lean: (no output) EXIT=0",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 2,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.85
+    },
+    {
+      "snippet_id": "paper::EQUATION::1",
+      "snippet_type": "EQUATION",
+      "location": "4. Results — Landmark coordinates",
+      "content": "The MediaPipe pose estimation model returns a set of landmark coordinates representing key points on the human body. These landmarks are denoted as (x, y) coordinates, where x and y are normalized values between 0 and 1, representing the relative position within the image frame. The landmarks can be mapped to pixel coordinates by multiplying them with the image width and height:\n\npixelₓ = landmarkₓ × image width\npixelᵧ = landmarkᵧ × image height\n\nThese landmark coordinates are the basis for further analysis and calculations in the pose estimation pipeline.",
+      "route": "verify-math",
+      "route_rationale": "Trivial de-normalisation of coordinates in $[0,1]$ by frame width/height; checkable by inspection, nothing for a prover to add.",
+      "lean_result": null,
+      "fallback_result": null,
+      "verify_math_result": {
+        "snippet_id": "paper::EQUATION::1",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.92,
+        "reasoning": "With $x,y \\in [0,1]$ normalised to the frame, $\\text{pixel}_x = \\text{landmark}_x \\times \\text{width}$ and $\\text{pixel}_y = \\text{landmark}_y \\times \\text{height}$ is the standard de-normalisation and maps $[0,1]^2$ onto the frame extent. The only quibble is the usual half-open/off-by-one convention (pixel indices run to $W-1$, not $W$), which is a convention, not a derivation error.",
+        "predicted_error_category": null,
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.92
+    },
+    {
+      "snippet_id": "paper::EQUATION::2",
+      "snippet_type": "EQUATION",
+      "location": "3. Methodology — Data analysis / performance indicators (Eq. 1)",
+      "content": "The accuracy and efficiency of the pose estimation are evaluated using advanced statistical methods. The primary performance indicators are:\n\nMSE = (1/n) ∑_{i=1}^n (Y_i - Ŷ_i)^2     (1)",
+      "route": "verify-math",
+      "route_rationale": "Textbook definition of mean squared error; asserts nothing beyond the standard formula, so an informal read settles it.",
+      "lean_result": null,
+      "fallback_result": null,
+      "verify_math_result": {
+        "snippet_id": "paper::EQUATION::2",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.95,
+        "reasoning": "$MSE = \\frac{1}{n}\\sum_{i=1}^{n}(Y_i - \\hat{Y}_i)^2$ is the standard definition: correct normalisation $1/n$, correct summation range, squared residuals so the quantity is nonnegative. No algebraic or domain defect.",
+        "predicted_error_category": null,
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::EQUATION::3",
+      "snippet_type": "EQUATION",
+      "location": "3. Methodology — Data analysis / performance indicators (Eq. 2)",
+      "content": "The accuracy and efficiency of the pose estimation are evaluated using advanced statistical methods. The primary performance indicators are:\n\nIoU = (Area of Overlap) / (Area of Union)      (2)",
+      "route": "verify-math",
+      "route_rationale": "Textbook definition of Intersection over Union; checkable by inspection.",
+      "lean_result": null,
+      "fallback_result": null,
+      "verify_math_result": {
+        "snippet_id": "paper::EQUATION::3",
+        "verifier_name": "math-equations",
+        "status": "NO_ERROR",
+        "error_detected": false,
+        "confidence": 0.95,
+        "reasoning": "$IoU = \\frac{\\text{Area of Overlap}}{\\text{Area of Union}}$ is the standard definition. Since the overlap is contained in the union, the ratio automatically lies in $[0,1]$, so there is no domain violation. Nothing to flag.",
+        "predicted_error_category": null,
+        "contradiction_locations": []
+      },
+      "status": "NO_ERROR",
+      "error_detected": false,
+      "confidence": 0.95
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+      "snippet_type": "MATHEMATICAL_MODEL",
+      "location": "4. Results — Curl counter logic",
+      "content": "In our curl counter logic, we determine the stage of the curl exercise based on the angle between the shoulder, elbow, and wrist. The stage is determined as follows:\n\n\\[\n\\text{stage} = \n\\begin{cases}\n\\text{down}, & \\text{if angle} > 160^\\circ \\\\\n\\text{up}, & \\text{if angle} < 30^\\circ \\text{ and previous\\_stage} = \\text{down}\n\\end{cases}\n\\]\n\nThe curl counter is incremented when transitioning from the \"down\" stage to the \"up\" stage. This logic enables accurate tracking and counting of curl repetitions.",
+      "route": "verify-math-lean",
+      "route_rationale": "A piecewise state-machine definition plus an increment rule: both well-definedness (are the guards exhaustive?) and consistency with the Section-3 angle formula are crisply formalisable.",
+      "lean_result": {
+        "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+        "verifier_name": "math-lean",
+        "status": "ERROR_DETECTED",
+        "error_detected": true,
+        "confidence": 0.78,
+        "reasoning": "Two claims were formalised and Lean refuted both.\n\n**(A) The `\\begin{cases}` block is not exhaustive.** `curl_stage_cases_not_exhaustive` proves that the two guards — `angle > 160` and (`angle < 30` and `previous_stage = down`) — do not cover $[0^\\circ,180^\\circ]$: at $\\text{angle}=90^\\circ$ neither fires, so `stage` is undefined on the whole mid-range the forearm sweeps through. The hypotheses $0 \\le \\text{angle} \\le 180$ are *more* generous to the paper than the raw Section-3 formula's own range, so this is not an artefact of a strengthened statement. As a presentational matter the intended reading is clearly 'otherwise leave `stage` unchanged', so this alone is sloppy notation rather than a substantive error.\n\n**(B) The thresholds contradict the Section-3 angle formula.** `curl_rule_misclassifies_extended_arm` exhibits a landmark configuration where the true elbow angle is $170^\\circ > 160^\\circ$ — a fully extended arm, which the paper's own semantics calls the *down* stage — while the printed formula of Section 3 reports $-170^\\circ$, and $-170 < 30$, so the printed rule fires *up* and increments the curl counter. The witness is $a=1$, $b=0$, $c=\\cos\\theta + i\\sin\\theta$ with $\\theta = -\\tfrac{17\\pi}{18}$; Lean computes $\\angle a b c = \\tfrac{17\\pi}{18}$ (i.e. $170^\\circ$) via `arccos` of the real inner product, and $\\arg(c-b)-\\arg(a-b) = \\theta$ (i.e. $-170^\\circ$) via `Complex.arg_cos_add_sin_mul_I`. This is the downstream consequence of the missing normalisation found in `paper::EQUATION::0`, and it directly contradicts the paper's claim that 'This logic enables accurate tracking and counting of curl repetitions.'",
+        "predicted_error_category": "Domain/Constraint violation",
+        "contradiction_locations": [],
+        "lean": {
+          "lean_status": "REFUTED",
+          "project": "MATH_VERIFICATION/Paper",
+          "file": "Paper/Verified/paper__MATHEMATICAL_MODEL__0_0032opus5.lean (formalised in Paper/TMP.lean, moved after the verdict)",
+          "formal_statement": "theorem curl_stage_cases_not_exhaustive :\n    ¬ (∀ (angle : ℝ) (prev : Stage), 0 ≤ angle → angle ≤ 180 →\n        160 < angle ∨ (angle < 30 ∧ prev = Stage.down)) := by\n\ntheorem curl_rule_misclassifies_extended_arm :\n    ∃ a b c : ℂ, 160 < trueAngleDeg a b c ∧ paperAngleDeg a b c < 30 := by",
+          "compiler_feedback": "lean_diagnostic_messages: [] (no errors, no warnings, no 'declaration uses sorry')\nlean_verify curl_stage_cases_not_exhaustive: axioms = [propext, Classical.choice, Quot.sound]; non_standard_axioms = []; trust = standard\nlean_verify curl_rule_misclassifies_extended_arm: axioms = [propext, Classical.choice, Quot.sound]; non_standard_axioms = []; trust = standard\nlake env lean Paper/TMP.lean: (no output) EXIT=0",
+          "axioms": [
+            "propext",
+            "Classical.choice",
+            "Quot.sound"
+          ],
+          "cycles_used": 3,
+          "project_kept": true
+        }
+      },
+      "fallback_result": null,
+      "status": "ERROR_DETECTED",
+      "error_detected": true,
+      "confidence": 0.78
+    }
+  ],
+  "findings": [
+    {
+      "snippet_id": "paper::EQUATION::0",
+      "category": "Formally refuted",
+      "severity": "minor",
+      "confidence": 0.85,
+      "evidence": "Lean compiled a refutation of the Section-3 identity. Formalising $\\mathrm{atan2}$ as the genuine two-argument arctangent ($\\mathrm{atan2}\\,y\\,x = \\arg(x+iy)$, principal value in $(-\\pi,\\pi]$) and the intended quantity as the Euclidean angle at the elbow vertex, the configuration shoulder $a=(1,0)$, elbow $b=(0,0)$, wrist $c=(0,-1)$ gives\n\n$$\\mathrm{atan2}(-1,0)-\\mathrm{atan2}(0,1) = -\\tfrac{\\pi}{2} - 0 = -\\tfrac{\\pi}{2} < 0,$$\n\nwhile the geometric angle $\\angle abc = \\tfrac{\\pi}{2}$ — and no angle at a vertex is ever negative. As printed, the expression ranges over $(-2\\pi,2\\pi)$ and is not the joint angle: recovering it needs the absolute value and the $360^\\circ-\\theta$ reflection, both of which the paper omits, even though the text only says 'The resulting angle is converted from radians to degrees'. The paper's own thresholds in Section 4 ($>160^\\circ$, $<30^\\circ$) presuppose the normalisation that is missing here.\n\nLean: no diagnostics, axioms $\\{$`propext`, `Classical.choice`, `Quot.sound`$\\}$, exit 0.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "angle = arctan2(c_y - b_y, c_x - b_x) - arctan2(a_y - b_y, a_x - b_x)"
+    },
+    {
+      "snippet_id": "paper::MATHEMATICAL_MODEL::0",
+      "category": "Formally refuted",
+      "severity": "minor",
+      "confidence": 0.78,
+      "evidence": "Lean compiled a refutation of the curl-counter stage rule on two counts.\n\n**Inconsistent with the paper's own angle formula.** There is a landmark configuration ($a=1$, $b=0$, $c=\\cos\\theta+i\\sin\\theta$ with $\\theta=-\\tfrac{17\\pi}{18}$) where the true elbow angle is $170^\\circ>160^\\circ$ — a fully extended arm, which the paper itself labels the *down* stage — yet the Section-3 formula reports $-170^\\circ$, and $-170<30$, so the printed rule fires *up* and increments the counter. A fully extended arm is counted as a completed curl. This is the missing-normalisation defect of `paper::EQUATION::0` propagating into the repetition count, and it contradicts 'This logic enables accurate tracking and counting of curl repetitions.'\n\n**The case split is not exhaustive.** Neither guard covers $30^\\circ \\le \\text{angle} \\le 160^\\circ$ (Lean witness: $\\text{angle}=90^\\circ$), so as written `stage` is undefined across the entire mid-range of the movement. Read charitably this is elliptical notation for 'otherwise unchanged', so it is noted rather than weighted heavily.\n\nLean: no diagnostics, axioms $\\{$`propext`, `Classical.choice`, `Quot.sound`$\\}$, exit 0.",
+      "verifier": "verify-math-lean",
+      "exact_quote": "\\[\n\\text{stage} = \n\\begin{cases}\n\\text{down}, & \\text{if angle} > 160^\\circ \\\\\n\\text{up}, & \\text{if angle} < 30^\\circ \\text{ and previous\\_stage} = \\text{down}\n\\end{cases}\n\\]"
+    }
+  ],
+  "verdict": "MINOR_ERRORS",
+  "verdict_confidence": 0.8,
+  "summary": "This manuscript carries very little mathematics: five self-contained objects were extracted — the joint-angle formula, the normalised-landmark-to-pixel mapping, the MSE and IoU definitions, and the curl-counter stage model. Three went to informal review and came back clean (MSE, IoU and the pixel mapping are all textbook-correct). Two were formalised in Lean 4 against Mathlib, and **Lean refuted both**; there were no `FAILED` or `NOT_ATTEMPTED` Lean runs, so no informal fallbacks were needed and the two verifiers never had an occasion to disagree.\n\nThe substantive defect is a single missing normalisation. Section 3 defines the elbow angle as $\\text{angle} = \\mathrm{arctan2}(c_y-b_y,\\,c_x-b_x) - \\mathrm{arctan2}(a_y-b_y,\\,a_x-b_x)$ and says only that the result is 'converted from radians to degrees'. That raw difference of two principal arguments ranges over $(-2\\pi,2\\pi)$, so it is not the angle at the elbow: Lean exhibits shoulder $(1,0)$, elbow $(0,0)$, wrist $(0,-1)$, where the formula returns $-\\pi/2$ while the geometric angle is $+\\pi/2$. The reference MediaPipe curl-counter recipe takes the absolute value and reflects values above $180^\\circ$ through $360^\\circ-\\theta$; the paper prints neither step.\n\nThe second refutation is that omission biting downstream. The Section-4 stage rule thresholds `angle > 160` and `angle < 30` only make sense for a magnitude in $[0,180]$. Lean exhibits a configuration with a true elbow angle of $170^\\circ$ — a fully extended arm, which the paper itself calls the *down* stage — for which the printed formula yields $-170^\\circ$; since $-170 < 30$, the printed rule fires *up* and increments the repetition counter. Lean separately shows the `cases` block is not exhaustive (nothing covers $30^\\circ \\le \\text{angle} \\le 160^\\circ$), though that reads as elliptical notation for 'otherwise unchanged' rather than a real error, and is weighted accordingly.\n\nSeverity is assessed as **minor**: both findings are erratum-grade defects in the stated methodology and they do invalidate the paper's claim that the curl-counter logic 'enables accurate tracking and counting of curl repetitions', but the headline results — a 20% IoU gain and a ~30% processing-time reduction — do not rest on either. Everything else in the paper is prose, experimental numbers, or figure description, with no formalisable mathematical content; that is why only five snippets were extracted, and the verdict confidence of 0.8 reflects that the two findings are machine-checked while the remaining risk in the paper lies outside this skill's mathematical remit.\n\nLean project `MATH_VERIFICATION/Paper` is the shared project reused across papers in this workspace (every manuscript here is named `paper.md`), so per the reuse rule it was **not** deleted; only the per-snippet scratch (`TMP.lean`, `claim.md`) was removed, and the two proofs were saved as `Paper/Verified/paper__EQUATION__0_0032opus5.lean` and `Paper/Verified/paper__MATHEMATICAL_MODEL__0_0032opus5.lean`."
+}

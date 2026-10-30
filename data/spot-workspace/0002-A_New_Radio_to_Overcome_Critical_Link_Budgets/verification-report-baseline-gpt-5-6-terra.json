@@ -1,0 +1,102 @@
+{
+  "paper_id": "0002-A_New_Radio_to_Overcome_Critical_Link_Budgets",
+  "title": "A New Radio to Overcome Critical Link Budgets",
+  "paper_category": null,
+  "predicted_errors": [
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Eq. (7) and numerical examples in Section IV",
+      "confidence": 0.99,
+      "supporting_evidence": "Eq. (7) defines the nominal subcarrier waveform as exp(2π j s n/(S N)), which has adjacent-subcarrier spacing 1/(N T_sym) when the sample rate is S/T_sym. This is independent of T. The reported spacings instead equal T/(N T_sym): for N=16, T_sym=200 ns, and T=18.375, T/(N T_sym)=5.742 MHz; for N=32, T_sym=500 ns, and T=46, T/(N T_sym)=2.875 MHz. Thus the reported 5.74 MHz and 2.88 MHz spacings require a factor T in the exponential that is absent from Eq. (7). As written, Eq. (7) would give 312.5 kHz and 62.5 kHz, respectively, and cannot generate the claimed spectra or experiments.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0002-A_New_Radio_to_Overcome_Critical_Link_Budgets::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Section III, Eqs. (3), (6)–(7), and Section IV numerical settings T=18.375 and T=46",
+      "confidence": 0.99,
+      "supporting_evidence": "T is explicitly used as a matrix dimension (F_b ∈ C^{T×T}), as a discrete block length (f_b,n^(S) ∈ C^{1×ST}), and as an FFT-related dimension. These quantities must be integers. The paper nevertheless sets T=18.375 in the principal experiment. A 18.375×18.375 matrix, a length-S·18.375 discrete vector, and a corresponding FFT/DFT are not defined. No alternate interpretation or rounding procedure is supplied. This invalidates the stated implementation and the numerical result based on that setting.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0002-A_New_Radio_to_Overcome_Critical_Link_Budgets::baseline"
+    },
+    {
+      "error_category": "Equation / proof",
+      "error_location": "Section III immediately after Eq. (4): claim that a unitary F_b gives a T-fold received-power/SINR improvement",
+      "confidence": 0.94,
+      "supporting_evidence": "The manuscript states both that a unitary F_b permits matched filters that provide a T-fold SINR improvement and that the construction produces a T-fold received-power gain. Under the standard definition of a unitary matrix, each row has unit norm. Correlating with a unit-norm row preserves the symbol energy rather than producing a T-fold energy gain. A T-fold coherent accumulation requires a row waveform with squared norm T (e.g. an unnormalised DFT row), which is not unitary. The paper does not specify a nonstandard normalization, so its unitary-matrix assertion and gain derivation are mutually inconsistent.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0002-A_New_Radio_to_Overcome_Critical_Link_Budgets::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Section III around Eq. (3)–(4)",
+      "confidence": 0.9,
+      "supporting_evidence": "F_b is declared T×T, but Eq. (4) indexes f_{b,n} as the nth row of F_b for every n=0,…,N−1. This only exists if N≤T. The manuscript does not state this required condition when presenting the general construction, despite presenting it as a general N-antenna model. Moreover, with noninteger T in the first numerical example the row indexing and matrix definition are undefined altogether.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0002-A_New_Radio_to_Overcome_Critical_Link_Budgets::baseline"
+    },
+    {
+      "error_category": "Data Inconsistency (text-text)",
+      "error_location": "Section IV-A.1, “Power Amplifier,” versus Eq. (7)",
+      "confidence": 0.91,
+      "supporting_evidence": "The power-amplifier subsection identifies the sinusoidal interval as “L_s ≤ s < S N − L_e,” whereas Eq. (7) defines it as “L_s ≤ s < S T − L_e.” N is the antenna/subcarrier count and T is the temporal/block parameter, so these are not interchangeable. This changes the duration of the nominal sinusoidal waveform and directly affects the transition duty cycle, spectral calculation, and receiver windowing.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0002-A_New_Radio_to_Overcome_Critical_Link_Budgets::baseline"
+    },
+    {
+      "error_category": "Methodology inconsistency",
+      "error_location": "Section IV-A.2(b), “Direct Phase Injection”",
+      "confidence": 0.93,
+      "supporting_evidence": "The paper says to “directly inject the four voltages corresponding to the four phases of the QPSK constellation into the VCO.” Earlier it correctly states that a VCO maps its control voltage to frequency and that frequency is the derivative of phase. A static voltage therefore controls frequency, not absolute oscillator phase; applying four voltage levels to an ordinary VCO does not set four QPSK phases and instead produces frequency offsets and accumulated phase. A phase-reset/injection-locking architecture or a fully specified phase-control loop would be needed, but is not described. This is a hardware-level contradiction in the proposed transmitter implementation.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0002-A_New_Radio_to_Overcome_Critical_Link_Budgets::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Abstract and Section IV numerical-results discussion: “There is no loss in link budget gain compared to spatial beamforming”",
+      "confidence": 0.9,
+      "supporting_evidence": "The asserted equivalence is not established by the reported simulations. The reported SIR values contain no Gaussian noise (“No Gaussian noise was added”), and the temporal-combining figures are simulation-specific filter gains, not end-to-end link budgets including transmit power, antenna gain/EIRP, occupied bandwidth, noise bandwidth, channel estimation, oscillator impairments, or spectral-mask constraints. The paper even compares a 12 dB 16-element beamforming gain with a temporal gain enabled by T=18.375>N, while the method uses enlarged subcarrier spacing and a different time/frequency allocation. This is not a like-for-like beamforming comparison and cannot support a no-loss link-budget conclusion.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0002-A_New_Radio_to_Overcome_Critical_Link_Budgets::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Abstract: “MA-TISK does not suffer from spectral re-growth issues plaguing other constant envelope modulations like GMSK”",
+      "confidence": 0.95,
+      "supporting_evidence": "GMSK is specifically a continuous-phase constant-envelope modulation designed for spectrally controlled operation with nonlinear power amplifiers. In an ideal constant-envelope GMSK transmitter there is no amplifier-induced spectral regrowth from amplitude clipping/backoff; nonlinear spectral regrowth is principally a problem for amplitude-varying linear modulation. GMSK can have finite spectral sidelobes and implementation imperfections, but describing spectral regrowth as an inherent problem “plaguing” GMSK is factually misleading, and no evidence or definition of regrowth is provided.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0002-A_New_Radio_to_Overcome_Critical_Link_Budgets::baseline"
+    },
+    {
+      "error_category": "Claim / conclusion distortion",
+      "error_location": "Section IV results, claim that the waveform has an “almost rectangular signal spectrum similar to … root-raised-cosine pulse shaping” and that transition optimization avoids spectral regrowth",
+      "confidence": 0.84,
+      "supporting_evidence": "The evidence presented consists only of simulated average PSDs with unspecified numerical details, no sampling rate/oversampling factor, no quantization model, no VCO nonlinearity or phase-noise model, no PA model, and no demonstrated compliance points from an identified 5G mask. The proposed waveform remains data-dependent frequency modulation during transitions and necessarily has transition-induced intercarrier/inter-symbol interference; indeed the paper reports only 18.3 dB SIR in its main example. The strong general spectral claim is therefore unsupported by the reported methodology and results.",
+      "verifier_name": "baseline-single-call",
+      "snippet_id": "0002-A_New_Radio_to_Overcome_Critical_Link_Budgets::baseline"
+    }
+  ],
+  "statistics": {
+    "total_snippets": 1,
+    "snippets_verified": 1,
+    "errors_detected": 9,
+    "verifier_usage": {
+      "baseline_single_call": 1
+    }
+  },
+  "verdict": "NEEDS_CORRECTION",
+  "summary": "Single-call baseline (gpt-5.6-terra, taxonomy=default): 9 error(s) reported.",
+  "baseline": {
+    "model": "gpt-5.6-terra",
+    "provider": "openai",
+    "taxonomy": "default",
+    "paper_chars": 716780,
+    "truncated": true,
+    "usage": {
+      "input_tokens": 259555,
+      "output_tokens": 3504,
+      "cache_read_input_tokens": null,
+      "cache_creation_input_tokens": null
+    }
+  }
+}
